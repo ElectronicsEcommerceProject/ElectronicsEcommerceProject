@@ -1,0 +1,183 @@
+Neeche updated backend folder structure aur file logic diya gaya hai jo Sequelize use karke Express.js project ke liye perfect hai. Isme har file aur folder ka role clearly mention kiya gaya hai, taaki aapko samajh aaye ki kis file mein kya logic likhna hai. Direct copy–paste kar sakte ho:
+
+---
+
+```
+backend/
+├── config/
+│   └── db.js
+│         // Sequelize connection setup: DB credentials, Sequelize instance creation.
+├── controllers/
+│   ├── authController.js
+│         // Logic for user registration, login, profile update, password reset.
+│   ├── productController.js
+│         // CRUD operations for products: add, update, delete, list products.
+│   ├── couponController.js
+│         // Coupon generation, validation, and assignment (if user-specific).
+│   ├── orderController.js
+│         // Order placement, order history fetch, order cancellation, status updates.
+│   ├── cartController.js
+│         // Managing cart items: add, update quantity, remove items.
+│   ├── wishlistController.js
+│         // Managing wishlist: add/remove products to/from wishlist.
+│   ├── reviewController.js
+│         // Adding, editing, deleting and listing product reviews.
+│   └── stockAlertController.js
+│         // Monitoring stock levels; when below threshold, triggering alerts.
+├── models/
+│   ├── index.js
+│         // Imports all Sequelize models, defines relationships (associations), and exports models.
+│   ├── userModel.js
+│         // User schema: name, email, phone number, hashed password, address, role, created_at.
+│   ├── productModel.js
+│         // Product schema: name, category, price, stock, description, image_url, discount rules, stock alert threshold, target_role.
+│   ├── couponModel.js
+│         // Coupon schema: unique code, discount_percentage, validity period, target_role, user-specific flag.
+│   ├── couponUserModel.js
+│         // Junction table to link coupons with specific users when needed.
+│   ├── orderModel.js
+│         // Order schema: user_id, total amount, coupon applied, order status (pending, shipped, delivered, cancelled), delivery address, contact number, created_at.
+│   ├── orderItemModel.js
+│         // Order item details: order_id, product_id, quantity, price at order time, discount applied.
+│   ├── cartModel.js
+│         // Cart schema: user_id, product_id, quantity.
+│   ├── wishlistModel.js
+│         // Wishlist schema: user_id, product_id, created_at.
+│   ├── reviewModel.js
+│         // Review schema: product_id, user_id, rating (1-5), comment, created_at.
+│   └── stockAlertModel.js
+│         // Stock alerts schema: product_id, current stock level, status (pending/sent), created_at.
+├── routes/
+│   ├── authRoutes.js
+│         // Routes: /api/auth/* for signup, login, forgot password.
+│   ├── productRoutes.js
+│         // Routes: /api/products/* for product CRUD operations.
+│   ├── couponRoutes.js
+│         // Routes: /api/coupons/* for managing coupons.
+│   ├── orderRoutes.js
+│         // Routes: /api/orders/* for placing and managing orders.
+│   ├── cartRoutes.js
+│         // Routes: /api/cart/* for cart operations.
+│   ├── wishlistRoutes.js
+│         // Routes: /api/wishlist/* for wishlist operations.
+│   ├── reviewRoutes.js
+│         // Routes: /api/reviews/* for adding/editing reviews.
+│   └── stockAlertRoutes.js
+│         // Routes: /api/stock-alerts/* for retrieving or sending stock alert information.
+├── middleware/
+│   └── auth.js
+│         // Middleware for JWT token verification and role-based authorization.
+├── constants/
+│   ├── roles.js
+│         // Define role constants, e.g., ROLES = { CUSTOMER: 'customer', RETAILER: 'retailer', ADMIN: 'admin' }.
+│   └── status.js
+│         // Status constants for order (e.g., { PENDING: 'pending', SHIPPED: 'shipped', ... }) and alerts.
+├── utils/
+│   └── email.js
+│         // Utility for sending emails (using Nodemailer) for password resets, order alerts, stock alerts etc.
+└── server.js
+        // Main server file: Initializes Express, imports routes, syncs Sequelize models with DB, and starts the server.
+```
+
+---
+
+### **Short Explanation with Examples**
+
+- **config/db.js:**  
+  Is file mein aap Sequelize ke saath database connection configure karoge (host, username, password, database name).  
+  *Example:* "Creating Sequelize instance with MySQL credentials."
+
+- **controllers:**  
+  Har controller specific business logic handle karta hai.  
+  *Example:* `authController.js` mein "register" function hoga jo user data validate karke, password hash karke, aur DB mein save karega.
+
+- **models:**  
+  Sequelize models define karte hain ki tables ka schema kaisa hoga. Relationships (1-to-many, many-to-many) bhi yahin set karte hain.  
+  *Example:* `orderItemModel.js` ko `orderModel.js` ke saath associate karna taaki ek order ke multiple items ho sakte hain.
+
+- **routes:**  
+  Har file mein endpoints define honge jo HTTP requests receive karte hain aur corresponding controller functions call karte hain.  
+  *Example:* `/api/products` pe GET request se `productController.getAllProducts()` call hoga.
+
+- **middleware/auth.js:**  
+  Isme JWT token check karke user ko authenticate aur authorize karega.  
+  *Example:* "If token valid, request aage pass karo; warna error response bhejo."
+
+- **constants/roles.js & status.js:**  
+  Static values jo code mein baar-baar repeat nahi karne hote.  
+  *Example:* Roles define karna jisse aap easily "if (user.role === ROLES.ADMIN)" likh sako.
+
+- **utils/email.js:**  
+  Email functionalities jaise password reset ya order confirmation ke liye utility functions likhe jaayenge.
+
+- **server.js:**  
+  Yeh entry point hai jahan Express app initialize hoga, middleware aur routes attach honge, aur Sequelize sync se DB models update honge.  
+  *Example:* "Server ko start karte waqt db.sync() se tables create ya update ho jayenge."
+
+---
+
+---
+
+### ✅ `server.js` File Code
+
+```js
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const { sequelize } = require('./models'); // models/index.js se sequelize object import
+
+// Load environment variables
+dotenv.config();
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/products', require('./routes/productRoutes'));
+app.use('/api/coupons', require('./routes/couponRoutes'));
+app.use('/api/orders', require('./routes/orderRoutes'));
+app.use('/api/cart', require('./routes/cartRoutes'));
+app.use('/api/wishlist', require('./routes/wishlistRoutes'));
+app.use('/api/reviews', require('./routes/reviewRoutes'));
+app.use('/api/stock-alerts', require('./routes/stockAlertRoutes'));
+
+// Health check route
+app.get('/', (req, res) => {
+  res.send('API is running...');
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
+});
+
+// Sync Sequelize and start server
+const PORT = process.env.PORT || 5000;
+sequelize
+  .sync({ alter: true }) // you can use force: true in development if needed
+  .then(() => {
+    console.log('Database synced');
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Failed to sync database:', err);
+  });
+```
+
+---
+
+### 🔥 Notes:
+- **`require('./models')`** assumes that `models/index.js` exports `{ sequelize }`.
+- You can change `sync({ alter: true })` to `sync({ force: true })` if you're resetting tables (for dev only).
+- Error handling middleware is already added.
+- Basic health check `/` route bhi hai for quick server check.
+- Routes are properly mounted as per your structure.
+
