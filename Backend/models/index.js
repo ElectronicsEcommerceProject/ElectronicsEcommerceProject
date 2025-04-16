@@ -1,8 +1,14 @@
+import dotenv from 'dotenv';
 import { Sequelize } from 'sequelize';
 import dbConfigFile from '../config/db.js';
 
+dotenv.config({ path: '../.env' }); // Ensure the correct path to the .env file
+
 const env = process.env.NODE_ENV || 'development';
 const dbConfig = dbConfigFile[env];
+
+// Debugging: Log the database configuration
+console.log('Database Configuration:', dbConfig);
 
 const sequelize = new Sequelize(
   dbConfig.database,
@@ -11,6 +17,7 @@ const sequelize = new Sequelize(
   {
     host: dbConfig.host,
     dialect: dbConfig.dialect,
+    port: dbConfig.port,
     logging: false,
   }
 );
@@ -43,7 +50,7 @@ Object.keys(db).forEach(modelName => {
 // ✅ Create tables from models
 try {
   await sequelize.sync({ alter: true }); // ya force: true for delete + create
-  console.log(' All tables created successfully and Database connected successfully!');
+  console.log(' All tables created successfully !');
 } catch (error) {
   console.error(' Error creating tables:', error);
 }
