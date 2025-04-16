@@ -35,18 +35,41 @@ export const getProfile = async (req, res) => {
 };
 
 // PUT /api/profile
-// export const updateProfile = async (req, res) => {
-//   try {
-//     const { name } = req.body;
-//     const user = await User.findByPk(req.user.id);
-
-//     if (!user) return res.status(404).json({ message: 'User not found' });
-
-//     user.name = name || user.name;
-//     await user.save();
-
-//     res.json({ message: 'Profile updated', user });
-//   } catch (error) {
-//     res.status(500).json({ message: 'Something went wrong', error });
-//   }
-// };
+export const updateProfile = async (req, res) => {
+    try {
+      const { name, address, city, postal_code, profileImage_url } = req.body;
+  
+      const user = await User.findOne({
+        where: { email: req.user.email },
+        attributes: [
+          'user_id', // 👈 Primary key added here!
+          'name',
+          'email',
+          'phone_number',
+          'role',
+          'address',
+          'city',
+          'postal_code',
+          'profileImage_url',
+          'created_at'
+        ]
+      });
+  
+      if (!user) return res.status(404).json({ message: 'User not found' });
+  
+      user.name = name || user.name;
+      user.address = address || user.address;
+      user.city = city || user.city;
+      user.postal_code = postal_code || user.postal_code;
+      user.profileImage_url = profileImage_url || user.profileImage_url;
+  
+      await user.save();
+  
+      res.json({ message: 'Profile updated successfully', user });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Something went wrong', error: error.message });
+    }
+  };
+  
+  
