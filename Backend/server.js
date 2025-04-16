@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import db from './models/index.js'; // Import the db object
 import authRoutes from './routes/authRoutes.js'; // Import the authRoutes
+import profileRoutes from './routes/profileRoutes.js'; // Import the profileRoutes
 
 const { sequelize } = db; // Extract sequelize instance from db
 
@@ -25,6 +26,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes); // Use the authRoutes for authentication-related routes
+app.use('/api/profile', profileRoutes); // Use the profileRoutes for profile-related routes
 
 // Test route
 app.get('/', (req, res) => {

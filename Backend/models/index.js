@@ -49,7 +49,7 @@ Object.keys(db).forEach(modelName => {
 
 // ✅ Create tables from models
 try {
-  await sequelize.sync({ alter: true }); // ya force: true for delete + create
+  // await sequelize.sync({ alter: true }); // 
   console.log(' All tables created successfully !');
 } catch (error) {
   console.error(' Error creating tables:', error);
