@@ -8,7 +8,7 @@ const env = process.env.NODE_ENV || 'development';
 const dbConfig = dbConfigFile[env];
 
 // Debugging: Log the database configuration
-console.log('Database Configuration:', dbConfig);
+// console.log('Database Configuration:', dbConfig);
 
 const sequelize = new Sequelize(
   dbConfig.database,
