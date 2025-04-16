@@ -71,7 +71,7 @@ Chalo bhai, yeh raha updated development flow roadmap in Hinglish with small cod
 3. **JWT Middleware:**  
    Create middleware to verify tokens and check roles.
 
-===============================Done================================
+
 
 #### 🔹 **Frontend:**
 1. Create pages for:
@@ -85,16 +85,21 @@ Chalo bhai, yeh raha updated development flow roadmap in Hinglish with small cod
 
 ---
 
-===============================Done================================
+
+
+--------------------------------------------------To do-----------------------
+
 
 ### ✅ PHASE 3: Role-Based Dashboard Setup
 
 #### 🔹 **Frontend:**
 After login, check user role and navigate accordingly. For example:
 
+
 -------------this Phase 3 will be done by frontend code as subdomain is of admin 
 redirect it to admin page similarly for others after login successful------------------
 -----------------------------------------------------------------------------------------
+
 
 ```js
 if (user.role === 'admin') {
@@ -111,7 +116,7 @@ if (user.role === 'admin') {
 
 ---
 
-===============================Done================================
+
 
 Bilkul sahi pakde ho bhai! Tumhare development flow mein **Category management** ki baat missing hai, jabki tumhare models mein `Category` defined hai aur admin usko handle karta hai. Chalo usko proper tarike se roadmap mein add kar dete hain as a **mini-phase inside Product Management (PHASE 4)**.
 
@@ -200,6 +205,52 @@ Agar chaaho toh main ek chhota mock JSON of categories aur product request bhi b
 
 
 
+
+
+
+### ✅ PHASE 4: Product Management (Admin-Only)
+
+Since admin is the only one who adds/updates/deletes products, is phase mein sirf admin ka kaam hoga.
+
+#### 🔹 **Backend:**
+- **POST /api/products:**  
+  *Endpoint for adding a new product by admin.*
+  ```js
+  // In routes/productRoutes.js:
+  router.post('/', authMiddleware.verifyToken, authMiddleware.isAdmin, productController.addProduct);
+  ```
+- **Example Code in Controller:**
+  ```js
+  exports.addProduct = async (req, res) => {
+    try {
+      const { name, category, price, stock, description, image_url, min_retailer_quantity, bulk_discount_percentage } = req.body;
+      const newProduct = await Product.create({
+        name,
+        category,
+        price,
+        stock,
+        description,
+        image_url,
+        min_retailer_quantity,
+        bulk_discount_percentage
+      });
+      res.status(201).json(newProduct);
+    } catch (error) {
+      console.error('Error adding product:', error);
+      res.status(500).json({ error: 'Product add karte waqt error aaya' });
+    }
+  };
+  ```
+- **PUT /api/products/:id:** Admin updates product.
+- **DELETE /api/products/:id:** Admin deletes product.
+
+#### 🔹 **Frontend (Admin Panel):**
+- Create an admin dashboard page with an **Add Product Form** and a product list for edit/delete options.
+
+✅ **Test:**  
+- As admin, add a product and check if it’s visible to both customers and retailers.
+
+---
 
 
 ### ✅ PHASE 5: Order Flow for Customer & Retailer
