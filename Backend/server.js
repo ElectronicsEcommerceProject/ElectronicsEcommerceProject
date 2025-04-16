@@ -1,17 +1,22 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-// import { sequelize } from './config/db.js'; // Sequelize instance
-// import authRoutes from './routes/authRoutes.js';
-// import productRoutes from './routes/productRoutes.js';
-// import couponRoutes from './routes/couponRoutes.js';
-// import orderRoutes from './routes/orderRoutes.js';
-// import cartRoutes from './routes/cartRoutes.js';
-// import wishlistRoutes from './routes/wishlistRoutes.js';
-// import reviewRoutes from './routes/reviewRoutes.js';
-// import stockAlertRoutes from './routes/stockAlertRoutes.js';
+import db from './models/index.js'; // Import the db object
+import authRoutes from './routes/authRoutes.js'; // Import the authRoutes
+import profileRoutes from './routes/profileRoutes.js'; // Import the profileRoutes
 
-dotenv.config();
+const { sequelize } = db; // Extract sequelize instance from db
+
+// Load environment variables
+dotenv.config({ path: './.env' }); // Ensure the path is correct
+
+// // Debugging: Log environment variables
+// console.log('Loaded Environment Variables:');
+// console.log('DB_USER:', process.env.DB_USER);
+// console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
+// console.log('DB_NAME:', process.env.DB_NAME);
+// console.log('DB_HOST:', process.env.DB_HOST);
+// console.log('DB_PORT:', process.env.DB_PORT);
 
 const app = express();
 
@@ -20,14 +25,8 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-// app.use('/api/auth', authRoutes);
-// app.use('/api/products', productRoutes);
-// app.use('/api/coupons', couponRoutes);
-// app.use('/api/orders', orderRoutes);
-// app.use('/api/cart', cartRoutes);
-// app.use('/api/wishlist', wishlistRoutes);
-// app.use('/api/reviews', reviewRoutes);
-// app.use('/api/stock-alerts', stockAlertRoutes);
+app.use('/api/auth', authRoutes); // Use the authRoutes for authentication-related routes
+app.use('/api/profile', profileRoutes); // Use the profileRoutes for profile-related routes
 
 // Test route
 app.get('/', (req, res) => {
@@ -37,13 +36,22 @@ app.get('/', (req, res) => {
 // Sync DB and Start Server
 const PORT = process.env.PORT || 3000;
 
-sequelize.sync({ alter: true }) // Use alter: true only for development
-  .then(() => {
+(async () => {
+  try {
+    // Test database connection
+    await sequelize.authenticate();
+    console.log('✅ Database connection established successfully.');
+
+    // Sync models with the database
+    await sequelize.sync({ alter: true });
     console.log('✅ Database synced successfully.');
+
+    // Start the server
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
-  })
-  .catch(err => {
-    console.error('❌ Failed to sync database:', err);
-  });
+  } catch (err) {
+    console.error('❌ Failed to connect to the database:', err.message);
+    process.exit(1); // Exit the process if the database connection fails
+  }
+})();

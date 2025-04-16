@@ -1,0 +1,3 @@
+===============================work to do ================================
+
+1.implement autheController logic of register and login...
