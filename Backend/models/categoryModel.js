@@ -10,7 +10,7 @@ export default (sequelize, DataTypes) => {
         allowNull: false
       },
       target_role: {
-        type: DataTypes.ENUM('customer', 'retailer'),
+        type: DataTypes.ENUM('customer', 'retailer', 'both'),
         allowNull: false
       },
       created_at: {
