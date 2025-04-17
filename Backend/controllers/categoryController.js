@@ -3,6 +3,7 @@ const { Category } = db;
 
 
 
+
 // Add a new category
 export const addCategory = async (req, res) => {
   try {
