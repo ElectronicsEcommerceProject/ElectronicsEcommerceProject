@@ -1,7 +1,5 @@
 import db from '../models/index.js'; // Import the database models
-const { Category } = db;
-
-
+const { Category, User } = db;
 
 
 // Add a new category
@@ -9,11 +7,16 @@ export const addCategory = async (req, res) => {
   try {
     const { name, target_role} = req.body;
 
+    // console.log('testing', req.user.email)
+
+    let user_id = await User.findOne({ where: { email: req.user.email } });
+    let created_by = user_id.dataValues.user_id;// Get the user ID from the database
+
     if (!name || !target_role) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    const newCategory = await Category.create({ name, target_role });
+    const newCategory = await Category.create({ name, target_role, created_by });
 
     res.status(201).json(newCategory);
   } catch (error) {

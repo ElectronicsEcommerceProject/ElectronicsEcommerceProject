@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes.js'; // Import the authRoutes
 import profileRoutes from './routes/profileRoutes.js'; // Import the profileRoutes
 import categoryRoutes from './routes/categoryRoutes.js'; // Import the categoryRoutes
 const { sequelize } = db; // Extract sequelize instance from db
+import productRoutes from './routes/productRoutes.js'; // Import the productRoutes
 
 // Load environment variables
 dotenv.config({ path: './.env' }); // Ensure the path is correct
@@ -28,6 +29,8 @@ app.use(express.json());
 app.use('/api/auth', authRoutes); // Use the authRoutes for authentication-related routes
 app.use('/api/profile', profileRoutes); // Use the profileRoutes for profile-related routes
 app.use('/api/categories', categoryRoutes)
+app.use('/api/products', productRoutes); // Use the productRoutes for product-related routes
+
 
 // Test route
 app.get('/', (req, res) => {
@@ -42,6 +45,9 @@ const PORT = process.env.PORT || 3000;
     // Test database connection
     await sequelize.authenticate();
     console.log('✅ Database connection established successfully.');
+
+    // await sequelize.sync({ force: true });
+
 
     // Sync models with the database
     await sequelize.sync({ alter: true });

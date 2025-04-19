@@ -23,8 +23,9 @@ export default (sequelize, DataTypes) => {
     });
   
     StockAlert.associate = (models) => {
-      StockAlert.belongsTo(models.Product, { foreignKey: 'product_id' });
+      StockAlert.belongsTo(models.Product, { foreignKey: 'product_id', constraints: false });
     };
+    
   
     return StockAlert;
   };

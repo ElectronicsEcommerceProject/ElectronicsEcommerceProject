@@ -36,11 +36,12 @@ export default (sequelize, DataTypes) => {
     });
   
     Coupon.associate = (models) => {
-      Coupon.belongsTo(models.Product, { foreignKey: 'product_id' });
-      Coupon.belongsTo(models.User, { foreignKey: 'created_by' });
-      Coupon.belongsToMany(models.User, { through: models.CouponUser, foreignKey: 'coupon_id' });
-      Coupon.hasMany(models.Order, { foreignKey: 'coupon_id' });
+      Coupon.belongsTo(models.Product, { foreignKey: 'product_id', constraints: false });
+      Coupon.belongsTo(models.User, { foreignKey: 'created_by', constraints: true }); // creator important hai
+      Coupon.belongsToMany(models.User, { through: models.CouponUser, foreignKey: 'coupon_id', constraints: false });
+      Coupon.hasMany(models.Order, { foreignKey: 'coupon_id', constraints: false });
     };
+    
   
     return Coupon;
   };
