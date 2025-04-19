@@ -1,4 +1,4 @@
-### ✅ PHASE 5: Order Flow for Customer & Retailer
+### ✅ PHASE 5: Order Flow for Customer & Retailer---work on cartController and orderController...
 
 Backend orders use the same product data added by admin.  
 **Differences:**  
@@ -20,13 +20,6 @@ Backend orders use the same product data added by admin.
   // Else, proceed to create order and apply bulk discount if applicable.
   ```
 
-#### 🔹 **Frontend:**
-- **Product Listing Page:** Used by both customers and retailers.
-- **Product Detail & Cart Page:**  
-  - Customers add items normally.
-  - Retailers add items but must meet bulk order criteria (check and show validation on UI).
-- **Order Checkout:**  
-  Validate cart on frontend; if retailer, highlight bulk discount information.
 
 ✅ **Test:**  
 - Customer journey: Browse → Add to cart → Place order (normal flow).  

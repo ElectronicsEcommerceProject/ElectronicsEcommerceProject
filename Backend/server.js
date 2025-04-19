@@ -7,6 +7,7 @@ import profileRoutes from './routes/profileRoutes.js'; // Import the profileRout
 import categoryRoutes from './routes/categoryRoutes.js'; // Import the categoryRoutes
 const { sequelize } = db; // Extract sequelize instance from db
 import productRoutes from './routes/productRoutes.js'; // Import the productRoutes
+import cartRoutes from './routes/cartRoutes.js'; // Import the cartRoutes
 
 // Load environment variables
 dotenv.config({ path: './.env' }); // Ensure the path is correct
@@ -30,6 +31,7 @@ app.use('/api/auth', authRoutes); // Use the authRoutes for authentication-relat
 app.use('/api/profile', profileRoutes); // Use the profileRoutes for profile-related routes
 app.use('/api/categories', categoryRoutes)
 app.use('/api/products', productRoutes); // Use the productRoutes for product-related routes
+app.use('/api/cart', cartRoutes); // Use the cartRoutes for cart-related routes
 
 
 // Test route

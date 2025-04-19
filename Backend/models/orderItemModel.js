@@ -9,7 +9,7 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false
       },
-      price_at_time: {
+      price_at_time: {// Price of the product at the time of order
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
       },
