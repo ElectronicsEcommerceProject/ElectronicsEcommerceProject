@@ -1,31 +1,4 @@
-### ✅ PHASE 5: Order Flow for Customer & Retailer---work on cartController and orderController...
 
-Backend orders use the same product data added by admin.  
-**Differences:**  
-- Customer: Normal order process.  
-- Retailer: Same order API, but include extra validations for minimum bulk quantity and bulk discount.
-
-#### 🔹 **Backend:**
-- **GET /api/products:** Return full product list.
-- **POST /api/cart:** Add items to cart.
-- **GET /api/cart:** Get cart details.
-- **POST /api/orders:** Place an order.
-  
-  In `orderController.js` you’ll add logic like:
-  ```js
-  // Pseudocode:
-  if (user.role === 'retailer' && order.quantity < product.min_retailer_quantity) {
-    return res.status(400).json({ error: "Minimum bulk order quantity not met" });
-  }
-  // Else, proceed to create order and apply bulk discount if applicable.
-  ```
-
-
-✅ **Test:**  
-- Customer journey: Browse → Add to cart → Place order (normal flow).  
-- Retailer journey: Must meet bulk order requirements and see bulk discount applied at checkout.
-
----
 ===============================work to do ================================
 
 1.from Phase 5 according to projectDevelopmentFlow.txt...

@@ -289,6 +289,8 @@ Backend orders use the same product data added by admin.
 
 ---
 
+===============================Done================================
+
 ### ✅ PHASE 6: Admin Features (User, Stock, Order Management)
 
 #### 🔹 **Backend:**

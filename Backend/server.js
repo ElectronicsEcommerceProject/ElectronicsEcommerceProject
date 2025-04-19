@@ -9,6 +9,8 @@ const { sequelize } = db; // Extract sequelize instance from db
 import productRoutes from './routes/productRoutes.js'; // Import the productRoutes
 import cartRoutes from './routes/cartRoutes.js'; // Import the cartRoutes
 import orderRoutes from './routes/orderRoutes.js'; 
+import stockAlertRoutes from './routes/stockAlertRoutes.js'; // Import the stockAlertRoutes
+import wishlistRoutes from './routes/wishlistRoutes.js'; // Import the wishlistRoutes
 
 // Load environment variables
 dotenv.config({ path: './.env' }); // Ensure the path is correct
@@ -34,6 +36,8 @@ app.use('/api/categories', categoryRoutes)
 app.use('/api/products', productRoutes); // Use the productRoutes for product-related routes
 app.use('/api/cart', cartRoutes); // Use the cartRoutes for cart-related routes
 app.use('/api/orders', orderRoutes); // Use the orderRoutes for order-related routes
+app.use('/api/stock-alerts', stockAlertRoutes); // Use the stockAlertRoutes for stock alert-related routes
+app.use('/api/wishlist', wishlistRoutes); // Use the wishlistRoutes for wishlist-related routes
 
 
 // Test route
