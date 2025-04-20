@@ -5,7 +5,10 @@ import {
   getOrders,
   getOrderById,
   requestOrderCancellation,
+  getAllOrdersForAdmin,
 } from '../controllers/orderController.js';
+
+import { roleCheck } from '../middleware/roleCheck.js'; // Import the roleCheck middleware
 
 const router = express.Router();
 
@@ -14,6 +17,9 @@ router.post('/', verifyJwtToken, createOrder);
 
 // 📄 Get all orders for logged-in user
 router.get('/', verifyJwtToken, getOrders);
+
+// 🧑‍💼 Admin: Get all orders (add below existing routes)
+router.get('/admin', verifyJwtToken, roleCheck, getAllOrdersForAdmin);
 
 // 🔍 Get single order by ID
 router.get('/:id', verifyJwtToken, getOrderById);

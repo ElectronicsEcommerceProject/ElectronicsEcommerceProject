@@ -13,6 +13,7 @@ import stockAlertRoutes from './routes/stockAlertRoutes.js'; // Import the stock
 import wishlistRoutes from './routes/wishlistRoutes.js'; // Import the wishlistRoutes
 import couponRoutes from './routes/couponRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
+import userRoutes from './routes/userRoute.js'; // Import the userRoutes
 
 
 
@@ -45,6 +46,8 @@ app.use('/api/wishlist', wishlistRoutes); // Use the wishlistRoutes for wishlist
 
 app.use('/api/coupons', couponRoutes);
 app.use('/api/reviews', reviewRoutes);
+
+app.use('/api/users', userRoutes);
 
 // Test route
 app.get('/', (req, res) => {

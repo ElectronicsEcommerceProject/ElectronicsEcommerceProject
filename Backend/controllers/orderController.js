@@ -149,3 +149,22 @@ export const requestOrderCancellation = async (req, res) => {
     res.status(500).json({ message: 'Something went wrong' });
   }
 };
+
+// 📋 Admin: View all orders from all users
+export const getAllOrdersForAdmin = async (req, res) => {
+  try {
+    const orders = await Order.findAll({
+      include: [
+        { model: User, attributes: ['name', 'email', 'role'] },
+        { model: OrderItem, include: [Product] }
+      ],
+      order: [['created_at', 'DESC']]
+    });
+
+    res.status(200).json(orders);
+  } catch (err) {
+    console.error("❌ Error fetching all orders:", err.message);
+    res.status(500).json({ message: 'Something went wrong' });
+  }
+};
+
