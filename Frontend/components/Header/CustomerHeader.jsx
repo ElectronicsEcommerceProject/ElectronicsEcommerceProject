@@ -1,76 +1,113 @@
-import React, { useState } from 'react';
-import logo from '../../assets/logo1.png';
+import React, { useState } from "react";
+import {
+  Navbar,
+  Nav,
+  Container,
+  Form,
+  FormControl,
+  Button,
+  Offcanvas,
+} from "react-bootstrap";
+import logo from "../../assets/logo1.png";
 
 const CustomerHeader = () => {
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [showOffcanvas, setShowOffcanvas] = useState(false);
+
+  const handleToggle = () => setShowOffcanvas(!showOffcanvas);
 
   return (
-    <header className="customer-header">
-      <div className="header-top">
-        <div className="logo-container">
-          <div className="logo-circle">
-            <img src={logo} alt="Maa Lakshmi Logo" className="logo-image" />
-          </div>
-          <span className="brand-name">Maa Lakshmi Electronics</span>
-        </div>
-        <div className="search-container">
-          <div className="search-bar">
-            <input
-              type="text"
-              placeholder="Search for Products, Brands and More"
-              className="search-input"
+    <>
+      <Navbar
+        expand="lg"
+        bg="light"
+        variant="light"
+        className="shadow-sm py-2 sticky-top"
+      >
+        <Container fluid>
+          {/* Brand */}
+          <Navbar.Brand href="/" className="d-flex align-items-center">
+            <img
+              src={logo}
+              alt="Maa Lakshmi Logo"
+              width="40"
+              height="40"
+              className="d-inline-block align-top rounded-circle me-2"
             />
-            <svg className="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0a5 5 0 110-10 5 5 0 010 10z"
-              />
-            </svg>
+            <span className="fw-bold">Maa Lakshmi Electronics</span>
+          </Navbar.Brand>
+
+          {/* Toggle for mobile */}
+          <Navbar.Toggle
+            aria-controls="customer-header-offcanvas"
+            onClick={handleToggle}
+          />
+
+          {/* Search bar - visible on larger screens */}
+          <Form className="d-none d-lg-flex mx-auto w-50">
+            <FormControl
+              type="search"
+              placeholder="Search for Products, Brands and More"
+              className="me-2"
+              aria-label="Search"
+            />
+            <Button variant="outline-success">Search</Button>
+          </Form>
+
+          {/* Right Side Icons */}
+          <div className="d-flex align-items-center gap-3">
+            {/* Account */}
+            <Button
+              variant="outline-secondary"
+              className="d-flex align-items-center gap-1"
+            >
+              <i className="bi bi-person-circle"></i>
+              <span>Account</span>
+            </Button>
+
+            {/* Cart */}
+            <Button variant="outline-secondary" className="position-relative">
+              <i className="bi bi-cart3"></i>
+              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                1
+              </span>
+            </Button>
           </div>
-        </div>
-        <div className="user-actions">
-          <button
-            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-            className="account-button"
-          >
-            <svg className="account-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 11c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-              />
-            </svg>
-            <span className="account-text">Account</span>
-          </button>
-          <button className="cart-button">
-            <svg className="cart-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-              />
-            </svg>
-            <span className="cart-count">1</span>
-          </button>
-        </div>
-      </div>
-      <nav className="nav-categories">
-        <ul className="nav-list">
-          <li className="nav-item">Kilos</li>
-          <li className="nav-item">Appliances</li>
-          <li className="nav-item">Flight Bookings</li>
-          <li className="nav-item">Beauty, Toys & More <span className="dropdown-arrow">▼</span></li>
-          <li className="nav-item">Fashion <span className="dropdown-arrow">▼</span></li>
-          <li className="nav-item">Mobiles</li>
-          <li className="nav-item">Electronics <span className="dropdown-arrow">▼</span></li>
-          <li className="nav-item">Home & Furniture <span className="dropdown-arrow">▼</span></li>
-        </ul>
-      </nav>
-    </header>
+        </Container>
+      </Navbar>
+
+      {/* Offcanvas for mobile navigation */}
+      <Offcanvas show={showOffcanvas} onHide={handleToggle} placement="end">
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title>Menu</Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body>
+          {/* Search bar for mobile */}
+          <Form className="mb-3 d-block d-lg-none">
+            <FormControl
+              type="search"
+              placeholder="Search for Products, Brands and More"
+              className="me-2"
+              aria-label="Search"
+            />
+            <Button variant="outline-success" className="mt-2 w-100">
+              Search
+            </Button>
+          </Form>
+
+          {/* Navigation Links */}
+          <Nav className="flex-column">
+            <Nav.Link href="#">Kilos</Nav.Link>
+            <Nav.Link href="#">Appliances</Nav.Link>
+            <Nav.Link href="#">Flight Bookings</Nav.Link>
+            <Nav.Link href="#">Beauty, Toys & More ▼</Nav.Link>
+            <Nav.Link href="#">Fashion ▼</Nav.Link>
+            <Nav.Link href="#">Mobiles</Nav.Link>
+            <Nav.Link href="#">Electronics ▼</Nav.Link>
+            <Nav.Link href="#">Home & Furniture ▼</Nav.Link>
+          </Nav>
+        </Offcanvas.Body>
+      </Offcanvas>
+    </>
   );
 };
 

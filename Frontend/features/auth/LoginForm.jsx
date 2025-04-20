@@ -28,17 +28,18 @@ const LoginForm = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
       const response = await authService.login(formData);
       console.log("Login successful:", response);
 
-      alertService.showSuccess("Login successful!");
+      alertService.showSuccess(response.message || "Login successful!");
 
       // Save token or any user data
-      localStorage.setItem("token", response.token);
+      localStorage.setItem("token", response.data.token);
 
-      // // Redirect based on role
+      navigate("/");
+
+      // Redirect based on role
       // if (formData.role === "Admin") {
       //   navigate("/admin/dashboard");
       // } else if (formData.role === "Retailer") {

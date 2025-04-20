@@ -24,10 +24,10 @@ const App = () => {
           element={
             <>
               <Header />
-              <div className="main-container">
+              <div>
                 <FilterBar />
-                <div className="product-section">
-                  <div className="product-grid">
+                <div>
+                  <div>
                     <Product />
                     <Product />
                     <Product />
