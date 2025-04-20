@@ -11,6 +11,10 @@ import cartRoutes from './routes/cartRoutes.js'; // Import the cartRoutes
 import orderRoutes from './routes/orderRoutes.js'; 
 import stockAlertRoutes from './routes/stockAlertRoutes.js'; // Import the stockAlertRoutes
 import wishlistRoutes from './routes/wishlistRoutes.js'; // Import the wishlistRoutes
+import couponRoutes from './routes/couponRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
+
+
 
 // Load environment variables
 dotenv.config({ path: './.env' }); // Ensure the path is correct
@@ -39,6 +43,8 @@ app.use('/api/orders', orderRoutes); // Use the orderRoutes for order-related ro
 app.use('/api/stock-alerts', stockAlertRoutes); // Use the stockAlertRoutes for stock alert-related routes
 app.use('/api/wishlist', wishlistRoutes); // Use the wishlistRoutes for wishlist-related routes
 
+app.use('/api/coupons', couponRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Test route
 app.get('/', (req, res) => {

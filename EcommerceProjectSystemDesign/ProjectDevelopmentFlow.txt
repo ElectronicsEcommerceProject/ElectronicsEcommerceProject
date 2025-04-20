@@ -324,6 +324,9 @@ Backend orders use the same product data added by admin.
 
 ---
 
+
+===============================Done================================
+
 ### ✅ PHASE 8: Wishlist & Stock Alerts
 
 #### 🔹 **Backend:**
@@ -340,6 +343,9 @@ Backend orders use the same product data added by admin.
 - Verify wishlist functionality and check if low-stock alerts trigger properly.
 
 ---
+
+
+===============================Done================================
 
 ## 🧠 **Overall Summary:**
 

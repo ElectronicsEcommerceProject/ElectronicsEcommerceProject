@@ -1,4 +1,20 @@
 
+### ✅ PHASE 6: Admin Features (User, Stock, Order Management)
+
+#### 🔹 **Backend:**
+- **GET /api/users:** Admin can view all users.
+- **DELETE /api/users/:id:** Admin can delete a user.
+- **GET /api/orders:** Admin sees all orders.
+
+#### 🔹 **Frontend (Admin Panel):**
+- **Users Management Page:** List users with delete/edit options.
+- **Orders Page:** Comprehensive list of all orders.
+- **Stock Alerts Page:** Show alerts for products with low stock.
+
+✅ **Test:**  
+- Perform actions like deleting a user and monitoring orders from the admin dashboard.
+
+
 ===============================work to do ================================
 
-1.from Phase 5 according to projectDevelopmentFlow.txt...
+1.Need to do Phase 6 according to projectDevelopmentFlow.txt...
