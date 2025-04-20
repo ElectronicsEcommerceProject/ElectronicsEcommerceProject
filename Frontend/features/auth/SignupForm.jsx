@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Form, Button, Spinner } from "react-bootstrap";
 import { FaUser, FaEnvelope, FaPhone, FaLock } from "react-icons/fa";
 import authService from "./authService"; // Signup API service
@@ -13,6 +14,8 @@ const SignupForm = () => {
     password: "",
     role: "customer",
   });
+
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
 
@@ -30,7 +33,7 @@ const SignupForm = () => {
       console.log("Signup success:", response);
 
       // Optionally redirect
-      // navigate("/login");
+      navigate("/login");
     } catch (error) {
       console.error("Signup error:", error);
       alertService.showError(error.message || "Registration failed.");
