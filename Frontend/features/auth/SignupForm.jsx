@@ -1,127 +1,159 @@
 import React, { useState } from "react";
-import { Container, Row, Col, Form, Button } from "react-bootstrap";
+import { Container, Row, Col, Form, Button, Spinner } from "react-bootstrap";
 import { FaUser, FaEnvelope, FaPhone, FaLock } from "react-icons/fa";
+import authService from "./authService"; // Signup API service
+import alertService from "../../components/Alert/AlertService"; // Alert service
 import logo from "../../assets/logo1.png";
-import "../../src/styles/global.css";
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
+    phone_number: "",
     password: "",
     role: "customer",
   });
+
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    const { name, email, phone, password, role } = formData;
+    setLoading(true);
 
-    if (name && email && phone && password && role) {
-      alert(`Registration successful for ${role}!`);
-    } else {
-      alert("Please fill in all fields.");
+    try {
+      const response = await authService.signup(formData);
+      alertService.showSuccess("Registration successful!");
+      console.log("Signup success:", response);
+
+      // Optionally redirect
+      // navigate("/login");
+    } catch (error) {
+      console.error("Signup error:", error);
+      alertService.showError(error.message || "Registration failed.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Container className="login-container">
-      <Row className="justify-content-center">
-        <Col md={6}>
-          <div className="form">
-            <div className="logo-container">
-              <img src={logo} alt="Logo" className="logo" />
+    <Container className="min-h-screen flex justify-center items-center">
+      <Row className="w-full justify-center py-5">
+        <Col xs={12} sm={10} md={6} lg={5}>
+          <div className="bg-white p-5 shadow-lg rounded-3xl">
+            <div className="text-center mb-4">
+              <img src={logo} alt="Logo" className="w-16 mx-auto" />
+              <h2 className="text-xl font-semibold mt-2">Sign Up</h2>
+              <p className="text-gray-500 text-sm">Create your account</p>
             </div>
-            <h1 className="form-title">Sign Up</h1>
-            <p className="form-subtitle">Create your account</p>
+
             <Form onSubmit={handleRegister}>
-              <Form.Group className="input-group">
-                <Form.Label className="input-label">
-                  <FaUser className="input-icon" />
-                  Full Name
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="form-input"
-                  placeholder="Enter your full name"
-                  required
-                />
+              {/* Full Name */}
+              <Form.Group className="mb-3">
+                <div className="flex items-center border rounded px-2">
+                  <FaUser className="text-gray-500" />
+                  <Form.Control
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Enter full name"
+                    className="border-0 focus:ring-0 focus:outline-none"
+                    required
+                  />
+                </div>
               </Form.Group>
-              <Form.Group className="input-group">
-                <Form.Label className="input-label">
-                  <FaEnvelope className="input-icon" />
-                  Email
-                </Form.Label>
-                <Form.Control
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="form-input"
-                  placeholder="Enter your email"
-                  required
-                />
+
+              {/* Email */}
+              <Form.Group className="mb-3">
+                <div className="flex items-center border rounded px-2">
+                  <FaEnvelope className="text-gray-500" />
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Enter email"
+                    className="border-0 focus:ring-0 focus:outline-none"
+                    required
+                  />
+                </div>
               </Form.Group>
-              <Form.Group className="input-group">
-                <Form.Label className="input-label">
-                  <FaPhone className="input-icon" />
-                  Phone
-                </Form.Label>
-                <Form.Control
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="form-input"
-                  placeholder="Enter your phone number"
-                  required
-                />
+
+              {/* Phone_number */}
+              <Form.Group className="mb-3">
+                <div className="flex items-center border rounded px-2">
+                  <FaPhone className="text-gray-500" />
+                  <Form.Control
+                    type="tel"
+                    name="phone_number"
+                    value={formData.phone_number}
+                    onChange={handleChange}
+                    placeholder="Enter phone_number number"
+                    className="border-0 focus:ring-0 focus:outline-none"
+                    required
+                  />
+                </div>
               </Form.Group>
-              <Form.Group className="input-group">
-                <Form.Label className="input-label">
-                  <FaLock className="input-icon" />
-                  Password
-                </Form.Label>
-                <Form.Control
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="form-input"
-                  placeholder="Enter your password"
-                  required
-                />
+
+              {/* Password */}
+              <Form.Group className="mb-3">
+                <div className="flex items-center border rounded px-2">
+                  <FaLock className="text-gray-500" />
+                  <Form.Control
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Enter password"
+                    className="border-0 focus:ring-0 focus:outline-none"
+                    required
+                  />
+                </div>
               </Form.Group>
-              <Form.Group className="input-group">
-                <Form.Label className="input-label">
-                  <FaUser className="input-icon" />
-                  Role
-                </Form.Label>
-                <Form.Select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="form-input"
-                  required
-                >
-                  <option value="customer">Customer</option>
-                  <option value="retailer">Retailer</option>
-                  <option value="admin">Admin</option>
-                </Form.Select>
+
+              {/* Role */}
+              <Form.Group className="mb-4">
+                <div className="flex items-center border rounded px-2">
+                  <FaUser className="text-gray-500" />
+                  <Form.Select
+                    name="role"
+                    value={formData.role}
+                    onChange={handleChange}
+                    className="border-0 focus:ring-0 focus:outline-none"
+                    required
+                  >
+                    <option value="customer">Customer</option>
+                    <option value="retailer">Retailer</option>
+                    <option value="admin">Admin</option>
+                  </Form.Select>
+                </div>
               </Form.Group>
-              <Button type="submit" className="submit-button">
-                Register
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded flex justify-center items-center"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Spinner animation="border" size="sm" />
+                ) : (
+                  "Register"
+                )}
               </Button>
-              <div className="links">
-                <a href="/login" className="link">
-                  Already have an account? Login
+
+              {/* Login Link */}
+              <div className="text-center mt-3 text-sm">
+                Already have an account?{" "}
+                <a
+                  href="/login"
+                  className="text-blue-600 font-medium hover:underline"
+                >
+                  Login
                 </a>
               </div>
             </Form>
