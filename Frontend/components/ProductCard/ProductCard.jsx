@@ -76,23 +76,19 @@ const CustomerProductCard = ({ searchQuery, onAddToCart, onAddToWishlist }) => {
 
                   {/* Button block */}
                   <div className="mt-auto d-flex gap-2">
-                    <Button variant="outline-secondary" className="w-100">
-                      Compare
-                    </Button>
-                    <Button
-                      variant="primary"
-                      className="w-100"
+                    <button
+                      className="w-full bg-green-600 text-white px-3 py-2 rounded hover:bg-green-600"
                       onClick={() => onAddToCart(product.product_id)}
                     >
                       Add to Cart
-                    </Button>
-                    <Button
-                      variant="outline-danger"
-                      className="w-100"
+                    </button>
+
+                    <button
+                      className="w-full border border-red-500 text-red-500 px-3 py-2 rounded hover:bg-red-50"
                       onClick={() => onAddToWishlist(product.product_id)}
                     >
                       ❤️
-                    </Button>
+                    </button>
                   </div>
                 </Card.Body>
               </Card>
@@ -100,7 +96,7 @@ const CustomerProductCard = ({ searchQuery, onAddToCart, onAddToWishlist }) => {
           ))}
         </Row>
       ) : (
-        <div className="text-center py-5">
+        <div className="text-center py-5 ">
           <h4>Sorry, no products match your search.</h4>
         </div>
       )}
