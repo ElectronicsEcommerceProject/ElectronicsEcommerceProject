@@ -7,13 +7,20 @@ import {
   FormControl,
   Button,
   Offcanvas,
+  OverlayTrigger,
+  Tooltip,
 } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { PersonCircle, Cart3, Heart } from "react-bootstrap-icons";
 import logo from "../../assets/logo1.png";
 
 const CustomerHeader = ({ setSearchQuery, cartCount }) => {
   const [showOffcanvas, setShowOffcanvas] = useState(false);
+  const navigate = useNavigate();
 
   const handleToggle = () => setShowOffcanvas(!showOffcanvas);
+
+  const renderTooltip = (text) => <Tooltip>{text}</Tooltip>;
 
   return (
     <>
@@ -49,31 +56,53 @@ const CustomerHeader = ({ setSearchQuery, cartCount }) => {
               placeholder="Search for Products, Brands and More"
               className="me-2"
               aria-label="Search"
-              onChange={(e) => setSearchQuery(e.target.value)} // Update search query
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <Button variant="outline-success">Search</Button>
           </Form>
 
-          {/* Right Side Icons */}
+          {/* Right Side Icons with Tooltip */}
           <div className="d-flex align-items-center gap-3">
-            {/* Account */}
-            <Button
-              variant="outline-secondary"
-              className="d-flex align-items-center gap-1"
+            {/* Wishlist */}
+            <OverlayTrigger
+              placement="bottom"
+              overlay={renderTooltip("Wishlist")}
             >
-              <i className="bi bi-person-circle"></i>
-              <span>Account</span>
-            </Button>
+              <Button
+                variant="outline-secondary"
+                onClick={() => navigate("/showWishListItems")}
+              >
+                <Heart size={20} />
+              </Button>
+            </OverlayTrigger>
+
+            {/* Account */}
+            <OverlayTrigger
+              placement="bottom"
+              overlay={renderTooltip("Account")}
+            >
+              <Button
+                variant="outline-secondary"
+                onClick={() => navigate("/profilePage")}
+              >
+                <PersonCircle size={20} />
+              </Button>
+            </OverlayTrigger>
 
             {/* Cart */}
-            <Button variant="outline-secondary" className="position-relative">
-              <i className="bi bi-cart3"></i>
-              {cartCount > 0 && (
-                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                  {cartCount}
-                </span>
-              )}
-            </Button>
+            <OverlayTrigger placement="bottom" overlay={renderTooltip("Cart")}>
+              <Button
+                variant="outline-secondary position-relative"
+                onClick={() => navigate("/showCartItems")}
+              >
+                <Cart3 size={20} />
+                {cartCount > 0 && (
+                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {cartCount}
+                  </span>
+                )}
+              </Button>
+            </OverlayTrigger>
           </div>
         </Container>
       </Navbar>
@@ -91,7 +120,7 @@ const CustomerHeader = ({ setSearchQuery, cartCount }) => {
               placeholder="Search for Products, Brands and More"
               className="me-2"
               aria-label="Search"
-              onChange={(e) => setSearchQuery(e.target.value)} // Update search query
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <Button variant="outline-success" className="mt-2 w-100">
               Search
