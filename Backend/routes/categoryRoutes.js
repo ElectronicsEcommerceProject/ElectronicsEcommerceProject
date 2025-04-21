@@ -9,8 +9,8 @@ const router = express.Router();
 // Add a new category
 router.post('/',verifyJwtToken,roleCheck,addCategory);
 
-// Get all categories
-router.get('/',verifyJwtToken,roleCheck,getAllCategories);
+// Get all categories //esmai rolecheck ka koi jarurat nahi hai kyuki sabko dekhne hai...
+router.get('/',verifyJwtToken,getAllCategories);
 
 // Update a category
 router.put('/:id', verifyJwtToken,roleCheck,updateCategory);

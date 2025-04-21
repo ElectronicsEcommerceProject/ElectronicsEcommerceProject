@@ -25,10 +25,32 @@ export const addCategory = async (req, res) => {
   }
 };
 
-// Get all categories
+// Get all categories based on user role
 export const getAllCategories = async (req, res) => {
+  const userRole = req.user.role; // 'customer', 'retailer', 'admin'
+
   try {
-    const categories = await Category.findAll();
+    let categories;
+
+    if (userRole === 'admin') {
+      // Admin ko sab categories dikhni chahiye
+      categories = await Category.findAll();
+    } else if (userRole === 'customer') {
+      categories = await Category.findAll({
+        where: {
+          target_role: ['customer', 'both'],
+        },
+      });
+    } else if (userRole === 'retailer') {
+      categories = await Category.findAll({
+        where: {
+          target_role: ['retailer', 'both'],
+        },
+      });
+    } else {
+      return res.status(403).json({ message: 'Unauthorized role' });
+    }
+
     res.status(200).json(categories);
   } catch (error) {
     console.error('Error fetching categories:', error);

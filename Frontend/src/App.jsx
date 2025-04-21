@@ -6,10 +6,10 @@ import "react-toastify/dist/ReactToastify.css";
 
 import LoginForm from "../features/auth/LoginForm";
 import Header from "../components/Header/CustomerHeader";
-import FilterBar from "../components/FilterBar";
 import Footer from "../components/Footer/Footer";
 import Product from "../components/ProductCard/CustomerProductCard";
 import SignupForm from "../features/auth/SignupForm";
+import ShowAllCategory from "../components/ShowAllCategory/ShowAllCategory";
 const App = () => {
   return (
     <div className="app-container">
@@ -25,14 +25,14 @@ const App = () => {
             <>
               <Header />
               <div>
-                <FilterBar />
-                <div>
+                <ShowAllCategory />
+                {/* <div>
                   <div>
                     <Product />
                     <Product />
                     <Product />
                   </div>
-                </div>
+                </div> */}
               </div>
               <Footer />
             </>
