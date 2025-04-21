@@ -74,7 +74,7 @@ const CustomerProductCard = () => {
                   <Button variant="outline-secondary" className="w-1/2">
                     Compare
                   </Button>
-                  <Button variant="primary" className="w-1/2">
+                  <Button variant="primary" className="w-1/">
                     Add to Cart
                   </Button>
                 </div>

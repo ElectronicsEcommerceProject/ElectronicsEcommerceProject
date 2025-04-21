@@ -96,17 +96,41 @@ export const updateProduct = async (req, res) => {
   }
 };
 
-// ✅ Get all products
+// ✅ Get all products based on user role
 export const getProducts = async (req, res) => {
-  console.log("Fetching all products...");
+  const userRole = req.user.role; // 'customer', 'retailer', 'admin'
+
+  console.log(`📦 Fetching products for role: ${userRole}`);
+
   try {
-    const products = await Product.findAll();
+    let products;
+
+    if (userRole === 'admin') {
+      // Admin ko sab products dikhne chahiye
+      products = await Product.findAll();
+    } else if (userRole === 'customer') {
+      products = await Product.findAll({
+        where: {
+          target_role: ['customer', 'both'],
+        },
+      });
+    } else if (userRole === 'retailer') {
+      products = await Product.findAll({
+        where: {
+          target_role: ['retailer', 'both'],
+        },
+      });
+    } else {
+      return res.status(403).json({ message: 'Unauthorized role' });
+    }
+
     res.status(200).json(products);
   } catch (error) {
     console.error("❌ Error while fetching products:", error);
     res.status(500).json({ message: 'An error occurred while fetching the products' });
   }
 };
+
 
 // ✅ Delete product
 export const deleteProduct = async (req, res) => {
