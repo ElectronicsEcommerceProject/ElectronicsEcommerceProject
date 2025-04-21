@@ -8,7 +8,6 @@ const CATEGORY_ENDPOINT_API = `${BASE_URL}${VITE_CATEGORY_ENDPOINT}`;
 
 // 🔐 ShowAllCategory API
 const getAllCategories = async (token) => {
-    console.log("test")
   try {
     const response = await axios.get(`${CATEGORY_ENDPOINT_API}`, {
       headers: { Authorization: `Bearer ${token}` }

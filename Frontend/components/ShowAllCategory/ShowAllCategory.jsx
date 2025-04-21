@@ -15,7 +15,6 @@ const ShowAllCategory = () => {
       try {
         const token = localStorage.getItem("token"); // Retrieve token from localStorage
         const response = await ShowAllCategoryService.getAllCategories(token); // Pass token to the function
-        console.log("Categories fetched:", response);
         setCategories(response); // dynamic category list from backend
       } catch (error) {
         console.error("Error fetching categories:", error);

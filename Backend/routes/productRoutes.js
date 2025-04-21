@@ -7,7 +7,7 @@ const router = express.Router();
 
 // CRUD routes for products
 router.post('/', verifyJwtToken,roleCheck, createProduct); // Create a new product
-router.get('/', verifyJwtToken,roleCheck, getProducts); // Get all products
+router.get('/', verifyJwtToken, getProducts); // Get all products
 router.put('/:id', verifyJwtToken,roleCheck, updateProduct); // Update a product by ID
 router.delete('/:id', verifyJwtToken,roleCheck, deleteProduct); // Delete a product by ID
 

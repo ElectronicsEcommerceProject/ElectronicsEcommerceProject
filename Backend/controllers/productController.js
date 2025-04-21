@@ -98,6 +98,7 @@ export const updateProduct = async (req, res) => {
 
 // ✅ Get all products
 export const getProducts = async (req, res) => {
+  console.log("Fetching all products...");
   try {
     const products = await Product.findAll();
     res.status(200).json(products);

@@ -7,7 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import LoginForm from "../features/auth/LoginForm";
 import Header from "../components/Header/CustomerHeader";
 import Footer from "../components/Footer/Footer";
-import Product from "../components/ProductCard/CustomerProductCard";
+import Product from "../components/ProductCard/ProductCard";
 import SignupForm from "../features/auth/SignupForm";
 import ShowAllCategory from "../components/ShowAllCategory/ShowAllCategory";
 const App = () => {
@@ -26,13 +26,13 @@ const App = () => {
               <Header />
               <div>
                 <ShowAllCategory />
-                {/* <div>
+                <div>
                   <div>
                     <Product />
-                    <Product />
-                    <Product />
+                    {/* <Product />
+                    <Product /> */}
                   </div>
-                </div> */}
+                </div>
               </div>
               <Footer />
             </>
