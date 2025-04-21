@@ -10,7 +10,7 @@ import {
 } from "react-bootstrap";
 import logo from "../../assets/logo1.png";
 
-const CustomerHeader = ({ setSearchQuery }) => {
+const CustomerHeader = ({ setSearchQuery, cartCount }) => {
   const [showOffcanvas, setShowOffcanvas] = useState(false);
 
   const handleToggle = () => setShowOffcanvas(!showOffcanvas);
@@ -68,9 +68,11 @@ const CustomerHeader = ({ setSearchQuery }) => {
             {/* Cart */}
             <Button variant="outline-secondary" className="position-relative">
               <i className="bi bi-cart3"></i>
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                1
-              </span>
+              {cartCount > 0 && (
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {cartCount}
+                </span>
+              )}
             </Button>
           </div>
         </Container>

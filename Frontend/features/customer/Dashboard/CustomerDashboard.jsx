@@ -5,11 +5,16 @@ import CustomerProductCard from "../../../components/ProductCard/ProductCard";
 
 const CustomerDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [cartCount, setCartCount] = useState(0);
+
+  const handleAddToCart = () => {
+    setCartCount(cartCount + 1);
+  };
 
   return (
     <div>
       {/* Header */}
-      <CustomerHeader setSearchQuery={setSearchQuery} />
+      <CustomerHeader setSearchQuery={setSearchQuery} cartCount={cartCount} />
 
       {/* Main Content */}
       <div className="d-flex">
@@ -20,7 +25,10 @@ const CustomerDashboard = () => {
 
         {/* Product Cards */}
         <div style={{ flex: "1" }}>
-          <CustomerProductCard searchQuery={searchQuery} />
+          <CustomerProductCard
+            searchQuery={searchQuery}
+            onAddToCart={handleAddToCart}
+          />
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Row, Col, Card, Button } from "react-bootstrap";
 import ProductCardService from "./ProductCardService";
 
-const CustomerProductCard = ({ searchQuery }) => {
+const CustomerProductCard = ({ searchQuery, onAddToCart }) => {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
@@ -80,7 +80,11 @@ const CustomerProductCard = ({ searchQuery }) => {
                     <Button variant="outline-secondary" className="w-1/2">
                       Compare
                     </Button>
-                    <Button variant="primary" className="w-1/">
+                    <Button
+                      variant="primary"
+                      className="w-1/"
+                      onClick={onAddToCart} // Call onAddToCart when clicked
+                    >
                       Add to Cart
                     </Button>
                   </div>
