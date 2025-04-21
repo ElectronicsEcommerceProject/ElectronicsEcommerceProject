@@ -6,19 +6,32 @@ import CustomerProductCard from "../../../components/ProductCard/ProductCard";
 const CustomerDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0); // ✅ added
 
-  const handleAddToCart = () => {
-    setCartCount(cartCount + 1);
+  // Cart add handler
+  const handleAddToCart = (productId) => {
+    console.log("Added to cart:", productId);
+    setCartCount((prev) => prev + 1);
+  };
+
+  // Wishlist add handler
+  const handleAddToWishlist = (productId) => {
+    console.log("Added to wishlist:", productId);
+    setWishlistCount((prev) => prev + 1);
   };
 
   return (
     <div>
-      {/* Header */}
-      <CustomerHeader setSearchQuery={setSearchQuery} cartCount={cartCount} />
+      {/* Header with cart & wishlist counts */}
+      <CustomerHeader
+        setSearchQuery={setSearchQuery}
+        cartCount={cartCount}
+        wishlistCount={wishlistCount}
+      />
 
       {/* Main Content */}
       <div className="d-flex">
-        {/* Sidebar for Categories */}
+        {/* Sidebar */}
         <div style={{ flex: "0 0 250px", marginRight: "1rem" }}>
           <ShowAllCategory />
         </div>
@@ -28,6 +41,7 @@ const CustomerDashboard = () => {
           <CustomerProductCard
             searchQuery={searchQuery}
             onAddToCart={handleAddToCart}
+            onAddToWishlist={handleAddToWishlist}
           />
         </div>
       </div>

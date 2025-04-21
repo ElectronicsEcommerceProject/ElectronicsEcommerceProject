@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { PersonCircle, Cart3, Heart } from "react-bootstrap-icons";
 import logo from "../../assets/logo1.png";
 
-const CustomerHeader = ({ setSearchQuery, cartCount }) => {
+const CustomerHeader = ({ setSearchQuery, cartCount, wishlistCount }) => {
   const [showOffcanvas, setShowOffcanvas] = useState(false);
   const navigate = useNavigate();
 
@@ -69,10 +69,15 @@ const CustomerHeader = ({ setSearchQuery, cartCount }) => {
               overlay={renderTooltip("Wishlist")}
             >
               <Button
-                variant="outline-secondary"
+                variant="outline-secondary position-relative"
                 onClick={() => navigate("/showWishListItems")}
               >
                 <Heart size={20} />
+                {wishlistCount > 0 && (
+                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {wishlistCount}
+                  </span>
+                )}
               </Button>
             </OverlayTrigger>
 

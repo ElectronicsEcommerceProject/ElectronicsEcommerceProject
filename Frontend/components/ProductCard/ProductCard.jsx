@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Row, Col, Card, Button } from "react-bootstrap";
 import ProductCardService from "./ProductCardService";
 
-const CustomerProductCard = ({ searchQuery, onAddToCart }) => {
+const CustomerProductCard = ({ searchQuery, onAddToCart, onAddToWishlist }) => {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
@@ -22,7 +22,6 @@ const CustomerProductCard = ({ searchQuery, onAddToCart }) => {
     fetchProducts();
   }, []);
 
-  // Filter products based on search query
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -75,17 +74,24 @@ const CustomerProductCard = ({ searchQuery, onAddToCart }) => {
                     </div>
                   </div>
 
-                  {/* Button block sticks to bottom */}
-                  <div className="mt-auto flex gap-2">
-                    <Button variant="outline-secondary" className="w-1/2">
+                  {/* Button block */}
+                  <div className="mt-auto d-flex gap-2">
+                    <Button variant="outline-secondary" className="w-100">
                       Compare
                     </Button>
                     <Button
                       variant="primary"
-                      className="w-1/"
-                      onClick={onAddToCart} // Call onAddToCart when clicked
+                      className="w-100"
+                      onClick={() => onAddToCart(product.product_id)}
                     >
                       Add to Cart
+                    </Button>
+                    <Button
+                      variant="outline-danger"
+                      className="w-100"
+                      onClick={() => onAddToWishlist(product.product_id)}
+                    >
+                      ❤️
                     </Button>
                   </div>
                 </Card.Body>
