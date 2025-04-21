@@ -1,13 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import CustomerHeader from "../../../components/Header/CustomerHeader";
 import ShowAllCategory from "../../../components/ShowAllCategory/ShowAllCategory";
 import CustomerProductCard from "../../../components/ProductCard/ProductCard";
 
 const CustomerDashboard = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+
   return (
     <div>
       {/* Header */}
-      <CustomerHeader />
+      <CustomerHeader setSearchQuery={setSearchQuery} />
 
       {/* Main Content */}
       <div className="d-flex">
@@ -18,7 +20,7 @@ const CustomerDashboard = () => {
 
         {/* Product Cards */}
         <div style={{ flex: "1" }}>
-          <CustomerProductCard />
+          <CustomerProductCard searchQuery={searchQuery} />
         </div>
       </div>
     </div>

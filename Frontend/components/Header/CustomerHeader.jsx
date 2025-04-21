@@ -10,7 +10,7 @@ import {
 } from "react-bootstrap";
 import logo from "../../assets/logo1.png";
 
-const CustomerHeader = () => {
+const CustomerHeader = ({ setSearchQuery }) => {
   const [showOffcanvas, setShowOffcanvas] = useState(false);
 
   const handleToggle = () => setShowOffcanvas(!showOffcanvas);
@@ -49,6 +49,7 @@ const CustomerHeader = () => {
               placeholder="Search for Products, Brands and More"
               className="me-2"
               aria-label="Search"
+              onChange={(e) => setSearchQuery(e.target.value)} // Update search query
             />
             <Button variant="outline-success">Search</Button>
           </Form>
@@ -88,6 +89,7 @@ const CustomerHeader = () => {
               placeholder="Search for Products, Brands and More"
               className="me-2"
               aria-label="Search"
+              onChange={(e) => setSearchQuery(e.target.value)} // Update search query
             />
             <Button variant="outline-success" className="mt-2 w-100">
               Search
