@@ -1,27 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Row, Col, Card, Button } from "react-bootstrap";
-import ProductCardService from "./ProductCardService";
 
-const CustomerProductCard = ({ searchQuery, onAddToCart, onAddToWishlist }) => {
-  const [products, setProducts] = useState([]);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await ProductCardService.getAllProducts(token);
-        setProducts(response);
-      } catch (error) {
-        console.error(
-          "Error fetching products:",
-          error.response?.data || error
-        );
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
+const CustomerProductCard = ({
+  products,
+  searchQuery,
+  onAddToCart,
+  onAddToWishlist,
+}) => {
+  // Filter products based on search query
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -96,7 +82,7 @@ const CustomerProductCard = ({ searchQuery, onAddToCart, onAddToWishlist }) => {
           ))}
         </Row>
       ) : (
-        <div className="text-center py-5 ">
+        <div className="text-center py-5">
           <h4>Sorry, no products match your search.</h4>
         </div>
       )}

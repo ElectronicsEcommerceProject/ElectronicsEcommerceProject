@@ -49,12 +49,20 @@ export const createProduct = async (req, res) => {
   if (validationErrors) return res.status(400).json({ errors: validationErrors });
 
   try {
+    // Validate user
     const user = await User.findOne({ where: { email: req.user.email } });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const category = await Category.findOne({ where: { created_by: user.user_id } });
+    // Validate category
+    const category = await Category.findOne({ where: { category_id: req.body.category_id } });
     if (!category) return res.status(404).json({ message: 'Category not found' });
 
+    // Ensure the category belongs to the user or is valid for the target role
+    if (category.created_by !== user.user_id) {
+      return res.status(403).json({ message: 'You are not authorized to use this category' });
+    }
+
+    // Create the product
     const product = await Product.create({
       ...req.body,
       created_by: user.user_id,
@@ -131,6 +139,28 @@ export const getProducts = async (req, res) => {
   }
 };
 
+// ✅ Get products by category ID
+export const getProductsByCategoryId = async (req, res) => {
+  const { categoryId } = req.params;
+
+  try {
+    // Check if the category exists
+    const category = await Category.findByPk(categoryId);
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    // Fetch products for the given category ID
+    const products = await Product.findAll({
+      where: { category_id: categoryId },
+    });
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("❌ Error while fetching products by category ID:", error);
+    res.status(500).json({ message: "An error occurred while fetching products" });
+  }
+};
 
 // ✅ Delete product
 export const deleteProduct = async (req, res) => {

@@ -30,7 +30,7 @@ const SignupForm = () => {
     try {
       const response = await authService.signup(formData);
       alertService.showSuccess("Registration successful!");
-      console.log("Signup success:", response);
+      // console.log("Signup success:", response);
 
       // Optionally redirect
       navigate("/login");

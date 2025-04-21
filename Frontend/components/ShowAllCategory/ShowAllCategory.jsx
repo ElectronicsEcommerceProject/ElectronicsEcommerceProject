@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import ShowAllCategoryService from "./ShowAllCategoryService";
 
-const ShowAllCategory = () => {
+const ShowAllCategory = ({ onCategorySelect }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [showCategories, setShowCategories] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
 
   const handleResize = () => {
     setIsMobile(window.innerWidth <= 768);
@@ -13,9 +14,9 @@ const ShowAllCategory = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const token = localStorage.getItem("token"); // Retrieve token from localStorage
-        const response = await ShowAllCategoryService.getAllCategories(token); // Pass token to the function
-        setCategories(response); // dynamic category list from backend
+        const token = localStorage.getItem("token");
+        const response = await ShowAllCategoryService.getAllCategories(token);
+        setCategories(response);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
@@ -25,6 +26,39 @@ const ShowAllCategory = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const handleCheckboxChange = async (categoryId, checked) => {
+    let updatedCategories;
+    if (checked) {
+      updatedCategories = [...selectedCategories, categoryId];
+    } else {
+      updatedCategories = selectedCategories.filter((id) => id !== categoryId);
+    }
+    setSelectedCategories(updatedCategories);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      // If no categories are selected, fetch all products
+      if (updatedCategories.length === 0) {
+        const allProducts = await ShowAllCategoryService.fetchAllProducts(
+          token
+        );
+        onCategorySelect(allProducts); // Pass all products to parent component
+      } else {
+        // Fetch products for selected categories
+        const categoryProducts = await Promise.all(
+          updatedCategories.map((id) =>
+            ShowAllCategoryService.fetchProductsBasedOnCategoryId(id, token)
+          )
+        );
+        const combinedProducts = categoryProducts.flat(); // Combine all products into a single array
+        onCategorySelect(combinedProducts); // Pass combined products to parent component
+      }
+    } catch (error) {
+      console.error("Error fetching products for categories:", error);
+    }
+  };
 
   return (
     <>
@@ -87,30 +121,17 @@ const ShowAllCategory = () => {
                     cursor: "pointer",
                   }}
                 >
-                  <input type="checkbox" /> {cat.name}
+                  <input
+                    type="checkbox"
+                    onChange={(e) =>
+                      handleCheckboxChange(cat.category_id, e.target.checked)
+                    }
+                  />{" "}
+                  {cat.name}
                 </label>
               ))}
             </div>
           </details>
-
-          {/* Static filters below remain the same */}
-          <details>
-            <summary style={{ fontWeight: "600", padding: "0.5rem 0" }}>
-              Brand
-            </summary>
-            <div>
-              {["HP", "Apple", "Dell"].map((brand) => (
-                <label
-                  key={brand}
-                  style={{ display: "block", marginBottom: "0.5rem" }}
-                >
-                  <input type="checkbox" /> {brand}
-                </label>
-              ))}
-            </div>
-          </details>
-
-          {/* Add rest of static filters here as before... */}
         </div>
       )}
     </>

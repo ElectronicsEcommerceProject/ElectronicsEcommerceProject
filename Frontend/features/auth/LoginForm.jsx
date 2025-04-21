@@ -30,7 +30,7 @@ const LoginForm = () => {
     setLoading(true);
     try {
       const response = await authService.login(formData);
-      console.log("Login successful:", response);
+      // console.log("Login successful:", response);
 
       alertService.showSuccess(response.message || "Login successful!");
 
