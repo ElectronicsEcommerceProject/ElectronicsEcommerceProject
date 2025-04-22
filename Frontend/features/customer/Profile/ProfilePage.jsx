@@ -72,7 +72,7 @@ const ProfilePage = () => {
         formData.append(key, profileData[key]);
       });
       if (imageFile) {
-        formData.append("profileImage", imageFile);
+        formData.append("profileImage", imageFile); // Append the profile image
       }
 
       await ProfilePageService.updateProfileData(formData, token);
