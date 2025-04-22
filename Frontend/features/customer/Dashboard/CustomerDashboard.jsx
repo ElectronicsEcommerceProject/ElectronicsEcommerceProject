@@ -9,6 +9,7 @@ import {
   addToCart,
   addToWishlist,
 } from "../../../components/Redux/productSlice";
+import AlertService from "../../../components/Alert/AlertService";
 
 const CustomerDashboard = () => {
   const dispatch = useDispatch();
@@ -54,6 +55,7 @@ const CustomerDashboard = () => {
       return;
     }
     console.log("Added to cart:", productId);
+    AlertService.showSuccess("Product added to cart");
     dispatch(addToCart());
   };
 
@@ -64,6 +66,7 @@ const CustomerDashboard = () => {
       return;
     }
     console.log("Added to wishlist:", productId);
+    AlertService.showSuccess("Product added to wishlist");
     dispatch(addToWishlist());
   };
 
