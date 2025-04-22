@@ -17,7 +17,10 @@ const { User } = db; // Extract the User model
 
 import path from 'path';
 import fs from 'fs';
-
+import { fileURLToPath } from 'url';
+// For ES Module __dirname fix
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // GET /api/profile
 export const getProfile = async (req, res) => {
@@ -43,7 +46,7 @@ export const updateProfile = async (req, res) => {
   try {
     const { name, address, city, postal_code } = req.body;
 
-    // Find the user by email
+    // Find user
     const user = await User.findOne({
       where: { email: req.user.email },
     });
@@ -52,24 +55,36 @@ export const updateProfile = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Update user fields
+    // ✅ Update basic fields
     user.name = name || user.name;
     user.address = address || user.address;
     user.city = city || user.city;
     user.postal_code = postal_code || user.postal_code;
 
-    // Handle profile image upload
+    // ✅ Handle image upload
     if (req.file) {
-      const profileImagePath = path.join('uploads/profile_images', req.file.filename);
-      user.profileImage_url = profileImagePath;
+      // Delete old image if exists
+      if (user.profileImage_url && !user.profileImage_url.startsWith('http')) {
+        const oldImagePath = path.join(__dirname, '..', user.profileImage_url);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath); // 🧹 delete old image
+        }
+      }
+
+      // Save new image as full URL in DB
+      const publicUrl = `${req.protocol}://${req.get('host')}/uploads/profile_images/${req.file.filename}`;
+      user.profileImage_url = publicUrl;
     }
 
-    // Save the updated user
+    // ✅ Save updates
     await user.save();
 
-    res.json({ message: 'Profile updated successfully', user });
+    res.json({
+      message: 'Profile updated successfully',
+      user,
+    });
   } catch (error) {
-    console.error('Error updating profile:', error);
+    console.error('❌ Error updating profile:', error);
     res.status(500).json({ message: 'Something went wrong', error: error.message });
   }
 };

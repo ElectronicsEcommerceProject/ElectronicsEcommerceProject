@@ -10,6 +10,7 @@ const getProfileData = async (token) => {
   const response = await axios.get(PROFILE_ENDPOINT_API, {
     headers: { Authorization: `Bearer ${token}` },
   });
+  console.log("Profile data response:", response.data);
   return response.data;
 };
 
