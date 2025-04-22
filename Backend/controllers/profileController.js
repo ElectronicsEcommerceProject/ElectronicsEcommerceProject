@@ -1,88 +1,84 @@
-// Get  profile
-
+// ===============================
+// Get profile
 // Update profile
-
 // Upload profile picture
+// Change password (todo)
+// View purchase history (todo)
+// ===============================
 
-// Change password
-
-// View purchase history (for customers)
-
-
-// ===============================All above Logic to write in this  file================================
-
-import db from '../models/index.js'; // Import the database models
-
-const { User } = db; // Extract the User model
+import db from '../models/index.js';
+const { User } = db;
 
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-// For ES Module __dirname fix
+
+// ✅ Fix for __dirname in ES Module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// GET /api/profile
+// ✅ GET /api/profile
 export const getProfile = async (req, res) => {
-    try {
-        const user = await User.findOne({
-            where: { email: req.user.email },
-            attributes: { exclude: ['password'] } // Return all attributes except password
-        });
+  try {
+    const user = await User.findOne({
+      where: { email: req.user.email },
+      attributes: { exclude: ['password'] },
+    });
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-        res.json(user);
-    } catch (error) {
-        console.error('Error fetching profile:', error);
-        res.status(500).json({ message: 'Something went wrong', error: error.message });
+    // Convert stored relative path to full URL for frontend
+    if (user.profileImage_url && !user.profileImage_url.startsWith('http')) {
+      user.profileImage_url = `${req.protocol}://${req.get('host')}/${user.profileImage_url.replace(/\\/g, '/')}`;
     }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    res.status(500).json({ message: 'Something went wrong', error: error.message });
+  }
 };
 
-// PUT /api/profile
+// ✅ PUT /api/profile
 export const updateProfile = async (req, res) => {
   try {
     const { name, address, city, postal_code } = req.body;
 
-    // Find user
     const user = await User.findOne({
       where: { email: req.user.email },
     });
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // ✅ Update basic fields
+    // ✅ Update text fields
     user.name = name || user.name;
     user.address = address || user.address;
     user.city = city || user.city;
     user.postal_code = postal_code || user.postal_code;
 
-    // ✅ Handle image upload
+    // ✅ Handle profile image
     if (req.file) {
-      // Delete old image if exists
+      // Delete old image if stored as relative path
       if (user.profileImage_url && !user.profileImage_url.startsWith('http')) {
         const oldImagePath = path.join(__dirname, '..', user.profileImage_url);
         if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath); // 🧹 delete old image
+          fs.unlinkSync(oldImagePath);
+          console.log('🗑 Old profile image deleted:', oldImagePath);
         }
       }
 
-      // Save new image as full URL in DB
-      const publicUrl = `${req.protocol}://${req.get('host')}/uploads/profile_images/${req.file.filename}`;
-      user.profileImage_url = publicUrl;
+      // Store only relative path in DB
+      user.profileImage_url = `uploads/profile_images/${req.file.filename}`;
     }
 
-    // ✅ Save updates
     await user.save();
 
-    res.json({
-      message: 'Profile updated successfully',
-      user,
-    });
+    // ✅ Convert path to full public URL before sending response
+    if (user.profileImage_url && !user.profileImage_url.startsWith('http')) {
+      user.profileImage_url = `${req.protocol}://${req.get('host')}/${user.profileImage_url.replace(/\\/g, '/')}`;
+    }
+
+    res.json({ message: 'Profile updated successfully', user });
   } catch (error) {
     console.error('❌ Error updating profile:', error);
     res.status(500).json({ message: 'Something went wrong', error: error.message });
