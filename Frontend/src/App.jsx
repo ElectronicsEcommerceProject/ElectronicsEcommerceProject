@@ -7,7 +7,7 @@ import LoginForm from "../features/auth/LoginForm";
 import SignupForm from "../features/auth/SignupForm";
 import CustomerDashboard from "../features/customer/Dashboard/CustomerDashboard";
 import ProfilePage from "../features/customer/Profile/ProfilePage";
-
+// import Cart from "../components/ShowAllCartItems/Cart";
 const App = () => {
   return (
     <div className="app-container">
@@ -18,6 +18,7 @@ const App = () => {
         <Route path="/login" element={<LoginForm />} />
         <Route path="/" element={<CustomerDashboard />} />
         <Route path="/profilePage" element={<ProfilePage />} />
+        {/* <Route path="/showCartItems" element={<Cart />} /> */}
       </Routes>
     </div>
   );

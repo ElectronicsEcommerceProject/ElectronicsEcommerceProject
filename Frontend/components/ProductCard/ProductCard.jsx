@@ -1,15 +1,15 @@
 import React from "react";
-import { Row, Col, Card, Button } from "react-bootstrap";
+import { Row, Col, Card } from "react-bootstrap";
 
 const CustomerProductCard = ({
-  products,
-  searchQuery,
+  products = [],
+  searchQuery = "",
   onAddToCart,
   onAddToWishlist,
 }) => {
-  // Filter products based on search query
+  // Ensure products is always an array and searchQuery is a string
   const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    product.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -24,7 +24,7 @@ const CustomerProductCard = ({
                     variant="top"
                     src={product.image_url || "https://via.placeholder.com/300"}
                     className="w-full h-full object-cover"
-                    alt={product.name}
+                    alt={product.name || "Product Image"}
                   />
                 </div>
 
@@ -39,7 +39,7 @@ const CustomerProductCard = ({
                     </p>
 
                     <Card.Title className="text-lg font-bold mb-1">
-                      {product.name}
+                      {product.name || "Unnamed Product"}
                     </Card.Title>
 
                     <div className="text-sm text-gray-600 mb-2">★★★★☆ (12)</div>
