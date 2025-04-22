@@ -20,7 +20,7 @@ export const getProfile = async (req, res) => {
     try {
         const user = await User.findOne({
             where: { email: req.user.email },
-            attributes: ['name', 'email', 'phone_number', 'role', 'created_at']
+            attributes: { exclude: ['password'] } // Return all attributes except password
         });
 
         if (!user) {
@@ -62,6 +62,8 @@ export const updateProfile = async (req, res) => {
       user.city = city || user.city;
       user.postal_code = postal_code || user.postal_code;
       user.profileImage_url = profileImage_url || user.profileImage_url;
+
+      console.log("testing",req.body)
   
       await user.save();
   
@@ -71,5 +73,3 @@ export const updateProfile = async (req, res) => {
       res.status(500).json({ message: 'Something went wrong', error: error.message });
     }
   };
-  
-  

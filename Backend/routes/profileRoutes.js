@@ -5,6 +5,6 @@ import { verifyJwtToken } from '../middleware/jwt.js';
 const router = express.Router();
 
 // Route for user registration
-router.get('/getProfile',verifyJwtToken, getProfile);
-router.put('/updateProfile',verifyJwtToken, updateProfile);
+router.get('/',verifyJwtToken, getProfile);
+router.put('/',verifyJwtToken, updateProfile);
 export default router;
