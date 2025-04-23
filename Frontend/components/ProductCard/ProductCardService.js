@@ -19,8 +19,21 @@ const getAllProducts = async (token) => {
   }
 };
 
+const getProductById = async (id, token) => {
+  try {
+    const response = await axios.get(`${VITE_PRODUCT_ENDPOINT_API}/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    console.log('response', response.data);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'product failed to fetch' };
+  }
+};
+
 
 
 export default {
-    getAllProducts
+    getAllProducts,
+    getProductById
 };

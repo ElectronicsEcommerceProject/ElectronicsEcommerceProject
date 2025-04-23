@@ -1,5 +1,7 @@
+// filepath: c:\Users\satyam singh\Desktop\vite-project\maaLaxmiEcommerceWebsite\ElectronicsEcommerceProject\Frontend\components\ProductCard\ProductCard.jsx
 import React from "react";
 import { Row, Col, Card } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 const CustomerProductCard = ({
   products = [],
@@ -7,10 +9,17 @@ const CustomerProductCard = ({
   onAddToCart,
   onAddToWishlist,
 }) => {
+  const navigate = useNavigate();
+
   // Ensure products is always an array and searchQuery is a string
   const filteredProducts = products.filter((product) =>
     product.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Handler for clicking the card itself
+  const handleCardClick = (productId) => {
+    navigate(`/product/${productId}`); // Navigate to the product description page
+  };
 
   return (
     <div className="px-4 py-4">
@@ -18,7 +27,10 @@ const CustomerProductCard = ({
         <Row className="g-4">
           {filteredProducts.map((product) => (
             <Col key={product.product_id} xs={12} sm={6} md={4} lg={3}>
-              <Card className="h-100 d-flex flex-column shadow-sm rounded-xl">
+              <Card
+                className="h-100 d-flex flex-column shadow-sm rounded-xl cursor-pointer"
+                onClick={() => handleCardClick(product.product_id)} // Navigate on card click
+              >
                 <div style={{ height: "200px", overflow: "hidden" }}>
                   <Card.Img
                     variant="top"
@@ -64,14 +76,20 @@ const CustomerProductCard = ({
                   <div className="mt-auto d-flex gap-2">
                     <button
                       className="w-full bg-green-600 text-white px-3 py-2 rounded hover:bg-green-600"
-                      onClick={() => onAddToCart(product.product_id)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent click from bubbling to the Card
+                        onAddToCart(product.product_id);
+                      }}
                     >
                       Add to Cart
                     </button>
 
                     <button
                       className="w-full border border-red-500 text-red-500 px-3 py-2 rounded hover:bg-red-50"
-                      onClick={() => onAddToWishlist(product.product_id)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent click from bubbling to the Card
+                        onAddToWishlist(product.product_id);
+                      }}
                     >
                       ❤️
                     </button>

@@ -139,6 +139,7 @@ export const getProducts = async (req, res) => {
   }
 };
 
+
 // ✅ Get products by category ID
 export const getProductsByCategoryId = async (req, res) => {
   const { categoryId } = req.params;
@@ -173,5 +174,18 @@ export const deleteProduct = async (req, res) => {
   } catch (error) {
     console.error("❌ Error while deleting product:", error);
     res.status(500).json({ message: 'An error occurred while deleting the product' });
+  }
+};
+
+// ✅ Get product by ID
+export const getProductById = async (req, res) => {
+  try {
+    const product = await Product.findByPk(req.params.id);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    res.status(200).json(product);
+  } catch (error) {
+    console.error("❌ Error while fetching product by ID:", error);
+    res.status(500).json({ message: 'An error occurred while fetching the product' });
   }
 };

@@ -72,7 +72,6 @@ const CustomerDashboard = () => {
 
   // Handler for category selection
   const handleCategorySelect = (fetchedProducts) => {
-    // alert("Test");
     if (!Array.isArray(fetchedProducts)) {
       console.error("Invalid category products data:", fetchedProducts);
       return;
