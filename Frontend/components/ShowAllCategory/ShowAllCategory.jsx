@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ShowAllCategoryService from "./ShowAllCategoryService";
+import ProductCardService from "../ProductCard/ProductCardService";
 
 const ShowAllCategory = ({ onCategorySelect }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -41,17 +42,17 @@ const ShowAllCategory = ({ onCategorySelect }) => {
 
       // If no categories are selected, fetch all products
       if (updatedCategories.length === 0) {
-        const allProducts = await ShowAllCategoryService.fetchAllProducts(
-          token
-        );
+        const allProducts = await ProductCardService.getAllProducts(token);
         onCategorySelect(allProducts); // Pass all products to parent component
       } else {
         // Fetch products for selected categories
+
         const categoryProducts = await Promise.all(
           updatedCategories.map((id) =>
             ShowAllCategoryService.fetchProductsBasedOnCategoryId(id, token)
           )
         );
+        // console.log("categoryProducts", categoryProducts);
         const combinedProducts = categoryProducts.flat(); // Combine all products into a single array
         onCategorySelect(combinedProducts); // Pass combined products to parent component
       }
@@ -123,6 +124,7 @@ const ShowAllCategory = ({ onCategorySelect }) => {
                 >
                   <input
                     type="checkbox"
+                    checked={selectedCategories.includes(cat.category_id)}
                     onChange={(e) =>
                       handleCheckboxChange(cat.category_id, e.target.checked)
                     }

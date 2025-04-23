@@ -3,7 +3,9 @@ import { useSelector, useDispatch } from "react-redux";
 import CustomerHeader from "../../../components/Header/CustomerHeader";
 import ShowAllCategory from "../../../components/ShowAllCategory/ShowAllCategory";
 import CustomerProductCard from "../../../components/ProductCard/ProductCard";
-import ShowAllCategoryService from "../../../components/ShowAllCategory/ShowAllCategoryService";
+// import ShowAllCategoryService from "../../../components/ShowAllCategory/ShowAllCategoryService";
+import fetchAllProductsService from "../../../components/ProductCard/ProductCardService";
+
 import {
   setProducts,
   addToCart,
@@ -32,9 +34,7 @@ const CustomerDashboard = () => {
           return;
         }
 
-        const allProducts = await ShowAllCategoryService.fetchAllProducts(
-          token
-        );
+        const allProducts = await fetchAllProductsService.getAllProducts(token);
         if (Array.isArray(allProducts)) {
           dispatch(setProducts(allProducts)); // Dispatch action to set products
         } else {
@@ -72,6 +72,7 @@ const CustomerDashboard = () => {
 
   // Handler for category selection
   const handleCategorySelect = (fetchedProducts) => {
+    // alert("Test");
     if (!Array.isArray(fetchedProducts)) {
       console.error("Invalid category products data:", fetchedProducts);
       return;
