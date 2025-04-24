@@ -9,7 +9,7 @@ import SignupForm from "../features/auth/SignupForm";
 import CustomerDashboard from "../features/customer/Dashboard/CustomerDashboard";
 import ProfilePage from "../features/customer/Profile/ProfilePage";
 import ShowProductDescription from "../components/ProductCard/ShowProductDescription";
-
+import ShowAllCartItems from "../components/ShowAllCartItems/Cart";
 const App = () => {
   return (
     <div className="app-container">
@@ -23,8 +23,8 @@ const App = () => {
         <Route
           path="/product/:productId"
           element={<ShowProductDescription />}
-        />{" "}
-        {/* New Route */}
+        />
+        <Route path="/showCartItems" element={<ShowAllCartItems />} />"
       </Routes>
     </div>
   );

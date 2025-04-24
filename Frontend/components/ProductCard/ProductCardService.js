@@ -24,7 +24,7 @@ const getProductById = async (id, token) => {
     const response = await axios.get(`${VITE_PRODUCT_ENDPOINT_API}/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
-    console.log('response', response.data);
+    // console.log('response', response.data);
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'product failed to fetch' };

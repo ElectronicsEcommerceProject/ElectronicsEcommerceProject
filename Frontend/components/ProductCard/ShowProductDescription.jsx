@@ -1,5 +1,4 @@
 // filepath: c:\Users\satyam singh\Desktop\vite-project\maaLaxmiEcommerceWebsite\ElectronicsEcommerceProject\Frontend\components\ProductCard\ShowProductDescription.jsx
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom"; // Import useNavigate for potential search redirection
 import { useSelector, useDispatch } from "react-redux";
@@ -9,6 +8,7 @@ import { Button, Row, Col, Card, Form, Spinner } from "react-bootstrap";
 import { FaCartPlus, FaHeart } from "react-icons/fa";
 import alertService from "../../components/Alert/AlertService";
 import CustomerHeader from "../../components/Header/CustomerHeader"; // Ensure path is correct
+import CartService from "../ShowAllCartItems/CartService";
 
 const ShowProductDescription = () => {
   const { productId } = useParams();
@@ -132,38 +132,60 @@ const ShowProductDescription = () => {
       alertService.showError(
         `Minimum order quantity is ${product.min_retailer_quantity}. Please increase the quantity.`
       );
-      // Optionally set quantity back to minimum here if desired:
-      // setQuantity(product.min_retailer_quantity);
       return; // Stop the add to cart process
     }
     // --- END MINIMUM QUANTITY CHECK ---
 
-    // Other checks (already present and correct)
     if (product.stock <= 0) {
       alertService.showError("This item is currently out of stock.");
       return;
     }
     if (quantity > product.stock) {
-      // This check might be redundant if handleQuantityChange caps it, but good failsafe
       alertService.showError(
         `Only ${product.stock} items available in stock. Quantity adjusted.`
       );
       setQuantity(product.stock); // Adjust quantity
-      return; // Stop the add to cart process for this click, user can click again
+      return;
     }
 
     setIsAddingToCart(true);
-    console.log(
-      `Adding ${quantity} of Product ID ${product.product_id} to cart.`
-    );
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
 
-    alertService.showSuccess(
-      `${quantity} x ${product.name} added to your cart!`
-    );
-    dispatch(addToCart(quantity)); // Dispatch Redux action to update count
-    setIsAddingToCart(false);
+    // Log product_id and quantity
+    console.log("Product ID:", product.product_id);
+    console.log("Quantity:", quantity);
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alertService.showError("Authentication token not found. Please login.");
+      setIsAddingToCart(false);
+      return;
+    }
+
+    try {
+      const addToCartResponse = await CartService.addToCart(
+        product.product_id, // Pass product_id as required by the backend
+        quantity, // Pass quantity
+        token
+      );
+
+      console.log("Add to cart response:", addToCartResponse);
+
+      if (addToCartResponse.message === "Product added to cart") {
+        alertService.showSuccess(
+          `${quantity} x ${product.name} added to your cart!`
+        );
+        dispatch(addToCart(quantity)); // Dispatch Redux action to update count
+      } else {
+        alertService.showError("Failed to add product to cart.");
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alertService.showError(
+        error.message || "Failed to add product to cart. Please try again."
+      );
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   const handleAddToWishlist = async () => {

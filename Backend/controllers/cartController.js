@@ -5,7 +5,9 @@ const { Cart, Product, User } = db;
 // ✅ Add to cart (or update if already exists)
 export const addToCart = async (req, res) => {
   try {
-    const { product_id, quantity } = req.body;
+    const { productId, quantity } = req.body;
+    let product_id = productId;
+    // console.log("Adding to cart:", req.body);
     if (!product_id || !quantity) return res.status(400).json({ message: 'Product ID and quantity are required' });
 
     const user = await User.findOne({ where: { email: req.user.email } });
