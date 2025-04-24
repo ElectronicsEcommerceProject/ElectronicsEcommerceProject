@@ -34,6 +34,18 @@ const CustomerProductCard = ({ products = [], searchQuery = "" }) => {
                 <Card
                   className="rounded-2xl shadow-md border-0 hover:shadow-xl transition-all duration-300 cursor-pointer"
                   onClick={() => handleCardClick(product.product_id)}
+                  style={{
+                    transform: "rotate(-2deg)",
+                    transformOrigin: "center",
+                    transition: "transform 0.3s ease",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform =
+                      "rotate(0deg) scale(1.03)";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = "rotate(-2deg)";
+                  }}
                 >
                   {/* Product Image */}
                   <div className="relative bg-white">
