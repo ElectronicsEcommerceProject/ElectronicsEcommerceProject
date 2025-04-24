@@ -56,7 +56,7 @@ const CustomerDashboard = () => {
     }
     console.log("Added to cart:", productId);
     AlertService.showSuccess("Product added to cart");
-    dispatch(addToCart());
+    dispatch(addToCart(1));
   };
 
   // Wishlist add handler
@@ -67,7 +67,7 @@ const CustomerDashboard = () => {
     }
     console.log("Added to wishlist:", productId);
     AlertService.showSuccess("Product added to wishlist");
-    dispatch(addToWishlist());
+    dispatch(addToWishlist(1));
   };
 
   // Handler for category selection

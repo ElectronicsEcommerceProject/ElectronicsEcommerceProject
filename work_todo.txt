@@ -1,3 +1,8 @@
+
+1.i need to correct ShowProductDescription.jsx file in this quantity field is not editable make it editable so that you cannot enter quantity less then minimum order quantity....
+
+
+
 1.make the cart, wishlist page...
 
 

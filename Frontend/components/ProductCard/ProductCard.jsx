@@ -1,107 +1,114 @@
-// filepath: c:\Users\satyam singh\Desktop\vite-project\maaLaxmiEcommerceWebsite\ElectronicsEcommerceProject\Frontend\components\ProductCard\ProductCard.jsx
 import React from "react";
 import { Row, Col, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-const CustomerProductCard = ({
-  products = [],
-  searchQuery = "",
-  onAddToCart,
-  onAddToWishlist,
-}) => {
+const CustomerProductCard = ({ products = [], searchQuery = "" }) => {
   const navigate = useNavigate();
 
-  // Ensure products is always an array and searchQuery is a string
   const filteredProducts = products.filter((product) =>
-    product.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    product?.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Handler for clicking the card itself
   const handleCardClick = (productId) => {
-    navigate(`/product/${productId}`); // Navigate to the product description page
+    if (productId) {
+      navigate(`/product/${productId}`);
+    }
   };
 
   return (
-    <div className="px-4 py-4">
+    <div className="px-3 py-4">
       {filteredProducts.length > 0 ? (
-        <Row className="g-4">
-          {filteredProducts.map((product) => (
-            <Col key={product.product_id} xs={12} sm={6} md={4} lg={3}>
-              <Card
-                className="h-100 d-flex flex-column shadow-sm rounded-xl cursor-pointer"
-                onClick={() => handleCardClick(product.product_id)} // Navigate on card click
-              >
-                <div style={{ height: "200px", overflow: "hidden" }}>
-                  <Card.Img
-                    variant="top"
-                    src={product.image_url || "https://via.placeholder.com/300"}
-                    className="w-full h-full object-cover"
-                    alt={product.name || "Product Image"}
-                  />
-                </div>
+        <Row xs={1} sm={2} md={3} lg={4} xl={5} className="g-4">
+          {filteredProducts.map((product) => {
+            const name = product?.name?.trim() || "Unnamed Product";
+            const price =
+              product?.price !== undefined && !isNaN(Number(product.price))
+                ? Number(product.price).toFixed(2)
+                : null;
 
-                <Card.Body className="d-flex flex-column flex-grow-1">
-                  <div>
-                    <p
-                      className={`text-sm font-semibold mb-1 ${
-                        product.stock > 0 ? "text-green-600" : "text-red-600"
+            const stock = Number(product?.stock) || 0;
+            const discount = Number(product?.discount_percentage) || 0;
+
+            return (
+              <Col key={product.product_id}>
+                <Card
+                  className="rounded-2xl shadow-md border-0 hover:shadow-xl transition-all duration-300 cursor-pointer"
+                  onClick={() => handleCardClick(product.product_id)}
+                >
+                  {/* Product Image */}
+                  <div className="relative bg-white">
+                    <Card.Img
+                      variant="top"
+                      src={
+                        product.image_url ||
+                        "https://via.placeholder.com/300x300?text=No+Image"
+                      }
+                      alt={name}
+                      className="p-3"
+                      style={{
+                        height: "200px",
+                        objectFit: "contain",
+                      }}
+                    />
+                    {/* Stock Badge */}
+                    <span
+                      className={`absolute top-2 left-2 px-2 py-1 rounded-md text-xs font-semibold text-white ${
+                        stock > 0 ? "bg-green-600" : "bg-red-500"
                       }`}
                     >
-                      {product.stock > 0 ? "In Stock" : "Out of Stock"}
-                    </p>
+                      {stock > 0 ? `In Stock (${stock})` : "Out of Stock"}
+                    </span>
+                  </div>
 
-                    <Card.Title className="text-lg font-bold mb-1">
-                      {product.name || "Unnamed Product"}
+                  {/* Product Details */}
+                  <Card.Body className="d-flex flex-column gap-1">
+                    {/* Name */}
+                    <Card.Title
+                      className="text-dark fw-semibold mb-1 text-truncate"
+                      title={name}
+                      style={{ minHeight: "1.5rem" }}
+                    >
+                      {name}
                     </Card.Title>
 
-                    <div className="text-sm text-gray-600 mb-2">★★★★☆ (12)</div>
+                    {/* Optional Category */}
+                    {product?.Category?.name && (
+                      <div className="text-muted text-sm mb-1 text-truncate">
+                        {product.Category.name}
+                      </div>
+                    )}
 
-                    <div className="mb-2">
-                      <div className="line-through text-gray-500 text-sm">
-                        ₹
-                        {isNaN(product.price)
-                          ? "0.00"
-                          : (parseFloat(product.price) + 5000).toFixed(2)}
-                      </div>
-                      <div className="text-red-600 text-xl font-bold">
-                        ₹
-                        {isNaN(product.price)
-                          ? "0.00"
-                          : parseFloat(product.price).toFixed(2)}
-                      </div>
+                    {/* Price & Discount */}
+                    <div className="mt-auto">
+                      {price !== null ? (
+                        <span className="text-indigo-600 fw-bold fs-5">
+                          ₹{price}
+                        </span>
+                      ) : (
+                        <span className="text-muted fs-6">
+                          Price Unavailable
+                        </span>
+                      )}
+                      {discount > 0 && (
+                        <span className="text-danger text-sm ms-2">
+                          ({discount}% off)
+                        </span>
+                      )}
                     </div>
-                  </div>
-
-                  {/* Button block */}
-                  <div className="mt-auto d-flex gap-2">
-                    <button
-                      className="w-full bg-green-600 text-white px-3 py-2 rounded hover:bg-green-600"
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent click from bubbling to the Card
-                        onAddToCart(product.product_id);
-                      }}
-                    >
-                      Add to Cart
-                    </button>
-
-                    <button
-                      className="w-full border border-red-500 text-red-500 px-3 py-2 rounded hover:bg-red-50"
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent click from bubbling to the Card
-                        onAddToWishlist(product.product_id);
-                      }}
-                    >
-                      ❤️
-                    </button>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
+                  </Card.Body>
+                </Card>
+              </Col>
+            );
+          })}
         </Row>
       ) : (
-        <div className="text-center py-5">
-          <h4>Sorry, no products match your search.</h4>
+        <div className="text-center py-10 px-4">
+          <h4 className="text-xl font-semibold text-gray-700 mb-2">
+            No products found
+          </h4>
+          <p className="text-sm text-gray-500">
+            Try adjusting your search or category filters.
+          </p>
         </div>
       )}
     </div>

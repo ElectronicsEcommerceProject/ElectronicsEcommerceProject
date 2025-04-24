@@ -13,11 +13,17 @@ const productSlice = createSlice({
     setProducts: (state, action) => {
       state.products = action.payload;
     },
-    addToCart: (state) => {
-      state.cartCount += 1;
+    // addToCart: (state) => {
+    //   state.cartCount += 1;
+    // },
+    // addToWishlist: (state) => {
+    //   state.wishlistCount += 1;
+    // },
+    addToCart: (state, action) => {
+      state.cartCount += action.payload;
     },
-    addToWishlist: (state) => {
-      state.wishlistCount += 1;
+    addToWishlist: (state, action) => {
+      state.wishlistCount += action.payload;
     },
   },
 });
