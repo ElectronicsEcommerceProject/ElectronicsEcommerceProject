@@ -1,18 +1,9 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import db from './models/index.js';
-import authRoutes from './routes/authRoutes.js';
-import profileRoutes from './routes/profileRoutes.js';
-import categoryRoutes from './routes/categoryRoutes.js';
-import productRoutes from './routes/productRoutes.js';
-import cartRoutes from './routes/cartRoutes.js';
-import orderRoutes from './routes/orderRoutes.js';
-import stockAlertRoutes from './routes/stockAlertRoutes.js';
-import wishlistRoutes from './routes/wishlistRoutes.js';
-import couponRoutes from './routes/couponRoutes.js';
-import reviewRoutes from './routes/reviewRoutes.js';
-import userRoutes from './routes/userRoute.js';
+import db from './src/models/index.js';
+import mainRoutes from './src/api/v1/routes/index.js'
+
 
 import fs from 'fs';
 import path from 'path';
@@ -37,17 +28,9 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads')); 
 
 // ✅ Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/profile', profileRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/cart', cartRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/stock-alerts', stockAlertRoutes);
-app.use('/api/wishlist', wishlistRoutes);
-app.use('/api/coupons', couponRoutes);
-app.use('/api/reviews', reviewRoutes);
-app.use('/api/users', userRoutes);
+
+app.use('/api/v1', mainRoutes);
+
 
 // ✅ Health check route
 app.get('/', (req, res) => {
