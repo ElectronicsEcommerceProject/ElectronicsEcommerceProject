@@ -1,5 +1,5 @@
 import express from 'express';
-import { verifyJwtToken } from '../middleware/jwt.js';
+import { verifyJwtToken } from '../../../../middleware/jwt.js';
 
 import { retailerOrderController } from '../../controllers/index.js';
 

@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { verifyJwtToken } from '../middleware/jwt.js';
+import { verifyJwtToken } from '../../../../middleware/jwt.js';
 import upload from '../../../../middleware/multer.js';
 import { profileController } from '../../controllers/index.js';
  // Import multer middleware

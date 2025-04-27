@@ -1,6 +1,6 @@
 import Joi from "joi";
 
-import { ROLES } from "../../../../constants/roles/roles";
+import { ROLES } from "../../../../constants/roles/roles.js";
 
 export const registerValidator = Joi.object({
   email: Joi.string()

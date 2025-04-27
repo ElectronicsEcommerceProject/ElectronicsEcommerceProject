@@ -1,7 +1,7 @@
 import express from 'express';
-import { register,login } from '../api/v1/controllers/authController.js'; // Import the register function from authController.js
-import service from '../../../../services/index.js';
-import { validator } from '../../middleware/validator.js';
+
+
+import { validator } from '../../../../middleware/validator/validator.middleware.js';
 import { validators } from '../../validators/index.js';
 import { loginController, registerController } from '../../controllers/index.js';
 

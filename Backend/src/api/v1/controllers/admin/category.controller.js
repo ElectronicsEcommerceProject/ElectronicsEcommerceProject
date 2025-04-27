@@ -1,4 +1,4 @@
-import db from '../models/index.js'; // Import the database models
+import db from '../../../../models/index.js'; // Import the database models
 const { Category, User } = db;
 
 

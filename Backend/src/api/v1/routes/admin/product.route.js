@@ -1,9 +1,9 @@
 import express from "express";
 
-import { roleCheck } from "../middleware/roleCheck.js"; // Middleware to check admin role
-import { verifyJwtToken } from "../middleware/jwt.js"; // Middleware to verify JWT token
+import { roleCheck } from '../../../../middleware/roleCheck.js'; // Middleware to check admin role
+import { verifyJwtToken } from '../../../../middleware/jwt.js'; // Middleware to verify JWT token
 import { validators } from "../../validators/index.js";
-import { validator } from "../middleware/validator.js"; // Middleware for request validation
+import { validator } from "../../../../middleware/validator/validator.middleware.js"; // Middleware for request validation
 import { adminProductController } from "../../controllers/index.js";
 
 const router = express.Router();

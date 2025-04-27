@@ -1,4 +1,4 @@
-import db from '../models/index.js';
+import db from '../../../../models/index.js'; // Import the database models
 const { Wishlist, Product, User } = db;
 
 // ✅ Add to Wishlist

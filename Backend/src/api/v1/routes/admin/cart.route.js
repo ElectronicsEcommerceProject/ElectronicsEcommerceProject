@@ -1,6 +1,6 @@
 import express from 'express';
 // import { addToCart, getCart, updateCartItem, removeFromCart } from '../controllers/cartController.js';
-// import { verifyJwtToken } from '../middleware/jwt.js';
+// import { verifyJwtToken } from '../../../../middleware/jwt.js';
 
 const router = express.Router();
 

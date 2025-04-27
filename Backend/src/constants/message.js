@@ -1,4 +1,4 @@
-export const message = {
+const message = {
     post: {
         succ:"Data added successfully",
         fail:"Failed to add data",

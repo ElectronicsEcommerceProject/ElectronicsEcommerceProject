@@ -1,4 +1,4 @@
-import db from '../models/index.js';
+import db from '../../../../models/index.js'; // Import the database models
 const { Order, OrderItem, Cart, Product, User } = db;
 
 // 📦 Place Order

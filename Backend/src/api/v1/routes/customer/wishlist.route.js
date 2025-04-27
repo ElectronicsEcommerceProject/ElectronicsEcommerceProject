@@ -1,5 +1,6 @@
 import express from 'express';
-import { verifyJwtToken } from '../middleware/jwt.js';
+import { verifyJwtToken } from '../../../../middleware/jwt.js';
+
 
 import { customerWishlistController } from '../../controllers/index.js';
 

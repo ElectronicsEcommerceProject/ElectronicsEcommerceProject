@@ -1,7 +1,7 @@
 import express from 'express';
 
-import { verifyJwtToken } from '../../../middleware/jwt.js';
-import { roleCheck } from '../../../middleware/roleCheck.js'; // Import the role check middleware
+import { verifyJwtToken } from '../../../../middleware/jwt.js';
+import { roleCheck } from '../../../../middleware/roleCheck.js'; // Import the role check middleware
 import { adminCategoryController } from '../../controllers/index.js';
 
 

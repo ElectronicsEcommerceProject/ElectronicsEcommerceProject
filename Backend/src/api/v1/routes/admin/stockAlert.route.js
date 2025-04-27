@@ -1,7 +1,7 @@
 import express from 'express';
 
-import { verifyJwtToken } from '../middleware/jwt.js';
-import { roleCheck } from '../middleware/roleCheck.js'; // Only admin should access
+import { verifyJwtToken } from '../../../../middleware/jwt.js';
+import { roleCheck } from '../../../../middleware/roleCheck.js'; // Only admin should access
 import { adminStockAlertController } from '../../controllers/index.js';
 
 const router = express.Router();

@@ -1,7 +1,7 @@
 import express from 'express';
 
-import { verifyJwtToken } from '../middleware/jwt.js';
-import upload from '../middleware/multer.js'; // Import multer middleware
+import { verifyJwtToken } from '../../../../middleware/jwt.js';
+import upload from '../../../../middleware/multer.js'; // Import multer middleware
 import profileController from '../../controllers/profile.controller.js';
 
 const router = express.Router();

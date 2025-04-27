@@ -1,7 +1,6 @@
 import bcrypt from 'bcrypt';
-import db from '../models/index.js'; // Import the database models
+import db from '../../../../models/index.js'; // Import the database models
 const { User } = db; // Extract the User model
-import { encodeJwtToken, verifyJwtToken } from '../middleware/jwt.js';
 
 
 const register = async (req, res) => {

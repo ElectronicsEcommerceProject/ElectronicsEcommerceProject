@@ -1,10 +1,10 @@
-import { NextFunctions,Request,Response } from 'express';
+
 
 import {StatusCodes} from 'http-status-codes';
-import MESSAGE from '../../constants/message';
+import MESSAGE from '../../constants/message.js';
 
 
-const validator =(schema,property=null)=>{
+export const validator =(schema,property=null)=>{
     return (req,res,next)=>{
 
         try{

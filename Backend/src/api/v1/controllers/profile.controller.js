@@ -6,7 +6,7 @@
 // View purchase history (todo)
 // ===============================
 
-import db from '../models/index.js';
+import db from '../../../models/index.js';
 const { User } = db;
 
 import path from 'path';

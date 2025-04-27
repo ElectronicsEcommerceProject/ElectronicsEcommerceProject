@@ -1,7 +1,9 @@
 import Joi from 'joi';
-import { loginValidator } from './auth/login.validators';
-import { registerValidator } from './auth/register.validators';
-import { productValidationSchema } from './product/product.validators';
+import { loginValidator } from './auth/login.validators.js';
+import { registerValidator } from './auth/register.validators.js';
+
+import { productValidationSchema } from './product/product.validators.js';
+
 
 export const validators = {
     auth: {

@@ -1,4 +1,4 @@
-import db from '../models/index.js';
+import db from '../../../../models/index.js'; // Import the database models
 const { Review, User, Product } = db;
 
 // ⭐️ Create a new review (only by customers)

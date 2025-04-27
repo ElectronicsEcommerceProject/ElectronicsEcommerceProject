@@ -1,7 +1,7 @@
 import express from 'express';
 
-import { verifyJwtToken } from '../middleware/jwt.js';
-import { roleCheck } from '../middleware/roleCheck.js';
+import { verifyJwtToken } from '../../../../middleware/jwt.js';
+import { roleCheck } from '../../../../middleware/roleCheck.js';
 import { adminUserController } from '../../controllers/index.js';
 
 const router = express.Router();

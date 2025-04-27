@@ -1,6 +1,6 @@
 import express from "express";
 
-import { verifyJwtToken } from "../middleware/jwt.js"; // Middleware to verify JWT token
+import { verifyJwtToken } from '../../../../middleware/jwt.js'; // Middleware to verify JWT token
 import { customerProductController } from "../../controllers/index.js";
 
 const router = express.Router();
