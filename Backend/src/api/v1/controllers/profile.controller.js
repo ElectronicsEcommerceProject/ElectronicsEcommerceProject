@@ -18,7 +18,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ✅ GET /api/profile
-export const getProfile = async (req, res) => {
+const getProfile = async (req, res) => {
   try {
     const user = await User.findOne({
       where: { email: req.user.email },
@@ -40,7 +40,7 @@ export const getProfile = async (req, res) => {
 };
 
 // ✅ PUT /api/profile
-export const updateProfile = async (req, res) => {
+const updateProfile = async (req, res) => {
   try {
     const { name, address, city, postal_code } = req.body;
 
@@ -83,4 +83,9 @@ export const updateProfile = async (req, res) => {
     console.error('❌ Error updating profile:', error);
     res.status(500).json({ message: 'Something went wrong', error: error.message });
   }
+};
+
+export default {
+  getProfile,
+  updateProfile,
 };

@@ -2,7 +2,7 @@ import db from '../models/index.js';
 const { Review, User, Product } = db;
 
 // ⭐️ Create a new review (only by customers)
-export const createReview = async (req, res) => {
+const createReview = async (req, res) => {
   try {
     const { rating, comment, product_id } = req.body;
 
@@ -34,27 +34,7 @@ export const createReview = async (req, res) => {
 };
 
 
-export const updateReview = async (req, res) => {
-    try {
-      const { review_id } = req.params;
-      const { rating, comment } = req.body;
-  
-      const user = await User.findOne({ where: { email: req.user.email } });
-      if (!user || user.role !== 'admin') {
-        return res.status(403).json({ message: 'Only admin can edit reviews' });
-      }
-  
-      const review = await Review.findByPk(review_id);
-      if (!review) return res.status(404).json({ message: 'Review not found' });
-  
-      review.rating = rating ?? review.rating;
-      review.comment = comment ?? review.comment;
-      await review.save();
-  
-      res.status(200).json({ message: 'Review updated', data: review });
-    } catch (err) {
-      console.error('❌ Error updating review:', err.message);
-      res.status(500).json({ message: 'Failed to update review' });
-    }
+  export default {
+    createReview
   };
   

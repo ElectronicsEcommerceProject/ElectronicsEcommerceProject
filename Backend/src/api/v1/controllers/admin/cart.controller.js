@@ -3,7 +3,7 @@ import db from '../models/index.js';
 const { Cart, Product, User } = db;
 
 // ✅ Add to cart (or update if already exists)
-export const addToCart = async (req, res) => {
+const addToCart = async (req, res) => {
   try {
     const { productId, quantity } = req.body;
     let product_id = productId;
@@ -34,7 +34,7 @@ export const addToCart = async (req, res) => {
 };
 
 // ✅ Get user's cart
-export const getCart = async (req, res) => {
+const getCart = async (req, res) => {
   try {
     const user = await User.findOne({ where: { email: req.user.email } });
     const cartItems = await Cart.findAll({
@@ -50,7 +50,7 @@ export const getCart = async (req, res) => {
 };
 
 // ✅ Update cart item quantity
-export const updateCartItem = async (req, res) => {
+const updateCartItem = async (req, res) => {
   try {
     const { product_id } = req.params;
     const { quantity } = req.body;
@@ -73,7 +73,7 @@ export const updateCartItem = async (req, res) => {
 };
 
 // ✅ Remove from cart
-export const removeFromCart = async (req, res) => {
+const removeFromCart = async (req, res) => {
   try {
     const { product_id } = req.params;
     const user = await User.findOne({ where: { email: req.user.email } });
@@ -88,4 +88,11 @@ export const removeFromCart = async (req, res) => {
     console.error("❌ Error in removeFromCart:", err);
     res.status(500).json({ message: 'Something went wrong' });
   }
+};
+
+export default {
+    addToCart,
+    getCart,
+    updateCartItem,
+    removeFromCart,
 };

@@ -1,31 +1,20 @@
 import express from "express";
-import {
-  createProduct,
-  getProducts,
-  updateProduct,
-  deleteProduct,
-  getProductsByCategoryId,
-  getProductById,
-} from "../api/v1/controllers/productController.js";
-import { roleCheck } from "../middleware/roleCheck.js"; // Middleware to check admin role
+
 import { verifyJwtToken } from "../middleware/jwt.js"; // Middleware to verify JWT token
+import { customerProductController } from "../../controllers/index.js";
 
 const router = express.Router();
 
-// CRUD routes for products
-router.post("/", verifyJwtToken, roleCheck, createProduct); // Create a new product
-router.get("/", verifyJwtToken, getProducts); // Get all products
+
+router.get("/", verifyJwtToken,customerProductController.getProducts); // Get all products
 // Get products by category ID
 router.get(
   "/category/:categoryId",
   verifyJwtToken,
-  getProductsByCategoryId
+  customerProductController.getProductsByCategoryId
 ); 
 
 // Get product by ID
-router.get("/:id", verifyJwtToken, getProductById); // Get a product by ID
-
-router.put("/:id", verifyJwtToken, roleCheck, updateProduct); // Update a product by ID
-router.delete("/:id", verifyJwtToken, roleCheck, deleteProduct); // Delete a product by ID
+router.get("/:id", verifyJwtToken, customerProductController.getProductById); // Get a product by ID
 
 export default router;

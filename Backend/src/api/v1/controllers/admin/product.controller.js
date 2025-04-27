@@ -3,7 +3,7 @@ import db from '../models/index.js';
 const { Product, Category, User } = db;
 
 // ✅ Create product
-export const createProduct = async (req, res) => {
+const createProduct = async (req, res) => {
 
   try {
     // Validate user
@@ -34,7 +34,7 @@ export const createProduct = async (req, res) => {
 };
 
 // ✅ Update product
-export const updateProduct = async (req, res) => {
+const updateProduct = async (req, res) => {
   
   try {
     const product = await Product.findByPk(req.params.id);
@@ -60,7 +60,7 @@ export const updateProduct = async (req, res) => {
 };
 
 // ✅ Get all products based on user role
-export const getProducts = async (req, res) => {
+const getProducts = async (req, res) => {
   const userRole = req.user.role; // 'customer', 'retailer', 'admin'
 
   console.log(`📦 Fetching products for role: ${userRole}`);
@@ -96,7 +96,7 @@ export const getProducts = async (req, res) => {
 
 
 // ✅ Get products by category ID
-export const getProductsByCategoryId = async (req, res) => {
+const getProductsByCategoryId = async (req, res) => {
   const { categoryId } = req.params;
 
   try {
@@ -119,7 +119,7 @@ export const getProductsByCategoryId = async (req, res) => {
 };
 
 // ✅ Delete product
-export const deleteProduct = async (req, res) => {
+const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findByPk(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
@@ -133,7 +133,7 @@ export const deleteProduct = async (req, res) => {
 };
 
 // ✅ Get product by ID
-export const getProductById = async (req, res) => {
+const getProductById = async (req, res) => {
   try {
     const product = await Product.findByPk(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
@@ -143,4 +143,13 @@ export const getProductById = async (req, res) => {
     console.error("❌ Error while fetching product by ID:", error);
     res.status(500).json({ message: 'An error occurred while fetching the product' });
   }
+};
+
+export default {
+  createProduct,
+  updateProduct,
+  getProducts,
+  getProductsByCategoryId,
+  deleteProduct,
+  getProductById
 };

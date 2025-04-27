@@ -48,4 +48,4 @@ const createCoupon = async (req, res) => {
 };
 
 
-export default createCoupon;
+export default { createCoupon};

@@ -8,6 +8,7 @@ import categoryRoutes from './category.route.js';
 import couponRoutes from './coupon.route.js';     
 import userRoutes from './user.route.js';     
 import stockAlertRoutes from './stockAlert.route.js';     
+import reviewRoutes from './review.route.js';     
 
 const app = express();
 
@@ -24,6 +25,8 @@ app.use("/coupon", couponRoutes);
 app.use("/user", userRoutes);
 
 app.use("/stock-alert", stockAlertRoutes);
+
+app.use("/review", reviewRoutes);
 
 
 export default app;

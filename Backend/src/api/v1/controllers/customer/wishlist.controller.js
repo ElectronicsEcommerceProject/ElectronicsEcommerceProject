@@ -2,7 +2,7 @@ import db from '../models/index.js';
 const { Wishlist, Product, User } = db;
 
 // ✅ Add to Wishlist
-export const addToWishlist = async (req, res) => {
+const addToWishlist = async (req, res) => {
   try {
     const { product_id } = req.body;
     if (!product_id) return res.status(400).json({ message: 'Product ID is required' });
@@ -32,7 +32,7 @@ export const addToWishlist = async (req, res) => {
 };
 
 // ✅ Get Wishlist
-export const getWishlist = async (req, res) => {
+const getWishlist = async (req, res) => {
   try {
     const user = await User.findOne({ where: { email: req.user.email } });
 
@@ -49,7 +49,7 @@ export const getWishlist = async (req, res) => {
 };
 
 // ✅ Remove from Wishlist
-export const removeFromWishlist = async (req, res) => {
+const removeFromWishlist = async (req, res) => {
   try {
     const { product_id } = req.params;
     const user = await User.findOne({ where: { email: req.user.email } });
@@ -67,4 +67,11 @@ export const removeFromWishlist = async (req, res) => {
     console.error("❌ Error removing from wishlist:", err);
     res.status(500).json({ message: 'Something went wrong' });
   }
+};
+
+
+export default {
+  addToWishlist,
+  getWishlist,
+  removeFromWishlist
 };

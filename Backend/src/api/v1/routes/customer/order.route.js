@@ -1,30 +1,21 @@
 import express from 'express';
 import { verifyJwtToken } from '../middleware/jwt.js';
-import {
-  createOrder,
-  getOrders,
-  getOrderById,
-  requestOrderCancellation,
-  getAllOrdersForAdmin,
-} from '../api/v1/controllers/orderController.js';
 
-import { roleCheck } from '../middleware/roleCheck.js'; // Import the roleCheck middleware
+
+import { customerOrderController } from '../../controllers/index.js';
 
 const router = express.Router();
 
 // 📦 Place new order
-router.post('/', verifyJwtToken, createOrder);
+router.post('/', verifyJwtToken,customerOrderController.createOrder);
 
 // 📄 Get all orders for logged-in user
-router.get('/', verifyJwtToken, getOrders);
-
-// 🧑‍💼 Admin: Get all orders (add below existing routes)
-router.get('/admin', verifyJwtToken, roleCheck, getAllOrdersForAdmin);
+router.get('/', verifyJwtToken,customerOrderController.getOrders);
 
 // 🔍 Get single order by ID
-router.get('/:id', verifyJwtToken, getOrderById);
+router.get('/:id', verifyJwtToken, customerOrderController.getOrderById);
 
 // ❌ Request order cancellation
-router.patch('/:id/cancel', verifyJwtToken, requestOrderCancellation);
+router.patch('/:id/cancel', verifyJwtToken, customerOrderController.requestOrderCancellation);
 
 export default router;
