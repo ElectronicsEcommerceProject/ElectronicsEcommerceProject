@@ -3,7 +3,7 @@ const { Category, User } = db;
 
 
 // Add a new category
-export const addCategory = async (req, res) => {
+const addCategory = async (req, res) => {
   try {
     const { name, target_role} = req.body;
 
@@ -26,7 +26,7 @@ export const addCategory = async (req, res) => {
 };
 
 // Get all categories based on user role
-export const getAllCategories = async (req, res) => {
+const getAllCategories = async (req, res) => {
   const userRole = req.user.role; // 'customer', 'retailer', 'admin'
 
   try {
@@ -59,7 +59,7 @@ export const getAllCategories = async (req, res) => {
 };
 
 // Update a category
-export const updateCategory = async (req, res) => {
+const updateCategory = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, target_role } = req.body;
@@ -82,7 +82,7 @@ export const updateCategory = async (req, res) => {
 };
 
 // Delete a category
-export const deleteCategory = async (req, res) => {
+const deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -97,4 +97,11 @@ export const deleteCategory = async (req, res) => {
     console.error('Error deleting category:', error);
     res.status(500).json({ message: 'Server error' });
   }
+};
+
+export default {
+  addCategory,
+  getAllCategories,
+  updateCategory,
+  deleteCategory
 };

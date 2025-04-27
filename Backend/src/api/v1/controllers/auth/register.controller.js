@@ -4,7 +4,7 @@ const { User } = db; // Extract the User model
 import { encodeJwtToken, verifyJwtToken } from '../middleware/jwt.js';
 
 
-export const register = async (req, res) => {
+const register = async (req, res) => {
   try {
     const { name, email, phone_number, password, role } = req.body;
 
@@ -64,4 +64,4 @@ export const register = async (req, res) => {
   }
 };
 
-
+export default register;

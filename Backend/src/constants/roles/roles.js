@@ -4,8 +4,10 @@
  * import ROLES from './roles.js';
  * if (user.role === ROLES.ADMIN) { ... }
  */
-export default  {
+const roles = {
     CUSTOMER: 'customer',
     RETAILER: 'retailer',
     ADMIN: 'admin'
   };
+
+export const ROLES = roles;

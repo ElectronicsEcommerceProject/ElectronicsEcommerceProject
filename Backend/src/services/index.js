@@ -1,17 +1,11 @@
-import { addToWishlist, getWishlist, removeFromWishlist } from "./wishlist/wishlist.service";
+import { checkEmailOrPhoneUniqueness } from "./auth/auth.service";
 
 // example
 const service ={
-    common: {
-        addToWishlist,
-        getWishlist,
-        removeFromWishlist
+    auth: {
+        verifyEmailOrPhoneIsUnique:checkEmailOrPhoneUniqueness
     },
-    wishlist: {
-        addToWishlist,
-        getWishlist,
-        removeFromWishlist
-    }
+    
 }
 
 export default service;

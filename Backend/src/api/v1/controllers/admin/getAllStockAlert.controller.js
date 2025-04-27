@@ -2,7 +2,7 @@ import db from '../models/index.js';
 const { StockAlert, Product } = db;
 
 // 📦 Get All Stock Alerts (for admin dashboard)
-export const getAllStockAlerts = async (req, res) => {
+const getAllStockAlerts = async (req, res) => {
   try {
     const alerts = await StockAlert.findAll({
       where: { status: 'pending' },
@@ -17,3 +17,4 @@ export const getAllStockAlerts = async (req, res) => {
 };
 
 
+export default getAllStockAlerts;

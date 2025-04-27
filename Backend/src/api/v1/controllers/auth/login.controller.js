@@ -4,7 +4,7 @@ const { User } = db; // Extract the User model
 import { encodeJwtToken, verifyJwtToken } from '../middleware/jwt.js';
 
 
-export const login = async (req, res) => {
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -48,3 +48,4 @@ export const login = async (req, res) => {
 };
 
 
+export default login;

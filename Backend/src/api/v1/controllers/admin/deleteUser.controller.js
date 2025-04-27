@@ -3,7 +3,7 @@ const { User } = db;
 
 
 // ❌ Delete user by ID (Admin only)
-export const deleteUser = async (req, res) => {
+const deleteUser = async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -15,3 +15,5 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({ message: 'Failed to delete user' });
   }
 };
+
+export default deleteUser;

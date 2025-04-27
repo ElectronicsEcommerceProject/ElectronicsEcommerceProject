@@ -3,7 +3,7 @@ import db from '../models/index.js';
 const { Coupon, User, Product } = db;
 
 // 🎟️ Controller to create a new coupon
-export const createCoupon = async (req, res) => {
+const createCoupon = async (req, res) => {
   try {
     const {
       code,
@@ -46,3 +46,6 @@ export const createCoupon = async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to create coupon', error: error.message });
   }
 };
+
+
+export default createCoupon;

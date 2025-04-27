@@ -1,0 +1,30 @@
+const User = require('../../models/user.model'); // Assuming you have a User model
+
+// Function to check if an email is already registered
+const isRegisteredEmail = async (email) => {
+    try {
+        if (!email) return false; // If no email is provided, return false
+        const existingUser = await User.findOne({ email });
+        return !!existingUser; // Returns true if email exists, false otherwise
+    } catch (error) {
+        console.error('Error checking email registration:', error);
+        return false; // Return false in case of an error
+    }
+};
+
+// Function to check if a phone number is already registered
+const isRegisteredPhoneNumber = async (phone) => {
+    try {
+        if (!phone) return false; // If no phone is provided, return false
+        const existingUser = await User.findOne({ phone });
+        return !!existingUser; // Returns true if phone exists, false otherwise
+    } catch (error) {
+        console.error('Error checking phone registration:', error);
+        return false; // Return false in case of an error
+    }
+};
+
+module.exports = {
+    isRegisteredEmail,
+    isRegisteredPhoneNumber,
+};

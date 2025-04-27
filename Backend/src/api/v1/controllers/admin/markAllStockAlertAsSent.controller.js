@@ -4,7 +4,7 @@ const { StockAlert, Product } = db;
 
 // ✅ Admin marks this stock alert as handled so it doesn't show up in "pending" alerts anymore
 
-export const markAlertAsSent = async (req, res) => {
+const markAlertAsSent = async (req, res) => {
   try {
     const { alert_id } = req.params;
     const alert = await StockAlert.findByPk(alert_id);
@@ -20,3 +20,5 @@ export const markAlertAsSent = async (req, res) => {
     res.status(500).json({ message: 'Failed to update alert status' });
   }
 };
+
+export default markAlertAsSent;

@@ -2,7 +2,7 @@ import db from '../../../models/index.js';
 const { User } = db;
 
 // 👤 Get all users (Admin only)
-export const getAllUsers = async (req, res) => {
+const getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({
       attributes: ['user_id', 'name', 'email', 'phone_number', 'role', 'created_at']
@@ -14,3 +14,4 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+export default getAllUsers;

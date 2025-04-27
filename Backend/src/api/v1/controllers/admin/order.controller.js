@@ -2,7 +2,7 @@ import db from '../models/index.js';
 const { Order, OrderItem, Cart, Product, User } = db;
 
 // 📦 Place Order
-export const createOrder = async (req, res) => {
+const createOrder = async (req, res) => {
   const userEmail = req.user.email;
 
   try {
@@ -87,7 +87,7 @@ export const createOrder = async (req, res) => {
 };
 
 // 📄 Get All Orders
-export const getOrders = async (req, res) => {
+const getOrders = async (req, res) => {
   try {
     const user = await User.findOne({ where: { email: req.user.email } });
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -105,7 +105,7 @@ export const getOrders = async (req, res) => {
 };
 
 // 🔍 Get Single Order by ID
-export const getOrderById = async (req, res) => {
+const getOrderById = async (req, res) => {
   try {
     const user = await User.findOne({ where: { email: req.user.email } });
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -125,7 +125,7 @@ export const getOrderById = async (req, res) => {
 };
 
 // ❌ Request Cancel
-export const requestOrderCancellation = async (req, res) => {
+const requestOrderCancellation = async (req, res) => {
   try {
     const user = await User.findOne({ where: { email: req.user.email } });
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -151,7 +151,7 @@ export const requestOrderCancellation = async (req, res) => {
 };
 
 // 📋 Admin: View all orders from all users
-export const getAllOrdersForAdmin = async (req, res) => {
+const getAllOrdersForAdmin = async (req, res) => {
   try {
     const orders = await Order.findAll({
       include: [
@@ -168,3 +168,10 @@ export const getAllOrdersForAdmin = async (req, res) => {
   }
 };
 
+export default {
+  createOrder,
+  getOrders,
+  getOrderById,
+  requestOrderCancellation,
+  getAllOrdersForAdmin
+}
