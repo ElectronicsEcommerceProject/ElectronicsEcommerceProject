@@ -8,7 +8,8 @@ const isRegisteredEmail = async (email) => {
         return !!existingUser; // Returns true if email exists, false otherwise
     } catch (error) {
         console.error('Error checking email registration:', error);
-        return false; // Return false in case of an error
+        // return false; // Return false in case of an error
+        throw error; // Rethrow the error for handling in the calling function  
     }
 };
 
@@ -20,11 +21,47 @@ const isRegisteredPhoneNumber = async (phone) => {
         return !!existingUser; // Returns true if phone exists, false otherwise
     } catch (error) {
         console.error('Error checking phone registration:', error);
-        return false; // Return false in case of an error
+        // return false; // Return false in case of an error
+        throw error;
+    }
+};
+
+const isRegisteredUser = async (userId) => {
+    try {
+        if (!userId) return false; // If no userId is provided, return false
+        const existingUser = await User.findOne({ userId });
+        return !!existingUser; // Returns true if userId exists, false otherwise
+    }
+    catch (error) {
+        console.error('Error checking user registration:', error);
+        // return false; // Return false in case of an error
+        throw error; // Rethrow the error for handling in the calling function  
+    }
+}
+
+const isEmailOrPhoneRegistered = async (email, phone) => {
+    try {
+        if (!email && !phone) return false; // If neither email nor phone is provided, return false
+
+        const existingUser = await User.findOne({
+            where: {
+                [Op.or]: [
+                    { email: email },
+                    { phone: phone }
+                ]
+            }
+        });
+
+        return !!existingUser; // Returns true if either email or phone exists, false otherwise
+    } catch (error) {
+        console.error('Error checking email or phone registration:', error);
+        throw error; // Rethrow the error for handling in the calling function
     }
 };
 
 module.exports = {
     isRegisteredEmail,
     isRegisteredPhoneNumber,
+    isRegisteredUser,
+    isEmailOrPhoneRegistered
 };

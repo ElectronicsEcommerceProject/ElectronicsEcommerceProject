@@ -1,11 +1,12 @@
-import { checkEmailOrPhoneUniqueness } from "./auth/auth.service";
+import {  isRegisteredEmail, isRegisteredPhoneNumber } from "./auth/auth.service";
 
 // example
-const service ={
+const services ={
     auth: {
-        verifyEmailOrPhoneIsUnique:checkEmailOrPhoneUniqueness
+        isRegisteredEmail: isRegisteredEmail,
+        isRegisteredPhoneNumber:isRegisteredPhoneNumber
     },
     
 }
 
-export default service;
+export default services;

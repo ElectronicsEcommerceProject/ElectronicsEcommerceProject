@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import db from '../../../../models/index.js'; // Import the database models
+import services from '../../../../services/index.js';
 const { User } = db; // Extract the User model
 
 
@@ -24,7 +25,7 @@ const register = async (req, res) => {
     // --- Input Validation End ---
 
     // Check if the user already exists (only after validation passes)
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await services.auth
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists with this email.' });
     }
