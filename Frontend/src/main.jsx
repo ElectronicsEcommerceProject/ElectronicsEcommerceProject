@@ -7,7 +7,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/tailwind.css";
 import { Provider } from "react-redux";
 // import store from "../components/Redux/store";
-import store from "../components/Redux/Store.js";
+import store from "./redux/Store.js";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

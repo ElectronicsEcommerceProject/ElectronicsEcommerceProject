@@ -10,7 +10,7 @@ import {
   setProducts,
   addToCart,
   addToWishlist,
-} from "../../../components/Redux/ProductSlice.js";
+} from "../../../components/Redux/productSlice";
 import AlertService from "../../../components/Alert/AlertService";
 
 const CustomerDashboard = () => {

@@ -26,6 +26,7 @@ const ProfilePage = () => {
         if (!token) throw new Error("No authentication token found");
 
         const data = await ProfilePageService.getProfileData(token);
+        console.log("Fetched profile data:", data);
         setProfileData({
           name: data.name || "",
           email: data.email || "",
