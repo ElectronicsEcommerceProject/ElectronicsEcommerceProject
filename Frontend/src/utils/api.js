@@ -4,7 +4,9 @@ import { url,port,version } from "../config/config";
 
 const get=async (endpoint,headers,params={})=>{
     try{
-        const response = await axios.get(`${url}:${port}/api/${version}/${endpoint}`, {
+
+        const role = localStorage.getItem("role") ? `/${localStorage.getItem("role")}` : "/"; // it will give admin or customer or retailer
+        const response = await axios.get(`${url}:${port}/api/${version}${role}${endpoint}`, {
             headers: headers,
             params: params
         });
@@ -23,7 +25,9 @@ const get=async (endpoint,headers,params={})=>{
 
 const post=async (endpoint,payload,headers)=>{
     try{
-        const response = await axios.post(`${url}:${port}/api/${version}/${endpoint}`, payload, {
+
+        const role = localStorage.getItem("role") ? `/${localStorage.getItem("role")}` : "/"; // it will give admin or customer or retailer
+        const response = await axios.post(`${url}:${port}/api/${version}${role}${endpoint}`, payload, {
             headers: headers
         });
         const {status} = response;
@@ -39,7 +43,9 @@ const post=async (endpoint,payload,headers)=>{
 }
 const put=async (endpoint,payload,headers)=>{
     try{
-        const response = await axios.put(`${url}:${port}/api/${version}/${endpoint}`, payload, {
+        const role = localStorage.getItem("role") ? `/${localStorage.getItem("role")}` : "/"; // it will give admin or customer or retailer
+
+        const response = await axios.put(`${url}:${port}/api/${version}${role}${endpoint}`, payload, {
             headers: headers
         });
         const {status} = response;
@@ -55,7 +61,9 @@ const put=async (endpoint,payload,headers)=>{
 }
 const patch=async(endpoint,payload,headers)=>{
     try{
-        const response = await axios.patch(`${url}:${port}/api/${version}/${endpoint}`, payload, {
+
+        const role = localStorage.getItem("role") ? `/${localStorage.getItem("role")}` : "/"; // it will give admin or customer or retailer
+        const response = await axios.patch(`${url}:${port}/api/${version}${role}${endpoint}`, payload, {
             headers: headers
         });
         const {status} = response;
@@ -71,7 +79,9 @@ const patch=async(endpoint,payload,headers)=>{
 }
 const del=async (endpoint,headers)=>{
     try{
-        const response = await axios.delete(`${url}:${port}/api/${version}/${endpoint}`, {
+
+        const role = localStorage.getItem("role") ? `/${localStorage.getItem("role")}` : "/"; // it will give admin or customer or retailer
+        const response = await axios.delete(`${url}:${port}/api/${version}${role}${endpoint}`, {
             headers: headers
         });
         const {status} = response;
