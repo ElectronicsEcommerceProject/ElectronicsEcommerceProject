@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, Button } from "react-bootstrap";
 import { FaUserCircle } from "react-icons/fa";
 import ProfilePageService from "./ProfilePageService";
-import AlertService from "../../../components/Alert/AlertService";
+import AlertService from "../../../shared/Alert/AlertService";
 
 const ProfilePage = () => {
   const [profileData, setProfileData] = useState({

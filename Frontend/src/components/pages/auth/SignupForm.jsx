@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Form, Button, Spinner } from "react-bootstrap";
 import { FaUser, FaEnvelope, FaPhone, FaLock } from "react-icons/fa";
 import authService from "./authService"; // Signup API service
-import alertService from "../../components/Alert/AlertService"; // Alert service
-import logo from "../../assets/logo1.png";
+import alertService from "../../shared/Alert/AlertService"; // Alert service
+import logo from "../../../assets/index.js";
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({

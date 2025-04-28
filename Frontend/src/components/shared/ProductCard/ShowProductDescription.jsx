@@ -2,12 +2,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom"; // Import useNavigate for potential search redirection
 import { useSelector, useDispatch } from "react-redux";
-import { addToCart, addToWishlist } from "../../components/Redux/productSlice"; // Import actions
+import { addToCart, addToWishlist } from "../../../redux/ProductSlice"; // Import actions
 import ProductCardService from "./ProductCardService";
 import { Button, Row, Col, Card, Form, Spinner } from "react-bootstrap";
 import { FaCartPlus, FaHeart } from "react-icons/fa";
-import alertService from "../../components/Alert/AlertService";
-import CustomerHeader from "../../components/Header/CustomerHeader"; // Ensure path is correct
+import alertService from "../Alert/AlertService";
+import CustomerHeader from "../Header/CustomerHeader"; // Ensure path is correct
 import CartService from "../ShowAllCartItems/CartService";
 
 const ShowProductDescription = () => {

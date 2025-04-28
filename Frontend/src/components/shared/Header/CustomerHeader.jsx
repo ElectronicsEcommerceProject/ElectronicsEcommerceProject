@@ -12,7 +12,7 @@ import {
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { PersonCircle, Cart3, Heart } from "react-bootstrap-icons";
-import logo from "../../assets/logo1.png";
+import logo from "../../../assets/index.js";
 
 const CustomerHeader = ({ setSearchQuery, cartCount, wishlistCount }) => {
   const [showOffcanvas, setShowOffcanvas] = useState(false);

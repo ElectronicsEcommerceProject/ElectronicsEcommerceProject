@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import CustomerHeader from "../../../components/Header/CustomerHeader";
-import ShowAllCategory from "../../../components/ShowAllCategory/ShowAllCategory";
-import CustomerProductCard from "../../../components/ProductCard/ProductCard";
-// import ShowAllCategoryService from "../../../components/ShowAllCategory/ShowAllCategoryService";
-import fetchAllProductsService from "../../../components/ProductCard/ProductCardService";
+import CustomerHeader from "../../../shared/Header/CustomerHeader";
+import ShowAllCategory from "../../../shared/ShowAllCategory/ShowAllCategory";
+import CustomerProductCard from "../../../shared/ProductCard/ProductCard";
+// import ShowAllCategoryService from "../../../shared/ShowAllCategory/ShowAllCategoryService";
+import fetchAllProductsService from "../../../shared/ProductCard/ProductCardService";
 
 import {
   setProducts,
   addToCart,
   addToWishlist,
-} from "../../../components/Redux/productSlice";
-import AlertService from "../../../components/Alert/AlertService";
+} from "../../../../redux/ProductSlice";
+import AlertService from "../../../shared/Alert/AlertService";
 
 const CustomerDashboard = () => {
   const dispatch = useDispatch();

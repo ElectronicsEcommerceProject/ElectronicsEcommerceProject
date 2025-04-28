@@ -8,8 +8,8 @@ import LoginForm from "./components/pages/auth/LoginForm";
 import SignupForm from "./components/pages/auth/SignupForm";
 import CustomerDashboard from "./components/pages/customer/Dashboard/CustomerDashboard";
 import ProfilePage from "./components/pages/customer/Profile/ProfilePage";
-import ShowProductDescription from "../components/ProductCard/ShowProductDescription";
-import ShowAllCartItems from "../components/ShowAllCartItems/Cart";
+import ShowProductDescription from "./components/shared/ProductCard/ShowProductDescription"
+import ShowAllCartItems from "./components/shared/ShowAllCartItems/Cart";
 const App = () => {
   return (
     <div className="app-container">

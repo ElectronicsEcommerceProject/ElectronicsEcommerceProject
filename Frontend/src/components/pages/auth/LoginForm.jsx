@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Container, Row, Col, Form, Button, Spinner } from "react-bootstrap";
 import { FaEnvelope, FaLock, FaUser, FaEye, FaEyeSlash } from "react-icons/fa";
-import logo from "../../assets/logo1.png";
+import logo from "../../../assets/index.js";
 import authService from "./authService"; // Your login API service
-import alertService from "../../components/Alert/AlertService"; // Your alert service
+import alertService from "../../shared/Alert/AlertService"; // Your alert service
 import { useNavigate } from "react-router-dom";
 
 const LoginForm = () => {
