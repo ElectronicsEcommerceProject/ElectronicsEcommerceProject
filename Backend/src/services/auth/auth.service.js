@@ -1,5 +1,5 @@
-const User = require('../../models/user.model'); // Assuming you have a User model
-
+// const User = require('../../models/user.model'); // Assuming you have a User model
+import User from '../../models/user.model.js'; // Import the User model
 // Function to check if an email is already registered
 const isRegisteredEmail = async (email) => {
     try {
@@ -59,7 +59,7 @@ const isEmailOrPhoneRegistered = async (email, phone) => {
     }
 };
 
-module.exports = {
+export default  {
     isRegisteredEmail,
     isRegisteredPhoneNumber,
     isRegisteredUser,
