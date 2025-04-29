@@ -25,7 +25,7 @@ const register = async (req, res) => {
     // --- Input Validation End ---
 
     // Check if the user already exists (only after validation passes)
-    const existingUser = await services.auth
+    const existingUser = await services.auth.isEmailOrPhoneRegistered(email, phone_number);
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists with this email.' });
     }

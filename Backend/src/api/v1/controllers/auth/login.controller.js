@@ -2,6 +2,8 @@ import bcrypt from 'bcrypt';
 import db from '../../../../models/index.js'; // Import the database models
 const { User } = db; // Extract the User model
 import { encodeJwtToken, verifyJwtToken } from '../../../../middleware/jwt.js';
+import MESSAGE from '../../../../constants/message.js';
+import { StatusCodes } from 'http-status-codes';
 
 
 const login = async (req, res) => {
@@ -32,18 +34,17 @@ const login = async (req, res) => {
     const token = encodeJwtToken(email,user.role);
 
     // Create response object without password
-    const response = {
-      token
-    };
+    
 
-    res.status(200).json({ 
-      message: 'User logged in successfully!',
-      data: response
+    return res.status(StatusCodes.OK).json({ 
+      message: MESSAGE.custom("Authentication Successful!"),
+      result: user,
+      token
     });
 
   } catch (error) {
     console.error('Error during login:', error);
-    res.status(500).json({ message: 'Internal server error.' });
+    res.status(500).json({ message: 'Internal server error.',error });
   }
 };
 

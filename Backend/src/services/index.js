@@ -4,7 +4,8 @@ import {  default as authService } from "./auth/auth.service.js";
 const services ={
     auth: {
         isRegisteredEmail: authService.isRegisteredEmail,
-        isRegisteredPhoneNumber:authService.isRegisteredPhoneNumber
+        isRegisteredPhoneNumber:authService.isRegisteredPhoneNumber,
+        isEmailOrPhoneRegistered:authService.isEmailOrPhoneRegistered,
     },
     
 }

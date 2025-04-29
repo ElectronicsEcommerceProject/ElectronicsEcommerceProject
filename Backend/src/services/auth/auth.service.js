@@ -52,6 +52,8 @@ const isEmailOrPhoneRegistered = async (email, phone) => {
             }
         });
 
+        console.log(existingUser,"okk")
+
         return !!existingUser; // Returns true if either email or phone exists, false otherwise
     } catch (error) {
         console.error('Error checking email or phone registration:', error);
