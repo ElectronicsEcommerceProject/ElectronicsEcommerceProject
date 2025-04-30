@@ -63,6 +63,8 @@ export default (sequelize, DataTypes) => {
     User.hasMany(models.Wishlist, { foreignKey: 'user_id' });
     User.hasMany(models.Review, { foreignKey: 'user_id' });
     User.belongsToMany(models.Coupon, { through: models.CouponUser, foreignKey: 'user_id' });
+    User.hasMany(models.CouponRedemption, { foreignKey: 'user_id' });
+    User.hasMany(models.CouponUser, { foreignKey: 'user_id' });
   };
 
   return User;

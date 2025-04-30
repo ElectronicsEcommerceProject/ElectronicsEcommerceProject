@@ -32,7 +32,7 @@ db.User = await import('./user.model.js').then(m => m.default(sequelize, Sequeli
 db.Category = await import('./category.model.js').then(m => m.default(sequelize, Sequelize));
 db.Product = await import('./product.model.js').then(m => m.default(sequelize, Sequelize));
 db.Coupon = await import('./coupon.model.js').then(m => m.default(sequelize, Sequelize));
-db.CouponUser = await import('./couponUser.model.js').then(m => m.default(sequelize, Sequelize));
+db.CouponUser = await import('./couponRedemption.model.js').then(m => m.default(sequelize, Sequelize));
 db.Order = await import('./order.model.js').then(m => m.default(sequelize, Sequelize));
 db.OrderItem = await import('./orderItem.model.js').then(m => m.default(sequelize, Sequelize));
 db.Cart = await import('./cart.model.js').then(m => m.default(sequelize, Sequelize));
