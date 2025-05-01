@@ -3,9 +3,17 @@ import { DataTypes } from 'sequelize';
 export default (sequelize) => {
   const Cart = sequelize.define('Cart', {
     cart_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID, // UUID for primary key
+      defaultValue: DataTypes.UUIDV4, // Automatically generate UUID
       primaryKey: true,
-      autoIncrement: true,
+    },
+    user_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    product_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
     },
     quantity: {
       type: DataTypes.INTEGER,
@@ -13,13 +21,14 @@ export default (sequelize) => {
       defaultValue: 1,
     },
   }, {
-    timestamps: true, // Changed to true for consistency
+    timestamps: true, // Enable timestamps for createdAt and updatedAt
     tableName: 'Carts',
   });
 
   Cart.associate = (models) => {
-    Cart.belongsTo(models.User, { foreignKey: 'user_id' });
-    Cart.belongsTo(models.Product, { foreignKey: 'product_id' });
+    // Define associations
+    Cart.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' }); // Links cart to a user
+    Cart.belongsTo(models.Product, { foreignKey: 'product_id', as: 'product' }); // Links cart to a product
   };
 
   return Cart;

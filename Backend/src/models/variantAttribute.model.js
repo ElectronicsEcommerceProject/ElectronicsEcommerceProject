@@ -6,8 +6,8 @@ export default (sequelize) => {
     variant_id: { type: DataTypes.UUID, allowNull: false },
     attribute_id: { type: DataTypes.UUID, allowNull: false },
     value: { type: DataTypes.STRING, allowNull: false },
-    created_by: { type: DataTypes.INTEGER, allowNull: false },
-    updated_by: { type: DataTypes.INTEGER, allowNull: true },
+    created_by: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
+    updated_by: { type: DataTypes.UUID, allowNull: true }, // Changed to UUID
   }, {
     timestamps: true,
     tableName: 'VariantAttributeValues',

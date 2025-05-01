@@ -7,8 +7,8 @@ export default (sequelize) => {
     name: { type: DataTypes.STRING, allowNull: false },
     data_type: { type: DataTypes.ENUM('string', 'int', 'float', 'enum'), allowNull: false },
     is_variant_level: { type: DataTypes.BOOLEAN, defaultValue: false },
-    created_by: { type: DataTypes.INTEGER, allowNull: false },
-    updated_by: { type: DataTypes.INTEGER, allowNull: true }, // Changed to allowNull: true for consistency
+    created_by: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
+    updated_by: { type: DataTypes.UUID, allowNull: true }, // Changed to UUID
   }, {
     timestamps: true,
     tableName: 'Attributes',

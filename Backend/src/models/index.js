@@ -41,13 +41,20 @@ db.CouponUser = (await import('./couponUser.model.js')).default(sequelize);
 db.Order = (await import('./order.model.js')).default(sequelize);
 db.OrderItem = (await import('./orderItem.model.js')).default(sequelize);
 db.Cart = (await import('./cart.model.js')).default(sequelize);
+db.CartItem = (await import('./cartItem.model.js')).default(sequelize);
 db.Wishlist = (await import('./wishlist.model.js')).default(sequelize);
+db.WishListItem = (await import('./wishListItem.model.js')).default(sequelize);
 db.Review = (await import('./review.model.js')).default(sequelize);
 db.StockAlert = (await import('./stockAlert.model.js')).default(sequelize);
 db.DiscountRule = (await import('./discountRule.model.js')).default(sequelize);
 db.VariantAttributeValue = (await import('./variantAttribute.model.js')).default(sequelize);
 db.User = (await import('./user.model.js')).default(sequelize);
+db.Address = (await import('./address.model.js')).default(sequelize);
+db.Owner = (await import('./owner.model.js')).default(sequelize);
 db.CouponRedemption = (await import('./couponRedemption.model.js')).default(sequelize);
+
+db.Store = (await import('./store.model.js')).default(sequelize);
+
 
 // Define relationships
 Object.keys(db).forEach((modelName) => {

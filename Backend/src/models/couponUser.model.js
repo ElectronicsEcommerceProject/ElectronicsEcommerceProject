@@ -12,7 +12,7 @@ export default (sequelize) => {
       allowNull: false,
     },
     user_id: {
-      type: DataTypes.INTEGER, // Changed to INTEGER
+      type: DataTypes.UUID, // Changed to UUID
       allowNull: false,
     },
   }, {

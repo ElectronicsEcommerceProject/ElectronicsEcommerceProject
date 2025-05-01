@@ -1,13 +1,13 @@
 import { DataTypes } from 'sequelize';
 
 export default (sequelize) => {
-  const OrderItem = sequelize.define('OrderItem', {
-    order_item_id: {
+  const CartItem = sequelize.define('CartItem', {
+    cart_item_id: {
       type: DataTypes.UUID, // UUID for primary key
       defaultValue: DataTypes.UUIDV4, // Automatically generate UUID
       primaryKey: true,
     },
-    order_id: {
+    cart_id: {
       type: DataTypes.UUID,
       allowNull: false,
     },
@@ -45,16 +45,16 @@ export default (sequelize) => {
     },
   }, {
     timestamps: true,
-    tableName: 'OrderItems',
+    tableName: 'CartItems',
   });
 
-  OrderItem.associate = (models) => {
+  CartItem.associate = (models) => {
     // Define associations
-    OrderItem.belongsTo(models.Order, { foreignKey: 'order_id', as: 'order' }); // Links order item to an order
-    OrderItem.belongsTo(models.Product, { foreignKey: 'product_id', as: 'product' }); // Links order item to a product
-    OrderItem.belongsTo(models.ProductVariant, { foreignKey: 'variant_id', as: 'variant' }); // Links order item to a product variant
-    OrderItem.belongsTo(models.Attribute, { foreignKey: 'attribute_id', as: 'attribute' }); // Links order item to an attribute
+    CartItem.belongsTo(models.Cart, { foreignKey: 'cart_id', as: 'cart' }); // Links cart item to a cart
+    CartItem.belongsTo(models.Product, { foreignKey: 'product_id', as: 'product' }); // Links cart item to a product
+    CartItem.belongsTo(models.ProductVariant, { foreignKey: 'variant_id', as: 'variant' }); // Links cart item to a product variant
+    CartItem.belongsTo(models.Attribute, { foreignKey: 'attribute_id', as: 'attribute' }); // Links cart item to an attribute
   };
 
-  return OrderItem;
+  return CartItem;
 };

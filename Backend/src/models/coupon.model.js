@@ -27,8 +27,8 @@ export default (sequelize) => {
     valid_to: { type: DataTypes.DATE, allowNull: false },
     is_active: { type: DataTypes.BOOLEAN, defaultValue: true },
     is_user_new: { type: DataTypes.BOOLEAN, defaultValue: false },
-    created_by: { type: DataTypes.INTEGER, allowNull: false },
-    updated_by: { type: DataTypes.INTEGER, allowNull: true },
+    created_by: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
+    updated_by: { type: DataTypes.UUID, allowNull: true }, // Changed to UUID
   }, {
     tableName: 'Coupons',
     timestamps: true,

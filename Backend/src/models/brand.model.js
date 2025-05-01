@@ -5,10 +5,10 @@ export default (sequelize) => {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     name: { type: DataTypes.STRING, allowNull: false, unique: true },
     slug: { type: DataTypes.STRING, unique: true },
-    created_by: { type: DataTypes.INTEGER, allowNull: false },
-    updated_by: { type: DataTypes.INTEGER, allowNull: true },
+    created_by: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
+    updated_by: { type: DataTypes.UUID, allowNull: true }, // Changed to UUID
   }, {
-    tableName: 'Brands', // Added explicit tableName
+    tableName: 'Brands',
     timestamps: true,
     indexes: [
       { fields: ['name'] },

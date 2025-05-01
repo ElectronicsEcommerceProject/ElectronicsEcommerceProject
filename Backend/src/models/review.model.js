@@ -3,16 +3,16 @@ import { DataTypes } from 'sequelize';
 export default (sequelize) => {
   const Review = sequelize.define('Review', {
     review_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID, // Changed to UUID
+      defaultValue: DataTypes.UUIDV4, // Automatically generate UUID
       primaryKey: true,
-      autoIncrement: true,
     },
     product_id: {
-      type: DataTypes.UUID, // Explicitly defined
+      type: DataTypes.UUID, // Explicitly defined as UUID
       allowNull: false,
     },
     user_id: {
-      type: DataTypes.INTEGER, // Explicitly defined
+      type: DataTypes.UUID, // Changed to UUID
       allowNull: false,
     },
     rating: {
@@ -32,7 +32,7 @@ export default (sequelize) => {
       defaultValue: DataTypes.NOW,
     },
   }, {
-    timestamps: true, // Changed to true
+    timestamps: true,
     tableName: 'Reviews',
   });
 

@@ -3,9 +3,13 @@ import { DataTypes } from 'sequelize';
 export default (sequelize) => {
   const Order = sequelize.define('Order', {
     order_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
-      autoIncrement: true,
+    },
+    user_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
     },
     total_amount: {
       type: DataTypes.DECIMAL(10, 2),
@@ -15,27 +19,29 @@ export default (sequelize) => {
       type: DataTypes.ENUM('pending', 'shipped', 'delivered', 'cancelled', 'cancel_requested'),
       defaultValue: 'pending',
     },
-    address: {
-      type: DataTypes.TEXT,
+    address_id: {
+      type: DataTypes.UUID,
       allowNull: false,
     },
-    mobile_number: {
+    phone_number: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    created_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
+    total_price: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
     },
   }, {
-    timestamps: true, // Changed to true for consistency
+    timestamps: true,
     tableName: 'Orders',
   });
 
   Order.associate = (models) => {
-    Order.belongsTo(models.User, { foreignKey: 'user_id' });
-    Order.belongsTo(models.Coupon, { foreignKey: 'coupon_id' });
-    Order.hasMany(models.OrderItem, { foreignKey: 'order_id' });
+    // Define associations
+    Order.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' }); // Links order to a user
+    Order.belongsTo(models.Address, { foreignKey: 'address_id', as: 'address' }); // Links order to an address
+    Order.hasMany(models.OrderItem, { foreignKey: 'order_id', as: 'orderItems' }); // Links order to its items
+    Order.hasMany(models.CouponRedemption, { foreignKey: 'order_id', as: 'couponRedemptions' }); // Links order to coupon redemptions
   };
 
   return Order;

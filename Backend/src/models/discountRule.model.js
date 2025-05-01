@@ -56,15 +56,15 @@ export default (sequelize) => {
       defaultValue: true,
     },
     created_by: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID, // Changed to UUID
       allowNull: false,
     },
     updated_by: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID, // Changed to UUID
       allowNull: true,
     },
   }, {
-    timestamps: true, // Changed to true for consistency
+    timestamps: true,
     tableName: 'DiscountRules',
     indexes: [
       { fields: ['product_id'] },

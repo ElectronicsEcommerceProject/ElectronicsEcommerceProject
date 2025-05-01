@@ -5,16 +5,16 @@ export default (sequelize) => {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     product_id: { type: DataTypes.UUID, allowNull: false },
     variant_id: { type: DataTypes.UUID, allowNull: true },
-    user_id: { type: DataTypes.INTEGER, allowNull: false }, // Changed to INTEGER
+    user_id: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
     rating: { type: DataTypes.INTEGER, allowNull: false },
     title: { type: DataTypes.STRING, allowNull: true },
     review: { type: DataTypes.TEXT, allowNull: true },
     is_verified_purchase: { type: DataTypes.BOOLEAN, defaultValue: false },
     is_approved: { type: DataTypes.BOOLEAN, defaultValue: false },
-    created_by: { type: DataTypes.INTEGER, allowNull: false },
-    updated_by: { type: DataTypes.INTEGER, allowNull: true },
+    created_by: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
+    updated_by: { type: DataTypes.UUID, allowNull: true }, // Changed to UUID
   }, {
-    tableName: 'ProductReviews', // Added explicit tableName
+    tableName: 'ProductReviews',
     timestamps: true,
     indexes: [
       { fields: ['product_id'] },
