@@ -2,8 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import db from './src/models/index.js';
-import mainRoutes from './src/api/v1/routes/index.js'
-
+import mainRoutes from './src/api/v1/routes/index.js';
 
 import fs from 'fs';
 import path from 'path';
@@ -25,12 +24,10 @@ dotenv.config({ path: './.env' });
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('uploads')); 
+app.use('/uploads', express.static('uploads'));
 
 // ✅ Routes
-
 app.use('/api/v1', mainRoutes);
-
 
 // ✅ Health check route
 app.get('/', (req, res) => {
@@ -38,7 +35,7 @@ app.get('/', (req, res) => {
 });
 
 // ✅ Sync DB and Start Server
-const { sequelize } = db;
+const { sequelize } = db; // ✅ Access sequelize from db object
 const PORT = process.env.PORT || 3000;
 
 (async () => {
@@ -46,7 +43,6 @@ const PORT = process.env.PORT || 3000;
     await sequelize.authenticate();
     console.log('✅ Database connection established successfully.');
     await sequelize.sync(); // Remove { alter: true }
-    // await sequelize.sync({ alter: true });
     console.log('✅ Database synced successfully.');
 
     app.listen(PORT, () => {

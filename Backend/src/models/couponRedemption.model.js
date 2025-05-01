@@ -1,16 +1,31 @@
-export default (sequelize, DataTypes) => {
+import { DataTypes } from 'sequelize';
+
+export default (sequelize) => {
   const CouponRedemption = sequelize.define('CouponRedemption', {
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    coupon_id: { type: DataTypes.UUID, allowNull: false },
-    user_id: { type: DataTypes.UUID, allowNull: false },
-    order_id: { type: DataTypes.UUID, allowNull: true },
-    redeemed_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
+    user_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    coupon_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    order_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    redeemed_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
   }, {
     tableName: 'CouponRedemptions',
-    indexes: [
-      { fields: ['coupon_id'] },
-      { fields: ['user_id'] }
-    ]
+    timestamps: true,
   });
 
   CouponRedemption.associate = (models) => {

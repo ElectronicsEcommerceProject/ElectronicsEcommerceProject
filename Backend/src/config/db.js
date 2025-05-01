@@ -2,21 +2,21 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// ✅ These two lines recreate __dirname
+// ✅ Fix for __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ✅ Now you can safely use __dirname
+// ✅ Load environment variables
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 // Debugging: Log environment variables to verify they are loaded
-// console.log('DB_USER:', process.env.DB_USER);
-// console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
-// console.log('DB_NAME:', process.env.DB_NAME);
-// console.log('DB_HOST:', process.env.DB_HOST);
-// console.log('DB_PORT:', process.env.DB_PORT);
+console.log('DB_USER:', process.env.DB_USER);
+console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
+console.log('DB_NAME:', process.env.DB_NAME);
+console.log('DB_HOST:', process.env.DB_HOST);
+console.log('DB_PORT:', process.env.DB_PORT);
 
-export default {
+const dbConfigFile = {
   development: {
     username: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || 'root',
@@ -54,3 +54,5 @@ export default {
     },
   },
 };
+
+export default dbConfigFile;

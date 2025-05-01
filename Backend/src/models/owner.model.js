@@ -1,8 +1,8 @@
 import { DataTypes } from 'sequelize';
 
 export default (sequelize) => {
-  const User = sequelize.define('User', {
-    user_id: {
+  const Owner = sequelize.define('Owner', {
+    owner_id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
@@ -28,8 +28,8 @@ export default (sequelize) => {
         isEmail: true,
       },
     },
-    current_address_id: {
-      type: DataTypes.UUID,
+    default_address: {
+      type: DataTypes.TEXT,
       allowNull: true,
     },
     status: {
@@ -37,22 +37,20 @@ export default (sequelize) => {
       defaultValue: 'active',
     },
     role: {
-      type: DataTypes.ENUM('retailer', 'customer'),
+      type: DataTypes.ENUM('admin'),
       allowNull: false,
+      defaultValue: 'admin',
     },
   }, {
     timestamps: true,
-    tableName: 'Users',
+    tableName: 'Owners',
   });
 
-  User.associate = (models) => {
-    User.hasMany(models.Product, { foreignKey: 'created_by', as: 'products' });
-    User.hasMany(models.Order, { foreignKey: 'user_id', as: 'orders' });
-    User.hasMany(models.Cart, { foreignKey: 'user_id', as: 'carts' });
-    User.hasMany(models.Wishlist, { foreignKey: 'user_id', as: 'wishlists' });
-    User.hasMany(models.Address, { foreignKey: 'user_id', as: 'addresses' });
-    User.hasMany(models.Review, { foreignKey: 'user_id', as: 'reviews' });
+  Owner.associate = (models) => {
+    // Define associations
+    Owner.hasMany(models.Store, { foreignKey: 'owner_id', as: 'stores' }); // Example: Owner can have multiple stores
+    Owner.hasMany(models.Product, { foreignKey: 'created_by', as: 'products' }); // Example: Owner can create products
   };
 
-  return User;
+  return Owner;
 };

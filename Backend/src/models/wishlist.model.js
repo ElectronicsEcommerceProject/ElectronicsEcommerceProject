@@ -1,24 +1,29 @@
-export default (sequelize, DataTypes) => {
-    const Wishlist = sequelize.define('Wishlist', {
-      wishlist_id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-      },
-      created_at: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW
-      }
-    }, {
-      timestamps: false,
-      tableName: 'Wishlist'
-    });
-  
-    Wishlist.associate = (models) => {
-      Wishlist.belongsTo(models.User, { foreignKey: 'user_id', constraints: false });
-      Wishlist.belongsTo(models.Product, { foreignKey: 'product_id', constraints: false });
-    };
-    
-  
-    return Wishlist;
+import { DataTypes } from 'sequelize';
+
+export default (sequelize) => {
+  const Wishlist = sequelize.define('Wishlist', {
+    wishlist_id: {
+      type: DataTypes.UUID, // UUID for primary key
+      defaultValue: DataTypes.UUIDV4, // Automatically generate UUID
+      primaryKey: true,
+    },
+    user_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    quantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 1,
+    },
+  }, {
+    timestamps: true, // Enable timestamps for createdAt and updatedAt
+    tableName: 'Wishlists',
+  });
+
+  Wishlist.associate = (models) => {
+    Wishlist.belongsTo(models.User, { foreignKey: 'user_id' });
   };
+
+  return Wishlist;
+};
