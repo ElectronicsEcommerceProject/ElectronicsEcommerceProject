@@ -42,7 +42,7 @@ db.StockAlert = (await import('./stockAlert.model.js')).default(sequelize);
 db.DiscountRule = (await import('./discountRule.model.js')).default(sequelize);
 db.VariantAttributeValue = (await import('./variantAttribute.model.js')).default(sequelize);
 db.User = (await import('./user.model.js')).default(sequelize, DataTypes);
-
+db.CouponRedemption = (await import('./couponRedemption.model.js')).default(sequelize);
 // Define relationships
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
