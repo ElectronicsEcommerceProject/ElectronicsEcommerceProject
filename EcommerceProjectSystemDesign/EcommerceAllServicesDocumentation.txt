@@ -1,0 +1,179 @@
+Alright, bro! Main tujhe pura logic aur services ko step-by-step explain karunga taaki koi naya developer bhi easily samajh sake aur usko coding start karne mein koi problem na ho. Main har cheez detail mein cover karunga, bina kuch skip kiye hue. Chalo shuru karte hain!
+
+---
+
+## **System Ka Pura Logic aur Services (Step-by-Step)**
+
+### **1. User Registration (Signup)**
+- **Kya Hoga**: Jab koi user signup karega, toh woh apna name, email, phone number, aur password frontend se bhejega (jaise `POST /api/auth/register` request ke through).
+- **Kaise Kaam Karega**:
+  1. Backend pehle check karega ki email aur phone number unique hain ya nahi (database mein pehle se exist nahi karte).
+  2. Password ko hash karega (jaise bcrypt use karke) taaki security bani rahe.
+  3. User ka role backend decide karega:
+     - Agar email ya phone number kisi predefined list mein hai (jo admin ne set ki hai), toh role `admin` ya `retailer` hoga.
+     - Warna, default role `customer` assign hoga.
+  4. User ki details database mein save hongi (Users table mein).
+  5. Success message frontend ko bhejega (jaise "User registered successfully").
+- **Logic Point**: Role user se nahi mangwaya jayega, backend khud decide karega. Admin ko manually database mein add karna padega ya kisi secure process se.
+
+---
+
+### **2. User Login**
+- **Kya Hoga**: User login karega apne email aur password ke saath (jaise `POST /api/auth/login`).
+- **Kaise Kaam Karega**:
+  1. Backend email ke basis pe user ko database se dhundega.
+  2. Password verify karega (hashed password se match karke).
+  3. Agar credentials sahi hain, toh:
+     - User ka role database se fetch karega (Users table se).
+     - Ek JWT token banayega (jisme sirf `user_id` hoga).
+     - Token aur role dono frontend ko bhejega.
+  4. Frontend role ke basis pe user ko redirect karega:
+     - `admin` → `admin.example.com`
+     - `retailer` → `retailer.example.com`
+     - `customer` → `example.com`
+- **Logic Point**: Role hamesha database se aayega, frontend sirf redirect ka kaam karega.
+
+---
+
+### **3. Forgot Password**
+- **Kya Hoga**: Agar user password bhool jata hai, toh woh email bhejega (jaise `POST /api/auth/forgot-password`).
+- **Kaise Kaam Karega**:
+  1. Backend ek reset token generate karega (random string).
+  2. Token ko database mein save karega (Users table ya alag Reset_Tokens table mein) aur expiry time set karega.
+  3. User ke email pe reset link bhejega (jaise `example.com/reset-password?token=xyz`).
+  4. User link pe click karke naya password set karega (`POST /api/auth/reset-password`).
+- **Logic Point**: Ye process sab users (customer, retailer, admin) ke liye same rahega.
+
+---
+
+### **4. Product Browsing**
+- **Kya Hoga**: User products dekhna chahega (jaise `GET /api/products`).
+- **Kaise Kaam Karega**:
+  1. User request bhejega, aur uske saath JWT token bhi jayega.
+  2. Backend token se `user_id` nikalega, phir database se user ka email/phone aur role fetch karega.
+  3. Role ke basis pe products filter karega:
+     - Har product ke paas `target_role` field hoga (jaise 'customer', 'retailer', 'both').
+     - Sirf wahi products dikhega jo user ke role se match karte hain.
+  4. Filtered products frontend ko bhejega.
+- **Logic Point**: User sirf apne role ke products hi dekh sakta hai.
+
+---
+
+### **5. Admin: Product Management**
+- **Kya Hoga**: Admin products ko manage karega (add, update, delete).
+- **Kaise Kaam Karega**:
+  1. Admin request bhejega (jaise `POST /api/admin/products`, `PUT /api/admin/products/:id`, `DELETE /api/admin/products/:id`).
+  2. Backend pehle token se user ka role check karega:
+     - Agar role `admin` nahi hai, toh "Access Denied" message bhejega.
+     - Agar `admin` hai, toh request process karega.
+  3. Product add, update, ya delete hoga database mein (Products table).
+- **Logic Point**: Sirf admin hi ye kaam kar sakta hai.
+
+---
+
+### **6. Order Placement**
+- **Kya Hoga**: User apne cart se checkout karega (jaise `POST /api/orders`).
+- **Kaise Kaam Karega**:
+  1. User order details bhejega (products, quantities, etc.).
+  2. Backend token se user ka role fetch karega.
+  3. Role ke basis pe discount apply karega:
+     - **Customer**: Agar quantity `discount_quantity` (predefined value) se zyada hai, toh regular discount milega.
+     - **Retailer**: Pehle check karega ki quantity `min_retailer_quantity` se kam toh nahi, phir agar quantity `bulk_discount_quantity` se zyada hai toh bulk discount dega.
+  4. Order database mein save hoga (Orders aur Order_Items tables).
+  5. Stock update hoga (Products table mein).
+  6. Confirmation message user ko bhejega.
+- **Logic Point**: Discount logic role ke hisaab se alag-alag hai.
+
+---
+
+### **7. Order Management (Admin)**
+- **Kya Hoga**: Admin orders ka status change karega, aur user apne orders dekh sakta hai.
+- **Kaise Kaam Karega**:
+  1. Admin status change karega (jaise `PUT /api/admin/orders/:id/status`).
+     - Backend role check karega, sirf `admin` hi status change kar sakta hai.
+  2. User apne orders dekh sakta hai (jaise `GET /api/orders/history`).
+     - Backend token se user ka `user_id` fetch karega aur uske orders return karega.
+- **Logic Point**: Admin status change karta hai, user sirf dekh sakta hai.
+
+---
+
+### **8. Cart Management**
+- **Kya Hoga**: User apne cart mein products add, dekh, ya remove karega.
+- **Kaise Kaam Karega**:
+  1. Product add karna (`POST /api/cart`):
+     - Backend role fetch karega.
+     - Retailer ke liye `min_retailer_quantity` check karega (agar kam hai toh error dega).
+     - Cart mein item add hoga (Cart table).
+  2. Cart dekhna (`GET /api/cart`): User ke cart items return honge.
+  3. Item remove karna (`DELETE /api/cart/:id`): Cart se item delete hoga.
+- **Logic Point**: Retailer ko minimum quantity follow karni padegi.
+
+---
+
+### **9. Wishlist Management**
+- **Kya Hoga**: User products ko wishlist mein add, dekh, ya remove karega.
+- **Kaise Kaam Karega**:
+  1. Add karna (`POST /api/wishlist`): Product wishlist mein save hoga (Wishlist table).
+  2. Dekhna (`GET /api/wishlist`): User ke wishlist items return honge.
+  3. Remove karna (`DELETE /api/wishlist/:id`): Item wishlist se hatega.
+- **Logic Point**: Wishlist sab users ke liye same tarah se kaam karta hai.
+
+---
+
+### **10. Coupon Creation (Admin)**
+- **Kya Hoga**: Admin coupons banayega.
+- **Kaise Kaam Karega**:
+  1. Admin coupon details bhejega (`POST /api/admin/coupons`):
+     - `code`, `discount_percentage`, `valid_from`, `valid_until`, `target_role` ('customer', 'retailer', 'both'), `is_user_specific`, `user_ids` (specific users ke liye).
+  2. Backend coupon save karega (Coupons table):
+     - Agar `is_user_specific` hai, toh `Coupon_Users` table mein user IDs add karega.
+  3. Notifications trigger honge:
+     - Specific users ko email.
+     - General coupons ke liye in-app notification.
+- **Logic Point**: Admin decide karta hai coupon kis role ke liye hai.
+
+---
+
+### **11. Coupon Application**
+- **Kya Hoga**: User coupon code use karega.
+- **Kaise Kaam Karega**:
+  1. User code bhejega (`POST /api/coupons/validate`).
+  2. Backend role fetch karega:
+     - Check karega ki coupon ka `target_role` user ke role se match karta hai.
+     - Agar `is_user_specific` hai, toh `Coupon_Users` mein user ID check karega.
+  3. Agar valid hai, toh discount return karega.
+- **Logic Point**: Sirf eligible users hi coupon use kar sakte hain.
+
+---
+
+### **12. Notification Service**
+- **Kya Hoga**: System notifications bhejega.
+- **Kaise Kaam Karega**:
+  1. **Coupon Notification**:
+     - Specific users ko email.
+     - General coupons ke liye in-app notification `target_role` ke users ko.
+  2. **Order Confirmation**: Order place hone pe user ko email.
+  3. **Stock Alerts**: Stock kam hone pe admin ko email.
+- **Logic Point**: Notifications events ke basis pe automatically trigger hote hain.
+
+---
+
+### **13. Stock Alert Service**
+- **Kya Hoga**: Stock kam hone pe admin ko alert milega.
+- **Kaise Kaam Karega**:
+  1. Order place hone pe stock update hoga.
+  2. Backend check karega ki stock `stock_alert_threshold` se kam hai ya nahi.
+  3. Agar kam hai, toh `Stock_Alerts` table mein entry add karega aur admin ko email bhejega.
+- **Logic Point**: Low stock pe automatic alert jata hai.
+
+---
+
+## **Important Points**
+- **Role Fetching**: Har protected API mein backend token se `user_id` nikalega, phir database se role fetch karega.
+- **Subdomains**: Frontend role ke basis pe redirect karta hai, lekin backend APIs role-based hain (subdomain se independent).
+- **Database Tables**: `Users`, `Products`, `Orders`, `Order_Items`, `Cart`, `Wishlist`, `Coupons`, `Coupon_Users`, `Stock_Alerts` – ye sab tables design mein hain.
+
+---
+
+## **Final Baat**
+Ye pura logic ekdum clear hai, bro! Har service ko step-by-step likha hai taaki koi naya developer padhe toh samajh jaye ki kya banan hai aur kaise banan hai. Agar aur kuch doubt hai, toh bolna, main aur detail mein explain kar dunga!
