@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { Sequelize,DataTypes } from 'sequelize';
+import { Sequelize } from 'sequelize';
 import dbConfigFile from '../config/db.js';
 
 dotenv.config({ path: '../.env' });
@@ -7,6 +7,11 @@ dotenv.config({ path: '../.env' });
 const env = process.env.NODE_ENV || 'development';
 const dbConfig = dbConfigFile[env];
 
+if (!dbConfig) {
+  throw new Error(`Database configuration for environment "${env}" is missing.`);
+}
+
+// ✅ Initialize Sequelize
 const sequelize = new Sequelize(
   dbConfig.database,
   dbConfig.username,
@@ -41,8 +46,9 @@ db.Review = (await import('./review.model.js')).default(sequelize);
 db.StockAlert = (await import('./stockAlert.model.js')).default(sequelize);
 db.DiscountRule = (await import('./discountRule.model.js')).default(sequelize);
 db.VariantAttributeValue = (await import('./variantAttribute.model.js')).default(sequelize);
-db.User = (await import('./user.model.js')).default(sequelize, DataTypes);
+db.User = (await import('./user.model.js')).default(sequelize);
 db.CouponRedemption = (await import('./couponRedemption.model.js')).default(sequelize);
+
 // Define relationships
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
@@ -50,4 +56,5 @@ Object.keys(db).forEach((modelName) => {
   }
 });
 
+db.sequelize = sequelize; // ✅ Add Sequelize instance to db object
 export default db;
