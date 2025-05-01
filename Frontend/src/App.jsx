@@ -1,36 +1,33 @@
-import { useState } from "react";
+// filepath: c:\Users\satyam singh\Desktop\vite-project\maaLaxmiEcommerceWebsite\ElectronicsEcommerceProject\Frontend\src\App.jsx
 import React from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import { Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-function App() {
-  const [count, setCount] = useState(0);
-
+import LoginForm from "./components/pages/auth/LoginForm";
+import SignupForm from "./components/pages/auth/SignupForm";
+import CustomerDashboard from "./components/pages/customer/Dashboard/CustomerDashboard";
+import ProfilePage from "./components/pages/customer/Profile/ProfilePage";
+import ShowProductDescription from "./components/shared/ProductCard/ShowProductDescription"
+import ShowAllCartItems from "./components/shared/ShowAllCartItems/Cart";
+const App = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1 className="bg-yellow-500">Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="app-container">
+      <ToastContainer />
+
+      <Routes>
+        <Route path="/signup" element={<SignupForm />} />
+        <Route path="/login" element={<LoginForm />} />
+        <Route path="/" element={<CustomerDashboard />} />
+        <Route path="/profilePage" element={<ProfilePage />} />
+        <Route
+          path="/product/:productId"
+          element={<ShowProductDescription />}
+        />
+        <Route path="/showCartItems" element={<ShowAllCartItems />} />"
+      </Routes>
+    </div>
   );
-}
+};
 
 export default App;
