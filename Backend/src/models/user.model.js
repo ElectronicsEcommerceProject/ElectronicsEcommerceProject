@@ -1,57 +1,59 @@
-export default (sequelize, DataTypes) => {
+import { DataTypes } from 'sequelize';
+
+export default (sequelize) => {
   const User = sequelize.define('User', {
     user_id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
-      autoIncrement: true
+      autoIncrement: true,
     },
     name: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     email: {
       type: DataTypes.STRING,
       unique: true,
       allowNull: false,
       validate: {
-        isEmail: true
-      }
+        isEmail: true,
+      },
     },
     phone_number: {
       type: DataTypes.STRING,
-      unique: true
+      unique: true,
     },
     password: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     address: {
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: true,
     },
     city: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     postal_code: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     profileImage_url: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     role: {
       type: DataTypes.ENUM('customer', 'retailer', 'admin'),
-      allowNull: false
+      allowNull: false,
     },
     created_at: {
       type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW
-    }
+      defaultValue: DataTypes.NOW,
+    },
   }, {
-    timestamps: false,
-    tableName: 'Users'
+    timestamps: true, // Changed to true
+    tableName: 'Users',
   });
 
   User.associate = (models) => {

@@ -1,5 +1,6 @@
-export default (sequelize, DataTypes) => {
-  
+import { DataTypes } from 'sequelize';
+
+export default (sequelize) => {
   const Product = sequelize.define('Product', {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     name: { type: DataTypes.STRING, allowNull: false },
@@ -13,43 +14,35 @@ export default (sequelize, DataTypes) => {
     is_featured: { type: DataTypes.BOOLEAN, defaultValue: false },
     category_id: { type: DataTypes.UUID, allowNull: false },
     brand_id: { type: DataTypes.UUID, allowNull: false },
-    created_by: { type: DataTypes.UUID, allowNull: false },
-    updated_by: { type: DataTypes.UUID, allowNull: true },
-    created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-    updated_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-    target_role: {
-      type: DataTypes.ENUM('customer', 'retailer', 'both'),
-      allowNull: false
-    }
+    created_by: { type: DataTypes.INTEGER, allowNull: false },
+    updated_by: { type: DataTypes.INTEGER, allowNull: true },
   }, {
+    timestamps: true,
+    tableName: 'Products',
     indexes: [
       { fields: ['category_id'] },
       { fields: ['brand_id'] },
       { fields: ['created_by'] },
       { fields: ['updated_by'] },
       { fields: ['slug'] },
-      { fields: ['title', 'description', 'short_description'], type: 'FULLTEXT' } // Full-text index on these fields
-
-    ]
+      { fields: ['name', 'description', 'short_description'], type: 'FULLTEXT' },
+    ],
   });
-  
+
   Product.associate = (models) => {
     Product.belongsTo(models.Category, { foreignKey: 'category_id' });
     Product.belongsTo(models.Brand, { foreignKey: 'brand_id' });
+    Product.belongsTo(models.User, { foreignKey: 'created_by', as: 'creator' });
+    Product.belongsTo(models.User, { foreignKey: 'updated_by', as: 'updater' });
     Product.hasMany(models.ProductVariant, { foreignKey: 'product_id' });
     Product.hasMany(models.ProductMedia, { foreignKey: 'product_id' });
     Product.hasMany(models.ProductReview, { foreignKey: 'product_id' });
-    Product.hasMany(models.DiscountRule, { foreignKey: 'product_id' });
-    Product.hasMany(models.ProductAttribute, { foreignKey: 'product_id' });
-       
-        Product.belongsTo(models.User, { foreignKey: 'created_by' });
-        Product.hasMany(models.Coupon, { foreignKey: 'product_id' });
-        Product.hasMany(models.OrderItem, { foreignKey: 'product_id' });
-      Product.hasMany(models.Cart, { foreignKey: 'product_id' });
-      Product.hasMany(models.Wishlist, { foreignKey: 'product_id' });
-      Product.hasMany(models.Review, { foreignKey: 'product_id' });
-      Product.hasMany(models.StockAlert, { foreignKey: 'product_id' });
-    };
-  
-    return Product;
+    Product.hasMany(models.OrderItem, { foreignKey: 'product_id' });
+    Product.hasMany(models.Cart, { foreignKey: 'product_id' });
+    Product.hasMany(models.Wishlist, { foreignKey: 'product_id' });
+    Product.hasMany(models.Review, { foreignKey: 'product_id' });
+    Product.hasMany(models.StockAlert, { foreignKey: 'product_id' });
   };
+
+  return Product;
+};
