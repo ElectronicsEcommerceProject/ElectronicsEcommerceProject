@@ -10,41 +10,39 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Input validation
-    if (!email || !password) {
-      return res.status(400).json({ 
-        message: 'Missing required fields. Please provide both email and password.'
-      });
-    }
+    
 
     // Find user by email
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found with this email.' });
+      return res.status(StatusCodes.NOT_FOUND).json({ 
+        message: MESSAGE.none
+      });
     }
 
     // Compare passwords
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      return res.status(401).json({ message: 'Invalid password.' });
+      return res.status(StatusCodes.UNAUTHORIZED).json({ 
+        message: MESSAGE.custom('Invalid password.')
+      });
     }
 
     // Generate JWT token
-    const token = encodeJwtToken(email,user.role);
-
-    // Create response object without password
-    
+    const token = encodeJwtToken(email, user.user_id, user.role);
 
     return res.status(StatusCodes.OK).json({ 
-      message: MESSAGE.custom("Authentication Successful!"),
-      result: user,
+      message: MESSAGE.get.custom('Login successful'),
       token
     });
 
   } catch (error) {
     console.error('Error during login:', error);
-    res.status(500).json({ message: 'Internal server error.',error });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
+      message: MESSAGE.error,
+      error 
+    });
   }
 };
 

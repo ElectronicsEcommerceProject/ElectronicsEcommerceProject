@@ -28,6 +28,10 @@ export default (sequelize) => {
         isEmail: true,
       },
     },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     current_address_id: {
       type: DataTypes.UUID,
       allowNull: true,
