@@ -1,0 +1,199 @@
+// 1. USERS & AUTHENTICATION
+Table Users {
+  user_id uuid [pk]
+  name varchar(255)
+  phone_number varchar(15) [unique]
+  email varchar(255) [unique]
+  role varchar(20) [note: 'customer, retailer, admin']
+  status varchar(20) [note: 'active, inactive, banned']
+  current_address_id uuid
+}
+
+Table Addresses {
+  address_id uuid [pk]
+  user_id uuid
+  type varchar(10) [note: 'home, work, other']
+  address text
+  city varchar(100)
+  postal_code varchar(10)
+  is_active boolean
+}
+
+// 2. PRODUCT CATALOG
+Table Categories {
+  id uuid [pk]
+  name varchar(255)
+  slug varchar(255)
+  target_role varchar(10) [note: 'customer, retailer, both']
+  parent_id uuid
+}
+
+Table Brands {
+  id uuid [pk]
+  name varchar(255)
+  slug varchar(255)
+}
+
+Table Products {
+  id uuid [pk]
+  name varchar(255)
+  slug varchar(255)
+  base_price decimal
+  category_id uuid
+  brand_id uuid
+  is_active boolean
+}
+
+Table ProductVariants {
+  id uuid [pk]
+  product_id uuid
+  price decimal
+  sku varchar(100)
+  stock_quantity integer
+}
+
+Table ProductMedia {
+  id uuid [pk]
+  product_id uuid
+  media_url text
+  media_type varchar(10) [note: 'image, video']
+}
+
+// 3. ORDERS & PAYMENTS
+Table Orders {
+  order_id uuid [pk]
+  user_id uuid
+  total_amount decimal
+  status varchar(20) [note: 'pending, shipped, delivered, cancelled']
+  address_id uuid
+}
+
+Table OrderItems {
+  order_item_id uuid [pk]
+  order_id uuid
+  product_id uuid
+  quantity integer
+  price_at_time decimal
+}
+
+// 4. CART & WISHLIST
+Table Carts {
+  cart_id uuid [pk]
+  user_id uuid
+  product_id uuid
+  quantity integer
+}
+
+Table Wishlists {
+  wishlist_id uuid [pk]
+  user_id uuid
+  product_id uuid
+}
+
+// 5. DISCOUNTS & COUPONS
+Table Coupons {
+  id uuid [pk]
+  code varchar(50)
+  discount_value decimal
+  valid_from timestamp
+  valid_to timestamp
+  target_role varchar(10) [note: 'customer, retailer, both']
+}
+
+Table CouponRedemptions {
+  id uuid [pk]
+  user_id uuid
+  coupon_id uuid
+  order_id uuid
+  redeemed_at timestamp
+}
+
+Table CouponUsers {
+  id uuid [pk]
+  coupon_id uuid
+  user_id uuid
+}
+
+Table DiscountRules {
+  id uuid [pk]
+  rule_type varchar(50)
+  product_id uuid
+  category_id uuid
+  min_retailer_quantity integer
+  bulk_discount_percentage decimal
+}
+
+// 6. PRODUCT ATTRIBUTES
+Table ProductTypes {
+  id uuid [pk]
+  name varchar(255)
+  description text
+}
+
+Table Attributes {
+  attribute_id uuid [pk]
+  name varchar(255)
+  data_type varchar(20) [note: 'string, int, float, enum']
+  is_variant_level boolean
+  product_type_id uuid
+}
+
+Table AttributeValues {
+  attribute_value_id uuid [pk]
+  attribute_id uuid
+  value varchar(255)
+}
+
+Table VariantAttributes {
+  variant_attribute_value_id uuid [pk]
+  variant_id uuid
+  attribute_id uuid
+  value varchar(255)
+}
+
+// 7. REVIEWS & ALERTS
+Table Reviews {
+  review_id uuid [pk]
+  product_id uuid
+  user_id uuid
+  rating integer
+  comment text
+}
+
+Table StockAlerts {
+  alert_id uuid [pk]
+  product_id uuid
+  stock_level integer
+  status varchar(10) [note: 'pending, sent']
+}
+
+// 🔥 ONLY THESE RELATIONSHIPS (NO DUPLICATES)
+Ref: Users.current_address_id > Addresses.address_id
+Ref: Addresses.user_id > Users.user_id
+Ref: Categories.parent_id > Categories.id
+Ref: Products.category_id > Categories.id
+Ref: Products.brand_id > Brands.id
+Ref: ProductVariants.product_id > Products.id
+Ref: ProductMedia.product_id > Products.id
+Ref: Orders.user_id > Users.user_id
+Ref: Orders.address_id > Addresses.address_id
+Ref: OrderItems.order_id > Orders.order_id
+Ref: OrderItems.product_id > Products.id
+Ref: Carts.user_id > Users.user_id
+Ref: Carts.product_id > Products.id
+Ref: Wishlists.user_id > Users.user_id
+Ref: Wishlists.product_id > Products.id
+Ref: CouponRedemptions.user_id > Users.user_id
+Ref: CouponRedemptions.coupon_id > Coupons.id
+Ref: CouponRedemptions.order_id > Orders.order_id
+Ref: CouponUsers.coupon_id > Coupons.id
+Ref: CouponUsers.user_id > Users.user_id
+Ref: DiscountRules.product_id > Products.id
+Ref: DiscountRules.category_id > Categories.id
+Ref: Attributes.product_type_id > ProductTypes.id
+Ref: AttributeValues.attribute_id > Attributes.attribute_id
+Ref: VariantAttributes.variant_id > ProductVariants.id
+Ref: VariantAttributes.attribute_id > Attributes.attribute_id
+Ref: Reviews.product_id > Products.id
+Ref: Reviews.user_id > Users.user_id
+Ref: StockAlerts.product_id > Products.id
