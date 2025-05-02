@@ -1,0 +1,73 @@
+{
+  "id": "your-environment-id",
+  "name": "E-Commerce Local",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "user_id",
+      "value": "replace_with_actual_user_id",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "product_id",
+      "value": "replace_with_actual_product_id",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "category_id",
+      "value": "replace_with_actual_category_id",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "brand_id",
+      "value": "replace_with_actual_brand_id",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "variant_id",
+      "value": "replace_with_actual_variant_id",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "attribute_id",
+      "value": "replace_with_actual_attribute_id",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "order_id",
+      "value": "replace_with_actual_order_id",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "coupon_id",
+      "value": "replace_with_actual_coupon_id",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "owner_id",
+      "value": "replace_with_actual_owner_id",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "cart_item_id",
+      "value": "replace_with_actual_cart_item_id",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}
