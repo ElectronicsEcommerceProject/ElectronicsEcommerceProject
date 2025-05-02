@@ -1,0 +1,281 @@
+{
+    "info": {
+      "name": "Purra Electronics E-Commerce API (Full Features)",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+      { "key": "base_url", "value": "http://localhost:3000/api" },
+      { "key": "auth_token", "value": "Bearer YOUR_JWT_TOKEN" }
+    ],
+    "item": [
+      {
+        "name": "Auth",
+        "item": [
+          {
+            "name": "Register User",
+            "request": {
+              "method": "POST",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "url": "{{base_url}}/auth/register",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"123456\",\n  \"phone_number\": \"+911234567890\",\n  \"role\": \"customer\"\n}"
+              }
+            }
+          },
+          {
+            "name": "Login",
+            "request": {
+              "method": "POST",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "url": "{{base_url}}/auth/login",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"123456\"\n}"
+              }
+            }
+          },
+          {
+            "name": "Forgot Password",
+            "request": {
+              "method": "POST",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "url": "{{base_url}}/auth/forgot-password",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"email\": \"john@example.com\"\n}"
+              }
+            }
+          },
+          {
+            "name": "Reset Password",
+            "request": {
+              "method": "POST",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "url": "{{base_url}}/auth/reset-password",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"token\": \"RESET_TOKEN\",\n  \"new_password\": \"new123\"\n}"
+              }
+            }
+          }
+        ]
+      },
+  
+      {
+        "name": "Users",
+        "item": [
+          {
+            "name": "Get All Users (Admin)",
+            "request": {
+              "method": "GET",
+              "header": [{ "key": "Authorization", "value": "{{auth_token}}" }],
+              "url": "{{base_url}}/admin/users"
+            }
+          },
+          {
+            "name": "Update Profile",
+            "request": {
+              "method": "PUT",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "{{auth_token}}" }
+              ],
+              "url": "{{base_url}}/users/profile",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"John Updated\",\n  \"phone_number\": \"+919999999999\"\n}"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "Addresses",
+        "item": [
+          {
+            "name": "Add Address",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "{{auth_token}}" }
+              ],
+              "url": "{{base_url}}/addresses",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"type\": \"home\",\n  \"address\": \"123 Mumbai\",\n  \"city\": \"Mumbai\",\n  \"postal_code\": \"400001\"\n}"
+              }
+            }
+          }
+        ]
+      },
+  
+      
+      {
+        "name": "Products",
+        "item": [
+          {
+            "name": "Create Category (Admin)",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "{{auth_token}}" }
+              ],
+              "url": "{{base_url}}/admin/categories",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"Electronics\",\n  \"slug\": \"electronics\",\n  \"target_role\": \"both\"\n}"
+              }
+            }
+          },
+          {
+            "name": "Create Product (Admin)",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "{{auth_token}}" }
+              ],
+              "url": "{{base_url}}/admin/products",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"iPhone 15\",\n  \"slug\": \"iphone-15\",\n  \"base_price\": 79999,\n  \"category_id\": \"{{category_id}}\",\n  \"brand_id\": \"{{brand_id}}\",\n  \"is_active\": true\n}"
+              }
+            }
+          },
+          {
+            "name": "Add Variant (Admin)",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "{{auth_token}}" }
+              ],
+              "url": "{{base_url}}/admin/products/{{product_id}}/variants",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"price\": 79999,\n  \"sku\": \"IPH15-128-BLACK\",\n  \"stock_quantity\": 100\n}"
+              }
+            }
+          },
+          {
+            "name": "Upload Product Media (Admin)",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "{{auth_token}}" }
+              ],
+              "url": "{{base_url}}/admin/products/{{product_id}}/media",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"media_url\": \"https://example.com/iphone15.jpg\",\n  \"media_type\": \"image\"\n}"
+              }
+            }
+          }
+        ]
+      },
+  
+      {
+        "name": "Orders",
+        "item": [
+          {
+            "name": "Place Order",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "{{auth_token}}" }
+              ],
+              "url": "{{base_url}}/orders",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"address_id\": \"{{address_id}}\",\n  \"items\": [\n    { \"product_id\": \"{{product_id}}\", \"quantity\": 1 }\n  ]\n}"
+              }
+            }
+          },
+          {
+            "name": "Apply Coupon",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "{{auth_token}}" }
+              ],
+              "url": "{{base_url}}/orders/{{order_id}}/coupons",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"coupon_code\": \"WELCOME20\"\n}"
+              }
+            }
+          }
+        ]
+      },
+  
+      {
+        "name": "Cart",
+        "item": [
+          {
+            "name": "View Cart",
+            "request": {
+              "method": "GET",
+              "header": [{ "key": "Authorization", "value": "{{auth_token}}" }],
+              "url": "{{base_url}}/cart"
+            }
+          },
+          {
+            "name": "Remove Cart Item",
+            "request": {
+              "method": "DELETE",
+              "header": [{ "key": "Authorization", "value": "{{auth_token}}" }],
+              "url": "{{base_url}}/cart/{{cart_item_id}}"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Wishlist",
+        "item": [
+          {
+            "name": "Add to Wishlist",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "{{auth_token}}" }
+              ],
+              "url": "{{base_url}}/wishlist",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"product_id\": \"{{product_id}}\"\n}"
+              }
+            }
+          }
+        ]
+      },
+  
+      {
+        "name": "Admin",
+        "item": [
+          {
+            "name": "Sales Analytics",
+            "request": {
+              "method": "GET",
+              "header": [{ "key": "Authorization", "value": "{{auth_token}}" }],
+              "url": "{{base_url}}/admin/analytics"
+            }
+          },
+          {
+            "name": "Stock Alerts",
+            "request": {
+              "method": "GET",
+              "header": [{ "key": "Authorization", "value": "{{auth_token}}" }],
+              "url": "{{base_url}}/admin/stock-alerts"
+            }
+          }
+        ]
+      }
+    ]
+  }
