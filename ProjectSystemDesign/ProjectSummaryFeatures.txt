@@ -1,0 +1,92 @@
+PURRA ELECTRONICS E-COMMERCE - PROJECT SUMMARY
+
+CORE FEATURES:
+
+1. USER ROLES:
+- Customers (Retail Price Shopping)
+- Retailers (Bulk Order Discounts)
+- Admins (Full System Control)
+
+2. AUTHENTICATION SYSTEM:
+- JWT-based secure login
+- Role-specific registration (customer/retailer)
+- Password reset via email
+- Profile management
+
+3. PRODUCT CATALOG:
+- Multi-level categories (Parent/Child)
+- Brand management
+- Products with variants (Color/Storage)
+- Media uploads (Images/Videos)
+- Stock tracking with low-stock alerts
+
+4. SHOPPING FEATURES:
+- Cart system (Quantity-based)
+- Wishlist functionality
+- Bulk pricing for retailers
+- Real-time price calculations
+
+5. ORDER PROCESSING:
+- Multi-step checkout
+- Address management
+- Order status tracking (Pending→Delivered)
+- Cancellation/Return flows
+
+6. DISCOUNT SYSTEM:
+- Coupon codes (User-specific)
+- Bulk order discounts
+- Time-bound promotions
+- Automatic discount application
+
+7. REVIEW SYSTEM:
+- Verified purchaser reviews
+- 5-star rating system
+- Admin moderation
+
+8. ADMIN DASHBOARD:
+- User management
+- Sales analytics
+- Inventory monitoring
+- Content management
+- Coupon generation
+
+TECHNICAL SPECIFICATIONS:
+
+BACKEND:
+- Node.js/Express REST API
+- PostgreSQL with Sequelize ORM
+- JWT Authentication
+- Role-based middleware
+- Payment gateway integration
+
+FRONTEND:
+- React.js with Vite
+- Tailwind CSS for styling
+- Responsive design
+- Role-specific interfaces
+
+KEY INTEGRATIONS:
+- Payment Gateway (Razorpay/Paytm)
+- Email Service (Notifications)
+- Cloud Storage (Product Media)
+
+DEPLOYMENT:
+- Backend: AWS/Heroku
+- Frontend: Vercel/Netlify
+- CI/CD Pipeline
+
+UNIQUE SELLING POINTS:
+1. Dual Pricing (Retail/Bulk)
+2. Advanced Inventory Alerts
+3. Role-Specific Coupons
+4. Comprehensive Admin Controls
+5. Verified Review System
+
+TIMELINE (ESTIMATED):
+Phase 1: Setup (1-2 days)
+Phase 2: Auth (3-5 days)
+Phase 3: Products (5-7 days)
+Phase 4: Cart/Orders (5-6 days)
+Phase 5: Discounts (2-3 days)
+Phase 6: Admin (3-4 days)
+Phase 7: Testing (3-5 days)

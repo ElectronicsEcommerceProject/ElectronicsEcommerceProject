@@ -1,0 +1,451 @@
+# **Purra Electronics E-Commerce Database Documentation (Hinglish Me)**
+
+## **1. Users Table (Sare Users ka Data)**
+- **user_id** (UUID) → User ka unique ID (Primary Key)
+- **name** (String) → User ka naam
+- **phone_number** (String) → Unique mobile number
+- **email** (String) → Unique email (validation hai)
+- **role** (Enum) → `retailer` ya `customer`
+- **status** (Enum) → `active`, `inactive`, `banned`
+- **current_address_id** (UUID) → Default address (FK → Addresses)
+
+**Relationships:**
+- User ke multiple addresses (`hasMany: Addresses`)
+- User ke multiple orders (`hasMany: Orders`)
+- User ke multiple carts (`hasMany: Carts`)
+- User ke multiple wishlists (`hasMany: Wishlists`)
+
+## **2. Owners Table (Admin/Store Owners)**
+- **owner_id** (UUID) → Unique ID
+- **name** (String) → Owner ka naam
+- **email** (String) → Unique email
+- **role** (Enum) → Always `admin`
+- **status** (Enum) → `active`, `inactive`, `banned`
+
+**Relationships:**
+- Owner ke multiple stores ho sakte hain (`hasMany: Stores`)
+
+## **3. Addresses Table (User ke Pata)**
+- **address_id** (UUID) → Unique ID
+- **user_id** (UUID) → Kon sa user (FK → Users)
+- **type** (Enum) → `home`, `work`, `other`
+- **address** (Text) → Purra address
+- **city** (String) → Sheher ka naam
+- **postal_code** (String) → PIN code
+- **is_active** (Boolean) → Soft delete ke liye
+
+**Relationships:**
+- Ek address sirf ek user ka ho sakta hai (`belongsTo: User`)
+- Ek address pe multiple orders ho sakte hain (`hasMany: Orders`)
+
+## **4. Categories Table (Products ka Category)**
+- **id** (UUID) → Unique ID
+- **name** (String) → Category ka naam
+- **slug** (String) → URL-friendly name
+- **target_role** (Enum) → `customer`, `retailer`, `both`
+- **parent_id** (UUID) → Parent category (self-relationship)
+
+**Relationships:**
+- Ek category ke multiple products ho sakte hain (`hasMany: Products`)
+- Category ka parent category ho sakta hai (`belongsTo: Category`)
+
+## **5. Brands Table (Product Brands)**
+- **id** (UUID) → Unique ID
+- **name** (String) → Brand ka naam
+- **slug** (String) → URL-friendly name
+
+**Relationships:**
+- Ek brand ke multiple products ho sakte hain (`hasMany: Products`)
+
+## **6. Products Table (Saman ka Details)**
+- **id** (UUID) → Unique ID
+- **name** (String) → Product ka naam
+- **slug** (String) → URL-friendly name
+- **base_price** (Decimal) → Product ki price
+- **category_id** (UUID) → Category (FK → Categories)
+- **brand_id** (UUID) → Brand (FK → Brands)
+- **is_active** (Boolean) → Dikhega ya nahi
+
+**Relationships:**
+- Product ek category aur brand se belong karta hai
+- Product ke multiple variants ho sakte hain (`hasMany: ProductVariants`)
+- Product pe multiple orders lag sakte hain (`hasMany: OrderItems`)
+
+## **7. ProductVariants Table (Size/Color Variants)**
+- **id** (UUID) → Unique ID
+- **product_id** (UUID) → Kon sa product (FK → Products)
+- **price** (Decimal) → Variant ki special price
+- **sku** (String) → Stock keeping unit
+
+**Relationships:**
+- Har variant ek product se belong karta hai
+
+## **8. ProductMedia Table (Product ki Photos/Videos)**
+- **id** (UUID) → Unique ID
+- **product_id** (UUID) → Kon sa product (FK → Products)
+- **media_url** (String) → Image/Video URL
+- **media_type** (Enum) → `image` ya `video`
+
+**Relationships:**
+- Har media ek product se belong karta hai
+
+## **9. Orders Table (Order ka Record)**
+- **order_id** (UUID) → Unique ID
+- **user_id** (UUID) → Kaun sa user (FK → Users)
+- **total_amount** (Decimal) → Total price
+- **status** (Enum) → `pending`, `shipped`, `delivered`, `cancelled`
+- **address_id** (UUID) → Delivery address (FK → Addresses)
+
+**Relationships:**
+- Order ek user aur address se belong karta hai
+- Order ke multiple items ho sakte hain (`hasMany: OrderItems`)
+
+## **10. OrderItems Table (Order ke Items)**
+- **order_item_id** (UUID) → Unique ID
+- **order_id** (UUID) → Kon sa order (FK → Orders)
+- **product_id** (UUID) → Kon sa product (FK → Products)
+- **quantity** (Integer) → Kitne quantity ka order
+- **price_at_time** (Decimal) → Order time ki price
+
+**Relationships:**
+- Har item ek order aur product se belong karta hai
+
+## **11. Carts Table (User ka Temporary Cart)**
+- **cart_id** (UUID) → Unique ID
+- **user_id** (UUID) → Kon sa user (FK → Users)
+- **product_id** (UUID) → Kon sa product (FK → Products)
+- **quantity** (Integer) → Kitna quantity cart me hai
+
+**Relationships:**
+- Cart ek user aur product se belong karta hai
+
+## **12. Wishlists Table (User ka Wishlist)**
+- **wishlist_id** (UUID) → Unique ID
+- **user_id** (UUID) → Kon sa user (FK → Users)
+- **product_id** (UUID) → Kon sa product (FK → Products)
+
+**Relationships:**
+- Wishlist ek user aur product se belong karta hai
+
+## **13. Coupons Table (Discount Coupons)**
+- **id** (UUID) → Unique ID
+- **code** (String) → Coupon code (`WELCOME10`)
+- **discount_value** (Decimal) → Kitna discount
+- **valid_from/valid_to** (Date) → Kab tak valid hai
+- **target_role** (Enum) → `customer`, `retailer`, `both`
+
+**Relationships:**
+- Coupon multiple users ke liye ho sakta hai (`belongsToMany: Users`)
+
+## **14. Reviews Table (Product Reviews)**
+- **review_id** (UUID) → Unique ID
+- **product_id** (UUID) → Kon sa product (FK → Products)
+- **user_id** (UUID) → Kon sa user (FK → Users)
+- **rating** (Integer) → 1-5 star rating
+- **comment** (Text) → Review details
+
+**Relationships:**
+- Review ek user aur product se belong karta hai
+
+## **15. StockAlerts Table (Low Stock Notifications)**
+- **alert_id** (UUID) → Unique ID
+- **product_id** (UUID) → Kon sa product (FK → Products)
+- **stock_level** (Integer) → Kitna stock bacha hai
+- **status** (Enum) → `pending`, `sent`
+
+**Relationships:**
+- Alert ek product se belong karta hai
+
+## **Purra Database Relationships:**
+```mermaid
+erDiagram
+  Users ||--o{ Addresses : "has"
+  Users ||--o{ Orders : "places"
+  Users ||--o{ Carts : "has"
+  Users ||--o{ Wishlists : "has"
+  Products }|--|| Categories : "belongs_to"
+  Products }|--|| Brands : "belongs_to"
+  Orders ||--o{ OrderItems : "contains"
+  Coupons }o--|| Products : "applies_to"
+```
+
+### **Key Points:**
+1. **UUID** sab jagah use hua hai security ke liye
+2. **Soft Delete** (`is_active`) mostly tables me implement hai
+3. **Enum** use hua hai (`status`, `role`, `type`) for fixed options
+4. **Timestamps** har table me automatically manage hote hain
+5. **Relationships** properly defined hain (1-to-Many, Many-to-Many)
+
+# **Baki Models ka Complete Documentation (Hinglish Me)**
+
+## **1. CouponRedemption Model (Coupon Use karne ka Record)**
+- **id** (UUID) → Unique ID
+- **user_id** (UUID) → Kaunse user ne redeem kiya (FK → Users)
+- **coupon_id** (UUID) → Kaunsa coupon use hua (FK → Coupons)
+- **order_id** (UUID) → Kis order pe use hua (FK → Orders)
+- **redeemed_at** (Date) → Kab use kiya
+
+**Relationships:**
+- Har redemption ek user, coupon aur order se belong karta hai
+
+## **2. CouponUser Model (Kon-User Kon-Coupon Use Kar Sakta Hai)**
+- **id** (UUID) → Unique ID
+- **coupon_id** (UUID) → Coupon ka ID (FK → Coupons)
+- **user_id** (UUID) → User ka ID (FK → Users)
+
+**Relationships:**
+- Ye table many-to-many relationship banata hai coupons aur users ke beech
+
+## **3. DiscountRule Model (Special Offers aur Discounts)**
+- **id** (UUID) → Unique ID
+- **rule_type** (String) → Discount ka type (seasonal, bulk etc.)
+- **product_id** (UUID) → Konse product pe lagu hoga (FK → Products)
+- **category_id** (UUID) → Kisi pure category pe lagu hoga (FK → Categories)
+- **min_retailer_quantity** (Integer) → Retailers ke liye minimum quantity
+- **bulk_discount_percentage** (Decimal) → Bulk order pe kitna % discount
+
+**Relationships:**
+- Discount rules products, categories ya brands se link ho sakte hain
+
+## **4. Attributes Model (Product ki Extra Properties)**
+- **attribute_id** (UUID) → Unique ID
+- **name** (String) → Attribute ka naam (color, size etc.)
+- **data_type** (Enum) → Value ka type (`string`, `int`, `float`, `enum`)
+- **is_variant_level** (Boolean) → Variant specific hai ya nahi
+
+**Relationships:**
+- Attributes product types se belong karte hain (`belongsTo: ProductType`)
+
+## **5. AttributeValue Model (Attributes ki Values)**
+- **attribute_value_id** (UUID) → Unique ID
+- **attribute_id** (UUID) → Konse attribute ki value hai (FK → Attributes)
+- **value** (String) → Actual value (red, 10GB etc.)
+
+**Relationships:**
+- Har value ek specific attribute se belong karti hai
+
+## **6. ProductType Model (Products ka Classification)**
+- **id** (UUID) → Unique ID
+- **name** (String) → Type ka naam (Mobile, Laptop etc.)
+- **description** (Text) → Details about type
+
+**Relationships:**
+- Ek product type ke multiple attributes ho sakte hain (`hasMany: Attributes`)
+
+## **7. VariantAttribute Model (Product Variants ki Special Properties)**
+- **variant_attribute_value_id** (UUID) → Unique ID
+- **variant_id** (UUID) → Konse variant ka hai (FK → ProductVariants)
+- **attribute_id** (UUID) → Konsa attribute hai (FK → Attributes)
+- **value** (String) → Actual value (blue, 128GB etc.)
+
+**Relationships:**
+- Har variant attribute ek variant aur attribute se belong karta hai
+
+## **Purra Database Relationships:**
+```mermaid
+erDiagram
+  Coupons ||--o{ CouponRedemptions : "has"
+  Coupons }o--|| Users : "used_by"
+  Products }|--o{ DiscountRules : "has"
+  ProductTypes ||--o{ Attributes : "has"
+  Attributes ||--o{ AttributeValues : "has"
+  ProductVariants ||--o{ VariantAttributes : "has"
+```
+
+### **Special Notes:**
+1. **Coupon System:** 
+   - CouponUser table batata hai kon user kon coupon use kar sakta hai
+   - CouponRedemption track karta hai actual usage
+
+2. **Discount Rules:**
+   - Multiple types ke discounts handle karne ke liye
+   - Products, categories ya pure brands pe lagu ho sakte hain
+
+3. **Attributes System:**
+   - Products ki extra properties manage karta hai
+   - Variants ke liye alag values store karta hai
+
+=================================================================
+
+# **Electronics E-Commerce Project - Full Database Documentation (Hinglish)**  
+*(Organized Category-wise with All Models, Fields & Relationships)*  
+
+---
+
+## **1. User Management**  
+### **1.1 Users Table**  
+**Description:** Retailers, Customers, aur Admins ka data store karta hai.  
+**Fields:**  
+- `user_id` (UUID) → Unique ID (Primary Key)  
+- `role` (ENUM) → `retailer` (seller) ya `customer`  
+- `status` → `active`, `inactive`, `banned`  
+**Relationships:**  
+- Ek user ke **multiple addresses, orders, carts, wishlists** hote hain.  
+
+### **1.2 Addresses Table**  
+**Description:** Users ke delivery addresses (home, work, etc.) manage karta hai.  
+**Fields:**  
+- `type` (ENUM) → `home`, `work`, `other`  
+- `is_active` → Soft delete ke liye (default `true`).  
+**Relationships:**  
+- Har address ek **user** se belong karta hai.  
+
+---
+
+## **2. Product Catalog**  
+### **2.1 Products Table**  
+**Description:** Saamne dikhne wale products (e.g., iPhone, TV) ki details.  
+**Fields:**  
+- `slug` → URL-friendly name (e.g., "iphone-15")  
+- `is_featured` → Home page pe highlight karna hai ya nahi.  
+**Relationships:**  
+- Product ek **category** aur **brand** se belong karta hai.  
+- Product ke **multiple variants** (size/color) ho sakte hain.  
+
+### **2.2 ProductVariants Table**  
+**Description:** Ek product ke alag-alag variants (e.g., iPhone 15 ka 128GB Black).  
+**Fields:**  
+- `price` → Variant ki special price  
+- `sku` → Stock code (e.g., "IPH15-128-BLACK")  
+- `stock_quantity` → Kitna stock available hai  
+**Relationships:**  
+- Har variant ek **product** se linked hai.  
+
+### **2.3 ProductTypes Table**  
+**Description:** Products ko classify karta hai (e.g., "Electronics", "Fashion").  
+**Fields:**  
+- `name` → Type ka naam (e.g., "Mobile")  
+**Relationships:**  
+- Ek product type ke **multiple attributes** hote hain (e.g., "Mobile" ke liye RAM, Storage).  
+
+### **2.4 Attributes & AttributeValues**  
+**Description:** Product ki properties (e.g., color: "Red", RAM: "8GB").  
+**Fields (Attributes):**  
+- `name` → Property ka naam (e.g., "color")  
+- `data_type` → `string`, `int`, `enum`  
+**Fields (AttributeValues):**  
+- `value` → Actual value (e.g., "Red")  
+**Relationships:**  
+- Attributes ek **product type** se belong karte hain.  
+
+---
+
+## **3. Order Management**  
+### **3.1 Orders Table**  
+**Description:** Users ke orders ka complete record.  
+**Fields:**  
+- `status` → `pending`, `shipped`, `delivered`, `cancelled`  
+- `total_amount` → Order ki total price (discounts included)  
+**Relationships:**  
+- Order ek **user** aur **address** se linked hai.  
+
+### **3.2 OrderItems Table**  
+**Description:** Order mein shamil products aur unki details.  
+**Fields:**  
+- `price_at_time` → Order ke time product ki price  
+- `discount_applied` → Kitna discount mila  
+**Relationships:**  
+- Har item ek **order** aur **product** se belong karta hai.  
+
+---
+
+## **4. Cart & Wishlist**  
+### **4.1 Carts Table**  
+**Description:** User ka temporary cart (items not checked out yet).  
+**Fields:**  
+- `quantity` → Kitne items cart mein hain  
+**Relationships:**  
+- Cart ek **user** aur **product** se belong karta hai.  
+
+### **4.2 Wishlists Table**  
+**Description:** User ke "save for later" items.  
+**Fields:**  
+- `quantity` → Default `1`  
+**Relationships:**  
+- Wishlist ek **user** aur **product** se linked hai.  
+
+---
+
+## **5. Discounts & Promotions**  
+### **5.1 Coupons Table**  
+**Description:** Discount codes (e.g., "WELCOME20") manage karta hai.  
+**Fields:**  
+- `code` → Unique coupon code  
+- `valid_from/valid_to` → Kab tak valid hai  
+- `target_role` → `customer`, `retailer`, ya `both`  
+**Relationships:**  
+- Coupon **multiple users** ke liye usable ho sakta hai.  
+
+### **5.2 DiscountRules Table**  
+**Description:** Bulk/seasonal offers ke rules define karta hai.  
+**Fields:**  
+- `bulk_discount_quantity` → Kitne quantity pe discount milega  
+- `bulk_discount_percentage` → Discount % (e.g., 10%)  
+**Relationships:**  
+- Rules products, categories, ya brands pe apply ho sakte hain.  
+
+---
+
+## **6. Reviews & Alerts**  
+### **6.1 Reviews Table**  
+**Description:** Products pe user reviews aur ratings.  
+**Fields:**  
+- `rating` → 1-5 stars  
+- `is_verified_purchase` → User ne product khareeda tha ya nahi  
+**Relationships:**  
+- Review ek **user** aur **product** se belong karta hai.  
+
+### **6.2 StockAlerts Table**  
+**Description:** Low stock notifications ke liye.  
+**Fields:**  
+- `stock_level` → Kitna stock bacha hai  
+- `status` → `pending` (alert not sent) ya `sent`  
+**Relationships:**  
+- Alert ek **product** se linked hai.  
+
+---
+
+## **7. Store Management**  
+### **7.1 Stores Table**  
+**Description:** Retailers ke physical/online stores ka data.  
+**Fields:**  
+- `owner_id` → Store ka admin (FK → Owners)  
+- `location` → Store ka address  
+**Relationships:**  
+- Store ek **owner** se belong karta hai.  
+
+---
+
+## **Full Database Relationships (ER Diagram)**  
+```  
+Users --< Addresses  
+Users --< Orders  
+Products --< ProductVariants  
+ProductVariants --< VariantAttributes  
+ProductTypes --< Attributes  
+Orders --< OrderItems  
+Coupons --< CouponUsers  
+```  
+
+---
+
+## **Examples for Clarity**  
+### **Product & Variant Example:**  
+- **Product:** iPhone 15  
+- **Variants:**  
+  - `128GB, Black, Price: ₹79,999`  
+  - `256GB, Blue, Price: ₹89,999`  
+
+### **Order & OrderItem Example:**  
+```  
+Order:  
+- user_id: "u1x2y3", total_amount: ₹1,59,998  
+OrderItems:  
+- iPhone 15 (128GB) × 2 → ₹79,999 each  
+```  
+
+### **Coupon Example:**  
+- `code: "WELCOME20", discount: 20%, valid_for: "new users"`  
+
+---
+
