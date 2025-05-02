@@ -37,7 +37,7 @@ export default (sequelize) => {
       defaultValue: 'active',
     },
     role: {
-      type: DataTypes.ENUM('retailer', 'customer'),
+      type: DataTypes.ENUM('retailer', 'customer', 'admin'),
       allowNull: false,
     },
   }, {
