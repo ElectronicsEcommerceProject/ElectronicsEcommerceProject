@@ -42,7 +42,7 @@ Yeh phase project ka foundation banata hai. Tumhe backend aur frontend dono ke l
 
 Yeh phase zaroori hai kyunki yeh project ka starting point hai, aur iske bina aage ka kaam nahi ho sakta.
 
-------------------------------------------------------------------------------------------
+-------------------------------------DONE-----------------------------------------------------
 
 
 #### Phase 2: Authentication System
@@ -69,6 +69,9 @@ Is phase mein user management implement karo, including registration, login, pas
   - Multiple addresses add, update, delete, aur list karo.
 
 Yeh phase zaroori hai kyunki users ko platform use karne ke liye authentication aur address management zaroori hai.
+
+------------------------------------- Above DONE-----------------------------------------------------
+
 
 **Revised Phase 3: Product Catalog Setup** *(Categories, Brands, Product Types, Attributes, Products, Variants & Media)*  
 

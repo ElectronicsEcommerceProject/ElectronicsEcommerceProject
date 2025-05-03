@@ -9,6 +9,10 @@ import {
   id,
   updateAddressValidator,
 } from "./profile/address.validators.js";
+import {
+  categoryValidator,
+  categoryUpdateValidator,
+} from "./category/category.validators.js";
 
 export const validators = {
   auth: {
@@ -25,6 +29,11 @@ export const validators = {
   address: {
     addressValidator: addressValidator,
     updateAddressValidator: updateAddressValidator,
+    id: id,
+  },
+  category: {
+    categoryValidator: categoryValidator,
+    categoryUpdateValidator: categoryUpdateValidator,
     id: id,
   },
 };

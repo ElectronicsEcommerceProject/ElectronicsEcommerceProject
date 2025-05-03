@@ -1,16 +1,19 @@
-import express from 'express';
+import express from "express";
 
-import { verifyJwtToken } from '../../../../middleware/jwt.js';
-import upload from '../../../../middleware/multer.js';
-import { profileController } from '../../controllers/index.js';
- // Import multer middleware
+import { verifyJwtToken, upload } from "../../../../middleware/index.js";
+import { profileController } from "../../controllers/index.js";
 
 const router = express.Router();
 
 // Route to get user profile
-router.get('/', verifyJwtToken, profileController.getProfile);
+router.get("/", verifyJwtToken, profileController.getProfile);
 
 // Route to update user profile with profile image upload
-router.put('/', verifyJwtToken, upload.single('profileImage'), profileController.updateProfile);
+router.put(
+  "/",
+  verifyJwtToken,
+  upload.single("profileImage"),
+  profileController.updateProfile
+);
 
 export default router;

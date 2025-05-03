@@ -1,13 +1,102 @@
-#### Phase 2: Authentication System
-Is phase mein user management implement karo, including registration, login, password reset, profile update, aur address management:
-- **Backend Tasks**:
-  - **User Model** define karo (Users Table: user_id, name, email, phone_number, password, role, status).
-  - **Registration** (`POST /api/auth/register`): Input validate karo (email aur phone_number unique hone chahiye), password hash karo (bcrypt), user ko database mein save karo (role: customer ya retailer).
-  - **Login** (`POST /api/auth/login`): Credentials verify karo, JWT token generate karo (user_id aur role ke saath).
-  - **Profile Update** (`PUT /api/users/profile`): Name, email, phone_number update karne ka option do, email change ke liye uniqueness check karo.
-  - **Address Management** (Addresses Table): `POST /api/users/addresses` naya address add karo, `PUT /api/users/addresses/:id` existing address update karo, `DELETE /api/users/addresses/:id` address delete karo (soft delete with is_active), `GET /api/users/addresses` user ke sabhi addresses list karo.
+**Revised Phase 3: Product Catalog Setup** *(Categories, Brands, Product Types, Attributes, Products, Variants & Media)*  
+
+Phase 3: Product Management
+---
+
+### **Backend Tasks:**  
+**1. Category Management (Categories Table):**  
+- `POST /api/admin/categories`:  
+  ```json  
+  { "name": "Electronics", "slug": "electronics", "target_role": "both", "parent_id": null }  
+  ```  
+- `GET /api/categories`: Fetch hierarchical categories (parent-child structure).  
+- `PUT/DELETE /api/admin/categories/:id`: Update/Delete categories.  
 
 
-  ---------------password Reset functionality is not implemented i will implement it at the end---------------------------
 
-  - **Password Reset**: `POST /api/auth/forgot-password` ke liye reset token generate karo aur email bhejo, `POST /api/auth/reset-password` ke liye token validate karo aur password update karo.
+**2. Brand Management (Brands Table):**  
+- `POST /api/admin/brands`:  
+  ```json  
+  { "name": "Samsung", "slug": "samsung" }  
+  ```  
+- `GET /api/brands`: List all brands.  
+- `PUT/DELETE /api/admin/brands/:id`: Update/Delete brands.  
+
+**3. Product Types & Attributes (ProductTypes, Attributes, AttributeValues Tables):**  
+- `POST /api/admin/product-types`:  
+  ```json  
+  { "name": "Mobile", "description": "Smartphones and Tablets" }  
+  ```  
+- `POST /api/admin/attributes`:  
+  ```json  
+  { "name": "Color", "data_type": "enum", "product_type_id": "pt1x2y3" }  
+  ```  
+- `POST /api/admin/attribute-values`:  
+  ```json  
+  { "attribute_id": "attr1x2y3", "value": "Blue" }  
+  ```  
+
+**4. Product Management (Products Table):**  
+- `POST /api/admin/products`:  
+  ```json  
+  {  
+    "name": "Galaxy S23",  
+    "slug": "galaxy-s23",  
+    "category_id": "cat1x2y3",  
+    "brand_id": "br1x2y3",  
+    "product_type_id": "pt1x2y3",  
+    "base_price": 79999  
+  }  
+  ```  
+
+**5. Product Variants (ProductVariants & VariantAttributes Tables):**  
+- `POST /api/admin/products/:id/variants`:  
+  ```json  
+  {  
+    "price": 79999,  
+    "sku": "GALAXY-S23-BLUE",  
+    "attributes": [  
+      { "attribute_id": "attr1x2y3", "value": "Blue" },  
+      { "attribute_id": "attr2x2y3", "value": "128GB" }  
+    ]  
+  }  
+  ```  
+
+**6. Product Media (ProductMedia Table):**  
+- `POST /api/admin/products/:id/media`:  
+  ```json  
+  { "media_url": "https://example.com/galaxy-s23.jpg", "media_type": "image" }  
+  ```  
+
+---
+
+### **Frontend Tasks:**  
+1. **Admin Dashboard:**  
+   - Separate sections for **Categories**, **Brands**, **Product Types**, **Attributes**, **Products**, **Variants**, and **Media**.  
+   - Drag-drop UI for category hierarchy.  
+2. **Product Creation Wizard:**  
+   - Step 1: Select Category + Brand.  
+   - Step 2: Choose Product Type + Assign Attributes.  
+   - Step 3: Add Variants with Attribute Values (e.g., Color, Storage).  
+   - Step 4: Upload Media.  
+
+---
+
+### **Testing:**  
+1. **Attribute-Variant Linking Test:**  
+   - Create a variant with attributes → Verify values are stored in `VariantAttributes` table.  
+2. **Product Type Validation:**  
+   - Try creating a product without selecting a Product Type → Should throw error.  
+3. **Role-Based Category Filtering:**  
+   - Log in as Retailer → Verify only categories with `target_role: retailer/both` are visible.  
+
+---
+
+### **Why This Sequence?**  
+1. **Database Dependencies:**  
+   - **Product Types** and **Attributes** must exist before creating Products/Variants (as per `ProductTypes` and `VariantAttributes` tables).  
+   - Variants depend on Attributes (e.g., "Color" attribute must be defined before assigning "Blue" to a variant).  
+2. **Logical Flow:**  
+   - Pehle **Categories** aur **Brands** setup karo → Phir **Product Types** aur **Attributes** define karo → Uske baad **Products** aur **Variants** add karo.  
+
+
