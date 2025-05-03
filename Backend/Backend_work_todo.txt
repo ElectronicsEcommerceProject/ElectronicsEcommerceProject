@@ -20,6 +20,9 @@ Phase 3: Product Management
 - `GET /api/brands`: List all brands.  
 - `PUT/DELETE /api/admin/brands/:id`: Update/Delete brands.  
 
+-----------------------------Above Done----------------------------------------------------------------
+
+
 **3. Product Types & Attributes (ProductTypes, Attributes, AttributeValues Tables):**  
 - `POST /api/admin/product-types`:  
   ```json  
