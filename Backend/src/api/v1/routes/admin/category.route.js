@@ -28,7 +28,7 @@ router.put(
   verifyJwtToken,
   adminRoleCheck,
   validator(validators.category.id, "params"), // Add validator middleware for category update validation
-  adminCategoryController.updateCategory
+  adminCategoryController.updateCategoryById
 );
 
 // Delete a category

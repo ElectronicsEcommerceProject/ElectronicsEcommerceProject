@@ -1,27 +1,38 @@
-import db from '../../../../models/index.js'; // Import the database models
-const { Category, User } = db;
+import db from "../../../../models/index.js"; // Import the database models
+import { StatusCodes } from "http-status-codes"; // Import HTTP status codes
+import MESSAGE from "../../../../constants/message.js"; // Import messages
 
+const { Category, User } = db;
 
 // Add a new category
 const addCategory = async (req, res) => {
   try {
-    const { name, target_role} = req.body;
+    const { name, slug, target_role, parent_id } = req.body;
 
-    // console.log('testing', req.user.email)
-
-    let user_id = await User.findOne({ where: { email: req.user.email } });
-    let created_by = user_id.dataValues.user_id;// Get the user ID from the database
-
-    if (!name || !target_role) {
-      return res.status(400).json({ message: 'Missing required fields' });
+    // Get the user ID of the creator
+    const user = await User.findOne({ where: { email: req.user.email } });
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({ message: MESSAGE.none });
     }
+    const created_by = user.dataValues.user_id;
 
-    const newCategory = await Category.create({ name, target_role, created_by });
+    // Create the new category
+    const newCategory = await Category.create({
+      name,
+      slug,
+      target_role,
+      parent_id: parent_id || null,
+      created_by,
+    });
 
-    res.status(201).json(newCategory);
+    res
+      .status(StatusCodes.CREATED)
+      .json({ message: MESSAGE.post.succ, data: newCategory });
   } catch (error) {
-    console.error('Error adding category:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error adding category:", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: MESSAGE.error, error: error.message });
   }
 };
 
@@ -32,52 +43,77 @@ const getAllCategories = async (req, res) => {
   try {
     let categories;
 
-    if (userRole === 'admin') {
-      // Admin ko sab categories dikhni chahiye
+    if (userRole === "admin") {
+      // Admin can see all categories
       categories = await Category.findAll();
-    } else if (userRole === 'customer') {
+    } else if (userRole === "customer") {
       categories = await Category.findAll({
         where: {
-          target_role: ['customer', 'both'],
+          target_role: ["customer", "both"],
         },
       });
-    } else if (userRole === 'retailer') {
+    } else if (userRole === "retailer") {
       categories = await Category.findAll({
         where: {
-          target_role: ['retailer', 'both'],
+          target_role: ["retailer", "both"],
         },
       });
     } else {
-      return res.status(403).json({ message: 'Unauthorized role' });
+      return res
+        .status(StatusCodes.FORBIDDEN)
+        .json({ message: MESSAGE.get.fail });
     }
 
-    res.status(200).json(categories);
+    if (!categories.length) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: MESSAGE.get.empty });
+    }
+
+    res
+      .status(StatusCodes.OK)
+      .json({ message: MESSAGE.get.succ, data: categories });
   } catch (error) {
-    console.error('Error fetching categories:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error fetching categories:", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: MESSAGE.error, error: error.message });
   }
 };
 
 // Update a category
-const updateCategory = async (req, res) => {
+const updateCategoryById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, target_role } = req.body;
+    const { name, slug, target_role, parent_id } = req.body;
 
     const category = await Category.findByPk(id);
     if (!category) {
-      return res.status(404).json({ message: 'Category not found' });
+      return res.status(StatusCodes.NOT_FOUND).json({ message: MESSAGE.none });
     }
 
+    // Update fields
     category.name = name || category.name;
+    category.slug = slug || category.slug;
     category.target_role = target_role || category.target_role;
+    category.parent_id = parent_id || category.parent_id;
+
+    // Update the updated_by field
+    const user = await User.findOne({ where: { email: req.user.email } });
+    if (user) {
+      category.updated_by = user.dataValues.user_id;
+    }
 
     await category.save();
 
-    res.status(200).json(category);
+    res
+      .status(StatusCodes.OK)
+      .json({ message: MESSAGE.put.succ, data: category });
   } catch (error) {
-    console.error('Error updating category:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error updating category:", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: MESSAGE.error, error: error.message });
   }
 };
 
@@ -88,20 +124,22 @@ const deleteCategory = async (req, res) => {
 
     const category = await Category.findByPk(id);
     if (!category) {
-      return res.status(404).json({ message: 'Category not found' });
+      return res.status(StatusCodes.NOT_FOUND).json({ message: MESSAGE.none });
     }
 
     await category.destroy();
-    res.status(200).json({ message: 'Category deleted successfully' });
+    res.status(StatusCodes.OK).json({ message: MESSAGE.delete.succ });
   } catch (error) {
-    console.error('Error deleting category:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error deleting category:", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: MESSAGE.error, error: error.message });
   }
 };
 
 export default {
   addCategory,
   getAllCategories,
-  updateCategory,
-  deleteCategory
+  updateCategoryById,
+  deleteCategory,
 };
