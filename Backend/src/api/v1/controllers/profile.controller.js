@@ -12,6 +12,8 @@ const { User } = db;
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { StatusCodes } from 'http-status-codes';
+import MESSAGE from '../../../constants/message.js';
 
 // ✅ Fix for __dirname in ES Module
 const __filename = fileURLToPath(import.meta.url);
@@ -25,30 +27,42 @@ const getProfile = async (req, res) => {
       attributes: { exclude: ['password'] },
     });
 
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: MESSAGE.get.none });
+    }
 
     // Convert stored relative path to full URL for frontend
     if (user.profileImage_url && !user.profileImage_url.startsWith('http')) {
       user.profileImage_url = `${req.protocol}://${req.get('host')}/${user.profileImage_url.replace(/\\/g, '/')}`;
     }
 
-    res.json(user);
+    res.status(StatusCodes.OK).json(user);
   } catch (error) {
     console.error('Error fetching profile:', error);
-    res.status(500).json({ message: 'Something went wrong', error: error.message });
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: MESSAGE.error, error: error.message });
   }
 };
 
 // ✅ PUT /api/profile
 const updateProfile = async (req, res) => {
   try {
-    const { name, address, city, postal_code } = req.body;
+    const { name, address, city, postal_code, email } = req.body;
 
     const user = await User.findOne({
-      where: { email: req.user.email },
+      where: { email: email },
+      attributes: { exclude: ['password']},
+
     });
 
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: MESSAGE.get.none });
+    }
 
     // ✅ Update text fields
     user.name = name || user.name;
@@ -78,10 +92,14 @@ const updateProfile = async (req, res) => {
       user.profileImage_url = `${req.protocol}://${req.get('host')}/${user.profileImage_url.replace(/\\/g, '/')}`;
     }
 
-    res.json({ message: 'Profile updated successfully', user });
+    res
+      .status(StatusCodes.OK)
+      .json({ message: MESSAGE.put.succ, user });
   } catch (error) {
     console.error('❌ Error updating profile:', error);
-    res.status(500).json({ message: 'Something went wrong', error: error.message });
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: MESSAGE.put.fail, error: error.message });
   }
 };
 
