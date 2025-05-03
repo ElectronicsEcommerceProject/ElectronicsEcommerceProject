@@ -1,8 +1,6 @@
 **Revised Phase 3: Product Catalog Setup** *(Categories, Brands, Product Types, Attributes, Products, Variants & Media)*  
-
 Phase 3: Product Management
 ---
-
 ### **Backend Tasks:**  
 **1. Category Management (Categories Table):**  
 - `POST /api/admin/categories`:  
@@ -12,7 +10,7 @@ Phase 3: Product Management
 - `GET /api/categories`: Fetch hierarchical categories (parent-child structure).  
 - `PUT/DELETE /api/admin/categories/:id`: Update/Delete categories.  
 
-
+-----------------------------Above Done----------------------------------------------------------------
 
 **2. Brand Management (Brands Table):**  
 - `POST /api/admin/brands`:  

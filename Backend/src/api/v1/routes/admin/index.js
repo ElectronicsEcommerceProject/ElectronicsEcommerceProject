@@ -8,10 +8,13 @@ import couponRoutes from "./coupon.route.js";
 import userRoutes from "./user.route.js";
 import stockAlertRoutes from "./stockAlert.route.js";
 import reviewRoutes from "./review.route.js";
+import brandsRoutes from "./brand.routes.js";
 
 const app = express();
 
 app.use("/category", categoryRoutes);
+
+app.use("/brands", brandsRoutes);
 
 app.use("/order", orderRoutes);
 
