@@ -13,6 +13,7 @@ app.use("/auth", authRoutes);
 
 app.use("/users", profileRoutes);
 
+
 app.use("/admin", adminRoutes);
 
 app.use("/customer", customerRoutes);
