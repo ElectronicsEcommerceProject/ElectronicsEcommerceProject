@@ -1,7 +1,4 @@
-// ===============================
-// Get profile
-// Update profile
-// Upload profile picture
+
 // Change password (todo)
 // View purchase history (todo)
 // ===============================
