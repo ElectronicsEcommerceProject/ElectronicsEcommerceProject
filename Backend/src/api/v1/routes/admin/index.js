@@ -18,9 +18,9 @@ app.use("/category", categoryRoutes);
 
 app.use("/brands", brandsRoutes);
 
-app.use("/product-Types", ProductTypesRoutes); //done upto here...
+app.use("/product-Types", ProductTypesRoutes);
 
-app.use("/product-Attributes", productAttributesRoutes);
+app.use("/product-Attributes", productAttributesRoutes); //done upto here...
 
 app.use("/order", orderRoutes);
 
