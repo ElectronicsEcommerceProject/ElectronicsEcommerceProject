@@ -1,323 +1,181 @@
-### Direct Answer
-
-**Key Points:**  
-- Yeh development flow pura complete hai, aur koi bhi cheez miss nahi hai. Yeh tumhare database models aur services documentation ke hisaab se banaya gaya hai.  
-
-**Development Flow Overview:**  
-Yeh flow tumhare e-commerce project ke liye ek step-by-step guide hai, jo project setup se lekar deployment tak cover karta hai. Har phase logical sequence mein hai, taaki tum development ko aasani se follow kar sake.  
-
-**Phases in Sequence:**  
-1. **Project Setup**: Pehle backend aur frontend ka basic setup karo, database connection configure karo.  
-2. **Authentication**: Phir user registration, login, password reset, profile update, aur address management implement karo.  
-3. **Product Management**: Uske baad categories, brands, products, variants, aur media manage karo (admin-only).  
-4. **Cart & Wishlist**: Phir cart aur wishlist ke liye add, remove, aur view functionalities banao.  
-5. **Order Management**: Order placement, status update, cancellation, aur payment integration implement karo.  
-6. **Coupon & Discounts**: Coupons aur bulk discounts ke liye systems banao.  
-7. **Reviews & Ratings**: Customers ko reviews aur ratings dene ka option do.  
-8. **Admin Services**: Admin ke liye user management, sales analytics, aur stock alerts implement karo.  
-9. **Returns & Refunds**: Return requests aur refund processing handle karo.  
-10. **Testing & Deployment**: Sab kuch test karo aur production mein deploy karo.  
-
-**Why It’s Complete:**  
-Yeh flow tumhare sabhi models (Users, Addresses, Categories, Brands, Products, ProductVariants, ProductMedia, Orders, OrderItems, Carts, Wishlists, Coupons, Reviews, StockAlerts, CouponRedemption, CouponUser, DiscountRule, Attributes, AttributeValue, ProductType, VariantAttribute) aur services ko cover karta hai. Har phase ke baad testing instructions hain, taaki tum verify kar sako ki sab kuch sahi kaam kar raha hai.
+### Phase 1: Project Setup  
+- **APIs:**  
+  - `GET /api/health` (Health check)  
 
 ---
 
-## Survey Note: Detailed Analysis of Electronics E-Commerce Development Flow
-
-Tumhare **Purra Electronics E-Commerce Project** ke liye yeh development flow ek comprehensive roadmap hai, jo tumhare database models aur services documentation ke hisaab se banaya gaya hai. Mainne ensure kiya hai ki koi bhi feature miss nahi hai, aur flow logical sequence mein hai, taaki development process smooth ho. Yeh survey note professional article ke style mein likha gaya hai, jisme sabhi details shamil hain, aur yeh direct answer section ka strict superset hai.
-
-### Background and Context
-Tumhare project mein teen types ke users hain: customer, retailer, aur admin, aur yeh ek electronics e-commerce platform hai. Tumhare database design mein tables jaise Users, Addresses, Categories, Brands, Products, ProductVariants, ProductMedia, Orders, OrderItems, Carts, Wishlists, Coupons, Reviews, StockAlerts, CouponRedemption, CouponUser, DiscountRule, Attributes, AttributeValue, ProductType, aur VariantAttribute defined hain. Services documentation mein user management, product management, order management, cart aur wishlist, coupons, payments, reviews, admin services, aur returns cover kiye gaye hain. Yeh flow yeh ensure karta hai ki sab kuch implement ho, aur koi bhi cheez miss nahi rahe.
-
-### Development Flow Phases
-Mainne flow ko 10 phases mein divide kiya hai, jo sequence mein follow karne ke liye design kiya gaya hai. Har phase mein backend aur frontend ke tasks hain, aur testing instructions di gayi hain taaki tum verify kar sako ki sab kuch sahi kaam kar raha hai.
-
-
-#### Phase 1: Project Initialization & Setup
-Yeh phase project ka foundation banata hai. Tumhe backend aur frontend dono ke liye basic setup karna hoga:
-- **Backend Tasks**: Node.js project initialize karo, dependencies install karo (Express, Sequelize, PostgreSQL, bcrypt, jsonwebtoken, cors, dotenv, etc.), folder structure set karo (config, controllers, models, routes, middleware), PostgreSQL database connection setup karo using Sequelize, environment variables (.env) configure karo (PORT, DB_NAME, DB_USER, DB_PASS, JWT_SECRET), aur basic Express server banao jo health check endpoint (`GET /`) return kare.
-- **Frontend Tasks**: React project scaffold karo (Vite ya Create React App se), dependencies install karo (React Router, Axios, Tailwind CSS), basic folder structure set karo (pages, components, services, utils), routing setup karo (home, login, register, etc.), aur Tailwind CSS configure karo for styling.
-- **Testing**: Backend server start karo aur health check endpoint test karo, frontend app start karo aur homepage load verify karo.
-
-Yeh phase zaroori hai kyunki yeh project ka starting point hai, aur iske bina aage ka kaam nahi ho sakta.
-
--------------------------------------DONE-----------------------------------------------------
-
-
-#### Phase 2: Authentication System
-Is phase mein user management implement karo, including registration, login, password reset, profile update, aur address management:
-- **Backend Tasks**:
-  - **User Model** define karo (Users Table: user_id, name, email, phone_number, password, role, status).
-  - **Registration** (`POST /api/auth/register`): Input validate karo (email aur phone_number unique hone chahiye), password hash karo (bcrypt), user ko database mein save karo (role: customer ya retailer).
-  - **Login** (`POST /api/auth/login`): Credentials verify karo, JWT token generate karo (user_id aur role ke saath).
-  - **Password Reset**: `POST /api/auth/forgot-password` ke liye reset token generate karo aur email bhejo, `POST /api/auth/reset-password` ke liye token validate karo aur password update karo.
-  - **Profile Update** (`PUT /api/users/profile`): Name, email, phone_number update karne ka option do, email change ke liye uniqueness check karo.
-  - **Address Management** (Addresses Table): `POST /api/users/addresses` naya address add karo, `PUT /api/users/addresses/:id` existing address update karo, `DELETE /api/users/addresses/:id` address delete karo (soft delete with is_active), `GET /api/users/addresses` user ke sabhi addresses list karo.
-  - JWT middleware banao taaki protected routes secure hon.
-- **Frontend Tasks**:
-  - Registration page banao (form with name, email, phone, password, role).
-  - Login page banao (email aur password fields).
-  - Profile page banao jahan user apni details update kar sake.
-  - Address management page banao jahan user addresses add, edit, delete, aur list kar sake.
-  - Role-based navigation implement karo (e.g., admin ko admin dashboard pe redirect karo).
-- **Testing**:
-  - Ek customer aur retailer register karo, response verify karo.
-  - Login karo aur JWT token check karo.
-  - Password reset flow test karo (forgot password aur reset password).
-  - Profile update karo aur changes verify karo.
-  - Multiple addresses add, update, delete, aur list karo.
-
-Yeh phase zaroori hai kyunki users ko platform use karne ke liye authentication aur address management zaroori hai.
-
-------------------------------------- Above DONE-----------------------------------------------------
-
-
-**Revised Phase 3: Product Catalog Setup** *(Categories, Brands, Product Types, Attributes, Products, Variants & Media)*  
-
-Phase 3: Product Management
----
-
-### **Backend Tasks:**  
-**1. Category Management (Categories Table):**  
-- `POST /api/admin/categories`:  
-  ```json  
-  { "name": "Electronics", "slug": "electronics", "target_role": "both", "parent_id": null }  
-  ```  
-- `GET /api/categories`: Fetch hierarchical categories (parent-child structure).  
-- `PUT/DELETE /api/admin/categories/:id`: Update/Delete categories.  
-
-**2. Brand Management (Brands Table):**  
-- `POST /api/admin/brands`:  
-  ```json  
-  { "name": "Samsung", "slug": "samsung" }  
-  ```  
-- `GET /api/brands`: List all brands.  
-- `PUT/DELETE /api/admin/brands/:id`: Update/Delete brands.  
-
-**3. Product Types & Attributes (ProductTypes, Attributes, AttributeValues Tables):**  
-- `POST /api/admin/product-types`:  
-  ```json  
-  { "name": "Mobile", "description": "Smartphones and Tablets" }  
-  ```  
-- `POST /api/admin/attributes`:  
-  ```json  
-  { "name": "Color", "data_type": "enum", "product_type_id": "pt1x2y3" }  
-  ```  
-- `POST /api/admin/attribute-values`:  
-  ```json  
-  { "attribute_id": "attr1x2y3", "value": "Blue" }  
-  ```  
-
-**4. Product Management (Products Table):**  
-- `POST /api/admin/products`:  
-  ```json  
-  {  
-    "name": "Galaxy S23",  
-    "slug": "galaxy-s23",  
-    "category_id": "cat1x2y3",  
-    "brand_id": "br1x2y3",  
-    "product_type_id": "pt1x2y3",  
-    "base_price": 79999  
-  }  
-  ```  
-
-**5. Product Variants (ProductVariants & VariantAttributes Tables):**  
-- `POST /api/admin/products/:id/variants`:  
-  ```json  
-  {  
-    "price": 79999,  
-    "sku": "GALAXY-S23-BLUE",  
-    "attributes": [  
-      { "attribute_id": "attr1x2y3", "value": "Blue" },  
-      { "attribute_id": "attr2x2y3", "value": "128GB" }  
-    ]  
-  }  
-  ```  
-
-**6. Product Media (ProductMedia Table):**  
-- `POST /api/admin/products/:id/media`:  
-  ```json  
-  { "media_url": "https://example.com/galaxy-s23.jpg", "media_type": "image" }  
-  ```  
+### Phase 2: Authentication & User Management  
+- **APIs:**  
+  - `POST /api/auth/register` (User Registration)  
+  - `POST /api/auth/login` (Login)  
+  - `GET /api/users/me` (Get Profile)  
+  - `PUT /api/users/me` (Update Profile)  
+  - `POST /api/users/addresses` (Add Address)  
+  - `GET /api/users/addresses` (List Addresses)  
+  - `PUT /api/users/addresses/:addressId` (Update Address)  
+  - `DELETE /api/users/addresses/:addressId` (Soft Delete Address)  
+  - **Optional:** `POST /api/auth/reset-password`, `POST /api/auth/verify-email`  
 
 ---
 
-### **Frontend Tasks:**  
-1. **Admin Dashboard:**  
-   - Separate sections for **Categories**, **Brands**, **Product Types**, **Attributes**, **Products**, **Variants**, and **Media**.  
-   - Drag-drop UI for category hierarchy.  
-2. **Product Creation Wizard:**  
-   - Step 1: Select Category + Brand.  
-   - Step 2: Choose Product Type + Assign Attributes.  
-   - Step 3: Add Variants with Attribute Values (e.g., Color, Storage).  
-   - Step 4: Upload Media.  
+### Phase 3: Product Catalog Setup (Admin-Only)  
+- **APIs:**  
+  - **Categories:**  
+    - `POST /api/admin/categories` (Create)  
+    - `GET /api/admin/categories` (List for Admin)  
+    - `GET /api/categories` (Public List)  
+    - `PUT /api/admin/categories/:categoryId` (Update)  
+    - `DELETE /api/admin/categories/:categoryId` (Delete)  
+  - **Brands:**  
+    - `POST /api/admin/brands` (Create)  
+    - `GET /api/admin/brands` (List for Admin)  
+    - `GET /api/brands` (Public List)  
+    - `PUT /api/admin/brands/:brandId` (Update)  
+    - `DELETE /api/admin/brands/:brandId` (Delete)  
+  - **Product Types:**  
+    - `POST /api/admin/product-types` (Create)  
+    - `GET /api/admin/product-types` (List)  
+    - `PUT /api/admin/product-types/:productTypeId` (Update)  
+    - `DELETE /api/admin/product-types/:productTypeId` (Delete)  
+  - **Attributes:**  
+    - `POST /api/admin/attributes` (Create)  
+    - `GET /api/admin/attributes` (List)  
+    - `PUT /api/admin/attributes/:attributeId` (Update)  
+    - `DELETE /api/admin/attributes/:attributeId` (Delete)  
+  - **Attribute Values:**  
+    - `POST /api/admin/attribute-values` (Create)  
+    - `GET /api/admin/attribute-values` (List)  
+    - `PUT /api/admin/attribute-values/:valueId` (Update)  
+    - `DELETE /api/admin/attribute-values/:valueId` (Delete)  
+  - **Products:**  
+    - `POST /api/admin/products` (Create)  
+    - `GET /api/admin/products` (List for Admin)  
+    - `GET /api/products` (Public List)  
+    - `GET /api/products/:productId` (Product Details)  
+    - `PUT /api/admin/products/:productId` (Update)  
+    - `DELETE /api/admin/products/:productId` (Delete)  
+  - **Product Variants:**  
+    - `POST /api/admin/products/:productId/variants` (Create)  
+    - `GET /api/admin/variants` (List for Admin)  
+    - `GET /api/products/:productId/variants` (Public List)  
+    - `PUT /api/admin/variants/:variantId` (Update)  
+    - `DELETE /api/admin/variants/:variantId` (Delete)  
+  - **Product Media:**  
+    - `POST /api/admin/products/:productId/media` (Add Media)  
+    - `GET /api/products/:productId/media` (Get Media)  
+    - `DELETE /api/admin/media/:mediaId` (Delete Media)  
 
 ---
 
-### **Testing:**  
-1. **Attribute-Variant Linking Test:**  
-   - Create a variant with attributes → Verify values are stored in `VariantAttributes` table.  
-2. **Product Type Validation:**  
-   - Try creating a product without selecting a Product Type → Should throw error.  
-3. **Role-Based Category Filtering:**  
-   - Log in as Retailer → Verify only categories with `target_role: retailer/both` are visible.  
+### Phase 4: Cart & Wishlist Management  
+- **APIs:**  
+  - **Cart:**  
+    - `POST /api/cart/items` (Add to Cart)  
+    - `GET /api/cart` (Get Cart)  
+    - `PUT /api/cart/items/:cartItemId` (Update Quantity)  
+    - `DELETE /api/cart/items/:cartItemId` (Remove from Cart)  
+  - **Wishlist:**  
+    - `POST /api/wishlist/items` (Add to Wishlist)  
+    - `GET /api/wishlist` (Get Wishlist)  
+    - `DELETE /api/wishlist/items/:itemId` (Remove from Wishlist)  
 
 ---
 
-### **Why This Sequence?**  
-1. **Database Dependencies:**  
-   - **Product Types** and **Attributes** must exist before creating Products/Variants (as per `ProductTypes` and `VariantAttributes` tables).  
-   - Variants depend on Attributes (e.g., "Color" attribute must be defined before assigning "Blue" to a variant).  
-2. **Logical Flow:**  
-   - Pehle **Categories** aur **Brands** setup karo → Phir **Product Types** aur **Attributes** define karo → Uske baad **Products** aur **Variants** add karo.  
-
-
-Yeh phase zaroori hai kyunki products platform ka core hain, inke bina shopping nahi ho sakti.
-
-#### Phase 4: Cart & Wishlist Management
-Is phase mein users ko cart aur wishlist mein items add, remove, aur view karne ka option do:
-- **Backend Tasks**:
-  - **Cart Management** (Carts Table):
-    - `POST /api/cart`: Product ya variant ko cart mein add karo.
-    - `GET /api/cart`: Cart ke items list karo (real-time prices ke saath).
-    - `DELETE /api/cart/:cartId`: Item cart se remove karo.
-    - Retailers ke liye minimum quantity validation add karo (DiscountRule ke hisaab se).
-  - **Wishlist Management** (Wishlists Table):
-    - `POST /api/wishlist`: Product ya variant ko wishlist mein add karo.
-    - `GET /api/wishlist`: Wishlist ke items list karo.
-    - `DELETE /api/wishlist/:wishlistId`: Item wishlist se remove karo.
-- **Frontend Tasks**:
-  - Cart page banao jahan users items add, remove, aur total dekh sakein.
-  - Wishlist page banao jahan users items add, remove, aur list dekh sakein.
-  - Retailers ke liye bulk order validations UI mein dikhao (e.g., minimum quantity warning).
-- **Testing**:
-  - Customer aur retailer ke roop mein cart mein items add karo, validations check karo.
-  - Wishlist mein items add karo aur verify karo ki list sahi hai.
-  - Cart aur wishlist se items remove karo.
-
-Yeh phase zaroori hai kyunki users ko shopping ke liye cart aur wishlist zaroori hain.
-
-#### Phase 5: Order Management
-Is phase mein order placement, status update, cancellation, aur payment integration implement karo:
-- **Backend Tasks**:
-  - **Order Placement** (Orders aur OrderItems Tables):
-    - `POST /api/orders`: Cart se order place karo.
-    - Stock validate karo, coupons apply karo, total calculate karo.
-    - Order aur order items database mein save karo.
-    - Stock quantities update karo (ProductVariants Table).
-    - Cart clear karo (Carts Table).
-  - **Order Status Update** (Orders Table):
-    - `PUT /api/admin/orders/:id`: Admin order status update kare (pending, shipped, delivered, cancelled).
-  - **Order Cancellation**:
-    - `POST /api/orders/:id/cancel`: User cancellation request bheje, admin approve kare.
-    - Stock restore karo agar cancelled.
-  - **Payment Integration**:
-    - `POST /api/payments/create-order`: Payment gateway (Razorpay, Paytm) se order initiate karo.
-    - `POST /api/payments/callback`: Payment confirmation handle karo, order status "paid" set karo.
-- **Frontend Tasks**:
-  - Checkout page banao jahan users cart review karein, coupon apply karein, aur order place karein.
-  - Order history page banao jahan users apne past orders dekh sakein.
-  - Order detail page banao jisme status updates dikhein.
-- **Testing**:
-  - Customer aur retailer ke roop mein order place karo, discounts aur stock updates verify karo.
-  - Admin ke roop mein order status update karo.
-  - Order cancel karo aur stock restoration check karo.
-  - Payment flow test karo (initiate aur confirm).
-
-Yeh phase zaroori hai kyunki order management e-commerce ka core hai.
-
-#### Phase 6: Coupon & Discount Systems
-Is phase mein coupons aur bulk discounts implement karo:
-- **Backend Tasks**:
-  - **Coupon Management** (Coupons aur CouponRedemption Tables):
-    - `POST /api/admin/coupons`: Admin naya coupon create kare.
-    - `POST /api/coupons/apply`: Coupon order pe apply karo, validate karo (expiry, role, max usage, CouponUser).
-  - **Discount Rules** (DiscountRule Table):
-    - Bulk discounts ke liye rules implement karo (e.g., min_retailer_quantity, bulk_discount_percentage).
-    - Order placement ke time automatically apply karo.
-- **Frontend Tasks**:
-  - Checkout page pe coupon code input field add karo.
-  - Order summary mein applied discount dikhao.
-- **Testing**:
-  - Admin ke roop mein coupon create karo.
-  - Customer aur retailer ke roop mein coupon apply karo, discount verify karo.
-  - Retailer ke liye bulk discount check karo.
-
-Yeh phase zaroori hai kyunki discounts users ko attract karte hain.
-
-#### Phase 7: Product Reviews & Ratings
-Is phase mein customers ko product reviews aur ratings dene ka option do:
-- **Backend Tasks**:
-  - **Review Submission** (Reviews Table):
-    - `POST /api/products/:id/reviews`: Review submit karo.
-    - Ensure only verified purchasers review de sakein (OrderItems check karo).
-- **Frontend Tasks**:
-  - Product detail page pe review form add karo.
-  - Reviews aur average rating dikhao.
-- **Testing**:
-  - Ek customer ke roop mein product khareedo aur review submit karo.
-  - Verify ki non-purchasers review nahi de sakte.
-  - Product page pe reviews aur rating check karo.
-
-Yeh phase zaroori hai kyunki reviews trust banate hain aur user experience improve karte hain.
-
-#### Phase 8: Admin-Exclusive Services
-Is phase mein admin ke liye user management, sales analytics, aur stock alerts implement karo:
-- **Backend Tasks**:
-  - **User Management** (Users Table):
-    - `GET /api/admin/users`: Sabhi users list karo.
-    - `PUT /api/admin/users/:id/ban`: User ko ban karo (status: banned).
-  - **Sales Analytics** (Orders, OrderItems, Products Tables):
-    - `GET /api/admin/analytics`: Total sales, top products, category-wise revenue dikhao.
-  - **Stock Alerts** (StockAlerts Table):
-    - `GET /api/admin/stock-alerts`: Low stock products list karo.
-- **Frontend Tasks**:
-  - Admin dashboard banao jisme user management, sales analytics, aur stock alerts ke tabs hon.
-- **Testing**:
-  - Admin ke roop mein users list karo aur ek user ko ban karo.
-  - Sales analytics check karo (total sales, top products, etc.).
-  - Stock alerts verify karo.
-
-Yeh phase zaroori hai kyunki admin ko platform manage karne ke liye yeh tools zaroori hain.
-
-#### Phase 9: Returns & Refunds
-Is phase mein return requests aur refund processing implement karo:
-- **Backend Tasks**:
-  - **Return Request**:
-    - `POST /api/orders/:id/return`: User return request submit kare.
-    - Validate return window (e.g., 7 days) aur order status.
-  - **Refund Processing**:
-    - Admin return approve kare aur refund process kare (manually ya payment gateway ke through).
-- **Frontend Tasks**:
-  - Order detail page pe eligible orders ke liye return request option add karo.
-  - Refund status dikhao.
-- **Testing**:
-  - Ek order ke liye return request submit karo aur verify karo.
-  - Admin ke roop mein return approve karo aur refund status check karo.
-
-Yeh phase zaroori hai kyunki customer satisfaction ke liye returns aur refunds zaroori hain.
-
-#### Phase 10: Testing & Deployment
-Is phase mein pura project test karo aur production mein deploy karo:
-- **Backend Tasks**:
-  - Unit tests likho (Jest ya Mocha se) har endpoint ke liye.
-  - Integration tests likho critical flows ke liye (e.g., order placement).
-- **Frontend Tasks**:
-  - Unit tests likho components ke liye (Jest aur React Testing Library).
-  - End-to-end tests likho (Cypress ya Selenium se).
-- **Deployment Tasks**:
-  - Backend ko cloud platform pe deploy karo (e.g., Heroku, AWS).
-  - Frontend ko static hosting service pe deploy karo (e.g., Netlify, Vercel).
-  - CI/CD pipelines setup karo (optional).
-  - Logging aur error tracking setup karo (e.g., Sentry).
-- **Testing**:
-  - Pura application flow test karo (registration se order placement tak).
-  - Production environment mein sabhi features verify karo.
-
-Yeh phase zaroori hai kyunki testing aur deployment ensure karta hai ki app reliable aur user-ready hai.
+### Phase 5: Order & Payment Management  
+- **APIs:**  
+  - **Orders:**  
+    - `POST /api/orders` (Place Order)  
+    - `GET /api/orders` (List User Orders)  
+    - `GET /api/orders/:orderId` (Order Details)  
+    - `PUT /api/orders/:orderId` (Cancel Order by User)  
+  - **Admin Orders:**  
+    - `GET /api/admin/orders` (List All Orders)  
+    - `GET /api/admin/orders/:orderId` (Order Details)  
+    - `PUT /api/admin/orders/:orderId` (Update Order Status)  
+  - **Payments:**  
+    - `POST /api/payments/create-order` (Create Payment Order)  
+    - `POST /api/payments/verify` (Verify Payment)  
 
 ---
 
-### Final Notes
-Yeh flow tumhare project ke liye complete hai, aur koi bhi feature miss nahi hai. Har phase user roles (customer, retailer, admin) ke hisaab se design kiya gaya hai, aur database models aur services documentation ke hisaab se banaya gaya hai. Agar koi specific clarification chahiye ya kisi phase ke liye aur details chahiye, toh bol dena!
+### Phase 6: Coupons & Discounts (Admin-Only)  
+- **APIs:**  
+  - **Coupons:**  
+    - `POST /api/admin/coupons` (Create)  
+    - `GET /api/admin/coupons` (List)  
+    - `PUT /api/admin/coupons/:couponId` (Update)  
+    - `DELETE /api/admin/coupons/:couponId` (Delete)  
+  - **Discount Rules:**  
+    - `POST /api/admin/discount-rules` (Create)  
+    - `GET /api/admin/discount-rules` (List)  
+    - `PUT /api/admin/discount-rules/:ruleId` (Update)  
+    - `DELETE /api/admin/discount-rules/:ruleId` (Delete)  
+  - **User-Facing:**  
+    - `POST /api/orders/apply-coupon` (Apply Coupon to Order)  
+
+---
+
+### Phase 7: Reviews & Ratings  
+- **APIs:**  
+  - `POST /api/products/:productId/reviews` (Add Review)  
+  - `GET /api/products/:productId/reviews` (Get Reviews)  
+  - `PUT /api/reviews/:reviewId` (Update Review)  
+  - `DELETE /api/reviews/:reviewId` (Delete Review)  
+  - **Optional (Admin):** `GET /api/admin/reviews`, `DELETE /api/admin/reviews/:reviewId`  
+
+---
+
+### Phase 8: Admin Services  
+- **APIs:**  
+  - **User Management:**  
+    - `GET /api/admin/users` (List Users)  
+    - `PUT /api/admin/users/:userId/status` (Update User Status)  
+  - **Sales Analytics:**  
+    - `GET /api/admin/analytics` (Get Analytics)  
+  - **Stock Alerts:**  
+    - `GET /api/admin/stock-alerts` (List Alerts)  
+    - `PUT /api/admin/stock-alerts/:alertId` (Resolve Alert)  
+    - **Optional:** `POST /api/admin/stock-alerts` (Create Alert)  
+
+---
+
+### Phase 9: Returns & Refunds  
+- **APIs:**  
+  - **User Returns:**  
+    - `POST /api/orders/:orderId/return` (Request Return)  
+    - `GET /api/returns` (List User Returns)  
+    - `DELETE /api/returns/:returnId` (Cancel Return)  
+  - **Admin Returns:**  
+    - `GET /api/admin/returns` (List All Returns)  
+    - `PUT /api/admin/returns/:returnId` (Approve/Reject Return)  
+
+---
+
+### Phase 10: Owner & Store Management (If Applicable)  
+- **APIs:**  
+  - **Owners:**  
+    - `POST /api/admin/owners` (Create)  
+    - `GET /api/admin/owners` (List)  
+    - `PUT /api/admin/owners/:ownerId` (Update)  
+    - `DELETE /api/admin/owners/:ownerId` (Delete)  
+  - **Stores:**  
+    - `POST /api/admin/stores` (Create)  
+    - `GET /api/admin/stores` (List)  
+    - `PUT /api/admin/stores/:storeId` (Update)  
+    - `DELETE /api/admin/stores/:storeId` (Delete)  
+
+---
+
+### Phase 11: Testing & Deployment  
+- **Steps:**  
+  - Unit testing for all APIs.  
+  - Integration testing for workflows (e.g., cart to order).  
+  - Load testing for scalability.  
+  - Deployment to staging and production.  
+
+---
+
+### Key Notes:  
+- **Public vs Admin Endpoints:** Public endpoints (like `/api/products`) are for users, while admin endpoints (like `/api/admin/products`) are restricted.  
+- **Optional APIs:** Include only if required by your project (e.g., password reset, manual stock alerts).  
+- **Owner/Store Management:** Add this phase only if your project involves multiple stores or owners.
