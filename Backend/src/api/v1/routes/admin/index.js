@@ -10,6 +10,7 @@ import stockAlertRoutes from "./stockAlert.route.js";
 import reviewRoutes from "./review.route.js";
 import brandsRoutes from "./brand.routes.js";
 import ProductTypesRoutes from "./productTypes.routes.js";
+import productAttributesRoutes from "./productAttributes.routes.js";
 
 const app = express();
 
@@ -18,6 +19,8 @@ app.use("/category", categoryRoutes);
 app.use("/brands", brandsRoutes);
 
 app.use("/product-Types", ProductTypesRoutes); //done upto here...
+
+app.use("/product-Attributes", productAttributesRoutes);
 
 app.use("/order", orderRoutes);
 

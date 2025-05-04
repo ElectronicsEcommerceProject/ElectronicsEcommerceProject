@@ -21,6 +21,10 @@ import {
   productTypeValidator,
   productTypeUpdateValidator,
 } from "./productTypes/productTypes.validators.js";
+import {
+  attributeValidator,
+  attributeUpdateValidator,
+} from "./productAttributes/productAttributes.validators.js";
 
 export const validators = {
   auth: {
@@ -52,6 +56,11 @@ export const validators = {
   productType: {
     productTypeValidator: productTypeValidator,
     productTypeUpdateValidator: productTypeUpdateValidator,
+    id: id,
+  },
+  attribute: {
+    attributeValidator: attributeValidator,
+    attributeUpdateValidator: attributeUpdateValidator,
     id: id,
   },
 };

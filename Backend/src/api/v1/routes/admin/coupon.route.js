@@ -1,7 +1,7 @@
 import express from "express";
 
-import { verifyJwtToken, isAdmin } from "../../../../middleware/index.js";
-import { adminCouponController } from "../../controllers/index.js";
+// import { verifyJwtToken, isAdmin } from "../../../../middleware/index.js";
+// import { adminCouponController } from "../../controllers/index.js";
 
 const router = express.Router();
 

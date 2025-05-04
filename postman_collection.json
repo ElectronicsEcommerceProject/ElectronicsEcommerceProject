@@ -1,0 +1,142 @@
+{
+  "info": {
+    "name": "Product product-Attributes API",
+    "description": "API endpoints for managing product product-Attributes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Add Attribute",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "description": "JWT auth_token for authentication"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"product_type_id\": \"{{product_type_id}}\",\n    \"name\": \"Color\",\n    \"data_type\": \"enum\",\n    \"is_variant_level\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/product-Attributes",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "admin", "product-Attributes"]
+        },
+        "description": "Create a new product attribute"
+      }
+    },
+    {
+      "name": "Get All product-Attributes",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "description": "JWT auth_token for authentication"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/product-Attributes",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "admin", "product-Attributes"]
+        },
+        "description": "Retrieve all product product-Attributes"
+      }
+    },
+    {
+      "name": "Get product-Attributes by Product Type",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "description": "JWT auth_token for authentication"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/product-Attributes/product-type/{{product_type_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "admin", "product-Attributes", "product-type", "{{product_type_id}}"]
+        },
+        "description": "Retrieve product-Attributes for a specific product type"
+      }
+    },
+    {
+      "name": "Update Attribute",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "description": "JWT auth_token for authentication"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Updated Color\",\n    \"data_type\": \"enum\",\n    \"is_variant_level\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/product-Attributes/{{attribute_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "admin", "product-Attributes", "{{attribute_id}}"]
+        },
+        "description": "Update an existing product attribute"
+      }
+    },
+    {
+      "name": "Delete Attribute",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "description": "JWT auth_token for authentication"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/product-Attributes/{{attribute_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "admin", "product-Attributes", "{{attribute_id}}"]
+        },
+        "description": "Delete a product attribute"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "description": "Base URL for the API"
+    },
+    {
+      "key": "auth_token",
+      "value": "your_jwt_auth_token_here",
+      "description": "JWT auth_token for authentication"
+    },
+    {
+      "key": "product_type_id",
+      "value": "your_product_type_uuid_here",
+      "description": "UUID of a product type"
+    },
+    {
+      "key": "attribute_id",
+      "value": "your_attribute_uuid_here",
+      "description": "UUID of an attribute"
+    }
+  ]
+}

@@ -13,11 +13,13 @@ export { default as adminUserController } from "./admin/user.controller.js";
 export { default as adminStockAlertController } from "./admin/stockAlert.controller.js";
 export { default as adminOrderController } from "./admin/order.controller.js";
 export { default as adminProductController } from "./admin/product.controller.js";
+
 // export { default as adminProfileController } from './admin/profile.controller.js';
 export { default as adminCartController } from "./admin/cart.controller.js";
 export { default as adminReviewController } from "./admin/review.controller.js";
 export { default as adminBrandController } from "./admin/brand.controller.js";
 export { default as adminProductTypeController } from "./admin/productTypes.controllers.js";
+export { default as adminAttributeController } from "./admin/productAttributes.controller.js";
 
 //     customer controller
 export { default as customerOrderController } from "./customer/order.controller.js";
