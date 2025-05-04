@@ -25,6 +25,10 @@ import {
   attributeValidator,
   attributeUpdateValidator,
 } from "./productAttributes/productAttributes.validators.js";
+import {
+  attributeValueValidator,
+  attributeValueUpdateValidator,
+} from "./productAttributesValues/productAttributesValues.validators.js";
 
 export const validators = {
   auth: {
@@ -61,6 +65,11 @@ export const validators = {
   attribute: {
     attributeValidator: attributeValidator,
     attributeUpdateValidator: attributeUpdateValidator,
+    id: id,
+  },
+  attributeValue: {
+    attributeValueValidator: attributeValueValidator,
+    attributeValueUpdateValidator: attributeValueUpdateValidator,
     id: id,
   },
 };
