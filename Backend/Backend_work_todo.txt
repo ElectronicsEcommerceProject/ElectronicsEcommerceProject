@@ -21,13 +21,16 @@
     - `PUT /api/admin/product-types/:productTypeId` (Update)  
     - `DELETE /api/admin/product-types/:productTypeId` (Delete)  
 
---------------------------Above all done..------------------------------------
 
   - **Attributes:**  
     - `POST /api/admin/attributes` (Create)  
     - `GET /api/admin/attributes` (List)  
     - `PUT /api/admin/attributes/:attributeId` (Update)  
     - `DELETE /api/admin/attributes/:attributeId` (Delete)  
+
+--------------------------Above all done..------------------------------------
+
+
   - **Attribute Values:**  
     - `POST /api/admin/attribute-values` (Create)  
     - `GET /api/admin/attribute-values` (List)  
