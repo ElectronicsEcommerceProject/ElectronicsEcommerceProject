@@ -1,0 +1,76 @@
+{
+  "info": {
+    "name": "Category API Requests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Add Category",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/v1/admin/category",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Electronics\",\n  \"slug\": \"electronics\",\n  \"target_role\": \"both\",\n  \"parent_id\": null\n}"
+        }
+      }
+    },
+    {
+      "name": "Get All Categories",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/v1/admin/category",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Update Category",
+      "request": {
+        "method": "PUT",
+        "url": "{{base_url}}/api/v1/admin/category/{{category_id}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Updated Electronics\",\n  \"slug\": \"updated-electronics\",\n  \"target_role\": \"both\",\n  \"parent_id\": null\n}"
+        }
+      }
+    },
+    {
+      "name": "Delete Category",
+      "request": {
+        "method": "DELETE",
+        "url": "{{base_url}}/api/v1/admin/category/{{category_id}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ]
+      }
+    }
+  ]
+}

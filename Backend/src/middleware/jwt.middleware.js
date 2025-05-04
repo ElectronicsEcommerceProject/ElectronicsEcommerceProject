@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
-
 import dotenv from "dotenv";
+import { StatusCodes } from "http-status-codes";
+import messages from "../constants/message.js";
 
 // Load environment variables from .env file
 dotenv.config({ path: '../.env' });
@@ -8,13 +9,12 @@ dotenv.config({ path: '../.env' });
 // Get the secret key from environment variables
 const secretKey = process.env.SECRET_KEY;
 
-
 // Function to encode user JWT
-export const encodeJwtToken = (email,role) => {
+export const encodeJwtToken = (email, user_id, role) => {
   // Payload data to include in the token
-  const payload = { email ,role};
+  const payload = { email, user_id, role };
   // Options for the token (e.g., expiration time)
-  const options = { expiresIn: "10h" }; // Token expires in 1 hour
+  const options = { expiresIn: "10h" }; // Token expires in 10 hours
 
   // Generate the token
   const token = jwt.sign(payload, secretKey, options);
@@ -22,13 +22,14 @@ export const encodeJwtToken = (email,role) => {
 };
 
 // Function to verify user JWT
-
 export const verifyJwtToken = (req, res, next) => {
   // Get the token from the request headers
   const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ error: "Access denied. No token provided." });
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ error: messages.ACCESS_DENIED_NO_TOKEN });
   }
 
   try {
@@ -38,6 +39,8 @@ export const verifyJwtToken = (req, res, next) => {
     next(); // Proceed to the next middleware or route handler
   } catch (error) {
     console.error("JWT verification error:", error);
-    return res.status(400).json({ error: "Invalid token." });
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ error: messages.INVALID_TOKEN });
   }
 };

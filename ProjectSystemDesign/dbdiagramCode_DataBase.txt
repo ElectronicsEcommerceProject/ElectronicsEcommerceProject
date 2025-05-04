@@ -72,6 +72,7 @@ Table OrderItems {
   order_item_id uuid [pk]
   order_id uuid
   product_id uuid
+  variant_id uuid
   quantity integer
   price_at_time decimal
 }
@@ -81,6 +82,7 @@ Table Carts {
   cart_id uuid [pk]
   user_id uuid
   product_id uuid
+  variant_id uuid
   quantity integer
 }
 
@@ -162,12 +164,12 @@ Table Reviews {
 
 Table StockAlerts {
   alert_id uuid [pk]
-  product_id uuid
+  variant_id uuid
   stock_level integer
   status varchar(10) [note: 'pending, sent']
 }
 
-// 🔥 ONLY THESE RELATIONSHIPS (NO DUPLICATES)
+// Relationships
 Ref: Users.current_address_id > Addresses.address_id
 Ref: Addresses.user_id > Users.user_id
 Ref: Categories.parent_id > Categories.id
@@ -179,8 +181,10 @@ Ref: Orders.user_id > Users.user_id
 Ref: Orders.address_id > Addresses.address_id
 Ref: OrderItems.order_id > Orders.order_id
 Ref: OrderItems.product_id > Products.id
+Ref: OrderItems.variant_id > ProductVariants.id
 Ref: Carts.user_id > Users.user_id
 Ref: Carts.product_id > Products.id
+Ref: Carts.variant_id > ProductVariants.id
 Ref: Wishlists.user_id > Users.user_id
 Ref: Wishlists.product_id > Products.id
 Ref: CouponRedemptions.user_id > Users.user_id
@@ -196,4 +200,4 @@ Ref: VariantAttributes.variant_id > ProductVariants.id
 Ref: VariantAttributes.attribute_id > Attributes.attribute_id
 Ref: Reviews.product_id > Products.id
 Ref: Reviews.user_id > Users.user_id
-Ref: StockAlerts.product_id > Products.id
+Ref: StockAlerts.variant_id > ProductVariants.id

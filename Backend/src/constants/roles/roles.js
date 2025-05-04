@@ -5,9 +5,9 @@
  * if (user.role === ROLES.ADMIN) { ... }
  */
 const roles = {
-    CUSTOMER: 'Customer',
-    RETAILER: 'Retailer',
-    ADMIN: 'Admin'
+    CUSTOMER: 'customer',
+    RETAILER: 'retailer',
+    ADMIN: 'admin'
   };
 
 export const ROLES = roles;

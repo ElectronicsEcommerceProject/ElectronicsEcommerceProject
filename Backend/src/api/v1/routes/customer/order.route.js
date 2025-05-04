@@ -1,21 +1,24 @@
-import express from 'express';
-import { verifyJwtToken } from '../../../../middleware/jwt.js';
+import express from "express";
+import { verifyJwtToken } from "../../../../middleware/jwt.middleware.js";
 
-
-import { customerOrderController } from '../../controllers/index.js';
+import { customerOrderController } from "../../controllers/index.js";
 
 const router = express.Router();
 
 // 📦 Place new order
-router.post('/', verifyJwtToken,customerOrderController.createOrder);
+router.post("/", verifyJwtToken, customerOrderController.createOrder);
 
 // 📄 Get all orders for logged-in user
-router.get('/', verifyJwtToken,customerOrderController.getOrders);
+router.get("/", verifyJwtToken, customerOrderController.getOrders);
 
 // 🔍 Get single order by ID
-router.get('/:id', verifyJwtToken, customerOrderController.getOrderById);
+router.get("/:id", verifyJwtToken, customerOrderController.getOrderById);
 
 // ❌ Request order cancellation
-router.patch('/:id/cancel', verifyJwtToken, customerOrderController.requestOrderCancellation);
+router.patch(
+  "/:id/cancel",
+  verifyJwtToken,
+  customerOrderController.requestOrderCancellation
+);
 
 export default router;

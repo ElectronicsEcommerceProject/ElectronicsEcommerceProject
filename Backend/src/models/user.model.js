@@ -28,6 +28,10 @@ export default (sequelize) => {
         isEmail: true,
       },
     },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     current_address_id: {
       type: DataTypes.UUID,
       allowNull: true,
@@ -37,7 +41,7 @@ export default (sequelize) => {
       defaultValue: 'active',
     },
     role: {
-      type: DataTypes.ENUM('retailer', 'customer'),
+      type: DataTypes.ENUM('retailer', 'customer', 'admin'),
       allowNull: false,
     },
   }, {
