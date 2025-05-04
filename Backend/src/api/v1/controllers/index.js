@@ -17,6 +17,7 @@ export { default as adminProductController } from "./admin/product.controller.js
 export { default as adminCartController } from "./admin/cart.controller.js";
 export { default as adminReviewController } from "./admin/review.controller.js";
 export { default as adminBrandController } from "./admin/brand.controller.js";
+export { default as adminProductTypeController } from "./admin/productTypes.controllers.js";
 
 //     customer controller
 export { default as customerOrderController } from "./customer/order.controller.js";

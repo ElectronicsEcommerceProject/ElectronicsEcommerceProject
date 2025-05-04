@@ -1,78 +1,53 @@
-**3. Product Types & Attributes (ProductTypes, Attributes, AttributeValues Tables):**  
-- `POST /api/admin/product-types`:  
-  ```json  
-  { "name": "Mobile", "description": "Smartphones and Tablets" }  
-  ```  
-- `POST /api/admin/attributes`:  
-  ```json  
-  { "name": "Color", "data_type": "enum", "product_type_id": "pt1x2y3" }  
-  ```  
-- `POST /api/admin/attribute-values`:  
-  ```json  
-  { "attribute_id": "attr1x2y3", "value": "Blue" }  
-  ```  
 
-**4. Product Management (Products Table):**  
-- `POST /api/admin/products`:  
-  ```json  
-  {  
-    "name": "Galaxy S23",  
-    "slug": "galaxy-s23",  
-    "category_id": "cat1x2y3",  
-    "brand_id": "br1x2y3",  
-    "product_type_id": "pt1x2y3",  
-    "base_price": 79999  
-  }  
-  ```  
+### Phase 3: Product Catalog Setup (Admin-Only)  
+- **APIs:**  
+  - **Categories:**  
+    - `POST /api/admin/categories` (Create)  
+    - `GET /api/admin/categories` (List for Admin)  
+    - `GET /api/categories` (Public List)  
+    - `PUT /api/admin/categories/:categoryId` (Update)  
+    - `DELETE /api/admin/categories/:categoryId` (Delete)  
+  - **Brands:**  
+    - `POST /api/admin/brands` (Create)  
+    - `GET /api/admin/brands` (List for Admin)  
+    - `GET /api/brands` (Public List)  
+    - `PUT /api/admin/brands/:brandId` (Update)  
+    - `DELETE /api/admin/brands/:brandId` (Delete)  
 
-**5. Product Variants (ProductVariants & VariantAttributes Tables):**  
-- `POST /api/admin/products/:id/variants`:  
-  ```json  
-  {  
-    "price": 79999,  
-    "sku": "GALAXY-S23-BLUE",  
-    "attributes": [  
-      { "attribute_id": "attr1x2y3", "value": "Blue" },  
-      { "attribute_id": "attr2x2y3", "value": "128GB" }  
-    ]  
-  }  
-  ```  
+--------------------------Above all done..------------------------------------
 
-**6. Product Media (ProductMedia Table):**  
-- `POST /api/admin/products/:id/media`:  
-  ```json  
-  { "media_url": "https://example.com/galaxy-s23.jpg", "media_type": "image" }  
-  ```  
 
----
-
-### **Frontend Tasks:**  
-1. **Admin Dashboard:**  
-   - Separate sections for **Categories**, **Brands**, **Product Types**, **Attributes**, **Products**, **Variants**, and **Media**.  
-   - Drag-drop UI for category hierarchy.  
-2. **Product Creation Wizard:**  
-   - Step 1: Select Category + Brand.  
-   - Step 2: Choose Product Type + Assign Attributes.  
-   - Step 3: Add Variants with Attribute Values (e.g., Color, Storage).  
-   - Step 4: Upload Media.  
+  - **Product Types:**  
+    - `POST /api/admin/product-types` (Create)  
+    - `GET /api/admin/product-types` (List)  
+    - `PUT /api/admin/product-types/:productTypeId` (Update)  
+    - `DELETE /api/admin/product-types/:productTypeId` (Delete)  
+  - **Attributes:**  
+    - `POST /api/admin/attributes` (Create)  
+    - `GET /api/admin/attributes` (List)  
+    - `PUT /api/admin/attributes/:attributeId` (Update)  
+    - `DELETE /api/admin/attributes/:attributeId` (Delete)  
+  - **Attribute Values:**  
+    - `POST /api/admin/attribute-values` (Create)  
+    - `GET /api/admin/attribute-values` (List)  
+    - `PUT /api/admin/attribute-values/:valueId` (Update)  
+    - `DELETE /api/admin/attribute-values/:valueId` (Delete)  
+  - **Products:**  
+    - `POST /api/admin/products` (Create)  
+    - `GET /api/admin/products` (List for Admin)  
+    - `GET /api/products` (Public List)  
+    - `GET /api/products/:productId` (Product Details)  
+    - `PUT /api/admin/products/:productId` (Update)  
+    - `DELETE /api/admin/products/:productId` (Delete)  
+  - **Product Variants:**  
+    - `POST /api/admin/products/:productId/variants` (Create)  
+    - `GET /api/admin/variants` (List for Admin)  
+    - `GET /api/products/:productId/variants` (Public List)  
+    - `PUT /api/admin/variants/:variantId` (Update)  
+    - `DELETE /api/admin/variants/:variantId` (Delete)  
+  - **Product Media:**  
+    - `POST /api/admin/products/:productId/media` (Add Media)  
+    - `GET /api/products/:productId/media` (Get Media)  
+    - `DELETE /api/admin/media/:mediaId` (Delete Media)  
 
 ---
-
-### **Testing:**  
-1. **Attribute-Variant Linking Test:**  
-   - Create a variant with attributes → Verify values are stored in `VariantAttributes` table.  
-2. **Product Type Validation:**  
-   - Try creating a product without selecting a Product Type → Should throw error.  
-3. **Role-Based Category Filtering:**  
-   - Log in as Retailer → Verify only categories with `target_role: retailer/both` are visible.  
-
----
-
-### **Why This Sequence?**  
-1. **Database Dependencies:**  
-   - **Product Types** and **Attributes** must exist before creating Products/Variants (as per `ProductTypes` and `VariantAttributes` tables).  
-   - Variants depend on Attributes (e.g., "Color" attribute must be defined before assigning "Blue" to a variant).  
-2. **Logical Flow:**  
-   - Pehle **Categories** aur **Brands** setup karo → Phir **Product Types** aur **Attributes** define karo → Uske baad **Products** aur **Variants** add karo.  
-
-
