@@ -14,14 +14,15 @@
     - `PUT /api/admin/brands/:brandId` (Update)  
     - `DELETE /api/admin/brands/:brandId` (Delete)  
 
---------------------------Above all done..------------------------------------
-
 
   - **Product Types:**  
     - `POST /api/admin/product-types` (Create)  
     - `GET /api/admin/product-types` (List)  
     - `PUT /api/admin/product-types/:productTypeId` (Update)  
     - `DELETE /api/admin/product-types/:productTypeId` (Delete)  
+
+--------------------------Above all done..------------------------------------
+
   - **Attributes:**  
     - `POST /api/admin/attributes` (Create)  
     - `GET /api/admin/attributes` (List)  
