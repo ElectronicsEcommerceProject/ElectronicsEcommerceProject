@@ -1,49 +1,182 @@
-import Joi from 'joi';
+import Joi from "joi";
+import MESSAGE from "../../../../constants/message.js";
 
 export const productValidationSchema = Joi.object({
-  name: Joi.string().required().messages({
-    'string.empty': 'Name is required',
-  }),
-  price: Joi.number().positive().precision(2).required().messages({
-    'number.base': 'Price must be a decimal value',
-    'number.positive': 'Price must be a positive number',
-    'any.required': 'Price is required',
-  }),
-  stock: Joi.number().integer().min(0).optional().messages({
-    'number.base': 'Stock must be a non-negative integer',
-    'number.min': 'Stock must be a non-negative integer',
-  }),
-  image_url: Joi.string().uri().optional().messages({
-    'string.uri': 'Image URL must be valid',
-  }),
-  discount_quantity: Joi.number().integer().min(1).optional().messages({
-    'number.min': 'Discount quantity must be at least 1',
-  }),
-  discount_percentage: Joi.number().min(0).max(100).optional().messages({
-    'number.min': 'Discount percentage must be between 0 and 100',
-    'number.max': 'Discount percentage must be between 0 and 100',
-  }),
-  min_retailer_quantity: Joi.number().integer().min(1).optional().messages({
-    'number.min': 'Min retailer quantity must be at least 1',
-  }),
-  bulk_discount_quantity: Joi.number().integer().min(1).optional().messages({
-    'number.min': 'Bulk discount quantity must be at least 1',
-  }),
-  bulk_discount_percentage: Joi.number().min(0).max(100).optional().messages({
-    'number.min': 'Bulk discount percentage must be between 0 and 100',
-    'number.max': 'Bulk discount percentage must be between 0 and 100',
-  }),
-  stock_alert_threshold: Joi.number().integer().min(0).optional().messages({
-    'number.min': 'Stock alert threshold must be a non-negative integer',
-  }),
-  target_role: Joi.string()
-    .valid('customer', 'retailer', 'both')
+  name: Joi.string()
     .required()
     .messages({
-      'any.only': 'Target role must be one of: customer, retailer, or both',
-      'any.required': 'Target role is required',
+      "string.empty": MESSAGE.custom("Product name is required"),
+      "any.required": MESSAGE.custom("Product name is required"),
     }),
-  category_id: Joi.number().integer().required().messages({
-    'any.required': 'Category ID is required',
-  }),
+  slug: Joi.string()
+    .optional()
+    .allow(null, "")
+    .messages({
+      "string.empty": MESSAGE.custom("Slug cannot be empty if provided"),
+    }),
+  description: Joi.string()
+    .optional()
+    .allow(null, "")
+    .messages({
+      "string.empty": MESSAGE.custom("Description cannot be empty if provided"),
+    }),
+  short_description: Joi.string()
+    .optional()
+    .allow(null, "")
+    .messages({
+      "string.empty": MESSAGE.custom(
+        "Short description cannot be empty if provided"
+      ),
+    }),
+  base_price: Joi.number()
+    .positive()
+    .precision(2)
+    .required()
+    .messages({
+      "number.base": MESSAGE.custom("Base price must be a decimal value"),
+      "number.positive": MESSAGE.custom("Base price must be a positive number"),
+      "any.required": MESSAGE.custom("Base price is required"),
+    }),
+  rating_average: Joi.number()
+    .min(0)
+    .max(5)
+    .precision(1)
+    .optional()
+    .allow(null)
+    .messages({
+      "number.min": MESSAGE.custom("Rating average must be between 0 and 5"),
+      "number.max": MESSAGE.custom("Rating average must be between 0 and 5"),
+    }),
+  rating_count: Joi.number()
+    .integer()
+    .min(0)
+    .optional()
+    .allow(null)
+    .messages({
+      "number.base": MESSAGE.custom(
+        "Rating count must be a non-negative integer"
+      ),
+      "number.min": MESSAGE.custom(
+        "Rating count must be a non-negative integer"
+      ),
+    }),
+  is_active: Joi.boolean()
+    .optional()
+    .default(true)
+    .messages({
+      "boolean.base": MESSAGE.custom("Is active must be a boolean value"),
+    }),
+  is_featured: Joi.boolean()
+    .optional()
+    .default(false)
+    .messages({
+      "boolean.base": MESSAGE.custom("Is featured must be a boolean value"),
+    }),
+  category_id: Joi.string()
+    .uuid()
+    .required()
+    .messages({
+      "string.guid": MESSAGE.custom("Category ID must be a valid UUID"),
+      "any.required": MESSAGE.custom("Category ID is required"),
+    }),
+  brand_id: Joi.string()
+    .uuid()
+    .required()
+    .messages({
+      "string.guid": MESSAGE.custom("Brand ID must be a valid UUID"),
+      "any.required": MESSAGE.custom("Brand ID is required"),
+    }),
+});
+
+export const productUpdateValidationSchema = Joi.object({
+  name: Joi.string()
+    .optional()
+    .messages({
+      "string.empty": MESSAGE.custom(
+        "Product name cannot be empty if provided"
+      ),
+    }),
+  slug: Joi.string()
+    .optional()
+    .allow(null, "")
+    .messages({
+      "string.empty": MESSAGE.custom("Slug cannot be empty if provided"),
+    }),
+  description: Joi.string()
+    .optional()
+    .allow(null, "")
+    .messages({
+      "string.empty": MESSAGE.custom("Description cannot be empty if provided"),
+    }),
+  short_description: Joi.string()
+    .optional()
+    .allow(null, "")
+    .messages({
+      "string.empty": MESSAGE.custom(
+        "Short description cannot be empty if provided"
+      ),
+    }),
+  base_price: Joi.number()
+    .positive()
+    .precision(2)
+    .optional()
+    .messages({
+      "number.base": MESSAGE.custom("Base price must be a decimal value"),
+      "number.positive": MESSAGE.custom("Base price must be a positive number"),
+    }),
+  rating_average: Joi.number()
+    .min(0)
+    .max(5)
+    .precision(1)
+    .optional()
+    .allow(null)
+    .messages({
+      "number.min": MESSAGE.custom("Rating average must be between 0 and 5"),
+      "number.max": MESSAGE.custom("Rating average must be between 0 and 5"),
+    }),
+  rating_count: Joi.number()
+    .integer()
+    .min(0)
+    .optional()
+    .allow(null)
+    .messages({
+      "number.base": MESSAGE.custom(
+        "Rating count must be a non-negative integer"
+      ),
+      "number.min": MESSAGE.custom(
+        "Rating count must be a non-negative integer"
+      ),
+    }),
+  is_active: Joi.boolean()
+    .optional()
+    .messages({
+      "boolean.base": MESSAGE.custom("Is active must be a boolean value"),
+    }),
+  is_featured: Joi.boolean()
+    .optional()
+    .messages({
+      "boolean.base": MESSAGE.custom("Is featured must be a boolean value"),
+    }),
+  category_id: Joi.string()
+    .uuid()
+    .optional()
+    .messages({
+      "string.guid": MESSAGE.custom("Category ID must be a valid UUID"),
+    }),
+  brand_id: Joi.string()
+    .uuid()
+    .optional()
+    .messages({
+      "string.guid": MESSAGE.custom("Brand ID must be a valid UUID"),
+    }),
+});
+
+export const productIdSchema = Joi.object({
+  id: Joi.string()
+    .uuid()
+    .required()
+    .messages({
+      "string.guid": MESSAGE.custom("Product ID must be a valid UUID"),
+      "any.required": MESSAGE.custom("Product ID is required"),
+    }),
 });

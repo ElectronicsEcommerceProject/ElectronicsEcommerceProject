@@ -1,155 +1,282 @@
-import db from '../../../../models/index.js'; // Import the database models
+import { StatusCodes } from "http-status-codes";
+import db from "../../../../models/index.js";
+import MESSAGE from "../../../../constants/message.js";
+import slugify from "slugify";
 
-const { Product, Category, User } = db;
+const { Product, Category, Brand, User } = db;
 
-// ✅ Create product
+// Create a new product
 const createProduct = async (req, res) => {
-
   try {
-    // Validate user
+    // Get the user from the token
     const user = await User.findOne({ where: { email: req.user.email } });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: MESSAGE.get.none });
+    }
 
     // Validate category
-    const category = await Category.findOne({ where: { category_id: req.body.category_id } });
-    if (!category) return res.status(404).json({ message: 'Category not found' });
+    const category = await Category.findByPk(req.body.category_id);
+    if (!category) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Category not found" });
+    }
 
-    // Ensure the category belongs to the user or is valid for the target role
-    if (category.created_by !== user.user_id) {
-      return res.status(403).json({ message: 'You are not authorized to use this category' });
+    // Validate brand
+    const brand = await Brand.findByPk(req.body.brand_id);
+    if (!brand) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Brand not found" });
+    }
+
+    // Generate slug if not provided
+    let slug = req.body.slug;
+    if (!slug) {
+      slug = slugify(req.body.name, { lower: true });
+
+      // Check if slug already exists
+      const existingProduct = await Product.findOne({ where: { slug } });
+      if (existingProduct) {
+        // Append a random string to make it unique
+        slug = `${slug}-${Math.random().toString(36).substring(2, 7)}`;
+      }
     }
 
     // Create the product
     const product = await Product.create({
       ...req.body,
+      slug,
       created_by: user.user_id,
-      category_id: category.category_id,
     });
 
-    res.status(201).json({ message: 'Product created successfully', product });
+    res.status(StatusCodes.CREATED).json({
+      message: MESSAGE.post.succ,
+      data: product,
+    });
   } catch (error) {
-    console.error("❌ Error while creating product:", error);
-    res.status(500).json({ message: 'An error occurred while creating the product' });
+    console.error("Error creating product:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: MESSAGE.post.fail,
+      error: error.message,
+    });
   }
 };
 
-// ✅ Update product
-const updateProduct = async (req, res) => {
-  
-  try {
-    const product = await Product.findByPk(req.params.id);
-    if (!product) return res.status(404).json({ message: 'Product not found' });
-
-    const user = await User.findOne({ where: { email: req.user.email } });
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    const category = await Category.findOne({ where: { created_by: user.user_id } });
-    if (!category) return res.status(404).json({ message: 'Category not found' });
-
-    await product.update({
-      ...req.body,
-      created_by: user.user_id,
-      category_id: category.category_id,
-    });
-
-    res.status(200).json({ message: 'Product updated successfully', product });
-  } catch (error) {
-    console.error("❌ Error while updating product:", error);
-    res.status(500).json({ message: 'An error occurred while updating the product' });
-  }
-};
-
-// ✅ Get all products based on user role
+// Get all products
 const getProducts = async (req, res) => {
-  const userRole = req.user.role; // 'customer', 'retailer', 'admin'
-
-  console.log(`📦 Fetching products for role: ${userRole}`);
-
   try {
-    let products;
-
-    if (userRole === 'admin') {
-      // Admin ko sab products dikhne chahiye
-      products = await Product.findAll();
-    } else if (userRole === 'customer') {
-      products = await Product.findAll({
-        where: {
-          target_role: ['customer', 'both'],
-        },
-      });
-    } else if (userRole === 'retailer') {
-      products = await Product.findAll({
-        where: {
-          target_role: ['retailer', 'both'],
-        },
-      });
-    } else {
-      return res.status(403).json({ message: 'Unauthorized role' });
-    }
-
-    res.status(200).json(products);
-  } catch (error) {
-    console.error("❌ Error while fetching products:", error);
-    res.status(500).json({ message: 'An error occurred while fetching the products' });
-  }
-};
-
-
-// ✅ Get products by category ID
-const getProductsByCategoryId = async (req, res) => {
-  const { categoryId } = req.params;
-
-  try {
-    // Check if the category exists
-    const category = await Category.findByPk(categoryId);
-    if (!category) {
-      return res.status(404).json({ message: "Category not found" });
-    }
-
-    // Fetch products for the given category ID
     const products = await Product.findAll({
-      where: { category_id: categoryId },
+      include: [
+        { model: Category, attributes: ["id", "name"] },
+        { model: Brand, attributes: ["id", "name"] },
+        {
+          model: User,
+          as: "creator",
+          attributes: ["user_id", "name", "email"],
+        },
+      ],
     });
 
-    res.status(200).json(products);
+    res.status(StatusCodes.OK).json({
+      message: MESSAGE.get.succ,
+      data: products,
+    });
   } catch (error) {
-    console.error("❌ Error while fetching products by category ID:", error);
-    res.status(500).json({ message: "An error occurred while fetching products" });
+    console.error("Error fetching products:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: MESSAGE.get.fail,
+      error: error.message,
+    });
   }
 };
 
-// ✅ Delete product
-const deleteProduct = async (req, res) => {
-  try {
-    const product = await Product.findByPk(req.params.id);
-    if (!product) return res.status(404).json({ message: 'Product not found' });
-
-    await product.destroy();
-    res.status(200).json({ message: 'Product successfully deleted' });
-  } catch (error) {
-    console.error("❌ Error while deleting product:", error);
-    res.status(500).json({ message: 'An error occurred while deleting the product' });
-  }
-};
-
-// ✅ Get product by ID
+// Get product by ID
 const getProductById = async (req, res) => {
   try {
-    const product = await Product.findByPk(req.params.id);
-    if (!product) return res.status(404).json({ message: 'Product not found' });
+    const { id } = req.params;
 
-    res.status(200).json(product);
+    const product = await Product.findByPk(id, {
+      include: [
+        { model: Category, attributes: ["id", "name"] },
+        { model: Brand, attributes: ["id", "name"] },
+        {
+          model: User,
+          as: "creator",
+          attributes: ["user_id", "name", "email"],
+        },
+      ],
+    });
+
+    if (!product) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: MESSAGE.get.none,
+      });
+    }
+
+    res.status(StatusCodes.OK).json({
+      message: MESSAGE.get.succ,
+      data: product,
+    });
   } catch (error) {
-    console.error("❌ Error while fetching product by ID:", error);
-    res.status(500).json({ message: 'An error occurred while fetching the product' });
+    console.error("Error fetching product:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: MESSAGE.get.fail,
+      error: error.message,
+    });
+  }
+};
+
+// Get products by category ID
+const getProductsByCategoryId = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    // Check if category exists
+    const category = await Category.findByPk(categoryId);
+    if (!category) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: "Category not found",
+      });
+    }
+
+    const products = await Product.findAll({
+      where: { category_id: categoryId },
+      include: [
+        { model: Brand, attributes: ["id", "name"] },
+        {
+          model: User,
+          as: "creator",
+          attributes: ["user_id", "name", "email"],
+        },
+      ],
+    });
+
+    res.status(StatusCodes.OK).json({
+      message: MESSAGE.get.succ,
+      data: products,
+    });
+  } catch (error) {
+    console.error("Error fetching products by category:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: MESSAGE.get.fail,
+      error: error.message,
+    });
+  }
+};
+
+// Update product
+const updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if product exists
+    const product = await Product.findByPk(id);
+    if (!product) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: MESSAGE.get.empty,
+      });
+    }
+
+    // Get the user from the token
+    const user = await User.findOne({ where: { email: req.user.email } });
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: MESSAGE.get.empty,
+      });
+    }
+
+    // If category_id is provided, validate it
+    if (req.body.category_id) {
+      const category = await Category.findByPk(req.body.category_id);
+      if (!category) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          message: "Category not found",
+        });
+      }
+    }
+
+    // If brand_id is provided, validate it
+    if (req.body.brand_id) {
+      const brand = await Brand.findByPk(req.body.brand_id);
+      if (!brand) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          message: "Brand not found",
+        });
+      }
+    }
+
+    // If name is changed and slug is not provided, update the slug
+    if (req.body.name && !req.body.slug && req.body.name !== product.name) {
+      req.body.slug = slugify(req.body.name, { lower: true });
+
+      // Check if slug already exists
+      const existingProduct = await Product.findOne({
+        where: { slug: req.body.slug, id: { [db.Sequelize.Op.ne]: id } },
+      });
+
+      if (existingProduct) {
+        // Append a random string to make it unique
+        req.body.slug = `${req.body.slug}-${Math.random()
+          .toString(36)
+          .substring(2, 7)}`;
+      }
+    }
+
+    // Update the product
+    await product.update({
+      ...req.body,
+      updated_by: user.user_id,
+    });
+
+    res.status(StatusCodes.OK).json({
+      message: MESSAGE.put.succ,
+      data: product,
+    });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: MESSAGE.put.fail,
+      error: error.message,
+    });
+  }
+};
+
+// Delete product
+const deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if product exists
+    const product = await Product.findByPk(id);
+    if (!product) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: MESSAGE.get.none,
+      });
+    }
+
+    // Delete the product
+    await product.destroy();
+
+    res.status(StatusCodes.OK).json({
+      message: MESSAGE.delete.succ,
+    });
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: MESSAGE.delete.fail,
+      error: error.message,
+    });
   }
 };
 
 export default {
   createProduct,
-  updateProduct,
   getProducts,
+  getProductById,
   getProductsByCategoryId,
+  updateProduct,
   deleteProduct,
-  getProductById
 };

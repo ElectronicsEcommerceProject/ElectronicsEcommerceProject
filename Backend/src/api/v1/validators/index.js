@@ -38,6 +38,7 @@ export const validators = {
   product: {
     createProduct: productValidationSchema,
     updateProduct: productValidationSchema,
+    id: id,
   },
   profile: {
     profile: profileValidator,

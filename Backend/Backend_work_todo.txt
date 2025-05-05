@@ -36,7 +36,7 @@
     - `DELETE /api/admin/attribute-values/:valueId` (Delete)  
 
 
---------------------------Above all done..------------------------------------
+
 
   - **Products:**  
     - `POST /api/admin/products` (Create)  
@@ -45,6 +45,9 @@
     - `GET /api/products/:productId` (Product Details)  
     - `PUT /api/admin/products/:productId` (Update)  
     - `DELETE /api/admin/products/:productId` (Delete)  
+
+  --------------------------Above all done..------------------------------------
+
   - **Product Variants:**  
     - `POST /api/admin/products/:productId/variants` (Create)  
     - `GET /api/admin/variants` (List for Admin)  

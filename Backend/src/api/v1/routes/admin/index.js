@@ -23,7 +23,9 @@ app.use("/product-Types", ProductTypesRoutes);
 
 app.use("/product-Attributes", productAttributesRoutes);
 
-app.use("/product-Attributes-Values", productAttributesValuesRoutes); //done upto here...
+app.use("/product-Attributes-Values", productAttributesValuesRoutes);
+
+app.use("/product", productRoutes); //done upto here...
 
 app.use("/order", orderRoutes);
 
