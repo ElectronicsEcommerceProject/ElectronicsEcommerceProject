@@ -50,6 +50,13 @@ export default (sequelize) => {
       foreignKey: "updated_by",
       as: "updater",
     });
+
+    // Add the many-to-many relationship with ProductVariant
+    AttributeValue.belongsToMany(models.ProductVariant, {
+      through: "VariantAttributeValues",
+      foreignKey: "attribute_value_id",
+      otherKey: "variant_id",
+    });
   };
 
   return AttributeValue;

@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { Sequelize } from "sequelize";
+import { Sequelize, DataTypes } from "sequelize";
 import dbConfigFile from "../config/db.js";
 
 dotenv.config({ path: "../.env" });
@@ -33,12 +33,45 @@ db.ProductType = (await import("./productType.model.js")).default(sequelize);
 db.Attribute = (await import("./productAttributes.model.js")).default(
   sequelize
 );
-db.AttributeValues = (
+db.AttributeValue = (
   await import("./productAttributesValues.model.js")
 ).default(sequelize);
 db.Product = (await import("./product.model.js")).default(sequelize);
 db.ProductVariant = (await import("./productVariants.model.js")).default(
   sequelize
+);
+// Define a junction table for the many-to-many relationship if it doesn't exist as a model
+db.VariantAttributeValue = sequelize.define(
+  "VariantAttributeValue",
+  {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
+    variant_id: {
+      type: DataTypes.UUID,
+      references: {
+        model: "ProductVariants",
+        key: "variant_id",
+      },
+    },
+    attribute_value_id: {
+      type: DataTypes.UUID,
+      references: {
+        model: "AttributeValues",
+        key: "id",
+      },
+    },
+    created_by: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+  },
+  {
+    tableName: "VariantAttributeValues",
+    timestamps: true,
+  }
 );
 db.ProductMedia = (await import("./productMedia.model.js")).default(sequelize);
 db.ProductReview = (await import("./productReview.model.js")).default(
@@ -69,9 +102,16 @@ db.CouponRedemption = (await import("./couponRedemption.model.js")).default(
 
 db.Store = (await import("./store.model.js")).default(sequelize);
 
-// Define relationships
+// After importing all models, make sure they're all defined before setting up associations
+console.log("Available models:", Object.keys(db));
+
+// Then set up associations
 Object.keys(db).forEach((modelName) => {
-  if (db[modelName].associate) {
+  if (
+    db[modelName].associate &&
+    typeof db[modelName].associate === "function"
+  ) {
+    console.log(`Setting up associations for ${modelName}`);
     db[modelName].associate(db);
   }
 });

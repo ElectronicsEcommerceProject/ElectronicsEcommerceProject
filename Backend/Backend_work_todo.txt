@@ -46,7 +46,7 @@
     - `PUT /api/admin/products/:productId` (Update)  
     - `DELETE /api/admin/products/:productId` (Delete)  
 
-  --------------------------Above all done..------------------------------------
+
 
   - **Product Variants:**  
     - `POST /api/admin/products/:productId/variants` (Create)  
@@ -54,6 +54,10 @@
     - `GET /api/products/:productId/variants` (Public List)  
     - `PUT /api/admin/variants/:variantId` (Update)  
     - `DELETE /api/admin/variants/:variantId` (Delete)  
+
+  --------------------------Above all done..------------------------------------
+
+
   - **Product Media:**  
     - `POST /api/admin/products/:productId/media` (Add Media)  
     - `GET /api/products/:productId/media` (Get Media)  

@@ -2,7 +2,18 @@ import Joi from "joi";
 import { loginValidator } from "./auth/login.validators.js";
 import { registerValidator } from "./auth/register.validators.js";
 
-import { productValidationSchema } from "./product/product.validators.js";
+import {
+  productValidationSchema,
+  productUpdateValidationSchema,
+  productIdSchema,
+} from "./product/product.validators.js";
+
+import {
+  productVariantValidator,
+  productVariantUpdateValidator,
+  variantIdSchema,
+} from "./productVariant/productVariant.validators.js";
+
 import { profileValidator } from "./profile/profile.validators.js";
 import {
   addressValidator,
@@ -37,7 +48,12 @@ export const validators = {
   },
   product: {
     createProduct: productValidationSchema,
-    updateProduct: productValidationSchema,
+    updateProduct: productUpdateValidationSchema,
+    id: id,
+  },
+  productVariant: {
+    createVariant: productVariantValidator,
+    updateVariant: productVariantUpdateValidator,
     id: id,
   },
   profile: {

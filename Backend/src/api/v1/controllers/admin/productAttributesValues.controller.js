@@ -2,7 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
 
-const { AttributeValues, Attribute, User } = db;
+const { AttributeValue, Attribute, User } = db;
 
 // Add a new attribute value
 const addAttributeValue = async (req, res) => {
@@ -28,7 +28,7 @@ const addAttributeValue = async (req, res) => {
     const created_by = user.dataValues.user_id;
 
     // Create the new attribute value
-    const newAttributeValue = await AttributeValues.create({
+    const newAttributeValue = await AttributeValue.create({
       attribute_id,
       value,
       created_by,
@@ -48,7 +48,7 @@ const addAttributeValue = async (req, res) => {
 // Get all attribute values
 const getAllAttributeValues = async (req, res) => {
   try {
-    const attributeValues = await AttributeValues.findAll({
+    const attributeValues = await AttributeValue.findAll({
       include: [
         { model: Attribute },
         { model: User, as: "creator" },
