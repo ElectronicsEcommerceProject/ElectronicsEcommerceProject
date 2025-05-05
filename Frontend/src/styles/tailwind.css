@@ -2,3 +2,23 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+
+
+/* Custom styles for AG Grid */
+.ag-theme-alpine .ag-header, 
+.ag-theme-alpine .ag-row, 
+.ag-theme-alpine .ag-cell {
+  border: none !important; /* Removes borders */
+}
+
+.ag-theme-alpine {
+  border: none !important; /* Removes the overall border of the grid */
+}
+
+.ag-theme-alpine .ag-header-cell, 
+.ag-theme-alpine .ag-cell {
+  box-shadow: none !important; /* Removes any shadow */
+}
+
+
+
