@@ -64,3 +64,4 @@
     - `DELETE /api/admin/media/:mediaId` (Delete Media)  
 
 ---
+  --------------------------Above all done..------------------------------------
