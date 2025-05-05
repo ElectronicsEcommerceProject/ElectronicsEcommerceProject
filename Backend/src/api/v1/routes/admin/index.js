@@ -29,8 +29,6 @@ app.use("/product", productRoutes); //done upto here...
 
 app.use("/order", orderRoutes);
 
-app.use("/product", productRoutes);
-
 app.use("/profile", profileRoutes);
 
 app.use("/coupon", couponRoutes);
