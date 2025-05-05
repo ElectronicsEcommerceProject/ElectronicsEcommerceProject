@@ -1,0 +1,284 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6",
+    "name": "ProductMedia API",
+    "description": "API endpoints for managing product media",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Add Product Media",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{authToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"product_id\": \"uuid-of-product\",\n    \"variant_id\": \"uuid-of-variant\",\n    \"attribute_id\": \"uuid-of-attribute\",\n    \"media_url\": \"https://example.com/images/product1.jpg\",\n    \"media_type\": \"image\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/admin/product-media",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "admin",
+            "product-media"
+          ]
+        },
+        "description": "Add a new product media"
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Product Media",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/v1/admin/product-media",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "admin",
+            "product-media"
+          ]
+        },
+        "description": "Get all product media"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Product Media by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/v1/admin/product-media/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "admin",
+            "product-media",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "uuid-of-product-media",
+              "description": "UUID of the product media"
+            }
+          ]
+        },
+        "description": "Get product media by ID"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Product Media by Product ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/v1/admin/product-media/product/:productId",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "admin",
+            "product-media",
+            "product",
+            ":productId"
+          ],
+          "variable": [
+            {
+              "key": "productId",
+              "value": "uuid-of-product",
+              "description": "UUID of the product"
+            }
+          ]
+        },
+        "description": "Get product media by product ID"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Product Media by Variant ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/v1/admin/product-media/variant/:variantId",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "admin",
+            "product-media",
+            "variant",
+            ":variantId"
+          ],
+          "variable": [
+            {
+              "key": "variantId",
+              "value": "uuid-of-variant",
+              "description": "UUID of the product variant"
+            }
+          ]
+        },
+        "description": "Get product media by variant ID"
+      },
+      "response": []
+    },
+    {
+      "name": "Update Product Media",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{authToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"product_id\": \"uuid-of-product\",\n    \"variant_id\": \"uuid-of-variant\",\n    \"attribute_id\": \"uuid-of-attribute\",\n    \"media_url\": \"https://example.com/images/updated-product1.jpg\",\n    \"media_type\": \"image\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/admin/product-media/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "admin",
+            "product-media",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "uuid-of-product-media",
+              "description": "UUID of the product media"
+            }
+          ]
+        },
+        "description": "Update a product media"
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Product Media",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/v1/admin/product-media/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "admin",
+            "product-media",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "uuid-of-product-media",
+              "description": "UUID of the product media"
+            }
+          ]
+        },
+        "description": "Delete a product media"
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "Bearer your-jwt-token-here",
+      "type": "string"
+    }
+  ]
+}

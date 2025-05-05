@@ -14,6 +14,7 @@ export { default as adminStockAlertController } from "./admin/stockAlert.control
 export { default as adminOrderController } from "./admin/order.controller.js";
 export { default as adminProductController } from "./admin/product.controller.js";
 export { default as adminProductVariantController } from "./admin/productVariant.controller.js";
+export { default as adminProductMediaController } from "./admin/productMedia.controller.js";
 
 // export { default as adminProfileController } from './admin/profile.controller.js';
 export { default as adminCartController } from "./admin/cart.controller.js";

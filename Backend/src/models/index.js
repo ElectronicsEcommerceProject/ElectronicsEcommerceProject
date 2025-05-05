@@ -102,8 +102,8 @@ db.CouponRedemption = (await import("./couponRedemption.model.js")).default(
 
 db.Store = (await import("./store.model.js")).default(sequelize);
 
-// After importing all models, make sure they're all defined before setting up associations
-console.log("Available models:", Object.keys(db));
+// // After importing all models, make sure they're all defined before setting up associations
+// console.log("Available models:", Object.keys(db));
 
 // Then set up associations
 Object.keys(db).forEach((modelName) => {
@@ -111,7 +111,7 @@ Object.keys(db).forEach((modelName) => {
     db[modelName].associate &&
     typeof db[modelName].associate === "function"
   ) {
-    console.log(`Setting up associations for ${modelName}`);
+    // console.log(`Setting up associations for ${modelName}`);
     db[modelName].associate(db);
   }
 });
