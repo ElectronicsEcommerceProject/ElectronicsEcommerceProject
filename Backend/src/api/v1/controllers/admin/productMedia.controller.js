@@ -7,7 +7,7 @@ const { ProductMedia, Product, ProductVariant, Attribute, User } = db;
 // Add a new product media
 const addProductMedia = async (req, res) => {
   try {
-    const { product_id, variant_id, attribute_id, media_url, media_type } =
+    const { product_id, product_variant_id, product_attribute_id, media_url, media_type } =
       req.body;
 
     // Check if product exists
@@ -19,8 +19,8 @@ const addProductMedia = async (req, res) => {
     }
 
     // Check if variant exists if provided
-    if (variant_id) {
-      const variant = await ProductVariant.findByPk(variant_id);
+    if (product_variant_id) {
+      const variant = await ProductVariant.findByPk(product_variant_id);
       if (!variant) {
         return res
           .status(StatusCodes.NOT_FOUND)
@@ -29,8 +29,8 @@ const addProductMedia = async (req, res) => {
     }
 
     // Check if attribute exists if provided
-    if (attribute_id) {
-      const attribute = await Attribute.findByPk(attribute_id);
+    if (product_attribute_id) {
+      const attribute = await Attribute.findByPk(product_attribute_id);
       if (!attribute) {
         return res
           .status(StatusCodes.NOT_FOUND)
@@ -51,8 +51,8 @@ const addProductMedia = async (req, res) => {
     // Create the new product media
     const newProductMedia = await ProductMedia.create({
       product_id,
-      variant_id,
-      attribute_id,
+      product_variant_id,
+      product_attribute_id,
       media_url,
       media_type: media_type || "image",
       created_by,
@@ -173,7 +173,7 @@ const getProductMediaByVariant = async (req, res) => {
     }
 
     const productMedia = await ProductMedia.findAll({
-      where: { variant_id: variantId },
+      where: { product_variant_id: variantId },
       include: [
         { model: Product },
         { model: Attribute },
@@ -197,7 +197,7 @@ const getProductMediaByVariant = async (req, res) => {
 const updateProductMedia = async (req, res) => {
   try {
     const { id } = req.params;
-    const { product_id, variant_id, attribute_id, media_url, media_type } =
+    const { product_id, product_variant_id, product_attribute_id, media_url, media_type } =
       req.body;
 
     const productMedia = await ProductMedia.findByPk(id);
@@ -218,8 +218,8 @@ const updateProductMedia = async (req, res) => {
     }
 
     // Check if variant exists if provided
-    if (variant_id) {
-      const variant = await ProductVariant.findByPk(variant_id);
+    if (product_variant_id) {
+      const variant = await ProductVariant.findByPk(product_variant_id);
       if (!variant) {
         return res
           .status(StatusCodes.NOT_FOUND)
@@ -228,8 +228,8 @@ const updateProductMedia = async (req, res) => {
     }
 
     // Check if attribute exists if provided
-    if (attribute_id) {
-      const attribute = await Attribute.findByPk(attribute_id);
+    if (product_attribute_id) {
+      const attribute = await Attribute.findByPk(product_attribute_id);
       if (!attribute) {
         return res
           .status(StatusCodes.NOT_FOUND)
@@ -247,8 +247,8 @@ const updateProductMedia = async (req, res) => {
 
     // Update fields
     if (product_id) productMedia.product_id = product_id;
-    if (variant_id !== undefined) productMedia.variant_id = variant_id;
-    if (attribute_id !== undefined) productMedia.attribute_id = attribute_id;
+    if (product_variant_id !== undefined) productMedia.product_variant_id = product_variant_id;
+    if (product_attribute_id !== undefined) productMedia.product_attribute_id = product_attribute_id;
     if (media_url) productMedia.media_url = media_url;
     if (media_type) productMedia.media_type = media_type;
     productMedia.updated_by = user.dataValues.user_id;

@@ -404,8 +404,8 @@ stock_quantity: 50
 
 VariantAttributeValues Table: Attributes save.
 variant_attribute_value_id: UUID
-variant_id: "v1x2y3"
-attribute_id: Attributes table se fetch (e.g., "color", "storage")
+product_variant_id: "v1x2y3"
+product_attribute_id: Attributes table se fetch (e.g., "color", "storage")
 value: "Black" ya "128GB"
 
 
@@ -420,7 +420,7 @@ Attributes valid hone chahiye (Attributes table se match).
 
 Response:{
   "message": "Variant added successfully",
-  "variant_id": "v1x2y3"
+  "product_variant_id": "v1x2y3"
 }
 
 
@@ -432,7 +432,7 @@ Description: Product ya variant ke liye images ya videos upload karta hai.
 Request Body:{
   "media_url": "https://example.com/images/iphone15.jpg",
   "media_type": "image",
-  "variant_id": "v1x2y3"
+  "product_variant_id": "v1x2y3"
 }
 
 
@@ -440,7 +440,7 @@ Database Interaction:
 ProductMedia Table: Naya record create.
 id: UUID (e.g., "m1x2y3")
 product_id: "p1x2y3" (FK → Products)
-variant_id: "v1x2y3" (FK → ProductVariants, optional)
+product_variant_id: "v1x2y3" (FK → ProductVariants, optional)
 media_url: "https://example.com/images/iphone15.jpg"
 media_type: "image" (enum: image, video)
 
@@ -450,7 +450,7 @@ media_type: "image" (enum: image, video)
 Validations:
 Admin role required.
 product_id valid hona chahiye.
-variant_id agar diya hai to valid hona chahiye.
+product_variant_id agar diya hai to valid hona chahiye.
 media_type valid enum hona chahiye.
 
 
@@ -505,7 +505,7 @@ Response:[
     "brand": "Apple",
     "variants": [
       {
-        "variant_id": "v1x2y3",
+        "product_variant_id": "v1x2y3",
         "price": 79999,
         "stock_quantity": 50
       }
@@ -545,7 +545,7 @@ Endpoint: POST /api/cart/items
 Description: Product variant ko cart mein add karta hai.
 Request Body:{
   "product_id": "p1x2y3",
-  "variant_id": "v1x2y3",
+  "product_variant_id": "v1x2y3",
   "quantity": 2
 }
 
@@ -555,7 +555,7 @@ Carts Table: Naya record create ya existing update.
 cart_id: UUID (e.g., "c1x2y3")
 user_id: "u1x2y3" (FK → Users, JWT se)
 product_id: "p1x2y3" (FK → Products)
-variant_id: "v1x2y3" (FK → ProductVariants)
+product_variant_id: "v1x2y3" (FK → ProductVariants)
 quantity: 2
 
 
@@ -563,7 +563,7 @@ quantity: 2
 
 Validations:
 User logged-in hona chahiye.
-product_id aur variant_id valid hone chahiye.
+product_id aur product_variant_id valid hone chahiye.
 Sufficient stock hona chahiye.
 
 
@@ -584,7 +584,7 @@ Response:[
   {
     "cart_id": "c1x2y3",
     "product_id": "p1x2y3",
-    "variant_id": "v1x2y3",
+    "product_variant_id": "v1x2y3",
     "quantity": 2,
     "price": 79999
   }
@@ -638,7 +638,7 @@ Endpoint: POST /api/wishlist/items
 Description: Product ko wishlist mein add karta hai.
 Request Body:{
   "product_id": "p1x2y3",
-  "variant_id": "v1x2y3"
+  "product_variant_id": "v1x2y3"
 }
 
 
@@ -647,14 +647,14 @@ Wishlists Table: Naya record create.
 wishlist_id: UUID (e.g., "w1x2y3")
 user_id: "u1x2y3" (FK → Users, JWT se)
 product_id: "p1x2y3" (FK → Products)
-variant_id: "v1x2y3" (FK → ProductVariants)
+product_variant_id: "v1x2y3" (FK → ProductVariants)
 
 
 
 
 Validations:
 User logged-in hona chahiye.
-product_id aur variant_id valid hone chahiye.
+product_id aur product_variant_id valid hone chahiye.
 
 
 Response:{ "message": "Item added to wishlist", "wishlist_id": "w1x2y3" }
@@ -674,7 +674,7 @@ Response:[
   {
     "wishlist_id": "w1x2y3",
     "product_id": "p1x2y3",
-    "variant_id": "v1x2y3",
+    "product_variant_id": "v1x2y3",
     "name": "iPhone 15"
   }
 ]
@@ -960,7 +960,7 @@ Endpoint: GET /api/admin/stock-alerts
 Description: Low stock wale products list karta hai.
 Response:[
   {
-    "variant_id": "v1x2y3",
+    "product_variant_id": "v1x2y3",
     "stock_quantity": 5
   }
 ]

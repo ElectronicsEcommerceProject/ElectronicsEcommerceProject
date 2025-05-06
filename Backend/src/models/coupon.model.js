@@ -15,6 +15,7 @@ export default (sequelize) => {
       defaultValue: 'cart',
     },
     product_id: { type: DataTypes.UUID, allowNull: true },
+    product_variant_id:{ type: DataTypes.UUID, allowNull: true },
     target_role: {
       type: DataTypes.ENUM('customer', 'retailer', 'both'),
       defaultValue: 'both',
@@ -42,6 +43,7 @@ export default (sequelize) => {
 
   Coupon.associate = (models) => {
     Coupon.belongsTo(models.Product, { foreignKey: 'product_id' });
+    Coupon.belongsTo(models.ProductVariant, { foreignKey: 'product_variant_id' });
     Coupon.belongsTo(models.User, { foreignKey: 'created_by', as: 'creator' });
     Coupon.belongsTo(models.User, { foreignKey: 'updated_by', as: 'updater' });
     Coupon.belongsToMany(models.User, { through: models.CouponUser, foreignKey: 'coupon_id' });

@@ -49,11 +49,11 @@ db.VariantAttributeValue = sequelize.define(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    variant_id: {
+    product_variant_id: {
       type: DataTypes.UUID,
       references: {
         model: "ProductVariants",
-        key: "variant_id",
+        key: "product_variant_id",
       },
     },
     attribute_value_id: {

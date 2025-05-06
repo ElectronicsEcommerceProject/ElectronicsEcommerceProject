@@ -15,14 +15,14 @@ export default (sequelize) => {
       type: DataTypes.UUID,
       allowNull: false,
     },
-    variant_id: {
+    product_variant_id: {
       type: DataTypes.UUID,
       allowNull: true,
     },
-    attribute_id: {
-      type: DataTypes.UUID,
-      allowNull: true,
-    },
+    // product_attribute_id: {
+    //   type: DataTypes.UUID,
+    //   allowNull: true,
+    // },
     total_quantity: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -52,8 +52,8 @@ export default (sequelize) => {
     // Define associations
     OrderItem.belongsTo(models.Order, { foreignKey: 'order_id', as: 'order' }); // Links order item to an order
     OrderItem.belongsTo(models.Product, { foreignKey: 'product_id', as: 'product' }); // Links order item to a product
-    OrderItem.belongsTo(models.ProductVariant, { foreignKey: 'variant_id', as: 'variant' }); // Links order item to a product variant
-    OrderItem.belongsTo(models.Attribute, { foreignKey: 'attribute_id', as: 'attribute' }); // Links order item to an attribute
+    OrderItem.belongsTo(models.ProductVariant, { foreignKey: 'product_variant_id', as: 'variant' }); // Links order item to a product variant
+    // OrderItem.belongsTo(models.Attribute, { foreignKey: 'product_attribute_id', as: 'attribute' }); // Links order item to an attribute
   };
 
   return OrderItem;

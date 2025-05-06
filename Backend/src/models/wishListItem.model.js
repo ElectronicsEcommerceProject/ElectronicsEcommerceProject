@@ -15,14 +15,14 @@ export default (sequelize) => {
       type: DataTypes.UUID,
       allowNull: false,
     },
-    variant_id: {
+    product_variant_id: {
       type: DataTypes.UUID,
       allowNull: true,
     },
-    attribute_id: {
-      type: DataTypes.UUID,
-      allowNull: true,
-    },
+    // product_attribute_id: {
+    //   type: DataTypes.UUID,
+    //   allowNull: true,
+    // },
   }, {
     timestamps: true,
     tableName: 'WishListItems',
@@ -31,8 +31,8 @@ export default (sequelize) => {
   WishListItem.associate = (models) => {
     WishListItem.belongsTo(models.Wishlist, { foreignKey: 'wishlist_id', as: 'wishlist' });
     WishListItem.belongsTo(models.Product, { foreignKey: 'product_id', as: 'product' });
-    WishListItem.belongsTo(models.ProductVariant, { foreignKey: 'variant_id', as: 'variant' });
-    WishListItem.belongsTo(models.Attribute, { foreignKey: 'attribute_id', as: 'attribute' });
+    WishListItem.belongsTo(models.ProductVariant, { foreignKey: 'product_variant_id', as: 'variant' });
+    // WishListItem.belongsTo(models.Attribute, { foreignKey: 'product_attribute_id', as: 'attribute' });
   };
 
   return WishListItem;

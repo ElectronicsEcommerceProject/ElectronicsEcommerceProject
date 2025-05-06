@@ -8,14 +8,14 @@ export const productMediaValidator = Joi.object({
       "string.guid": MESSAGE.custom("Product ID must be a valid UUID"),
       "any.required": MESSAGE.custom("Product ID is required"),
     }),
-  variant_id: Joi.string()
+  product_variant_id: Joi.string()
     .uuid()
     .optional()
     .allow(null)
     .messages({
       "string.guid": MESSAGE.custom("Variant ID must be a valid UUID"),
     }),
-  attribute_id: Joi.string()
+  product_attribute_id: Joi.string()
     .uuid()
     .optional()
     .allow(null)
@@ -44,14 +44,14 @@ export const productMediaUpdateValidator = Joi.object({
     .messages({
       "string.guid": MESSAGE.custom("Product ID must be a valid UUID"),
     }),
-  variant_id: Joi.string()
+  product_variant_id: Joi.string()
     .uuid()
     .optional()
     .allow(null)
     .messages({
       "string.guid": MESSAGE.custom("Variant ID must be a valid UUID"),
     }),
-  attribute_id: Joi.string()
+  product_attribute_id: Joi.string()
     .uuid()
     .optional()
     .allow(null)

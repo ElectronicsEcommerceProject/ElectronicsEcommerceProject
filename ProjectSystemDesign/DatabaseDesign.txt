@@ -121,7 +121,7 @@ Description: Product ke photos/videos.Fields:
 
 id (UUID) → Unique ID (Primary Key)  
 product_id (UUID) → Kon sa product (FK → Products)  
-variant_id (UUID) → Optional, kon sa variant (FK → ProductVariants)  
+product_variant_id (UUID) → Optional, kon sa variant (FK → ProductVariants)  
 media_url (String) → Image/Video URL  
 media_type (Enum) → image, video  
 created_at, updated_at (Timestamp) → Auto-managed
@@ -146,7 +146,7 @@ Ek product type ke multiple attributes (hasMany: Attributes)
 2.7 Attributes Table
 Description: Product properties (e.g., color, size).Fields:  
 
-attribute_id (UUID) → Unique ID (Primary Key)  
+product_attribute_id (UUID) → Unique ID (Primary Key)  
 name (String) → Property ka naam  
 data_type (Enum) → string, int, float, enum  
 is_variant_level (Boolean) → Variant-specific hai ya nahi  
@@ -162,7 +162,7 @@ Ek attribute ke multiple values (hasMany: AttributeValues)
 Description: Attribute ki values (e.g., "Red", "128GB").Fields:  
 
 attribute_value_id (UUID) → Unique ID (Primary Key)  
-attribute_id (UUID) → Kon sa attribute (FK → Attributes)  
+product_attribute_id (UUID) → Kon sa attribute (FK → Attributes)  
 value (String) → Actual value  
 created_at, updated_at (Timestamp) → Auto-managed
 
@@ -174,8 +174,8 @@ Ek value ek attribute se belong karti hai (belongsTo: Attributes)
 Description: Variant-specific attributes (e.g., iPhone 15 128GB ka color "Black").Fields:  
 
 variant_attribute_value_id (UUID) → Unique ID (Primary Key)  
-variant_id (UUID) → Kon sa variant (FK → ProductVariants)  
-attribute_id (UUID) → Kon sa attribute (FK → Attributes)  
+product_variant_id (UUID) → Kon sa variant (FK → ProductVariants)  
+product_attribute_id (UUID) → Kon sa attribute (FK → Attributes)  
 value (String) → Actual value  
 created_at, updated_at (Timestamp) → Auto-managed
 
@@ -208,7 +208,7 @@ Description: Order mein shamil products.Fields:
 order_item_id (UUID) → Unique ID (Primary Key)  
 order_id (UUID) → Kon sa order (FK → Orders)  
 product_id (UUID) → Kon sa product (FK → Products)  
-variant_id (UUID) → Kon sa variant (FK → ProductVariants)  
+product_variant_id (UUID) → Kon sa variant (FK → ProductVariants)  
 quantity (Integer) → Kitne items  
 price_at_time (Decimal) → Order ke time ki price  
 discount_applied (Decimal) → Kitna discount mila  
@@ -228,7 +228,7 @@ Description: User ka temporary cart.Fields:
 cart_id (UUID) → Unique ID (Primary Key)  
 user_id (UUID) → Kon sa user (FK → Users)  
 product_id (UUID) → Kon sa product (FK → Products)  
-variant_id (UUID) → Kon sa variant (FK → ProductVariants)  
+product_variant_id (UUID) → Kon sa variant (FK → ProductVariants)  
 quantity (Integer) → Kitne items  
 created_at, updated_at (Timestamp) → Auto-managed
 

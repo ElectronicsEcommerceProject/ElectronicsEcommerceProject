@@ -48,7 +48,7 @@ const createProductVariant = async (req, res) => {
     }
 
     // Fetch the variant with its associations
-    const createdVariant = await ProductVariant.findByPk(variant.variant_id, {
+    const createdVariant = await ProductVariant.findByPk(variant.product_variant_id, {
       include: [
         { model: Product, attributes: ["id", "name"] },
         { model: AttributeValue, attributes: ["id", "value"] },

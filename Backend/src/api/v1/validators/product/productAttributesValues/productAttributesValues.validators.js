@@ -1,7 +1,7 @@
 import Joi from "joi";
 import MESSAGE from "../../../../../constants/message.js";
 export const attributeValueValidator = Joi.object({
-  attribute_id: Joi.string()
+  product_attribute_id: Joi.string()
     .uuid()
     .required()
     .messages({
@@ -16,7 +16,7 @@ export const attributeValueValidator = Joi.object({
     }),
 });
 export const attributeValueUpdateValidator = Joi.object({
-  attribute_id: Joi.string()
+  product_attribute_id: Joi.string()
     .uuid()
     .optional()
     .messages({

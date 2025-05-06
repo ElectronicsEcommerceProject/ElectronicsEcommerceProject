@@ -5,13 +5,13 @@ export default (sequelize) => {
     "AttributeValue",
     {
       // Define only ONE primary key
-      id: {
+      product_attribute_value_id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
       // Make sure none of these have primaryKey: true
-      attribute_id: {
+      product_attribute_id: {
         type: DataTypes.UUID,
         allowNull: false,
       },
@@ -32,7 +32,7 @@ export default (sequelize) => {
       tableName: "AttributeValues",
       timestamps: true,
       indexes: [
-        { fields: ["attribute_id"] },
+        { fields: ["product_attribute_id"] },
         { fields: ["value"] },
         { fields: ["created_by"] },
         { fields: ["updated_by"] },
@@ -41,7 +41,7 @@ export default (sequelize) => {
   );
 
   AttributeValue.associate = (models) => {
-    AttributeValue.belongsTo(models.Attribute, { foreignKey: "attribute_id" });
+    AttributeValue.belongsTo(models.Attribute, { foreignKey: "product_attribute_id" });
     AttributeValue.belongsTo(models.User, {
       foreignKey: "created_by",
       as: "creator",
@@ -54,8 +54,8 @@ export default (sequelize) => {
     // Add the many-to-many relationship with ProductVariant
     AttributeValue.belongsToMany(models.ProductVariant, {
       through: "VariantAttributeValues",
-      foreignKey: "attribute_value_id",
-      otherKey: "variant_id",
+      foreignKey: "product_attribute_value_id",
+      otherKey: "product_variant_id",
     });
   };
 

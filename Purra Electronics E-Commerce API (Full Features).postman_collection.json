@@ -381,7 +381,7 @@
 									"mode": "raw",
 									"raw": "{\n    \"name\": \"Updated Color\",\n    \"data_type\": \"enum\",\n    \"is_variant_level\": true\n}"
 								},
-								"url": "{{base_url}}/v1/admin/product-Attributes/{{attribute_id}}",
+								"url": "{{base_url}}/v1/admin/product-Attributes/{{product_attribute_id}}",
 								"description": "Update an existing product attribute"
 							},
 							"response": []
@@ -397,7 +397,7 @@
 										"description": "JWT auth_token for authentication"
 									}
 								],
-								"url": "{{base_url}}/v1/admin/product-Attributes/{{attribute_id}}",
+								"url": "{{base_url}}/v1/admin/product-Attributes/{{product_attribute_id}}",
 								"description": "Delete a product attribute"
 							},
 							"response": []
@@ -424,7 +424,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"attribute_id\": \"{{attribute_id}}\",\n    \"value\": \"Red\"\n}"
+									"raw": "{\n    \"product_attribute_id\": \"{{product_attribute_id}}\",\n    \"value\": \"Red\"\n}"
 								},
 								"url": "{{base_url}}/v1/admin/product-Attributes-Values",
 								"description": "Create a new attribute value"
@@ -474,7 +474,7 @@
 										"description": "JWT authToken for authentication"
 									}
 								],
-								"url": "{{base_url}}/v1/admin/product-Attributes-Values/attribute/{{attribute_id}}",
+								"url": "{{base_url}}/v1/admin/product-Attributes-Values/attribute/{{product_attribute_id}}",
 								"description": "Retrieve all values for a specific attribute"
 							},
 							"response": []
@@ -841,7 +841,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"product_id\": \"{{productId}}\",\n    \"variant_id\": \"{{variantId}}\",\n    \"attribute_id\": \"{{attributeId}}\",\n    \"media_url\": \"https://example.com/images/product1.jpg\",\n    \"media_type\": \"image\"\n}"
+									"raw": "{\n    \"product_id\": \"{{productId}}\",\n    \"product_variant_id\": \"{{variantId}}\",\n    \"product_attribute_id\": \"{{attributeId}}\",\n    \"media_url\": \"https://example.com/images/product1.jpg\",\n    \"media_type\": \"image\"\n}"
 								},
 								"url": "{{base_url}}/v1/admin/product-Media",
 								"description": "Add a new product media"
@@ -930,7 +930,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"product_id\": \"{{productId}}\",\n    \"variant_id\": \"{{variantId}}\",\n    \"attribute_id\": \"{{attributeId}}\",\n    \"media_url\": \"https://example.com/images/updated-product1.jpg\",\n    \"media_type\": \"image\"\n}"
+									"raw": "{\n    \"product_id\": \"{{productId}}\",\n    \"product_variant_id\": \"{{variantId}}\",\n    \"product_attribute_id\": \"{{attributeId}}\",\n    \"media_url\": \"https://example.com/images/updated-product1.jpg\",\n    \"media_type\": \"image\"\n}"
 								},
 								"url": "{{base_url}}/v1/admin/product-media/{{mediaId}}",
 								"description": "Update a product media"

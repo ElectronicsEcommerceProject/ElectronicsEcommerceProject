@@ -11,6 +11,15 @@ export default (sequelize) => {
       type: DataTypes.UUID,
       allowNull: false,
     },
+    payment_id: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
+    payment_mode: {
+      type: DataTypes.ENUM('online', 'offline'),
+      allowNull: false,
+      defaultValue: 'online',
+    },    
     total_amount: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
@@ -42,6 +51,7 @@ export default (sequelize) => {
     Order.belongsTo(models.Address, { foreignKey: 'address_id', as: 'address' }); // Links order to an address
     Order.hasMany(models.OrderItem, { foreignKey: 'order_id', as: 'orderItems' }); // Links order to its items
     Order.hasMany(models.CouponRedemption, { foreignKey: 'order_id', as: 'couponRedemptions' }); // Links order to coupon redemptions
+    Order.hasMany(models.Payment, { foreignKey: 'payment_id', as: 'payment' })
   };
 
   return Order;

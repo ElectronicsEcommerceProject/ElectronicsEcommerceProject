@@ -2,8 +2,8 @@ import { DataTypes } from 'sequelize';
 
 export default (sequelize) => {
   const Attribute = sequelize.define('Attribute', {
-    attribute_id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    product_type_id: { type: DataTypes.UUID, allowNull: false },
+    product_attribute_id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    // product_type_id: { type: DataTypes.UUID, allowNull: false },
     name: { type: DataTypes.STRING, allowNull: false },
     data_type: { type: DataTypes.ENUM('string', 'int', 'float', 'enum'), allowNull: false },
     is_variant_level: { type: DataTypes.BOOLEAN, defaultValue: false },
@@ -20,7 +20,7 @@ export default (sequelize) => {
   });
 
   Attribute.associate = (models) => {
-    Attribute.belongsTo(models.ProductType, { foreignKey: 'product_type_id' });
+    // Attribute.belongsTo(models.ProductType, { foreignKey: 'product_type_id' });
     Attribute.belongsTo(models.User, { foreignKey: 'created_by', as: 'creator' });
     Attribute.belongsTo(models.User, { foreignKey: 'updated_by', as: 'updater' });
   };

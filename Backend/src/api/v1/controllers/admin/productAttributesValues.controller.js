@@ -7,10 +7,10 @@ const { AttributeValue, Attribute, User } = db;
 // Add a new attribute value
 const addAttributeValue = async (req, res) => {
   try {
-    const { attribute_id, value } = req.body;
+    const { product_attribute_id, value } = req.body;
 
     // Check if attribute exists
-    const attribute = await Attribute.findByPk(attribute_id);
+    const attribute = await Attribute.findByPk(product_attribute_id);
     if (!attribute) {
       return res
         .status(StatusCodes.NOT_FOUND)
@@ -29,7 +29,7 @@ const addAttributeValue = async (req, res) => {
 
     // Create the new attribute value
     const newAttributeValue = await AttributeValue.create({
-      attribute_id,
+      product_attribute_id,
       value,
       created_by,
     });
@@ -81,7 +81,7 @@ const getAttributeValuesByAttribute = async (req, res) => {
     }
 
     const attributeValues = await AttributeValues.findAll({
-      where: { attribute_id: attributeId },
+      where: { product_attribute_id: attributeId },
       include: [
         { model: User, as: "creator" },
         { model: User, as: "updater" },
@@ -133,7 +133,7 @@ const getAttributeValueById = async (req, res) => {
 const updateAttributeValue = async (req, res) => {
   try {
     const { id } = req.params;
-    const { attribute_id, value } = req.body;
+    const { product_attribute_id, value } = req.body;
 
     const attributeValue = await AttributeValues.findByPk(id);
     if (!attributeValue) {
@@ -142,9 +142,9 @@ const updateAttributeValue = async (req, res) => {
         .json({ message: MESSAGE.get.none });
     }
 
-    // If attribute_id is being updated, check if it exists
-    if (attribute_id && attribute_id !== attributeValue.attribute_id) {
-      const attribute = await Attribute.findByPk(attribute_id);
+    // If product_attribute_id is being updated, check if it exists
+    if (product_attribute_id && product_attribute_id !== attributeValue.product_attribute_id) {
+      const attribute = await Attribute.findByPk(product_attribute_id);
       if (!attribute) {
         return res
           .status(StatusCodes.NOT_FOUND)
@@ -161,7 +161,7 @@ const updateAttributeValue = async (req, res) => {
     }
 
     // Update fields
-    if (attribute_id) attributeValue.attribute_id = attribute_id;
+    if (product_attribute_id) attributeValue.product_attribute_id = product_attribute_id;
     if (value) attributeValue.value = value;
     attributeValue.updated_by = user.dataValues.user_id;
 

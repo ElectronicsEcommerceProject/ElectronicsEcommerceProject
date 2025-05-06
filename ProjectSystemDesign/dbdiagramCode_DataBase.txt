@@ -72,7 +72,7 @@ Table OrderItems {
   order_item_id uuid [pk]
   order_id uuid
   product_id uuid
-  variant_id uuid
+  product_variant_id uuid
   quantity integer
   price_at_time decimal
 }
@@ -82,7 +82,7 @@ Table Carts {
   cart_id uuid [pk]
   user_id uuid
   product_id uuid
-  variant_id uuid
+  product_variant_id uuid
   quantity integer
 }
 
@@ -133,7 +133,7 @@ Table ProductTypes {
 }
 
 Table Attributes {
-  attribute_id uuid [pk]
+  product_attribute_id uuid [pk]
   name varchar(255)
   data_type varchar(20) [note: 'string, int, float, enum']
   is_variant_level boolean
@@ -142,14 +142,14 @@ Table Attributes {
 
 Table AttributeValues {
   attribute_value_id uuid [pk]
-  attribute_id uuid
+  product_attribute_id uuid
   value varchar(255)
 }
 
 Table VariantAttributes {
   variant_attribute_value_id uuid [pk]
-  variant_id uuid
-  attribute_id uuid
+  product_variant_id uuid
+  product_attribute_id uuid
   value varchar(255)
 }
 
@@ -164,7 +164,7 @@ Table Reviews {
 
 Table StockAlerts {
   alert_id uuid [pk]
-  variant_id uuid
+  product_variant_id uuid
   stock_level integer
   status varchar(10) [note: 'pending, sent']
 }
@@ -181,10 +181,10 @@ Ref: Orders.user_id > Users.user_id
 Ref: Orders.address_id > Addresses.address_id
 Ref: OrderItems.order_id > Orders.order_id
 Ref: OrderItems.product_id > Products.id
-Ref: OrderItems.variant_id > ProductVariants.id
+Ref: OrderItems.product_variant_id > ProductVariants.id
 Ref: Carts.user_id > Users.user_id
 Ref: Carts.product_id > Products.id
-Ref: Carts.variant_id > ProductVariants.id
+Ref: Carts.product_variant_id > ProductVariants.id
 Ref: Wishlists.user_id > Users.user_id
 Ref: Wishlists.product_id > Products.id
 Ref: CouponRedemptions.user_id > Users.user_id
@@ -195,9 +195,9 @@ Ref: CouponUsers.user_id > Users.user_id
 Ref: DiscountRules.product_id > Products.id
 Ref: DiscountRules.category_id > Categories.id
 Ref: Attributes.product_type_id > ProductTypes.id
-Ref: AttributeValues.attribute_id > Attributes.attribute_id
-Ref: VariantAttributes.variant_id > ProductVariants.id
-Ref: VariantAttributes.attribute_id > Attributes.attribute_id
+Ref: AttributeValues.product_attribute_id > Attributes.product_attribute_id
+Ref: VariantAttributes.product_variant_id > ProductVariants.id
+Ref: VariantAttributes.product_attribute_id > Attributes.product_attribute_id
 Ref: Reviews.product_id > Products.id
 Ref: Reviews.user_id > Users.user_id
-Ref: StockAlerts.variant_id > ProductVariants.id
+Ref: StockAlerts.product_variant_id > ProductVariants.id

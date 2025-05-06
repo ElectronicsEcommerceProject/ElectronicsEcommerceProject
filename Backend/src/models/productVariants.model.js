@@ -4,11 +4,13 @@ export default (sequelize) => {
   const ProductVariant = sequelize.define(
     "ProductVariant",
     {
-      variant_id: {
+      product_variant_id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
+      description: { type: DataTypes.STRING, allowNull: true },
+      short_description: { type: DataTypes.STRING, allowNull: true },
       product_id: { type: DataTypes.UUID, allowNull: false },
       price: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
       stock_quantity: {
@@ -17,7 +19,7 @@ export default (sequelize) => {
         defaultValue: 0,
       },
       sku: { type: DataTypes.STRING, allowNull: true },
-      variant_image_url: { type: DataTypes.STRING, allowNull: true },
+      base_variant_image_url: { type: DataTypes.STRING, allowNull: true },
       discount_quantity: { type: DataTypes.INTEGER, allowNull: true },
       discount_percentage: { type: DataTypes.DECIMAL(5, 2), allowNull: true },
       min_retailer_quantity: { type: DataTypes.INTEGER, allowNull: true },
@@ -49,12 +51,12 @@ export default (sequelize) => {
     // The model is called 'AttributeValue' (confirmed from the logs)
     ProductVariant.belongsToMany(models.AttributeValue, {
       through: "VariantAttributeValues",
-      foreignKey: "variant_id",
+      foreignKey: "product_variant_id",
       otherKey: "attribute_value_id",
     });
 
     // Relationship with ProductMedia
-    ProductVariant.hasMany(models.ProductMedia, { foreignKey: "variant_id" });
+    ProductVariant.hasMany(models.ProductMedia, { foreignKey: "product_variant_id" });
 
     // Relationships with User for created_by and updated_by
     ProductVariant.belongsTo(models.User, {
@@ -67,8 +69,8 @@ export default (sequelize) => {
     });
 
     // Add other relationships
-    ProductVariant.hasMany(models.CartItem, { foreignKey: "variant_id" });
-    ProductVariant.hasMany(models.ProductReview, { foreignKey: "variant_id" });
+    ProductVariant.hasMany(models.CartItem, { foreignKey: "product_variant_id" });
+    ProductVariant.hasMany(models.ProductReview, { foreignKey: "product_variant_id" });
   };
 
   return ProductVariant;

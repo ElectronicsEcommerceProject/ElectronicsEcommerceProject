@@ -11,6 +11,10 @@ export default (sequelize) => {
       type: DataTypes.UUID,
       allowNull: false,
     },
+    product_variant_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
     stock_level: {
       type: DataTypes.INTEGER,
       allowNull: false,
