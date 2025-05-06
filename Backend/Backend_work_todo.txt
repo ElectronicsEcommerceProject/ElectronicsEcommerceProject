@@ -1,67 +1,13 @@
-
-### Phase 3: Product Catalog Setup (Admin-Only)  
+### Phase 4: Cart & Wishlist Management  
 - **APIs:**  
-  - **Categories:**  
-    - `POST /api/admin/categories` (Create)  
-    - `GET /api/admin/categories` (List for Admin)  
-    - `GET /api/categories` (Public List)  
-    - `PUT /api/admin/categories/:categoryId` (Update)  
-    - `DELETE /api/admin/categories/:categoryId` (Delete)  
-  - **Brands:**  
-    - `POST /api/admin/brands` (Create)  
-    - `GET /api/admin/brands` (List for Admin)  
-    - `GET /api/brands` (Public List)  
-    - `PUT /api/admin/brands/:brandId` (Update)  
-    - `DELETE /api/admin/brands/:brandId` (Delete)  
-
-
-  - **Product Types:**  
-    - `POST /api/admin/product-types` (Create)  
-    - `GET /api/admin/product-types` (List)  
-    - `PUT /api/admin/product-types/:productTypeId` (Update)  
-    - `DELETE /api/admin/product-types/:productTypeId` (Delete)  
-
-
-  - **Attributes:**  
-    - `POST /api/admin/attributes` (Create)  
-    - `GET /api/admin/attributes` (List)  
-    - `PUT /api/admin/attributes/:attributeId` (Update)  
-    - `DELETE /api/admin/attributes/:attributeId` (Delete)  
-
-
-  - **Attribute Values:**  
-    - `POST /api/admin/attribute-values` (Create)  
-    - `GET /api/admin/attribute-values` (List)  
-    - `PUT /api/admin/attribute-values/:valueId` (Update)  
-    - `DELETE /api/admin/attribute-values/:valueId` (Delete)  
-
-
-
-
-  - **Products:**  
-    - `POST /api/admin/products` (Create)  
-    - `GET /api/admin/products` (List for Admin)  
-    - `GET /api/products` (Public List)  
-    - `GET /api/products/:productId` (Product Details)  
-    - `PUT /api/admin/products/:productId` (Update)  
-    - `DELETE /api/admin/products/:productId` (Delete)  
-
-
-
-  - **Product Variants:**  
-    - `POST /api/admin/products/:productId/variants` (Create)  
-    - `GET /api/admin/variants` (List for Admin)  
-    - `GET /api/products/:productId/variants` (Public List)  
-    - `PUT /api/admin/variants/:variantId` (Update)  
-    - `DELETE /api/admin/variants/:variantId` (Delete)  
-
-  --------------------------Above all done..------------------------------------
-
-
-  - **Product Media:**  
-    - `POST /api/admin/products/:productId/media` (Add Media)  
-    - `GET /api/products/:productId/media` (Get Media)  
-    - `DELETE /api/admin/media/:mediaId` (Delete Media)  
+  - **Cart:**  
+    - `POST /api/cart/items` (Add to Cart)  
+    - `GET /api/cart` (Get Cart)  
+    - `PUT /api/cart/items/:cartItemId` (Update Quantity)  
+    - `DELETE /api/cart/items/:cartItemId` (Remove from Cart)  
+  - **Wishlist:**  
+    - `POST /api/wishlist/items` (Add to Wishlist)  
+    - `GET /api/wishlist` (Get Wishlist)  
+    - `DELETE /api/wishlist/items/:itemId` (Remove from Wishlist)  
 
 ---
-  --------------------------Above all done..------------------------------------
