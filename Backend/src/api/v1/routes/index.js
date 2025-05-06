@@ -4,13 +4,16 @@ import authRoutes from "./commonRoutes/auth/auth.route.js";
 import adminRoutes from "./admin/index.js";
 import customerRoutes from "./customer/index.js";
 import retailerRoutes from "./retailer/index.js";
-import profileAndAddressRoutes from "./commonRoutes/profilesAndAddresses/profileAndAddresses.route.js";
+import profileRoutes from "./commonRoutes/profile/profile.route.js";
+import addressesRoutes from "./commonRoutes/addresses/addresses.route.js";
 
 const app = express();
 
 app.use("/auth", authRoutes);
 
-app.use("/users", profileAndAddressRoutes);
+app.use("/user/profile", profileRoutes);
+
+app.use("/user/addresses", addressesRoutes);
 
 app.use("/admin", adminRoutes); //working on it ..
 

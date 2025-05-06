@@ -107,7 +107,6 @@ const getAddresses = async (req, res) => {
 // Get a specific address by ID
 const getAddressById = async (req, res) => {
   try {
-    console.log("inside getAddressById");
     const { id } = req.params;
     const user = await User.findOne({
       where: { email: req.user.email },
