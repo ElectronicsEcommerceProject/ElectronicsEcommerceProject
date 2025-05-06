@@ -4,13 +4,13 @@ import authRoutes from "./auth/auth.route.js";
 import adminRoutes from "./admin/index.js";
 import customerRoutes from "./customer/index.js";
 import retailerRoutes from "./retailer/index.js";
-import profileRoutes from "./profiles/profile.route.js";
+import profileAndAddressRoutes from "./profilesAndAddresses/profileAndAddresses.route.js";
 
 const app = express();
 
 app.use("/auth", authRoutes);
 
-app.use("/users", profileRoutes);
+app.use("/users", profileAndAddressRoutes);
 
 app.use("/admin", adminRoutes); //working on it ..
 
