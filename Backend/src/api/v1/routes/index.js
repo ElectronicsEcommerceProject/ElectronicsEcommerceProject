@@ -17,8 +17,8 @@ app.use("/user/addresses", addressesRoutes);
 
 app.use("/admin", adminRoutes); //working on it ..
 
-app.use("/customer", customerRoutes);
+// app.use("/customer", customerRoutes);
 
-app.use("/retailer", retailerRoutes);
+// app.use("/retailer", retailerRoutes);
 
 export default app;

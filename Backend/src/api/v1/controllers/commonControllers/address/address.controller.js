@@ -1,6 +1,6 @@
-import db from "../../../models/index.js";
+import db from "../../../../../models/index.js";
 import { StatusCodes } from "http-status-codes";
-import MESSAGE from "../../../constants/message.js";
+import MESSAGE from "../../../../../constants/message.js";
 
 const { Address, User } = db;
 
