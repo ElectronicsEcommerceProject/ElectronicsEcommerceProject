@@ -1,5 +1,5 @@
 import Joi from "joi";
-import MESSAGE from "../../../../constants/message.js";
+import MESSAGE from "../../../../../constants/message.js";
 export const attributeValueValidator = Joi.object({
   attribute_id: Joi.string()
     .uuid()

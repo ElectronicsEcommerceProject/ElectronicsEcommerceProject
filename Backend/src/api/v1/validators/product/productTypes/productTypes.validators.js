@@ -1,5 +1,5 @@
 import Joi from "joi";
-import MESSAGE from "../../../../constants/message.js";
+import MESSAGE from "../../../../../constants/message.js";
 export const productTypeValidator = Joi.object({
   name: Joi.string()
     .min(2)

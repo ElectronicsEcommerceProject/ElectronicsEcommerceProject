@@ -12,7 +12,7 @@ import {
   productVariantValidator,
   productVariantUpdateValidator,
   variantIdSchema,
-} from "./productVariant/productVariant.validators.js";
+} from "./product/productVariant/productVariant.validators.js";
 
 import { profileValidator } from "./profile/profile.validators.js";
 import {
@@ -31,19 +31,19 @@ import {
 import {
   productTypeValidator,
   productTypeUpdateValidator,
-} from "./productTypes/productTypes.validators.js";
+} from "./product/productTypes/productTypes.validators.js";
 import {
   attributeValidator,
   attributeUpdateValidator,
-} from "./productAttributes/productAttributes.validators.js";
+} from "./product/productAttributes/productAttributes.validators.js";
 import {
   attributeValueValidator,
   attributeValueUpdateValidator,
-} from "./productAttributesValues/productAttributesValues.validators.js";
+} from "./product/productAttributesValues/productAttributesValues.validators.js";
 import {
   productMediaValidator,
   productMediaUpdateValidator,
-} from "./productMedia/productMedia.validators.js";
+} from "./product/productMedia/productMedia.validators.js";
 
 export const validators = {
   auth: {

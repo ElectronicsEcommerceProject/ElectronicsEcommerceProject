@@ -1,5 +1,5 @@
 import Joi from "joi";
-import MESSAGE from "../../../../constants/message.js";
+import MESSAGE from "../../../../../constants/message.js";
 export const productMediaValidator = Joi.object({
   product_id: Joi.string()
     .uuid()
