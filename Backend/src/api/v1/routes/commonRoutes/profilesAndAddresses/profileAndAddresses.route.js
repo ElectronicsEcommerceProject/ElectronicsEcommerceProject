@@ -4,10 +4,10 @@ import {
   validator,
   verifyJwtToken,
   upload,
-} from "../../../../middleware/index.js";
-import { validators } from "../../validators/index.js";
-import { profileController } from "../../controllers/index.js";
-import { addressController } from "../../controllers/index.js";
+} from "../../../../../middleware/index.js";
+import { validators } from "../../../validators/index.js";
+import { profileController } from "../../../controllers/index.js";
+import { addressController } from "../../../controllers/index.js";
 
 const router = express.Router();
 

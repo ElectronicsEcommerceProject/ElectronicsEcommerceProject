@@ -1,6 +1,6 @@
 import express from "express";
 
-import { adminRoleCheck } from "../../../../middleware/roleCheck.middleware.js";
+import { adminRoleCheck } from "../../../../middleware/AdminRoleCheck.middleware.js";
 import { verifyJwtToken } from "../../../../middleware/jwt.middleware.js";
 import { validators } from "../../validators/index.js";
 import { validator } from "../../../../middleware/validator/validator.middleware.js";

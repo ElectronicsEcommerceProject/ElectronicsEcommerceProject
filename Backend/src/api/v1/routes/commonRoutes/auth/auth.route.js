@@ -1,11 +1,11 @@
 import express from "express";
 
-import { validator } from "../../../../middleware/index.js";
-import { validators } from "../../validators/index.js";
+import { validator } from "../../../../../middleware/index.js";
+import { validators } from "../../../validators/index.js";
 import {
   loginController,
   registerController,
-} from "../../controllers/index.js";
+} from "../../../controllers/index.js";
 
 const router = express.Router();
 

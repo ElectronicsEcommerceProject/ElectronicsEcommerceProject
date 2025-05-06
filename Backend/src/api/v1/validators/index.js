@@ -14,12 +14,12 @@ import {
   variantIdSchema,
 } from "./product/productVariant/productVariant.validators.js";
 
-import { profileValidator } from "./profile/profile.validators.js";
+import { profileValidator } from "./profileAndAddress/profile.validators.js";
 import {
   addressValidator,
   id,
   updateAddressValidator,
-} from "./profile/address.validators.js";
+} from "./profileAndAddress/address.validators.js";
 import {
   categoryValidator,
   categoryUpdateValidator,

@@ -1,10 +1,10 @@
 import express from "express";
 
-import authRoutes from "./auth/auth.route.js";
+import authRoutes from "./commonRoutes/auth/auth.route.js";
 import adminRoutes from "./admin/index.js";
 import customerRoutes from "./customer/index.js";
 import retailerRoutes from "./retailer/index.js";
-import profileAndAddressRoutes from "./profilesAndAddresses/profileAndAddresses.route.js";
+import profileAndAddressRoutes from "./commonRoutes/profilesAndAddresses/profileAndAddresses.route.js";
 
 const app = express();
 
