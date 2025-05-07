@@ -20,7 +20,6 @@ export { default as adminProductMediaController } from "./admin/productMedia.con
 export { default as adminCartController } from "./admin/cart.controller.js";
 export { default as adminReviewController } from "./admin/review.controller.js";
 export { default as adminBrandController } from "./admin/brand.controller.js";
-export { default as adminProductTypeController } from "./admin/productTypes.controllers.js";
 export { default as adminAttributeController } from "./admin/productAttributes.controller.js";
 export { default as adminAttributeValueController } from "./admin/productAttributesValues.controller.js";
 

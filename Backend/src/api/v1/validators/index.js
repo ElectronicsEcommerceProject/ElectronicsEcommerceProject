@@ -28,10 +28,7 @@ import {
   brandValidator,
   brandUpdateValidator,
 } from "./brands/brands.validators.js";
-import {
-  productTypeValidator,
-  productTypeUpdateValidator,
-} from "./product/productTypes/productTypes.validators.js";
+
 import {
   attributeValidator,
   attributeUpdateValidator,
@@ -76,11 +73,6 @@ export const validators = {
   brand: {
     brandValidator: brandValidator,
     brandUpdateValidator: brandUpdateValidator,
-    id: id,
-  },
-  productType: {
-    productTypeValidator: productTypeValidator,
-    productTypeUpdateValidator: productTypeUpdateValidator,
     id: id,
   },
   attribute: {

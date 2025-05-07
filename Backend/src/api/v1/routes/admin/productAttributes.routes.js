@@ -20,11 +20,7 @@ router.post(
 router.get("/", verifyJwtToken, adminAttributeController.getAllAttributes);
 
 // Get attributes by product type
-router.get(
-  "/product-type/:productTypeId",
-  verifyJwtToken,
-  adminAttributeController.getAttributesByProductType
-);
+
 router.put(
   "/:id",
   verifyJwtToken,
