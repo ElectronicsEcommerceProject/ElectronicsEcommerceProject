@@ -3,8 +3,8 @@ export { default as loginController } from "./auth/login.controller.js";
 export { default as registerController } from "./auth/register.controller.js";
 
 // common controller
-export { default as profileController } from "./profile.controller.js";
-export { default as addressController } from "./address.controller.js";
+export { default as profileController } from "./commonControllers/profile/profile.controller.js";
+export { default as addressController } from "./commonControllers/address/address.controller.js";
 
 //     admin controller
 export { default as adminCategoryController } from "./admin/category.controller.js";
@@ -13,10 +13,16 @@ export { default as adminUserController } from "./admin/user.controller.js";
 export { default as adminStockAlertController } from "./admin/stockAlert.controller.js";
 export { default as adminOrderController } from "./admin/order.controller.js";
 export { default as adminProductController } from "./admin/product.controller.js";
+export { default as adminProductVariantController } from "./admin/productVariant.controller.js";
+export { default as adminProductMediaController } from "./admin/productMedia.controller.js";
+
 // export { default as adminProfileController } from './admin/profile.controller.js';
 export { default as adminCartController } from "./admin/cart.controller.js";
 export { default as adminReviewController } from "./admin/review.controller.js";
 export { default as adminBrandController } from "./admin/brand.controller.js";
+export { default as adminProductTypeController } from "./admin/productTypes.controllers.js";
+export { default as adminAttributeController } from "./admin/productAttributes.controller.js";
+export { default as adminAttributeValueController } from "./admin/productAttributesValues.controller.js";
 
 //     customer controller
 export { default as customerOrderController } from "./customer/order.controller.js";

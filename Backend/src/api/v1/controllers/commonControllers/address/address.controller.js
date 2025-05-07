@@ -1,6 +1,6 @@
-import db from "../../../models/index.js";
+import db from "../../../../../models/index.js";
 import { StatusCodes } from "http-status-codes";
-import MESSAGE from "../../../constants/message.js";
+import MESSAGE from "../../../../../constants/message.js";
 
 const { Address, User } = db;
 
@@ -107,7 +107,6 @@ const getAddresses = async (req, res) => {
 // Get a specific address by ID
 const getAddressById = async (req, res) => {
   try {
-    console.log("inside getAddressById");
     const { id } = req.params;
     const user = await User.findOne({
       where: { email: req.user.email },

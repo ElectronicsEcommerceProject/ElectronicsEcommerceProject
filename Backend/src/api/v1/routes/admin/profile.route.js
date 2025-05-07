@@ -1,7 +1,7 @@
 import express from "express";
 
 import { verifyJwtToken, upload } from "../../../../middleware/index.js";
-import { profileController } from "../../controllers/index.js";
+import profileController from "../../controllers/commonControllers/profile/profile.controller.js";
 
 const router = express.Router();
 

@@ -1,17 +1,19 @@
-import dotenv from 'dotenv';
-import { Sequelize } from 'sequelize';
-import dbConfigFile from '../config/db.js';
+import dotenv from "dotenv";
+import { Sequelize } from "sequelize";
+import dbConfigFile from "../config/db.js";
 
-dotenv.config({ path: '../.env' });
+dotenv.config({ path: "../.env" });
 
-const env = process.env.NODE_ENV || 'development';
+const env = process.env.NODE_ENV || "development";
 const dbConfig = dbConfigFile[env];
 
 if (!dbConfig) {
-  throw new Error(`Database configuration for environment "${env}" is missing.`);
+  throw new Error(
+    `Database configuration for environment "${env}" is missing.`
+  );
 }
 
-// ✅ Initialize Sequelize
+// Initialize Sequelize
 const sequelize = new Sequelize(
   dbConfig.database,
   dbConfig.username,
@@ -27,41 +29,70 @@ const sequelize = new Sequelize(
 const db = {};
 
 // Import models
-db.ProductType = (await import('./productType.model.js')).default(sequelize);
-db.Attribute = (await import('./attributes.model.js')).default(sequelize);
-db.AttributeValue = (await import('./attributeValue.model.js')).default(sequelize);
-db.Product = (await import('./product.model.js')).default(sequelize);
-db.ProductVariant = (await import('./productVariants.model.js')).default(sequelize);
-db.ProductMedia = (await import('./productMedia.model.js')).default(sequelize);
-db.ProductReview = (await import('./productReview.model.js')).default(sequelize);
-db.Category = (await import('./category.model.js')).default(sequelize);
-db.Brand = (await import('./brand.model.js')).default(sequelize);
-db.Coupon = (await import('./coupon.model.js')).default(sequelize);
-db.CouponUser = (await import('./couponUser.model.js')).default(sequelize);
-db.Order = (await import('./order.model.js')).default(sequelize);
-db.OrderItem = (await import('./orderItem.model.js')).default(sequelize);
-db.Cart = (await import('./cart.model.js')).default(sequelize);
-db.CartItem = (await import('./cartItem.model.js')).default(sequelize);
-db.Wishlist = (await import('./wishlist.model.js')).default(sequelize);
-db.WishListItem = (await import('./wishListItem.model.js')).default(sequelize);
-db.Review = (await import('./review.model.js')).default(sequelize);
-db.StockAlert = (await import('./stockAlert.model.js')).default(sequelize);
-db.DiscountRule = (await import('./discountRule.model.js')).default(sequelize);
-db.VariantAttributeValue = (await import('./variantAttribute.model.js')).default(sequelize);
-db.User = (await import('./user.model.js')).default(sequelize);
-db.Address = (await import('./address.model.js')).default(sequelize);
-db.Owner = (await import('./owner.model.js')).default(sequelize);
-db.CouponRedemption = (await import('./couponRedemption.model.js')).default(sequelize);
+import User from "./user.model.js";
+import Product from "./product.model.js";
+import ProductVariant from "./productVariants.model.js";
+import Attribute from "./productAttributes.model.js";
+import AttributeValue from "./productAttributesValues.model.js";
+import ProductMedia from "./productMedia.model.js";
+import ProductMediaUrl from "./productMediaURL.model.js";
+import Category from "./category.model.js";
+import Brand from "./brand.model.js";
+import Coupon from "./coupon.model.js";
+import CouponUser from "./couponUser.model.js";
+import Order from "./order.model.js";
+import OrderItem from "./orderItem.model.js";
+import Cart from "./cart.model.js";
+import CartItem from "./cartItem.model.js";
+import Wishlist from "./wishlist.model.js";
+import WishListItem from "./wishListItem.model.js";
+import ProductReview from "./productReview.model.js";
+import StockAlert from "./stockAlert.model.js";
+import DiscountRule from "./discountRule.model.js";
+import VariantAttributeValue from "./variantAttributeValue.model.js";
+import Address from "./address.model.js";
+import Owner from "./owner.model.js";
+import CouponRedemption from "./couponRedemption.model.js";
+import Store from "./store.model.js";
+import Payment from "./payment.model.js";
 
-db.Store = (await import('./store.model.js')).default(sequelize);
+// Initialize models
+db.User = User(sequelize);
+db.Product = Product(sequelize);
+db.ProductVariant = ProductVariant(sequelize);
+db.Attribute = Attribute(sequelize);
+db.AttributeValue = AttributeValue(sequelize);
+db.ProductMedia = ProductMedia(sequelize);
+db.ProductMediaUrl = ProductMediaUrl(sequelize);
+db.Category = Category(sequelize);
+db.Brand = Brand(sequelize);
+db.Coupon = Coupon(sequelize);
+db.CouponUser = CouponUser(sequelize);
+db.Order = Order(sequelize);
+db.OrderItem = OrderItem(sequelize);
+db.Cart = Cart(sequelize);
+db.CartItem = CartItem(sequelize);
+db.Wishlist = Wishlist(sequelize);
+db.WishListItem = WishListItem(sequelize);
+db.ProductReview = ProductReview(sequelize);
+db.StockAlert = StockAlert(sequelize);
+db.DiscountRule = DiscountRule(sequelize);
+db.VariantAttributeValue = VariantAttributeValue(sequelize);
+db.Address = Address(sequelize);
+db.Owner = Owner(sequelize);
+db.CouponRedemption = CouponRedemption(sequelize);
+db.Store = Store(sequelize);
+db.Payment = Payment(sequelize);
 
-
-// Define relationships
+// Set up associations
 Object.keys(db).forEach((modelName) => {
-  if (db[modelName].associate) {
+  if (
+    db[modelName].associate &&
+    typeof db[modelName].associate === "function"
+  ) {
     db[modelName].associate(db);
   }
 });
 
-db.sequelize = sequelize; // ✅ Add Sequelize instance to db object
+db.sequelize = sequelize;
 export default db;

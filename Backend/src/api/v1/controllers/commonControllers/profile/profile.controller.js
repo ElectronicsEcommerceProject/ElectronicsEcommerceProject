@@ -1,16 +1,15 @@
-
 // Change password (todo)
 // View purchase history (todo)
 // ===============================
 
-import db from '../../../models/index.js';
+import db from "../../../../../models/index.js";
 const { User } = db;
 
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
-import { StatusCodes } from 'http-status-codes';
-import MESSAGE from '../../../constants/message.js';
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
+import { StatusCodes } from "http-status-codes";
+import MESSAGE from "../../../../../constants/message.js";
 
 // ✅ Fix for __dirname in ES Module
 const __filename = fileURLToPath(import.meta.url);
@@ -21,7 +20,7 @@ const getProfile = async (req, res) => {
   try {
     const user = await User.findOne({
       where: { email: req.user.email },
-      attributes: { exclude: ['password'] },
+      attributes: { exclude: ["password"] },
     });
 
     if (!user) {
@@ -31,13 +30,15 @@ const getProfile = async (req, res) => {
     }
 
     // Convert stored relative path to full URL for frontend
-    if (user.profileImage_url && !user.profileImage_url.startsWith('http')) {
-      user.profileImage_url = `${req.protocol}://${req.get('host')}/${user.profileImage_url.replace(/\\/g, '/')}`;
+    if (user.profileImage_url && !user.profileImage_url.startsWith("http")) {
+      user.profileImage_url = `${req.protocol}://${req.get(
+        "host"
+      )}/${user.profileImage_url.replace(/\\/g, "/")}`;
     }
 
     res.status(StatusCodes.OK).json(user);
   } catch (error) {
-    console.error('Error fetching profile:', error);
+    console.error("Error fetching profile:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.error, error: error.message });
@@ -51,8 +52,7 @@ const updateProfile = async (req, res) => {
 
     const user = await User.findOne({
       where: { email: email },
-      attributes: { exclude: ['password']},
-
+      attributes: { exclude: ["password"] },
     });
 
     if (!user) {
@@ -70,11 +70,15 @@ const updateProfile = async (req, res) => {
     // ✅ Handle profile image
     if (req.file) {
       // Delete old image if stored as relative path
-      if (user.profileImage_url && !user.profileImage_url.startsWith('http')) {
-        const oldImagePath = path.join(__dirname, '..', user.profileImage_url);
+      if (user.profileImage_url && !user.profileImage_url.startsWith("http")) {
+        const oldImagePath = path.join(
+          __dirname,
+          "../../../../../",
+          user.profileImage_url
+        );
         if (fs.existsSync(oldImagePath)) {
           fs.unlinkSync(oldImagePath);
-          console.log('🗑 Old profile image deleted:', oldImagePath);
+          console.log("🗑 Old profile image deleted:", oldImagePath);
         }
       }
 
@@ -85,15 +89,15 @@ const updateProfile = async (req, res) => {
     await user.save();
 
     // ✅ Convert path to full public URL before sending response
-    if (user.profileImage_url && !user.profileImage_url.startsWith('http')) {
-      user.profileImage_url = `${req.protocol}://${req.get('host')}/${user.profileImage_url.replace(/\\/g, '/')}`;
+    if (user.profileImage_url && !user.profileImage_url.startsWith("http")) {
+      user.profileImage_url = `${req.protocol}://${req.get(
+        "host"
+      )}/${user.profileImage_url.replace(/\\/g, "/")}`;
     }
 
-    res
-      .status(StatusCodes.OK)
-      .json({ message: MESSAGE.put.succ, user });
+    res.status(StatusCodes.OK).json({ message: MESSAGE.put.succ, user });
   } catch (error) {
-    console.error('❌ Error updating profile:', error);
+    console.error("❌ Error updating profile:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.put.fail, error: error.message });
