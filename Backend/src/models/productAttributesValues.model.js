@@ -41,11 +41,6 @@ export default (sequelize) => {
   );
 
   AttributeValue.associate = (models) => {
-    AttributeValue.belongsTo(models.Attribute, { foreignKey: "product_attribute_id" });
-    AttributeValue.belongsTo(models.User, {
-      foreignKey: "created_by",
-      as: "creator",
-    });
     AttributeValue.belongsTo(models.User, {
       foreignKey: "updated_by",
       as: "updater",

@@ -1,13 +1,4 @@
-### Phase 4: Cart & Wishlist Management  
-- **APIs:**  
-  - **Cart:**  
-    - `POST /api/cart/items` (Add to Cart)  
-    - `GET /api/cart` (Get Cart)  
-    - `PUT /api/cart/items/:cartItemId` (Update Quantity)  
-    - `DELETE /api/cart/items/:cartItemId` (Remove from Cart)  
-  - **Wishlist:**  
-    - `POST /api/wishlist/items` (Add to Wishlist)  
-    - `GET /api/wishlist` (Get Wishlist)  
-    - `DELETE /api/wishlist/items/:itemId` (Remove from Wishlist)  
+Check all the built apis are they working check all validators according to new models..
+through postman and all the controllers are they working....
 
----
+and then put the common apis in new route /user/commonApi....

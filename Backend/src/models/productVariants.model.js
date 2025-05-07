@@ -50,13 +50,14 @@ export default (sequelize) => {
     // Now we can add the correct association
     // The model is called 'AttributeValue' (confirmed from the logs)
     ProductVariant.belongsToMany(models.AttributeValue, {
-      through: "VariantAttributeValues",
+      through: models.VariantAttributeValue,
       foreignKey: "product_variant_id",
-      otherKey: "attribute_value_id",
     });
 
     // Relationship with ProductMedia
-    ProductVariant.hasMany(models.ProductMedia, { foreignKey: "product_variant_id" });
+    ProductVariant.hasMany(models.ProductMedia, {
+      foreignKey: "product_variant_id",
+    });
 
     // Relationships with User for created_by and updated_by
     ProductVariant.belongsTo(models.User, {
@@ -69,8 +70,12 @@ export default (sequelize) => {
     });
 
     // Add other relationships
-    ProductVariant.hasMany(models.CartItem, { foreignKey: "product_variant_id" });
-    ProductVariant.hasMany(models.ProductReview, { foreignKey: "product_variant_id" });
+    ProductVariant.hasMany(models.CartItem, {
+      foreignKey: "product_variant_id",
+    });
+    ProductVariant.hasMany(models.ProductReview, {
+      foreignKey: "product_variant_id",
+    });
   };
 
   return ProductVariant;
