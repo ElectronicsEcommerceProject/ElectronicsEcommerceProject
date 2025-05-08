@@ -42,11 +42,22 @@ const getAllAttributes = async (req, res) => {
   try {
     const attributes = await Attribute.findAll({
       include: [
-        { model: User, as: "creator" },
-        { model: User, as: "updater" },
+        {
+          model: User,
+          as: "creator",
+          attributes: ["user_id", "name", "email"],
+        },
+        {
+          model: User,
+          as: "updater",
+          attributes: ["user_id", "name", "email"],
+        },
       ],
     });
-    res.status(StatusCodes.OK).json({ data: attributes });
+    res.status(StatusCodes.OK).json({
+      message: MESSAGE.get.succ,
+      data: attributes,
+    });
   } catch (error) {
     console.error("Error fetching attributes:", error);
     res
@@ -55,7 +66,43 @@ const getAllAttributes = async (req, res) => {
   }
 };
 
-// Get attributes by product type ID
+// Get attribute by ID
+const getAttributeById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const attribute = await Attribute.findByPk(id, {
+      include: [
+        {
+          model: User,
+          as: "creator",
+          attributes: ["user_id", "name", "email"],
+        },
+        {
+          model: User,
+          as: "updater",
+          attributes: ["user_id", "name", "email"],
+        },
+      ],
+    });
+
+    if (!attribute) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: MESSAGE.get.none });
+    }
+
+    res.status(StatusCodes.OK).json({
+      message: MESSAGE.get.succ,
+      data: attribute,
+    });
+  } catch (error) {
+    console.error("Error fetching attribute:", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: MESSAGE.get.fail, error: error.message });
+  }
+};
 
 // Update an attribute
 const updateAttribute = async (req, res) => {
@@ -125,6 +172,7 @@ const deleteAttribute = async (req, res) => {
 export default {
   addAttribute,
   getAllAttributes,
+  getAttributeById,
   updateAttribute,
   deleteAttribute,
 };

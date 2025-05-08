@@ -22,11 +22,11 @@ app.use("/brands", brandsRoutes);
 
 app.use("/product", productRoutes);
 
+app.use("/product-Variant", productVariantRoutes);
+
 app.use("/product-Attributes", productAttributesRoutes);
 
 app.use("/product-Attributes-Values", productAttributesValuesRoutes);
-
-app.use("/product-Variant", productVariantRoutes);
 
 app.use("/product-Media", productMediaRoutes); //done upto here...
 

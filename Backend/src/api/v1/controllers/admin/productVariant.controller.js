@@ -34,7 +34,7 @@ const createProductVariant = async (req, res) => {
     if (req.body.attribute_values && req.body.attribute_values.length > 0) {
       // Validate that all attribute values exist
       const attributeValues = await AttributeValue.findAll({
-        where: { id: req.body.attribute_values },
+        where: { product_attribute_value_id: req.body.attribute_values },
       });
 
       if (attributeValues.length !== req.body.attribute_values.length) {
@@ -48,17 +48,19 @@ const createProductVariant = async (req, res) => {
     }
 
     // Fetch the variant with its associations
-    const createdVariant = await ProductVariant.findByPk(variant.product_variant_id, {
-      include: [
-        { model: Product, attributes: ["id", "name"] },
-        { model: AttributeValue, attributes: ["id", "value"] },
-        {
-          model: User,
-          as: "creator",
-          attributes: ["user_id", "name", "email"],
-        },
-      ],
-    });
+    const createdVariant = await ProductVariant.findByPk(
+      variant.product_variant_id, // Use the direct property instead of variant.ProductVariant.dataValues.product_variant_id
+      {
+        include: [
+          { model: Product, attributes: ["product_id", "name"] },
+          {
+            model: User,
+            as: "creator",
+            attributes: ["user_id", "name", "email"],
+          },
+        ],
+      }
+    );
 
     res.status(StatusCodes.CREATED).json({
       message: MESSAGE.post.succ,
@@ -78,8 +80,7 @@ const getAllProductVariants = async (req, res) => {
   try {
     const variants = await ProductVariant.findAll({
       include: [
-        { model: Product, attributes: ["id", "name"] },
-        { model: AttributeValue, attributes: ["id", "value"] },
+        { model: Product, attributes: ["product_id", "name"] },
         {
           model: User,
           as: "creator",
@@ -108,8 +109,7 @@ const getProductVariantById = async (req, res) => {
 
     const variant = await ProductVariant.findByPk(id, {
       include: [
-        { model: Product, attributes: ["id", "name"] },
-        { model: AttributeValue, attributes: ["id", "value"] },
+        { model: Product, attributes: ["product_id", "name"] },
         {
           model: User,
           as: "creator",
@@ -153,7 +153,6 @@ const getVariantsByProductId = async (req, res) => {
     const variants = await ProductVariant.findAll({
       where: { product_id: productId },
       include: [
-        { model: AttributeValue, attributes: ["id", "value"] },
         {
           model: User,
           as: "creator",
@@ -216,7 +215,7 @@ const updateProductVariant = async (req, res) => {
     if (req.body.attribute_values) {
       // Validate that all attribute values exist
       const attributeValues = await AttributeValue.findAll({
-        where: { id: req.body.attribute_values },
+        where: { product_attribute_value_id: req.body.attribute_values },
       });
 
       if (attributeValues.length !== req.body.attribute_values.length) {
@@ -232,8 +231,7 @@ const updateProductVariant = async (req, res) => {
     // Fetch the updated variant with its associations
     const updatedVariant = await ProductVariant.findByPk(id, {
       include: [
-        { model: Product, attributes: ["id", "name"] },
-        { model: AttributeValue, attributes: ["id", "value"] },
+        { model: Product, attributes: ["product_id", "name"] },
         {
           model: User,
           as: "creator",

@@ -1,13 +1,6 @@
 import Joi from "joi";
 import MESSAGE from "../../../../../constants/message.js";
 export const attributeValidator = Joi.object({
-  product_type_id: Joi.string()
-    .uuid()
-    .required()
-    .messages({
-      "string.guid": MESSAGE.custom("Product type ID must be a valid UUID"),
-      "any.required": MESSAGE.custom("Product type ID is required"),
-    }),
   name: Joi.string()
     .min(2)
     .max(50)
@@ -38,12 +31,6 @@ export const attributeValidator = Joi.object({
     }),
 });
 export const attributeUpdateValidator = Joi.object({
-  product_type_id: Joi.string()
-    .uuid()
-    .optional()
-    .messages({
-      "string.guid": MESSAGE.custom("Product type ID must be a valid UUID"),
-    }),
   name: Joi.string()
     .min(2)
     .max(50)
