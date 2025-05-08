@@ -51,8 +51,16 @@ const getAllAttributeValues = async (req, res) => {
     const attributeValues = await AttributeValue.findAll({
       include: [
         { model: Attribute },
-        { model: User, as: "creator" },
-        { model: User, as: "updater" },
+        {
+          model: User,
+          as: "creator",
+          attributes: ["user_id", "name", "email"],
+        },
+        {
+          model: User,
+          as: "updater",
+          attributes: ["user_id", "name", "email"],
+        },
       ],
     });
 
@@ -80,11 +88,19 @@ const getAttributeValuesByAttribute = async (req, res) => {
         .json({ message: MESSAGE.get.none });
     }
 
-    const attributeValues = await AttributeValues.findAll({
+    const attributeValues = await AttributeValue.findAll({
       where: { product_attribute_id: attributeId },
       include: [
-        { model: User, as: "creator" },
-        { model: User, as: "updater" },
+        {
+          model: User,
+          as: "creator",
+          attributes: ["user_id", "name", "email"],
+        },
+        {
+          model: User,
+          as: "updater",
+          attributes: ["user_id", "name", "email"],
+        },
       ],
     });
 
@@ -104,11 +120,19 @@ const getAttributeValueById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const attributeValue = await AttributeValues.findByPk(id, {
+    const attributeValue = await AttributeValue.findByPk(id, {
       include: [
         { model: Attribute },
-        { model: User, as: "creator" },
-        { model: User, as: "updater" },
+        {
+          model: User,
+          as: "creator",
+          attributes: ["user_id", "name", "email"],
+        },
+        {
+          model: User,
+          as: "updater",
+          attributes: ["user_id", "name", "email"],
+        },
       ],
     });
 
@@ -133,9 +157,9 @@ const getAttributeValueById = async (req, res) => {
 const updateAttributeValue = async (req, res) => {
   try {
     const { id } = req.params;
-    const { product_attribute_id, value } = req.body;
+    const { value } = req.body;
 
-    const attributeValue = await AttributeValues.findByPk(id);
+    const attributeValue = await AttributeValue.findByPk(id);
     if (!attributeValue) {
       return res
         .status(StatusCodes.NOT_FOUND)
@@ -143,8 +167,14 @@ const updateAttributeValue = async (req, res) => {
     }
 
     // If product_attribute_id is being updated, check if it exists
-    if (product_attribute_id && product_attribute_id !== attributeValue.product_attribute_id) {
-      const attribute = await Attribute.findByPk(product_attribute_id);
+    if (
+      attributeValue.product_attribute_id &&
+      attributeValue.product_attribute_id !==
+        attributeValue.product_attribute_id
+    ) {
+      const attribute = await Attribute.findByPk(
+        attributeValue.product_attribute_id
+      );
       if (!attribute) {
         return res
           .status(StatusCodes.NOT_FOUND)
@@ -161,7 +191,6 @@ const updateAttributeValue = async (req, res) => {
     }
 
     // Update fields
-    if (product_attribute_id) attributeValue.product_attribute_id = product_attribute_id;
     if (value) attributeValue.value = value;
     attributeValue.updated_by = user.dataValues.user_id;
 
@@ -183,7 +212,7 @@ const deleteAttributeValue = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const attributeValue = await AttributeValues.findByPk(id);
+    const attributeValue = await AttributeValue.findByPk(id);
     if (!attributeValue) {
       return res
         .status(StatusCodes.NOT_FOUND)
