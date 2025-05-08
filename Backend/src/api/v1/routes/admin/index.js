@@ -16,15 +16,15 @@ import productMediaRoutes from "./productMedia.routes.js";
 
 const app = express();
 
-app.use("/category", categoryRoutes);
+app.use("/categories", categoryRoutes);
 
 app.use("/brands", brandsRoutes);
+
+app.use("/product", productRoutes);
 
 app.use("/product-Attributes", productAttributesRoutes);
 
 app.use("/product-Attributes-Values", productAttributesValuesRoutes);
-
-app.use("/product", productRoutes);
 
 app.use("/product-Variant", productVariantRoutes);
 

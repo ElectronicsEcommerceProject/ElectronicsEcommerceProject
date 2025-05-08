@@ -44,12 +44,12 @@ export const brandUpdateValidator = Joi.object({
       ),
     }),
 });
-export const id = Joi.object({
-  id: Joi.string()
+export const brand_id = Joi.object({
+  brand_id: Joi.string()
     .uuid()
     .required()
     .messages({
-      "string.guid": MESSAGE.custom("ID must be a valid UUID"),
-      "any.required": MESSAGE.custom("ID is required"),
+      "string.guid": MESSAGE.custom("Brand ID must be a valid UUID"),
+      "any.required": MESSAGE.custom("Brand ID is required"),
     }),
 });

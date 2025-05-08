@@ -15,7 +15,9 @@ app.use("/user/profile", profileRoutes);
 
 app.use("/user/addresses", addressesRoutes);
 
-app.use("/admin", adminRoutes); //working on it ..
+app.use("/user/product-Catalog", adminRoutes);
+
+app.use("/admin", adminRoutes);
 
 // app.use("/customer", customerRoutes);
 

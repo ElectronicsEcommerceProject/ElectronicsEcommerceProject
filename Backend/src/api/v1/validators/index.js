@@ -23,10 +23,12 @@ import {
 import {
   categoryValidator,
   categoryUpdateValidator,
+  category_id,
 } from "./category/category.validators.js";
 import {
   brandValidator,
   brandUpdateValidator,
+  brand_id,
 } from "./brands/brands.validators.js";
 
 import {
@@ -59,6 +61,7 @@ export const validators = {
   },
   profile: {
     profile: profileValidator,
+    id: id,
   },
   address: {
     addressValidator: addressValidator,
@@ -68,12 +71,12 @@ export const validators = {
   category: {
     categoryValidator: categoryValidator,
     categoryUpdateValidator: categoryUpdateValidator,
-    id: id,
+    category_id: category_id,
   },
   brand: {
     brandValidator: brandValidator,
     brandUpdateValidator: brandUpdateValidator,
-    id: id,
+    brand_id: brand_id,
   },
   attribute: {
     attributeValidator: attributeValidator,

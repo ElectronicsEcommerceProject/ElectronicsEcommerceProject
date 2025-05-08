@@ -80,3 +80,13 @@ export const categoryUpdateValidator = Joi.object({
       ),
     }),
 });
+
+export const category_id = Joi.object({
+  category_id: Joi.string()
+    .uuid()
+    .required()
+    .messages({
+      "string.guid": MESSAGE.custom("Category ID must be a valid UUID"),
+      "any.required": MESSAGE.custom("Category ID is required"),
+    }),
+});

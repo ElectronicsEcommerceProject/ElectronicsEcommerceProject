@@ -2,10 +2,11 @@ import { StatusCodes } from "http-status-codes";
 import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
 import slugify from "slugify";
+import { Op } from "sequelize";
 
 const { Product, Category, Brand, User } = db;
 
-// Create a new product
+// ✅ Create a new product
 const createProduct = async (req, res) => {
   try {
     // Get the user from the token
@@ -24,12 +25,14 @@ const createProduct = async (req, res) => {
         .json({ message: "Category not found" });
     }
 
-    // Validate brand
-    const brand = await Brand.findByPk(req.body.brand_id);
-    if (!brand) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Brand not found" });
+    // Validate brand if provided
+    if (req.body.brand_id) {
+      const brand = await Brand.findByPk(req.body.brand_id);
+      if (!brand) {
+        return res
+          .status(StatusCodes.NOT_FOUND)
+          .json({ message: "Brand not found" });
+      }
     }
 
     // Generate slug if not provided
@@ -65,13 +68,13 @@ const createProduct = async (req, res) => {
   }
 };
 
-// Get all products
+// ✅ Get all products
 const getProducts = async (req, res) => {
   try {
     const products = await Product.findAll({
       include: [
-        { model: Category, attributes: ["id", "name"] },
-        { model: Brand, attributes: ["id", "name"] },
+        { model: Category, attributes: ["category_id", "name"] },
+        { model: Brand, attributes: ["brand_id", "name"] },
         {
           model: User,
           as: "creator",
@@ -93,15 +96,15 @@ const getProducts = async (req, res) => {
   }
 };
 
-// Get product by ID
+// ✅ Get product by ID
 const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
 
     const product = await Product.findByPk(id, {
       include: [
-        { model: Category, attributes: ["id", "name"] },
-        { model: Brand, attributes: ["id", "name"] },
+        { model: Category, attributes: ["category_id", "name"] },
+        { model: Brand, attributes: ["brand_id", "name"] },
         {
           model: User,
           as: "creator",
@@ -129,7 +132,7 @@ const getProductById = async (req, res) => {
   }
 };
 
-// Get products by category ID
+// ✅ Get products by category ID
 const getProductsByCategoryId = async (req, res) => {
   try {
     const { categoryId } = req.params;
@@ -145,7 +148,7 @@ const getProductsByCategoryId = async (req, res) => {
     const products = await Product.findAll({
       where: { category_id: categoryId },
       include: [
-        { model: Brand, attributes: ["id", "name"] },
+        { model: Brand, attributes: ["brand_id", "name"] },
         {
           model: User,
           as: "creator",
@@ -167,7 +170,47 @@ const getProductsByCategoryId = async (req, res) => {
   }
 };
 
-// Update product
+// filepath: c:\Users\satyam singh\Desktop\vite-project\ElectronicsEcommerceProject\Backend\src\api\v1\controllers\admin\product.controller.js
+const getProductsByCategoryAndBrand = async (req, res) => {
+  try {
+    const { category_id, brand_id } = req.params;
+
+    // Build the filter dynamically
+    const filter = {};
+    if (category_id) filter.category_id = category_id;
+    if (brand_id) filter.brand_id = brand_id;
+
+    const products = await Product.findAll({
+      where: filter,
+      include: [
+        {
+          model: Category,
+          as: "category",
+          attributes: ["id", "name"],
+        },
+        { model: Brand, as: "brand", attributes: ["id", "name"] },
+        {
+          model: User,
+          as: "creator",
+          attributes: ["user_id", "name", "email"],
+        },
+      ],
+    });
+
+    res.status(StatusCodes.OK).json({
+      message: MESSAGE.get.succ,
+      data: products,
+    });
+  } catch (error) {
+    console.error("Error fetching products by category and brand:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: MESSAGE.get.fail,
+      error: error.message,
+    });
+  }
+};
+
+// ✅ Update product
 const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -214,7 +257,10 @@ const updateProduct = async (req, res) => {
 
       // Check if slug already exists
       const existingProduct = await Product.findOne({
-        where: { slug: req.body.slug, id: { [db.Sequelize.Op.ne]: id } },
+        where: {
+          slug: req.body.slug,
+          product_id: { [Op.ne]: id },
+        },
       });
 
       if (existingProduct) {
@@ -228,7 +274,6 @@ const updateProduct = async (req, res) => {
     // Update the product
     await product.update({
       ...req.body,
-      updated_by: user.user_id,
     });
 
     res.status(StatusCodes.OK).json({
@@ -244,7 +289,7 @@ const updateProduct = async (req, res) => {
   }
 };
 
-// Delete product
+// ✅ Delete product
 const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -277,6 +322,7 @@ export default {
   getProducts,
   getProductById,
   getProductsByCategoryId,
+  getProductsByCategoryAndBrand,
   updateProduct,
   deleteProduct,
 };

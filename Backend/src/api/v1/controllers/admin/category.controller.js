@@ -7,7 +7,7 @@ const { Category, User } = db;
 // Add a new category
 const addCategory = async (req, res) => {
   try {
-    const { name, slug, target_role, parent_id } = req.body;
+    const { name, slug, target_role, parent_id, is_active } = req.body;
 
     // Get the user ID of the creator
     const user = await User.findOne({ where: { email: req.user.email } });
@@ -16,18 +16,29 @@ const addCategory = async (req, res) => {
     }
     const created_by = user.dataValues.user_id;
 
-    // Create the new category
-    const newCategory = await Category.create({
-      name,
-      slug,
-      target_role,
-      parent_id: parent_id || null,
-      created_by,
-    });
-
-    res
-      .status(StatusCodes.CREATED)
-      .json({ message: MESSAGE.post.succ, data: newCategory });
+    try {
+      // Create the new category
+      const newCategory = await Category.create({
+        name,
+        slug,
+        target_role: target_role || "both",
+        parent_id: parent_id || null,
+        is_active: is_active !== undefined ? is_active : true,
+        created_by,
+      });
+      res
+        .status(StatusCodes.CREATED)
+        .json({ message: MESSAGE.post.succ, data: newCategory });
+    } catch (createError) {
+      console.error("Specific error creating category:", createError);
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: MESSAGE.post.fail,
+        error: createError.message,
+        details: createError.errors
+          ? createError.errors.map((e) => e.message)
+          : null,
+      });
+    }
   } catch (error) {
     console.error("Error adding category:", error);
     res
