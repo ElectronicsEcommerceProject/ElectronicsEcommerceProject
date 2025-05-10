@@ -15,14 +15,14 @@ app.use("/user/profile", profileRoutes);
 
 app.use("/user/addresses", addressesRoutes);
 
-app.use("/user/product-Catalog", adminRoutes);
+app.use("/user/product-catalog", adminRoutes);
 
-app.use("/user/product-Variant", adminRoutes);
+app.use("/user/product-variant", adminRoutes);
 
 app.use("/admin", adminRoutes);
 
-// app.use("/customer", customerRoutes);
+app.use("/customer", customerRoutes);
 
-// app.use("/retailer", retailerRoutes);
+app.use("/retailer", retailerRoutes);
 
 export default app;

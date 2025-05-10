@@ -14,6 +14,7 @@ import productAttributesValuesRoutes from "./productAttributesValues.routes.js";
 import productVariantRoutes from "./productVariant.routes.js";
 import productVariantAttributeValuesRoutes from "./productVariantAttributeValues.routes.js";
 import productMediaRoutes from "./productMedia.routes.js";
+import productMediaUrlRoutes from "./productMediaUrl.routes.js";
 
 const app = express();
 
@@ -36,7 +37,7 @@ app.use(
 
 app.use("/product-Media", productMediaRoutes); //done upto here...
 
-// app.use("/product-Media-Url", productMediaUrlRoutes);
+app.use("/product-Media-Url", productMediaUrlRoutes);
 
 app.use("/order", orderRoutes);
 

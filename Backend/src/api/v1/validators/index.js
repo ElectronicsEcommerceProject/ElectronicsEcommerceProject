@@ -47,6 +47,10 @@ import {
   variantAttributeValueValidator,
   variantAttributeValueUpdateValidator,
 } from "./product/productVariantAttributeValues/productVariantAttributeValues.validators.js";
+import {
+  productMediaURLValidator,
+  productMediaURLUpdateValidator,
+} from "./product/productMediaUrl/productMediaUrl.validators.js";
 
 export const validators = {
   auth: {
@@ -100,6 +104,11 @@ export const validators = {
   productMedia: {
     productMediaValidator: productMediaValidator,
     productMediaUpdateValidator: productMediaUpdateValidator,
+    id: id,
+  },
+  productMediaUrl: {
+    productMediaUrlValidator: productMediaURLValidator,
+    productMediaUrlUpdateValidator: productMediaURLUpdateValidator,
     id: id,
   },
 };
