@@ -10,9 +10,9 @@ import cartRoutes from "./commonRoutes/cart/cart.route.js";
 import cartItemRoutes from "./commonRoutes/cart/cartItem.route.js";
 import wishListRoutes from "./commonRoutes/wishList/wishList.routes.js";
 import wishListItemRoutes from "./commonRoutes/wishList/wishListItem.routes.js";
+import orderRoutes from "./commonRoutes/order/order.routes.js";
 
 const app = express();
-``;
 
 app.use("/auth", authRoutes);
 
@@ -32,7 +32,7 @@ app.use("/user/wishList", wishListRoutes);
 
 app.use("/user/wishList-Item", wishListItemRoutes);
 
-app.use("/user/order", adminRoutes);
+app.use("/user/order", orderRoutes);
 
 app.use("/admin", adminRoutes);
 

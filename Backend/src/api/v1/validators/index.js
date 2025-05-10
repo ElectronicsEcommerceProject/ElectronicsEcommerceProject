@@ -81,6 +81,12 @@ import {
   wishlistItemIdValidator,
 } from "./wishList/wishListItem.validators.js";
 
+import {
+  createOrderValidator,
+  updateOrderValidator,
+  orderIdValidator,
+} from "./order/order.validators.js";
+
 export const validators = {
   auth: {
     register: registerValidator,
@@ -161,5 +167,10 @@ export const validators = {
   wishListItem: {
     createWishlistItemValidator,
     wishlistItemIdValidator,
+  },
+  order: {
+    createOrderValidator: createOrderValidator,
+    updateOrderValidator: updateOrderValidator,
+    orderIdValidator: orderIdValidator,
   },
 };

@@ -58,7 +58,7 @@ export default (sequelize) => {
     }); // Links order item to a product
     OrderItem.belongsTo(models.ProductVariant, {
       foreignKey: "product_variant_id",
-      as: "variant",
+      as: "productVariant",
     }); // Links order item to a product variant
   };
 

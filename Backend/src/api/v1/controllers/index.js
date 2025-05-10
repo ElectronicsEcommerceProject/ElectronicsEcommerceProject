@@ -9,12 +9,11 @@ export { default as cartController } from "./commonControllers/cart/cart.control
 export { default as cartItemController } from "./commonControllers/cart/cartItem.controller.js";
 export { default as wishListController } from "./commonControllers/wishList/wishList.controller.js";
 export { default as wishListItemController } from "./commonControllers/wishList/wishListItem.controller.js";
-
+export { default as orderController } from "./commonControllers/order/order.controller.js";
 //     admin controller
 export { default as adminCategoryController } from "./admin/category.controller.js";
 export { default as adminCouponController } from "./admin/coupon.controller.js";
 export { default as adminUserController } from "./admin/user.controller.js";
-export { default as adminOrderController } from "./admin/order.controller.js";
 export { default as adminProductController } from "./admin/product.controller.js";
 export { default as adminProductVariantController } from "./admin/productVariant.controller.js";
 export { default as adminProductMediaController } from "./admin/productMedia.controller.js";
