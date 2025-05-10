@@ -52,6 +52,12 @@ import {
   productMediaURLUpdateValidator,
 } from "./product/productMediaUrl/productMediaUrl.validators.js";
 
+import {
+  stockAlertValidator,
+  stockAlertUpdateValidator,
+  alertId,
+} from "./stockAlert/stockAlert.validators.js";
+
 export const validators = {
   auth: {
     register: registerValidator,
@@ -110,5 +116,10 @@ export const validators = {
     productMediaUrlValidator: productMediaURLValidator,
     productMediaUrlUpdateValidator: productMediaURLUpdateValidator,
     id: id,
+  },
+  stockAlert: {
+    stockAlertValidator,
+    stockAlertUpdateValidator,
+    alertId,
   },
 };

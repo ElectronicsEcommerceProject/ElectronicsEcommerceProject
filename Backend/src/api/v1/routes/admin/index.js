@@ -47,7 +47,7 @@ app.use("/coupon", couponRoutes);
 
 app.use("/user", userRoutes);
 
-app.use("/stock-alert", stockAlertRoutes);
+app.use("/stock-Alert", stockAlertRoutes);
 
 app.use("/review", reviewRoutes);
 
