@@ -36,6 +36,8 @@ app.use(
 
 app.use("/product-Media", productMediaRoutes); //done upto here...
 
+// app.use("/product-Media-Url", productMediaUrlRoutes);
+
 app.use("/order", orderRoutes);
 
 app.use("/profile", profileRoutes);

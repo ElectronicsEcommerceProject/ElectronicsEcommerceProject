@@ -15,19 +15,6 @@ export const productMediaValidator = Joi.object({
     .messages({
       "string.guid": MESSAGE.custom("Variant ID must be a valid UUID"),
     }),
-  product_attribute_id: Joi.string()
-    .uuid()
-    .optional()
-    .allow(null)
-    .messages({
-      "string.guid": MESSAGE.custom("Attribute ID must be a valid UUID"),
-    }),
-  media_url: Joi.string()
-    .required()
-    .messages({
-      "string.empty": MESSAGE.custom("Media URL is required"),
-      "any.required": MESSAGE.custom("Media URL is required"),
-    }),
   media_type: Joi.string()
     .valid("image", "video")
     .default("image")
@@ -37,6 +24,7 @@ export const productMediaValidator = Joi.object({
       ),
     }),
 });
+
 export const productMediaUpdateValidator = Joi.object({
   product_id: Joi.string()
     .uuid()
@@ -50,18 +38,6 @@ export const productMediaUpdateValidator = Joi.object({
     .allow(null)
     .messages({
       "string.guid": MESSAGE.custom("Variant ID must be a valid UUID"),
-    }),
-  product_attribute_id: Joi.string()
-    .uuid()
-    .optional()
-    .allow(null)
-    .messages({
-      "string.guid": MESSAGE.custom("Attribute ID must be a valid UUID"),
-    }),
-  media_url: Joi.string()
-    .optional()
-    .messages({
-      "string.empty": MESSAGE.custom("Media URL cannot be empty if provided"),
     }),
   media_type: Joi.string()
     .valid("image", "video")
