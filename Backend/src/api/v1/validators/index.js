@@ -63,6 +63,13 @@ import {
   cartIdValidator,
 } from "./cart/cart.validators.js";
 
+// Import cart item validators
+import {
+  createCartItemValidator,
+  updateCartItemValidator,
+  cartItemIdValidator,
+} from "./cart/cartItem.validators.js";
+
 export const validators = {
   auth: {
     register: registerValidator,
@@ -130,5 +137,10 @@ export const validators = {
   cart: {
     createCart: createCartValidator,
     userId: cartIdValidator,
+  },
+  cartItem: {
+    createCartItem: createCartItemValidator,
+    updateCartItem: updateCartItemValidator,
+    cartItemId: cartItemIdValidator,
   },
 };
