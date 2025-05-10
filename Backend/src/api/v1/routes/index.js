@@ -8,6 +8,7 @@ import profileRoutes from "./commonRoutes/profile/profile.route.js";
 import addressesRoutes from "./commonRoutes/addresses/addresses.route.js";
 import cartRoutes from "./commonRoutes/cart/cart.route.js";
 import cartItemRoutes from "./commonRoutes/cart/cartItem.route.js";
+import wishlistRoutes from "./commonRoutes/wishList/wishList.routes.js";
 
 const app = express();
 ``;
@@ -22,9 +23,11 @@ app.use("/user/product-catalog", adminRoutes);
 
 app.use("/user/product-variant", adminRoutes);
 
-app.use("/user/cart", cartRoutes); //working on it..
+app.use("/user/cart", cartRoutes);
 
-app.use("/user/cart-Item", cartItemRoutes); //working on it..
+app.use("/user/cart-Item", cartItemRoutes);
+
+app.use("/user/wishlist", wishlistRoutes);
 
 app.use("/admin", adminRoutes);
 
