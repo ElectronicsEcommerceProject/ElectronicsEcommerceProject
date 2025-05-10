@@ -87,6 +87,12 @@ import {
   orderIdValidator,
 } from "./order/order.validators.js";
 
+import {
+  createOrderItemValidator,
+  updateOrderItemValidator,
+  orderItemIdValidator,
+} from "./order/orderItem.validators.js";
+
 export const validators = {
   auth: {
     register: registerValidator,
@@ -172,5 +178,10 @@ export const validators = {
     createOrderValidator: createOrderValidator,
     updateOrderValidator: updateOrderValidator,
     orderIdValidator: orderIdValidator,
+  },
+  orderItem: {
+    createOrderItemValidator: createOrderItemValidator,
+    updateOrderItemValidator: updateOrderItemValidator,
+    orderItemIdValidator: orderItemIdValidator,
   },
 };

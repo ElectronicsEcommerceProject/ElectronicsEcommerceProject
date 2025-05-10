@@ -11,6 +11,7 @@ import cartItemRoutes from "./commonRoutes/cart/cartItem.route.js";
 import wishListRoutes from "./commonRoutes/wishList/wishList.routes.js";
 import wishListItemRoutes from "./commonRoutes/wishList/wishListItem.routes.js";
 import orderRoutes from "./commonRoutes/order/order.routes.js";
+import orderItemRoutes from "./commonRoutes/order/orderItem.routes.js";
 
 const app = express();
 
@@ -33,6 +34,8 @@ app.use("/user/wishList", wishListRoutes);
 app.use("/user/wishList-Item", wishListItemRoutes);
 
 app.use("/user/order", orderRoutes);
+
+app.use("/user/order-Item", orderItemRoutes);
 
 app.use("/admin", adminRoutes);
 
