@@ -8,7 +8,8 @@ import profileRoutes from "./commonRoutes/profile/profile.route.js";
 import addressesRoutes from "./commonRoutes/addresses/addresses.route.js";
 import cartRoutes from "./commonRoutes/cart/cart.route.js";
 import cartItemRoutes from "./commonRoutes/cart/cartItem.route.js";
-import wishlistRoutes from "./commonRoutes/wishList/wishList.routes.js";
+import wishListRoutes from "./commonRoutes/wishList/wishList.routes.js";
+import wishListItemRoutes from "./commonRoutes/wishList/wishListItem.routes.js";
 
 const app = express();
 ``;
@@ -27,7 +28,11 @@ app.use("/user/cart", cartRoutes);
 
 app.use("/user/cart-Item", cartItemRoutes);
 
-app.use("/user/wishlist", wishlistRoutes);
+app.use("/user/wishList", wishListRoutes);
+
+app.use("/user/wishList-Item", wishListItemRoutes);
+
+app.use("/user/order", adminRoutes);
 
 app.use("/admin", adminRoutes);
 

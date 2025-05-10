@@ -8,6 +8,7 @@ export { default as addressController } from "./commonControllers/address/addres
 export { default as cartController } from "./commonControllers/cart/cart.controller.js";
 export { default as cartItemController } from "./commonControllers/cart/cartItem.controller.js";
 export { default as wishListController } from "./commonControllers/wishList/wishList.controller.js";
+export { default as wishListItemController } from "./commonControllers/wishList/wishListItem.controller.js";
 
 //     admin controller
 export { default as adminCategoryController } from "./admin/category.controller.js";
