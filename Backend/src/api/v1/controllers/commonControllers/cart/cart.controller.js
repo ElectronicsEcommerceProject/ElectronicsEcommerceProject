@@ -1,6 +1,6 @@
-import db from "../../../../models/index.js"; // Import the database models
+import db from "../../../../../models/index.js"; // Import the database models
 import { StatusCodes } from "http-status-codes";
-import MESSAGE from "../../../../constants/message.js";
+import MESSAGE from "../../../../../constants/message.js";
 
 const { Cart, User, CartItem, Product } = db;
 

@@ -5,6 +5,7 @@ export { default as registerController } from "./auth/register.controller.js";
 // common controller
 export { default as profileController } from "./commonControllers/profile/profile.controller.js";
 export { default as addressController } from "./commonControllers/address/address.controller.js";
+export { default as cartController } from "./commonControllers/cart/cart.controller.js";
 
 //     admin controller
 export { default as adminCategoryController } from "./admin/category.controller.js";

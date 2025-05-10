@@ -58,6 +58,11 @@ import {
   alertId,
 } from "./stockAlert/stockAlert.validators.js";
 
+import {
+  createCartValidator,
+  cartIdValidator,
+} from "./cart/cart.validators.js";
+
 export const validators = {
   auth: {
     register: registerValidator,
@@ -121,5 +126,9 @@ export const validators = {
     stockAlertValidator,
     stockAlertUpdateValidator,
     alertId,
+  },
+  cart: {
+    createCart: createCartValidator,
+    userId: cartIdValidator,
   },
 };

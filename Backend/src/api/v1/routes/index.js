@@ -6,6 +6,7 @@ import customerRoutes from "./customer/index.js";
 import retailerRoutes from "./retailer/index.js";
 import profileRoutes from "./commonRoutes/profile/profile.route.js";
 import addressesRoutes from "./commonRoutes/addresses/addresses.route.js";
+import cartRoutes from "./commonRoutes/cart/cart.route.js";
 
 const app = express();
 
@@ -18,6 +19,8 @@ app.use("/user/addresses", addressesRoutes);
 app.use("/user/product-catalog", adminRoutes);
 
 app.use("/user/product-variant", adminRoutes);
+
+app.use("/user/cart", cartRoutes); //working on it..
 
 app.use("/admin", adminRoutes);
 

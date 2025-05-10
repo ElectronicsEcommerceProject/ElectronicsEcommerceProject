@@ -1,22 +1,56 @@
-import express from 'express';
-// import { addToCart, getCart, updateCartItem, removeFromCart } from '../controllers/cartController.js';
-// import { verifyJwtToken } from '../../../../middleware/jwt.js';
+import express from "express";
+import {
+  verifyJwtToken,
+  adminRoleCheck,
+  validator,
+} from "../../../../middleware/index.js";
+import { validators } from "../../validators/index.js";
+import { adminCartController } from "../../controllers/index.js";
 
 const router = express.Router();
 
-// ✅ Add item to cart
-// router.post('/', verifyJwtToken, addToCart);
+// Get all carts (admin only)
+router.get(
+  "/",
+  verifyJwtToken,
+  adminRoleCheck,
+  adminCartController.getAllCarts
+);
 
-// // ✅ Get all items in user's cart
-// router.get('/', verifyJwtToken, getCart);
+// Get cart by ID (admin only)
+router.get(
+  "/:cart_id",
+  verifyJwtToken,
+  adminRoleCheck,
+  validator(validators.cart.cartIdValidator, "params"),
+  adminCartController.getCartById
+);
 
-// // ✅ Update quantity of a specific item
-// router.put('/:product_id', verifyJwtToken, updateCartItem);
+// Get cart by user ID (admin only)
+router.get(
+  "/user/:user_id",
+  verifyJwtToken,
+  adminRoleCheck,
+  validator(validators.cart.userIdValidator, "params"),
+  adminCartController.getCartByUserId
+);
 
-// // ✅ Remove item from cart
-// router.delete('/:product_id', verifyJwtToken, removeFromCart);
+// Create a cart (admin only - for testing purposes)
+router.post(
+  "/",
+  verifyJwtToken,
+  adminRoleCheck,
+  validator(validators.cart.createCartValidator, null),
+  adminCartController.createCart
+);
+
+// Delete a cart (admin only)
+router.delete(
+  "/:cart_id",
+  verifyJwtToken,
+  adminRoleCheck,
+  validator(validators.cart.cartIdValidator, "params"),
+  adminCartController.deleteCart
+);
 
 export default router;
-
-
-//    admin cart route will be defined for which it will be used to get all the cart items of all users and also to delete the cart items of all users.
