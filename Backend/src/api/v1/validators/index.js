@@ -92,6 +92,11 @@ import {
   updateOrderItemValidator,
   orderItemIdValidator,
 } from "./order/orderItem.validators.js";
+import {
+  couponValidator,
+  couponUpdateValidator,
+  couponIdValidator,
+} from "./coupon/coupon.validators.js";
 
 export const validators = {
   auth: {
@@ -183,5 +188,10 @@ export const validators = {
     createOrderItemValidator: createOrderItemValidator,
     updateOrderItemValidator: updateOrderItemValidator,
     orderItemIdValidator: orderItemIdValidator,
+  },
+  coupon: {
+    couponValidator,
+    couponUpdateValidator,
+    couponIdValidator,
   },
 };
