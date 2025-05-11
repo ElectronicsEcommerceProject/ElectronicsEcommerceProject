@@ -115,6 +115,13 @@ import {
   discountRuleUpdateValidator,
 } from "./discountRule/discountRule.validator.js";
 
+import {
+  createReviewValidator,
+  updateReviewValidator,
+  productIdValidator,
+  reviewIdValidator,
+} from "./product/productReview/productReview.validators.js";
+
 export const validators = {
   auth: {
     register: registerValidator,
@@ -228,5 +235,11 @@ export const validators = {
     discountRuleValidator,
     discountRuleUpdateValidator,
     discountRuleIdValidator,
+  },
+  productReview: {
+    createReviewValidator,
+    updateReviewValidator,
+    productIdValidator,
+    reviewIdValidator,
   },
 };

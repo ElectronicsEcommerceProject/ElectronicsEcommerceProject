@@ -12,6 +12,8 @@ export { default as wishListItemController } from "./commonControllers/wishList/
 export { default as orderController } from "./commonControllers/order/order.controller.js";
 export { default as orderItemController } from "./commonControllers/order/orderItem.controller.js";
 export { default as couponRedemptionController } from "./commonControllers/coupon/couponRedemption.controller.js";
+export { default as productReviewController } from "./commonControllers/product/productReview/productReview.controller.js";
+
 //     admin controller
 export { default as adminCategoryController } from "./admin/category.controller.js";
 export { default as adminCouponController } from "./admin/coupon.controller.js";
