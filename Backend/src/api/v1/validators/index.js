@@ -104,6 +104,11 @@ import {
   userIdValidator,
 } from "./coupon/couponUser.validators.js";
 
+import {
+  couponRedemptionValidator,
+  couponRedemptionIdValidator,
+} from "./coupon/couponRedemption.validator.js";
+
 export const validators = {
   auth: {
     register: registerValidator,
@@ -205,5 +210,12 @@ export const validators = {
     couponUserIdValidator,
     userIdValidator,
     couponIdValidator,
+  },
+  couponRedemption: {
+    couponRedemptionValidator,
+    couponRedemptionIdValidator,
+    userIdValidator,
+    couponIdValidator,
+    orderIdValidator,
   },
 };

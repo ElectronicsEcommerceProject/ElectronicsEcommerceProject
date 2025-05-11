@@ -12,6 +12,7 @@ import wishListRoutes from "./commonRoutes/wishList/wishList.routes.js";
 import wishListItemRoutes from "./commonRoutes/wishList/wishListItem.routes.js";
 import orderRoutes from "./commonRoutes/order/order.routes.js";
 import orderItemRoutes from "./commonRoutes/order/orderItem.routes.js";
+import couponRedemptionRoutes from "./commonRoutes/coupon/couponRedemption.routes.js";
 
 const app = express();
 
@@ -36,6 +37,8 @@ app.use("/user/wishList-Item", wishListItemRoutes);
 app.use("/user/order", orderRoutes);
 
 app.use("/user/order-Item", orderItemRoutes);
+
+app.use("/user/coupon-Redemption", couponRedemptionRoutes);
 
 app.use("/admin", adminRoutes);
 

@@ -25,10 +25,6 @@ export default (sequelize) => {
         type: DataTypes.UUID,
         allowNull: true,
       },
-      // product_attribute_id: {
-      //   type: DataTypes.UUID,
-      //   allowNull: true,
-      // },
       product_variant_id: {
         type: DataTypes.UUID,
         allowNull: true,
@@ -73,7 +69,6 @@ export default (sequelize) => {
         { fields: ["product_id"] },
         { fields: ["category_id"] },
         { fields: ["brand_id"] },
-        // { fields: ['product_attribute_id'] },
         { fields: ["product_variant_id"] },
         { fields: ["rule_type"] },
         { fields: ["created_by"] },
@@ -86,9 +81,6 @@ export default (sequelize) => {
     DiscountRule.belongsTo(models.Product, { foreignKey: "product_id" });
     DiscountRule.belongsTo(models.Category, { foreignKey: "category_id" });
     DiscountRule.belongsTo(models.Brand, { foreignKey: "brand_id" });
-    DiscountRule.belongsTo(models.Attribute, {
-      foreignKey: "product_attribute_id",
-    });
     DiscountRule.belongsTo(models.ProductVariant, {
       foreignKey: "product_variant_id",
     });
