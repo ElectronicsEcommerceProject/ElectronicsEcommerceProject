@@ -16,6 +16,7 @@ import productVariantAttributeValuesRoutes from "./productVariantAttributeValues
 import productMediaRoutes from "./productMedia.routes.js";
 import productMediaUrlRoutes from "./productMediaUrl.routes.js";
 import couponUserRoutes from "./couponUser.routes.js";
+import discountRuleRoutes from "./discountRule.routes.js";
 
 const app = express();
 
@@ -49,6 +50,8 @@ app.use("/coupon", couponRoutes);
 app.use("/user", userRoutes);
 
 app.use("/coupon-User", couponUserRoutes);
+
+app.use("/discount-Rule", discountRuleRoutes);
 
 app.use("/stock-Alert", stockAlertRoutes);
 

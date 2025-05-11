@@ -23,6 +23,8 @@ export { default as adminProductMediaURLController } from "./admin/productMediaU
 export { default as adminVariantAttributeValueController } from "./admin/productVariantAttributeValues.controller.js";
 export { default as adminStockAlertController } from "./admin/stockAlert.controller.js";
 export { default as adminCouponUserController } from "./admin/couponUser.controller.js";
+export { default as adminDiscountRuleController } from "./admin/discountRule.controller.js";
+
 // export { default as adminProfileController } from './admin/profile.controller.js';
 export { default as adminCartController } from "./admin/cart.controller.js";
 export { default as adminReviewController } from "./admin/review.controller.js";
