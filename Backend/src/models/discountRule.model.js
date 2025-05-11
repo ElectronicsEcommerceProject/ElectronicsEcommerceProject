@@ -4,7 +4,7 @@ export default (sequelize) => {
   const DiscountRule = sequelize.define(
     "DiscountRule",
     {
-      id: {
+      discount_rule_id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,

@@ -37,7 +37,7 @@ import AttributeValue from "./productAttributesValues.model.js";
 import ProductMedia from "./productMedia.model.js";
 import ProductMediaUrl from "./productMediaURL.model.js";
 import Category from "./category.model.js";
-import Brand from "./brand.model.js";
+import Brand from "./productBrand.model.js";
 import Coupon from "./coupon.model.js";
 import CouponUser from "./couponUser.model.js";
 import Order from "./order.model.js";

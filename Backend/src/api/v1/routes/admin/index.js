@@ -1,8 +1,7 @@
 import express from "express";
 
 import productRoutes from "./product.route.js";
-import orderRoutes from "./order.route.js";
-import profileRoutes from "./profile.route.js";
+
 import categoryRoutes from "./category.route.js";
 import couponRoutes from "./coupon.route.js";
 import userRoutes from "./user.route.js";
@@ -40,10 +39,6 @@ app.use(
 app.use("/product-Media", productMediaRoutes); //done upto here...
 
 app.use("/product-Media-Url", productMediaUrlRoutes);
-
-// app.use("/order", orderRoutes);
-
-app.use("/profile", profileRoutes);
 
 app.use("/coupon", couponRoutes);
 
