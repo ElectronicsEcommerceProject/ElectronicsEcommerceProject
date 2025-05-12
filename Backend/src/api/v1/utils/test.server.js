@@ -1,10 +1,12 @@
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import { registerValidator } from "../validators/auth/register.validators.js";
-import { loginValidator } from "../validators/auth/login.validators.js";
-import register from "../controllers/auth/register.controller.js";
-import login from "../controllers/auth/login.controller.js";
+import { validators } from "../validators/index.js";
+import {
+  registerController,
+  loginController,
+  adminCategoryController,
+} from "../controllers/index.js";
 
 /**
  * Creates and configures an Express server instance
@@ -48,11 +50,41 @@ export function createServer() {
   // Auth routes
   app.post(
     "/api/v1/auth/register",
-    validateRequest(registerValidator),
-    register
+    validateRequest(validators.auth.register),
+    registerController
   );
 
-  app.post("/api/v1/auth/login", validateRequest(loginValidator), login);
+  app.post(
+    "/api/v1/auth/login",
+    validateRequest(validators.auth.login),
+    loginController
+  );
+
+  //category routes...
+
+  // Add a new category
+  app.post(
+    "/api/v1/admin/category",
+    validateRequest(validators.category.categoryValidator),
+    adminCategoryController.addCategory
+  );
+
+  // Get all categories
+  app.get("/api/v1/admin/category", adminCategoryController.getAllCategories);
+
+  // Update a category by ID
+  app.put(
+    "/api/v1/admin/category/:id",
+    validateRequest(validators.category.category_id),
+    adminCategoryController.updateCategoryById
+  );
+
+  // Delete a category by ID
+  app.delete(
+    "/api/v1/admin/category/:id",
+    validateRequest(validators.category.category_id),
+    adminCategoryController.deleteCategory
+  );
 
   // If no routes match
   app.use((req, res) => {

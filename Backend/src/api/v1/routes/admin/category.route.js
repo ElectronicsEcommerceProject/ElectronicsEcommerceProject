@@ -27,7 +27,7 @@ router.put(
   "/:id",
   verifyJwtToken,
   adminRoleCheck,
-  validator(validators.category.id, "params"), // Add validator middleware for category update validation
+  validator(validators.category.category_id, "params"), // Add validator middleware for category update validation
   adminCategoryController.updateCategoryById
 );
 
