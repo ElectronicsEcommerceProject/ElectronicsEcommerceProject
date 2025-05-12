@@ -2,7 +2,9 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { registerValidator } from "../validators/auth/register.validators.js";
+import { loginValidator } from "../validators/auth/login.validators.js";
 import register from "../controllers/auth/register.controller.js";
+import login from "../controllers/auth/login.controller.js";
 
 /**
  * Creates and configures an Express server instance
@@ -17,6 +19,31 @@ export function createServer() {
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
 
+  /**
+   * Middleware function to validate request using Joi schema
+   * @param {Object} schema - Joi validation schema
+   * @returns {Function} Express middleware
+   */
+  function validateRequest(schema) {
+    return (req, res, next) => {
+      const { error } = schema.validate(req.body, { abortEarly: false });
+
+      if (error) {
+        const errors = error.details.map((detail) => ({
+          field: detail.path[0],
+          message: detail.message,
+        }));
+
+        return res.status(400).json({
+          message: errors[0].message,
+          errors,
+        });
+      }
+
+      next();
+    };
+  }
+
   // Routes
   // Auth routes
   app.post(
@@ -24,6 +51,8 @@ export function createServer() {
     validateRequest(registerValidator),
     register
   );
+
+  app.post("/api/v1/auth/login", validateRequest(loginValidator), login);
 
   // If no routes match
   app.use((req, res) => {
@@ -37,29 +66,4 @@ export function createServer() {
   });
 
   return app;
-}
-
-/**
- * Middleware function to validate request using Joi schema
- * @param {Object} schema - Joi validation schema
- * @returns {Function} Express middleware
- */
-function validateRequest(schema) {
-  return (req, res, next) => {
-    const { error } = schema.validate(req.body, { abortEarly: false });
-
-    if (error) {
-      const errors = error.details.map((detail) => ({
-        field: detail.path[0],
-        message: detail.message,
-      }));
-
-      return res.status(400).json({
-        message: errors[0].message,
-        errors,
-      });
-    }
-
-    next();
-  };
 }

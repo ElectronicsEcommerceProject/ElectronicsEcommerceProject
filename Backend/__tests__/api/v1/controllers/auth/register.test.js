@@ -1,5 +1,5 @@
 import request from "supertest";
-import { createServer } from "../../../../../src/api/v1/utils/server.js"; // Update path as needed
+import { createServer } from "../../../../../src/api/v1/utils/test.server.js"; // Update path as needed
 import db from "../../../../../src/models/index.js";
 import { StatusCodes } from "http-status-codes";
 import { ROLES } from "../../../../../src/constants/roles/roles.js";

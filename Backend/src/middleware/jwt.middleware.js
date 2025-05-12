@@ -4,10 +4,13 @@ import { StatusCodes } from "http-status-codes";
 import messages from "../constants/message.js";
 
 // Load environment variables from .env file
-dotenv.config({ path: '../.env' });
+dotenv.config({ path: "../.env" });
 
 // Get the secret key from environment variables
-const secretKey = process.env.SECRET_KEY;
+// const secretKey = process.env.SECRET_KEY;
+
+// Get the secret key from environment variables
+const secretKey = process.env.JWT_SECRET || "fallback-secret-key-for-testing";
 
 // Function to encode user JWT
 export const encodeJwtToken = (email, user_id, role) => {

@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for models/productAttributes.model.js</title>
+    <title>Code coverage report for middleware/jwt.middleware.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../prettify.css" />
     <link rel="stylesheet" href="../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../index.html">All files</a> / <a href="index.html">models</a> productAttributes.model.js</h1>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">middleware</a> jwt.middleware.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">47.05% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>5/5</span>
+                <span class='fraction'>8/17</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">25% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>1/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/2</span>
+                <span class='fraction'>1/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">47.05% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>5/5</span>
+                <span class='fraction'>8/17</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -103,35 +103,18 @@
 <a name='L38'></a><a href='#L38'>38</a>
 <a name='L39'></a><a href='#L39'>39</a>
 <a name='L40'></a><a href='#L40'>40</a>
-<a name='L41'></a><a href='#L41'>41</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -143,45 +126,89 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { DataTypes } from "sequelize";
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+import { StatusCodes } from "http-status-codes";
+import messages from "../constants/message.js";
 &nbsp;
-export default (sequelize) =&gt; {
-  const Attribute = sequelize.define(
-    "Attribute",
-    {
-      product_attribute_id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true,
-      },
-      name: { type: DataTypes.STRING, allowNull: false },
-      data_type: {
-        type: DataTypes.ENUM("string", "int", "float", "enum"),
-        allowNull: false,
-      },
-      is_variant_level: { type: DataTypes.BOOLEAN, defaultValue: false },
-      created_by: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
-      updated_by: { type: DataTypes.UUID, allowNull: true }, // Changed to UUID
-    },
-    {
-      timestamps: true,
-      tableName: "Attributes",
-      indexes: [{ fields: ["created_by"] }, { fields: ["updated_by"] }],
-    }
-  );
+// Load environment variables from .env file
+dotenv.config({ path: "../.env" });
 &nbsp;
-  Attribute.associate = (models) =&gt; {
-    Attribute.belongsTo(models.User, {
-      foreignKey: "created_by",
-      as: "creator",
-    });
-    Attribute.belongsTo(models.User, {
-      foreignKey: "updated_by",
-      as: "updater",
-    });
-  };
+// Get the secret key from environment variables
+// const secretKey = process.env.SECRET_KEY;
 &nbsp;
-  return Attribute;
+// Get the secret key from environment variables
+const secretKey = process.env.JWT_SECRET || <span class="branch-1 cbranch-no" title="branch not covered" >"fallback-secret-key-for-testing";</span>
+&nbsp;
+// Function to encode user JWT
+export const encodeJwtToken = (email, user_id, role) =&gt; {
+  // Payload data to include in the token
+  const payload = { email, user_id, role };
+  // Options for the token (e.g., expiration time)
+  const options = { expiresIn: "10h" }; // Token expires in 10 hours
+&nbsp;
+  // Generate the token
+  const token = jwt.sign(payload, secretKey, options);
+  return token;
+};
+&nbsp;
+// Function to verify user JWT
+export const verifyJwtToken = <span class="fstat-no" title="function not covered" >(r</span>eq, res, next) =&gt; {
+  // Get the token from the request headers
+  const token = <span class="cstat-no" title="statement not covered" >req.headers.authorization?.split(" ")[1];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (!token) {</span>
+<span class="cstat-no" title="statement not covered" >    return res</span>
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ error: messages.ACCESS_DENIED_NO_TOKEN });
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  try {</span>
+    // Verify the token and attach the decoded data to the request object
+    const decoded = <span class="cstat-no" title="statement not covered" >jwt.verify(token, secretKey);</span>
+<span class="cstat-no" title="statement not covered" >    req.user = decoded; </span>// Attach the decoded payload to the request object
+<span class="cstat-no" title="statement not covered" >    next(); </span>// Proceed to the next middleware or route handler
+  } catch (error) {
+<span class="cstat-no" title="statement not covered" >    console.error("JWT verification error:", error);</span>
+<span class="cstat-no" title="statement not covered" >    return res</span>
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ error: messages.INVALID_TOKEN });
+  }
 };
 &nbsp;</pre></td></tr></table></pre>
 
