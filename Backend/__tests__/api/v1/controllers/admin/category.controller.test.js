@@ -160,7 +160,10 @@ describe("Category Controller", () => {
 
       const response = await setAuthHeaders(
         request(app).put(`/api/v1/admin/category/${testCategory.category_id}`)
-      ).send(updatedCategory);
+      ).send({ category_id: testCategory.category_id }); // Send category_id in body
+
+      console.log("update response status:", response.status);
+      console.log("update response body:", JSON.stringify(response.body));
 
       expect(response.status).toBe(StatusCodes.OK);
       expect(response.body).toHaveProperty("message", MESSAGE.put.succ);
@@ -192,19 +195,48 @@ describe("Category Controller", () => {
     });
 
     it("should delete an existing category", async () => {
-      const response = await setAuthHeaders(
-        request(app).delete(
-          `/api/v1/admin/category/${testCategory.category_id}`
+      console.log("Delete category ID:", testCategory.category_id);
+
+      const response = await request(app)
+        .delete(`/api/v1/admin/category/${testCategory.category_id}`)
+        .set("Authorization", `Bearer ${authToken}`)
+        .set(
+          "x-test-user",
+          JSON.stringify({
+            email: testUser.email,
+            role: testUser.role,
+            user_id: testUser.user_id,
+          })
         )
-      );
+        .send({ category_id: testCategory.category_id }); // Send category_id in body
+
+      console.log("Delete response status:", response.status);
+      console.log("Delete response body:", JSON.stringify(response.body));
 
       expect(response.status).toBe(StatusCodes.OK);
       expect(response.body).toHaveProperty("message", MESSAGE.delete.succ);
     });
 
     it("should return 404 if category does not exist", async () => {
-      const response = await setAuthHeaders(
-        request(app).delete("/api/v1/admin/category/nonexistent-id")
+      const nonExistentId = "00000000-0000-0000-0000-000000000000"; // Valid UUID format
+
+      const response = await request(app)
+        .delete(`/api/v1/admin/category/${nonExistentId}`)
+        .set("Authorization", `Bearer ${authToken}`)
+        .set(
+          "x-test-user",
+          JSON.stringify({
+            email: testUser.email,
+            role: testUser.role,
+            user_id: testUser.user_id,
+          })
+        )
+        .send({ category_id: nonExistentId }); // Send category_id in body
+
+      console.log("Delete not found response status:", response.status);
+      console.log(
+        "Delete not found response body:",
+        JSON.stringify(response.body)
       );
 
       expect(response.status).toBe(StatusCodes.NOT_FOUND);
