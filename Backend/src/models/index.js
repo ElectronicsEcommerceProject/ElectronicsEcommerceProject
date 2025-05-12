@@ -1,10 +1,20 @@
 import dotenv from "dotenv";
 import { Sequelize } from "sequelize";
 import dbConfigFile from "../config/db.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
-dotenv.config({ path: "../.env" });
+// Get current directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables - don't do this here as it's already loaded by Jest setup
+// dotenv.config({ path: "../.env" });
 
 const env = process.env.NODE_ENV || "development";
+console.log(`Current environment: ${env}`); // Debug log
+
+// Get database config for current environment
 const dbConfig = dbConfigFile[env];
 
 if (!dbConfig) {
@@ -12,6 +22,15 @@ if (!dbConfig) {
     `Database configuration for environment "${env}" is missing.`
   );
 }
+
+// Log config for debugging
+console.log("Database config:", {
+  database: dbConfig.database,
+  username: dbConfig.username,
+  host: dbConfig.host,
+  dialect: dbConfig.dialect,
+  port: dbConfig.port,
+});
 
 // Initialize Sequelize
 const sequelize = new Sequelize(
