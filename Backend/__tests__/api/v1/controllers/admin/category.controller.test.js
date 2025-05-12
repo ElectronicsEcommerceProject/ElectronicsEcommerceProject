@@ -41,7 +41,6 @@ describe("Category Controller", () => {
         name: "Electronics",
         slug: "electronics",
         target_role: "both",
-        is_active: true,
         created_by: testUser.user_id,
       });
     } catch (error) {
@@ -60,28 +59,29 @@ describe("Category Controller", () => {
     }
   });
 
+  // Helper function to set authentication headers for each request
+  const setAuthHeaders = (request) => {
+    return request.set("Authorization", `Bearer ${authToken}`).set(
+      "x-test-user",
+      JSON.stringify({
+        email: testUser.email,
+        role: testUser.role,
+        user_id: testUser.user_id,
+      })
+    );
+  };
+
   describe("POST /api/v1/admin/category", () => {
     it("should add a new category", async () => {
       const newCategory = {
         name: "Mobiles",
         slug: "mobiles",
         target_role: "customer",
-        is_active: true,
       };
 
-      // Mock req.user by adding a custom header that test.server.js can use
-      const response = await request(app)
-        .post("/api/v1/admin/category")
-        .set("Authorization", `Bearer ${authToken}`)
-        .set(
-          "x-test-user",
-          JSON.stringify({
-            email: testUser.email,
-            role: testUser.role,
-            user_id: testUser.user_id,
-          })
-        )
-        .send(newCategory);
+      const response = await setAuthHeaders(
+        request(app).post("/api/v1/admin/category")
+      ).send(newCategory);
 
       expect(response.status).toBe(StatusCodes.CREATED);
       expect(response.body).toHaveProperty("message", MESSAGE.post.succ);
@@ -90,18 +90,9 @@ describe("Category Controller", () => {
     });
 
     it("should fail when required fields are missing", async () => {
-      const response = await request(app)
-        .post("/api/v1/admin/category")
-        .set("Authorization", `Bearer ${authToken}`)
-        .set(
-          "x-test-user",
-          JSON.stringify({
-            email: testUser.email,
-            role: testUser.role,
-            user_id: testUser.user_id,
-          })
-        )
-        .send({});
+      const response = await setAuthHeaders(
+        request(app).post("/api/v1/admin/category")
+      ).send({});
 
       expect(response.status).toBe(StatusCodes.BAD_REQUEST);
       expect(response.body).toHaveProperty("message");
@@ -114,18 +105,9 @@ describe("Category Controller", () => {
         target_role: "invalid", // Not one of 'customer', 'retailer', or 'both'
       };
 
-      const response = await request(app)
-        .post("/api/v1/admin/category")
-        .set("Authorization", `Bearer ${authToken}`)
-        .set(
-          "x-test-user",
-          JSON.stringify({
-            email: testUser.email,
-            role: testUser.role,
-            user_id: testUser.user_id,
-          })
-        )
-        .send(invalidCategory);
+      const response = await setAuthHeaders(
+        request(app).post("/api/v1/admin/category")
+      ).send(invalidCategory);
 
       expect(response.status).toBe(StatusCodes.BAD_REQUEST);
       expect(response.body).toHaveProperty("message");
@@ -134,17 +116,9 @@ describe("Category Controller", () => {
 
   describe("GET /api/v1/admin/category", () => {
     it("should fetch all categories for admin", async () => {
-      const response = await request(app)
-        .get("/api/v1/admin/category")
-        .set("Authorization", `Bearer ${authToken}`)
-        .set(
-          "x-test-user",
-          JSON.stringify({
-            email: testUser.email,
-            role: testUser.role,
-            user_id: testUser.user_id,
-          })
-        );
+      const response = await setAuthHeaders(
+        request(app).get("/api/v1/admin/category")
+      );
 
       expect(response.status).toBe(StatusCodes.OK);
       expect(response.body).toHaveProperty("message", MESSAGE.get.succ);
@@ -156,17 +130,9 @@ describe("Category Controller", () => {
       // Delete all categories first
       await db.Category.destroy({ where: {} });
 
-      const response = await request(app)
-        .get("/api/v1/admin/category")
-        .set("Authorization", `Bearer ${authToken}`)
-        .set(
-          "x-test-user",
-          JSON.stringify({
-            email: testUser.email,
-            role: testUser.role,
-            user_id: testUser.user_id,
-          })
-        );
+      const response = await setAuthHeaders(
+        request(app).get("/api/v1/admin/category")
+      );
 
       expect(response.status).toBe(StatusCodes.NOT_FOUND);
       expect(response.body).toHaveProperty("message", MESSAGE.get.empty);
@@ -181,7 +147,6 @@ describe("Category Controller", () => {
           name: "Electronics",
           slug: "electronics",
           target_role: "both",
-          is_active: true,
           created_by: testUser.user_id,
         });
       }
@@ -193,18 +158,9 @@ describe("Category Controller", () => {
         slug: "updated-electronics",
       };
 
-      const response = await request(app)
-        .put(`/api/v1/admin/category/${testCategory.category_id}`)
-        .set("Authorization", `Bearer ${authToken}`)
-        .set(
-          "x-test-user",
-          JSON.stringify({
-            email: testUser.email,
-            role: testUser.role,
-            user_id: testUser.user_id,
-          })
-        )
-        .send(updatedCategory);
+      const response = await setAuthHeaders(
+        request(app).put(`/api/v1/admin/category/${testCategory.category_id}`)
+      ).send(updatedCategory);
 
       expect(response.status).toBe(StatusCodes.OK);
       expect(response.body).toHaveProperty("message", MESSAGE.put.succ);
@@ -213,18 +169,9 @@ describe("Category Controller", () => {
     });
 
     it("should return 404 if category does not exist", async () => {
-      const response = await request(app)
-        .put("/api/v1/admin/category/nonexistent-id")
-        .set("Authorization", `Bearer ${authToken}`)
-        .set(
-          "x-test-user",
-          JSON.stringify({
-            email: testUser.email,
-            role: testUser.role,
-            user_id: testUser.user_id,
-          })
-        )
-        .send({ name: "Nonexistent" });
+      const response = await setAuthHeaders(
+        request(app).put("/api/v1/admin/category/nonexistent-id")
+      ).send({ name: "Nonexistent" });
 
       expect(response.status).toBe(StatusCodes.NOT_FOUND);
       expect(response.body).toHaveProperty("message", MESSAGE.none);
@@ -239,41 +186,26 @@ describe("Category Controller", () => {
           name: "Electronics",
           slug: "electronics",
           target_role: "both",
-          is_active: true,
           created_by: testUser.user_id,
         });
       }
     });
 
     it("should delete an existing category", async () => {
-      const response = await request(app)
-        .delete(`/api/v1/admin/category/${testCategory.category_id}`)
-        .set("Authorization", `Bearer ${authToken}`)
-        .set(
-          "x-test-user",
-          JSON.stringify({
-            email: testUser.email,
-            role: testUser.role,
-            user_id: testUser.user_id,
-          })
-        );
+      const response = await setAuthHeaders(
+        request(app).delete(
+          `/api/v1/admin/category/${testCategory.category_id}`
+        )
+      );
 
       expect(response.status).toBe(StatusCodes.OK);
       expect(response.body).toHaveProperty("message", MESSAGE.delete.succ);
     });
 
     it("should return 404 if category does not exist", async () => {
-      const response = await request(app)
-        .delete("/api/v1/admin/category/nonexistent-id")
-        .set("Authorization", `Bearer ${authToken}`)
-        .set(
-          "x-test-user",
-          JSON.stringify({
-            email: testUser.email,
-            role: testUser.role,
-            user_id: testUser.user_id,
-          })
-        );
+      const response = await setAuthHeaders(
+        request(app).delete("/api/v1/admin/category/nonexistent-id")
+      );
 
       expect(response.status).toBe(StatusCodes.NOT_FOUND);
       expect(response.body).toHaveProperty("message", MESSAGE.none);
