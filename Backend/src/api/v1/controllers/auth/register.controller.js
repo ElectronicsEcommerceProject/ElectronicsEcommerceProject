@@ -1,8 +1,8 @@
-import bcrypt from 'bcrypt';
-import db from '../../../../models/index.js'; // Import the database models
-import services from '../../../../services/index.js';
-import { StatusCodes } from 'http-status-codes';
-import MESSAGE from '../../../../constants/message.js';
+import bcrypt from "bcrypt";
+import db from "../../../../models/index.js"; // Import the database models
+import services from "../../../../services/index.js";
+import { StatusCodes } from "http-status-codes";
+import MESSAGE from "../../../../constants/message.js";
 const { User } = db; // Extract the User model
 
 const register = async (req, res) => {
@@ -10,15 +10,22 @@ const register = async (req, res) => {
     const { name, email, phone_number, password, role } = req.body;
 
     // Check if the user already exists (only after validation passes)
-    const existingUser = await services.auth.isEmailOrPhoneRegistered(email, phone_number);
+    const existingUser = await services.auth.isEmailOrPhoneRegistered(
+      email,
+      phone_number
+    );
     if (existingUser) {
-      return res.status(StatusCodes.CONFLICT).json({ message: MESSAGE.custom('User already exists with this email.') });
-    }
-
-    // Check if the user already exists (only after validation passes)
-    const existingPhoneNumber = await User.findOne({ where: { phone_number } });
-    if (existingPhoneNumber) {
-      return res.status(StatusCodes.CONFLICT).json({ message: MESSAGE.custom('User already exists with this phone_number.') });
+      if (existingUser.field === "email") {
+        return res.status(StatusCodes.CONFLICT).json({
+          message: MESSAGE.custom("User already exists with this email."),
+        });
+      } else if (existingUser.field === "phone") {
+        return res.status(StatusCodes.CONFLICT).json({
+          message: MESSAGE.custom(
+            "User already exists with this phone_number."
+          ),
+        });
+      }
     }
 
     // Hash the password
@@ -39,20 +46,20 @@ const register = async (req, res) => {
 
     res.status(StatusCodes.CREATED).json({
       message: MESSAGE.post.succ,
-      user: userResponse
+      user: userResponse,
     });
   } catch (error) {
-    console.error('Error during registration:', error);
+    console.error("Error during registration:", error);
     // Check for specific Sequelize validation errors (optional but good)
-    if (error.name === 'SequelizeValidationError') {
-      const messages = error.errors.map(err => err.message);
+    if (error.name === "SequelizeValidationError") {
+      const messages = error.errors.map((err) => err.message);
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: MESSAGE.custom('Validation Error'),
-        errors: messages
+        message: MESSAGE.custom("Validation Error"),
+        errors: messages,
       });
     }
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: MESSAGE.error
+      message: MESSAGE.error,
     });
   }
 };
