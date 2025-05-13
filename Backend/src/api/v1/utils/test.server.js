@@ -6,8 +6,8 @@ import {
   registerController,
   loginController,
   adminCategoryController,
+  adminBrandController,
 } from "../controllers/index.js";
-
 /**
  * Creates and configures an Express server instance
  * This is used both by the main server and for testing
@@ -27,7 +27,7 @@ export function createServer() {
     if (testUserHeader) {
       try {
         req.user = JSON.parse(testUserHeader);
-        console.log("Test user set:", req.user); // Debug logging
+        // console.log("Test user set:", req.user); // Debug logging
       } catch (error) {
         console.error("Error parsing test user header:", error);
       }
@@ -83,7 +83,7 @@ export function createServer() {
   // Add a new category
   app.post(
     "/api/v1/admin/category",
-    validateRequest(validators.category?.categoryValidator),
+    validateRequest(validators.category.categoryValidator),
     adminCategoryController.addCategory
   );
 
@@ -101,6 +101,28 @@ export function createServer() {
     "/api/v1/admin/category/:id",
     validateRequest(validators.category?.category_id),
     adminCategoryController.deleteCategory
+  );
+
+  // Brand routes
+  app.post(
+    "/api/v1/admin/brands",
+    validateRequest(validators.brand.brandValidator),
+    adminBrandController.addBrand
+  );
+
+  app.get("/api/v1/admin/brands", adminBrandController.getAllBrands);
+
+  app.put(
+    "/api/v1/admin/brands/:id",
+    validateRequest(validators.brand.brand_id),
+    // validateRequest(validators.brand.brandUpdateValidator),
+    adminBrandController.updateBrand
+  );
+
+  app.delete(
+    "/api/v1/admin/brands/:id",
+    validateRequest(validators.brand?.brand_id),
+    adminBrandController.deleteBrand
   );
 
   // If no routes match

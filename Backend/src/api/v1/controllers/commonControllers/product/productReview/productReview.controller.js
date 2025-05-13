@@ -134,7 +134,7 @@ export const getProductReviews = async (req, res) => {
       order: [["createdAt", "DESC"]],
     });
 
-    console.log("test", reviews);
+    // console.log("test", reviews);
 
     // Calculate average rating
     const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);

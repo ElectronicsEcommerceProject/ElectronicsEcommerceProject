@@ -168,8 +168,8 @@ describe("Category Controller", () => {
         category_id: updatedCategory.category_id,
       });
 
-      console.log("update response status:", response.status);
-      console.log("update response body:", JSON.stringify(response.body));
+      // console.log("update response status:", response.status);
+      // console.log("update response body:", JSON.stringify(response.body));
 
       expect(response.status).toBe(StatusCodes.OK);
       expect(response.body).toHaveProperty("message", MESSAGE.put.succ);
@@ -201,7 +201,7 @@ describe("Category Controller", () => {
     });
 
     it("should delete an existing category", async () => {
-      console.log("Delete category ID:", testCategory.category_id);
+      // console.log("Delete category ID:", testCategory.category_id);
 
       const response = await request(app)
         .delete(`/api/v1/admin/category/${testCategory.category_id}`)
@@ -216,8 +216,8 @@ describe("Category Controller", () => {
         )
         .send({ category_id: testCategory.category_id }); // Send category_id in body
 
-      console.log("Delete response status:", response.status);
-      console.log("Delete response body:", JSON.stringify(response.body));
+      // console.log("Delete response status:", response.status);
+      // console.log("Delete response body:", JSON.stringify(response.body));
 
       expect(response.status).toBe(StatusCodes.OK);
       expect(response.body).toHaveProperty("message", MESSAGE.delete.succ);
@@ -239,11 +239,11 @@ describe("Category Controller", () => {
         )
         .send({ category_id: nonExistentId }); // Send category_id in body
 
-      console.log("Delete not found response status:", response.status);
-      console.log(
-        "Delete not found response body:",
-        JSON.stringify(response.body)
-      );
+      // console.log("Delete not found response status:", response.status);
+      // console.log(
+      //   "Delete not found response body:",
+      //   JSON.stringify(response.body)
+      // );
 
       expect(response.status).toBe(StatusCodes.NOT_FOUND);
       expect(response.body).toHaveProperty("message", MESSAGE.none);

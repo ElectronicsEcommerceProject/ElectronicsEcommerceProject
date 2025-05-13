@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 // dotenv.config({ path: "../.env" });
 
 const env = process.env.NODE_ENV || "development";
-console.log(`Current environment: ${env}`); // Debug log
+// console.log(`Current environment: ${env}`); // Debug log
 
 // Get database config for current environment
 const dbConfig = dbConfigFile[env];

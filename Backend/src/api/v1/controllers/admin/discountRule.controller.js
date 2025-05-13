@@ -27,7 +27,7 @@ export const createDiscountRule = async (req, res) => {
       where: { email: req.user.email, role: "admin" },
     });
 
-    console.log("test", admin);
+    // console.log("test", admin);
 
     if (!admin) {
       return res.status(StatusCodes.FORBIDDEN).json({

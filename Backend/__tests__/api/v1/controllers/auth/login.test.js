@@ -32,10 +32,10 @@ export const loginTests = () =>
     beforeAll(async () => {
       try {
         // Verify JWT_SECRET is set
-        console.log(
-          "JWT_SECRET for tests:",
-          process.env.JWT_SECRET ? "[SET]" : "[NOT SET]"
-        );
+        // console.log(
+        //   "JWT_SECRET for tests:",
+        //   process.env.JWT_SECRET ? "[SET]" : "[NOT SET]"
+        // );
 
         // Hash the password for storage
         hashedPassword = await bcrypt.hash(testUser.password, 10);

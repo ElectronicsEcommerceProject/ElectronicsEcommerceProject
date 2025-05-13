@@ -12,18 +12,18 @@ process.env.NODE_ENV = "test";
 
 // Load environment variables from .env.test file
 const envPath = join(__dirname, ".env.test");
-console.log("Loading environment from:", envPath);
+// console.log("Loading environment from:", envPath);
 dotenv.config({
   path: envPath,
   override: true,
 });
 
 // Debug: Log database connection details
-console.log("Test Database Configuration:");
-console.log("- DB_HOST:", process.env.DB_HOST);
-console.log("- DB_USERNAME:", process.env.DB_USERNAME);
-console.log("- DB_PASSWORD:", process.env.DB_PASSWORD ? "[SET]" : "[NOT SET]");
-console.log("- DB_DATABASE:", process.env.DB_DATABASE);
+// console.log("Test Database Configuration:");
+// console.log("- DB_HOST:", process.env.DB_HOST);
+// console.log("- DB_USERNAME:", process.env.DB_USERNAME);
+// console.log("- DB_PASSWORD:", process.env.DB_PASSWORD ? "[SET]" : "[NOT SET]");
+// console.log("- DB_DATABASE:", process.env.DB_DATABASE);
 
 // Set up global variables and mocks if needed
 global.console = {

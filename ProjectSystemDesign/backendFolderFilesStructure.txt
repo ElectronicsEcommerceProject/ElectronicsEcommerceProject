@@ -1,0 +1,195 @@
+├── __tests__  # Testing directory for all backend components
+│  ├── api  # Tests for API endpoints
+│  ├── auth  # Tests for authentication functionality
+│  ├── config  # Tests for configuration files
+│  ├── controllers  # Tests for controller logic
+│  │  └── auth.controller.test.js  # Tests for authentication controllers
+│  ├── database  # Tests for database connections and operations
+│  │  └── database.test.js  # Tests database configuration
+│  ├── examples  # Example test templates
+│  ├── helpers  # Helper functions for testing
+│  │  └── test-helpers.js  # Utility functions for tests
+│  ├── mocks  # Mock data and functions for tests
+│  ├── models  # Tests for database models
+│  ├── setup.js  # Global setup for tests
+│  ├── template  # Templates for creating new tests
+│  └── utils  # Utility functions for tests
+├── app.js  # Main Express application setup with middleware and route initialization
+├── config  # Global configuration files
+│  ├── database.js  # Database connection configuration for different environments
+│  └── database.test.js  # Tests for database configuration
+├── constants  # Application-wide constants
+│  └── message.js  # Standard messages for API responses
+├── controllers  # Root-level controllers (legacy)
+│  └── auth.controller.js  # Authentication controller (may be deprecated)
+├── index.js  # Entry point that starts the Express server
+├── jest.setup.js  # Jest testing framework configuration
+├── models  # Root-level models (may be deprecated)
+│  └── user.model.js  # User model definition (may be deprecated)
+├── package.json  # Project dependencies and scripts
+├── scripts  # Utility scripts for deployment, database seeding, etc.
+├── server.js  # Alternative server setup with database connection and syncing
+├── src  # Main source code directory
+│  ├── api  # API endpoints organized by version
+│  │  └── v1  # Version 1 of the API
+│  │     ├── controllers  # Controllers organized by user role and functionality
+│  │     │  ├── admin  # Admin-specific controllers for managing products, users, etc.
+│  │     │  │  ├── brand.controller.js  # Manages product brands (CRUD operations)
+│  │     │  │  ├── cart.controller.js  # Admin operations for shopping carts
+│  │     │  │  ├── category.controller.js  # Manages product categories (CRUD operations)
+│  │     │  │  ├── coupon.controller.js  # Coupon management operations
+│  │     │  │  ├── couponUser.controller.js  # Links coupons to specific users
+│  │     │  │  ├── discountRule.controller.js  # Manages discount rules for products
+│  │     │  │  ├── product.controller.js  # Core product management operations
+│  │     │  │  ├── productAttributes.controller.js  # Manages product attributes (color, size, etc.)
+│  │     │  │  ├── productAttributesValues.controller.js  # Manages values for product attributes
+│  │     │  │  ├── productMedia.controller.js  # Handles product images and media
+│  │     │  │  ├── productMediaUrl.controller.js  # Manages URLs for product media
+│  │     │  │  ├── productVariant.controller.js  # Manages product variants (different configurations)
+│  │     │  │  ├── productVariantAttributeValues.controller.js  # Links variants to attribute values
+│  │     │  │  ├── review.controller.js  # Manages product reviews
+│  │     │  │  ├── stockAlert.controller.js  # Handles low stock notifications
+│  │     │  │  └── user.controller.js  # User management for admins
+│  │     │  ├── auth  # Authentication controllers
+│  │     │  │  ├── login.controller.js  # Handles user login with JWT token generation
+│  │     │  │  └── register.controller.js  # Handles user registration with validation
+│  │     │  ├── commonControllers  # Controllers shared across user roles
+│  │     │  │  ├── address  # Address management
+│  │     │  │  │  └── address.controller.js  # CRUD operations for user addresses
+│  │     │  │  ├── cart  # Shopping cart functionality
+│  │     │  │  │  ├── cart.controller.js  # Manages shopping carts
+│  │     │  │  │  └── cartItem.controller.js  # Manages items within carts
+│  │     │  │  ├── coupon  # Coupon redemption functionality
+│  │     │  │  │  └── couponRedemption.controller.js  # Handles coupon usage
+│  │     │  │  ├── order  # Order processing
+│  │     │  │  │  ├── order.controller.js  # Manages orders (create, update, etc.)
+│  │     │  │  │  └── orderItem.controller.js  # Manages items within orders
+│  │     │  │  ├── product  # Product-related functionality
+│  │     │  │  │  └── productReview  # Product review management
+│  │     │  │  │     └── productReview.controller.js  # Handles product reviews
+│  │     │  │  ├── profile  # User profile management
+│  │     │  │  │  └── profile.controller.js  # Handles user profile operations
+│  │     │  │  └── wishList  # Wishlist functionality
+│  │     │  │     ├── wishList.controller.js  # Manages user wishlists
+│  │     │  │     └── wishListItem.controller.js  # Manages items in wishlists
+│  │     │  ├── customer  # Customer-specific controllers
+│  │     │  │  ├── cart.controller.js  # Customer shopping cart operations
+│  │     │  │  ├── order.controller.js  # Customer order operations
+│  │     │  │  ├── product.controller.js  # Customer product viewing operations
+│  │     │  │  ├── review.controller.js  # Customer review operations
+│  │     │  │  └── wishlist.controller.js  # Customer wishlist operations
+│  │     │  ├── index.js  # Exports all controllers
+│  │     │  └── retailer  # Retailer-specific controllers (for sellers)
+│  │     │     ├── cart.controller.js  # Retailer cart operations
+│  │     │     ├── order.controller.js  # Retailer order management
+│  │     │     ├── product.controller.js  # Retailer product management
+│  │     │     ├── review.controller.js  # Retailer review management
+│  │     │     └── wishlist.controller.js  # Retailer wishlist operations
+│  │     └── validators  # Input validation for all API routes
+│  │        ├── auth  # Authentication validators
+│  │        │  ├── login.validators.js  # Validates login credentials
+│  │        │  └── register.validators.js  # Validates registration data
+│  │        ├── brands  # Brand validators
+│  │        │  └── brands.validators.js  # Validates brand data
+│  │        ├── cart  # Cart validators
+│  │        │  ├── cart.validators.js  # Validates cart operations
+│  │        │  └── cartItem.validators.js  # Validates cart item operations
+│  │        ├── category  # Category validators
+│  │        │  └── category.validators.js  # Validates category data
+│  │        ├── coupon  # Coupon validators
+│  │        │  ├── coupon.validators.js  # Validates coupon data
+│  │        │  ├── couponRedemption.validator.js  # Validates coupon redemption
+│  │        │  └── couponUser.validators.js  # Validates user-coupon linking
+│  │        ├── discountRule  # Discount rule validators
+│  │        │  └── discountRule.validator.js  # Validates discount rules
+│  │        ├── index.js  # Exports all validators
+│  │        ├── order  # Order validators
+│  │        │  ├── order.validators.js  # Validates order data
+│  │        │  └── orderItem.validators.js  # Validates order item data
+│  │        ├── product  # Product validators
+│  │        │  ├── product.validators.js  # Validates product data
+│  │        │  ├── productAttributes  # Product attribute validators
+│  │        │  │  └── productAttributes.validators.js  # Validates product attributes
+│  │        │  ├── productAttributesValues  # Product attribute values validators
+│  │        │  │  └── productAttributesValues.validators.js  # Validates attribute values
+│  │        │  ├── productMedia  # Product media validators
+│  │        │  │  └── productMedia.validators.js  # Validates product media
+│  │        │  ├── productMediaUrl  # Product media URL validators
+│  │        │  │  └── productMediaUrl.validators.js  # Validates media URLs
+│  │        │  ├── productReview  # Product review validators
+│  │        │  │  └── productReview.validators.js  # Validates product reviews
+│  │        │  ├── productVariant  # Product variant validators
+│  │        │  │  └── productVariant.validators.js  # Validates product variants
+│  │        │  └── productVariantAttributeValues  # Product variant attribute values validators
+│  │        │     └── productVariantAttributeValues.validators.js  # Validates variant attributes
+│  │        ├── profileAndAddress  # Profile and address validators
+│  │        │  ├── address.validators.js  # Validates address data
+│  │        │  └── profile.validators.js  # Validates profile data
+│  │        ├── stockAlert  # Stock alert validators
+│  │        │  └── stockAlert.validators.js  # Validates stock alerts
+│  │        └── wishList  # Wishlist validators
+│  │           ├── wishList.validators.js  # Validates wishlist operations
+│  │           └── wishListItem.validators.js  # Validates wishlist item operations
+│  ├── config  # Application configuration
+│  │  └── db.js  # Database configuration with environment-specific settings
+│  ├── constants  # Application constants
+│  │  ├── message.js  # Standard response messages
+│  │  ├── roles  # User role definitions
+│  │  │  └── roles.js  # Defines user roles (admin, customer, retailer)
+│  │  ├── roles.js  # Role constants
+│  │  └── status.js  # HTTP status codes and application status constants
+│  ├── middleware  # Express middleware
+│  │  ├── AdminRoleCheck.middleware.js  # Verifies admin role for protected routes
+│  │  ├── auth.middleware.js  # Authentication middleware for protected routes
+│  │  ├── index.js  # Exports all middleware
+│  │  ├── jwt.middleware.js  # JWT token generation and verification
+│  │  ├── multer.middleware.js  # File upload handling with Multer
+│  │  └── validator  # Input validation middleware
+│  │     └── validator.middleware.js  # Validates incoming requests
+│  ├── models  # Sequelize models for database tables
+│  │  ├── address.model.js  # Address data model
+│  │  ├── cart.model.js  # Shopping cart model
+│  │  ├── cartItem.model.js  # Cart item model
+│  │  ├── category.model.js  # Product category model
+│  │  ├── coupon.model.js  # Coupon model
+│  │  ├── couponRedemption.model.js  # Coupon usage model
+│  │  ├── couponUser.model.js  # Links coupons to users
+│  │  ├── discountRule.model.js  # Discount rules model
+│  │  ├── index.js  # Initializes and connects all models
+│  │  ├── order.model.js  # Order model
+│  │  ├── orderItem.model.js  # Order item model
+│  │  ├── owner.model.js  # Store owner model
+│  │  ├── payment.model.js  # Payment information model
+│  │  ├── product.model.js  # Core product model
+│  │  ├── productAttribute.model.js  # Product attribute model
+│  │  ├── productAttributes.model.js  # Another product attribute model
+│  │  ├── productAttributesValues.model.js  # Attribute values model
+│  │  ├── productBrand.model.js  # Product brand model
+│  │  ├── productMedia.model.js  # Product images/media model
+│  │  ├── productMediaURL.model.js  # URLs for product media
+│  │  ├── productReview.model.js  # Product reviews model
+│  │  ├── productVariants.model.js  # Product variants model
+│  │  ├── stockAlert.model.js  # Low stock notification model
+│  │  ├── store.model.js  # Store information model
+│  │  ├── user.model.js  # User account model with role-based access
+│  │  ├── variantAttributeValue.model.js  # Links variants to attribute values
+│  │  ├── wishlist.model.js  # Wishlist model
+│  │  └── wishListItem.model.js  # Wishlist item model
+│  ├── scripts  # Utility scripts
+│  ├── services  # Business logic layer
+│  │  ├── auth  # Authentication services
+│  │  │  └── auth.service.js  # User authentication logic
+│  │  └── index.js  # Exports all services
+│  ├── uploads  # File upload directory
+│  │  └── profile_images  # User profile images
+│  └── utils  # Utility functions
+│     ├── email.js  # Email sending functionality
+│     └── orderUtils.js  # Order processing utilities
+└── uploads  # Root-level uploads directory
+   └── profile_images  # User profile images storage
+      ├── profileImage-1746234050560-471733520.png  # Uploaded profile images
+      ├── profileImage-1746234438796-377806771.png
+      ├── profileImage-1746234468729-477411316.png
+      ├── profileImage-1746234512054-167045382.png
+      ├── profileImage-1746234527015-356714020.png
+      └── profileImage-1746234627472-39109167.png
