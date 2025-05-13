@@ -7,6 +7,7 @@ import {
   loginController,
   adminCategoryController,
   adminBrandController,
+  adminAttributeController,
 } from "../controllers/index.js";
 /**
  * Creates and configures an Express server instance
@@ -118,6 +119,41 @@ export function createServer() {
     "/api/v1/admin/brands/:id",
     validateRequest(validators.brand?.brand_id),
     adminBrandController.deleteBrand
+  );
+
+  //product-Attributes routes...
+
+  app.post(
+    "/api/v1/admin/product-Attributes",
+    validateRequest(validators.attribute.attributeValidator),
+    adminAttributeController.addAttribute
+  );
+
+  app.get(
+    "/api/v1/admin/product-Attributes",
+    adminAttributeController.getAllAttributes
+  );
+
+  app.get(
+    "/api/v1/admin/product-Attributes/:id",
+    //i want to conole id
+    // (req, res, next) => {
+    //   console.log("ID from request params:", req.params.id);
+    //   next();
+    // },
+    validateRequest(validators.attribute.id),
+    adminAttributeController.getAttributeById
+  );
+
+  app.put(
+    "/api/v1/admin/product-Attributes/:id",
+    // validateRequest(validators.attribute.id),
+    adminAttributeController.updateAttribute
+  );
+
+  app.delete(
+    "/api/v1/admin/product-Attributes/:id",
+    adminAttributeController.deleteAttribute
   );
 
   // If no routes match

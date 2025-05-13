@@ -89,7 +89,7 @@ const getAttributeById = async (req, res) => {
     if (!attribute) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: MESSAGE.get.none });
+        .json({ message: MESSAGE.get.fail });
     }
 
     res.status(StatusCodes.OK).json({
@@ -114,7 +114,7 @@ const updateAttribute = async (req, res) => {
     if (!attribute) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: MESSAGE.get.none });
+        .json({ message: MESSAGE.get.fail });
     }
 
     // Get the user ID for updated_by
@@ -155,7 +155,7 @@ const deleteAttribute = async (req, res) => {
     if (!attribute) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: MESSAGE.get.none });
+        .json({ message: MESSAGE.get.fail });
     }
 
     await attribute.destroy();
