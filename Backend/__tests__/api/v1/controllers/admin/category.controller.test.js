@@ -5,6 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import MESSAGE from "../../../../../src/constants/message.js";
 import jwt from "jsonwebtoken";
 import { ROLES } from "../../../../../src/constants/roles/roles.js";
+import { category_id } from "../../../../../src/api/v1/validators/category/category.validators.js";
 
 const app = createServer();
 
@@ -156,11 +157,16 @@ describe("Category Controller", () => {
       const updatedCategory = {
         name: "Updated Electronics",
         slug: "updated-electronics",
+        category_id: testCategory.category_id,
       };
 
       const response = await setAuthHeaders(
         request(app).put(`/api/v1/admin/category/${testCategory.category_id}`)
-      ).send({ category_id: testCategory.category_id }); // Send category_id in body
+      ).send({
+        name: updatedCategory.name,
+        slug: updatedCategory.slug,
+        category_id: updatedCategory.category_id,
+      });
 
       console.log("update response status:", response.status);
       console.log("update response body:", JSON.stringify(response.body));

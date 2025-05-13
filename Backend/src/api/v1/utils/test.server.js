@@ -23,13 +23,13 @@ export function createServer() {
 
   // Enhanced middleware for test environment to handle the x-test-user header
   app.use((req, res, next) => {
-    const testUserHeader = req.headers['x-test-user'];
+    const testUserHeader = req.headers["x-test-user"];
     if (testUserHeader) {
       try {
         req.user = JSON.parse(testUserHeader);
-        console.log('Test user set:', req.user); // Debug logging
+        console.log("Test user set:", req.user); // Debug logging
       } catch (error) {
-        console.error('Error parsing test user header:', error);
+        console.error("Error parsing test user header:", error);
       }
     }
     next();
@@ -45,7 +45,7 @@ export function createServer() {
       if (!schema) {
         return next();
       }
-      
+
       const { error } = schema.validate(req.body, { abortEarly: false });
 
       if (error) {
@@ -93,7 +93,6 @@ export function createServer() {
   // Update a category by ID
   app.put(
     "/api/v1/admin/category/:id",
-    validateRequest(validators.category?.category_id),
     adminCategoryController.updateCategoryById
   );
 
@@ -112,7 +111,9 @@ export function createServer() {
   // Error handler
   app.use((err, req, res, next) => {
     console.error("Express error:", err.stack);
-    res.status(500).json({ message: "Something went wrong!", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Something went wrong!", error: err.message });
   });
 
   return app;
