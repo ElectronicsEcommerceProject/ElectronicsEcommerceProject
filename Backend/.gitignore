@@ -27,4 +27,4 @@ Thumbs.db
 .qodo/
 
 # Ignore all coverage reports
-Backend/coverage/
+coverage/
