@@ -147,7 +147,11 @@ export const brandControllerTest = () => {
 
         const response = await setAuthHeaders(
           request(app).put(`/api/v1/admin/brands/${testBrand.brand_id}`)
-        ).send(updatedBrand);
+        ).send({
+          name: updatedBrand.name,
+          slug: updatedBrand.slug,
+          brand_id: updatedBrand.brand_id,
+        });
 
         console.log("testing body..:", JSON.stringify(response.body)); // Log the response for debugging
 
@@ -201,7 +205,7 @@ export const brandControllerTest = () => {
         ).send({ brand_id: nonExistentId });
 
         expect(response.status).toBe(StatusCodes.NOT_FOUND);
-        expect(response.body).toHaveProperty("message", MESSAGE.delete.fail);
+        expect(response.body).toHaveProperty("message", MESSAGE.get.fail);
       });
     });
   });

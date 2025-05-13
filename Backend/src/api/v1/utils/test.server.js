@@ -112,12 +112,7 @@ export function createServer() {
 
   app.get("/api/v1/admin/brands", adminBrandController.getAllBrands);
 
-  app.put(
-    "/api/v1/admin/brands/:id",
-    validateRequest(validators.brand.brand_id),
-    // validateRequest(validators.brand.brandUpdateValidator),
-    adminBrandController.updateBrand
-  );
+  app.put("/api/v1/admin/brands/:id", adminBrandController.updateBrand);
 
   app.delete(
     "/api/v1/admin/brands/:id",

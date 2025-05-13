@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>8/8</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>8/8</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
@@ -120,31 +120,26 @@
 <a name='L55'></a><a href='#L55'>55</a>
 <a name='L56'></a><a href='#L56'>56</a>
 <a name='L57'></a><a href='#L57'>57</a>
-<a name='L58'></a><a href='#L58'>58</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -177,9 +172,16 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 &nbsp;
 // ✅ Fix for __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -189,27 +191,27 @@ const __dirname = path.dirname(__filename);
 // dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 &nbsp;
 // Debugging: Log environment variables to verify they are loaded
-console.log('Environment:', process.env.NODE_ENV);
-console.log('DB_HOST:', process.env.DB_HOST);
-console.log('DB_USERNAME:', process.env.DB_USERNAME);
-console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
-console.log('DB_DATABASE:', process.env.DB_DATABASE);
+// console.log('Environment:', process.env.NODE_ENV);
+// console.log('DB_HOST:', process.env.DB_HOST);
+// console.log('DB_USERNAME:', process.env.DB_USERNAME);
+// console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
+// console.log('DB_DATABASE:', process.env.DB_DATABASE);
 &nbsp;
 const dbConfigFile = {
   development: {
-    username: process.env.DB_USERNAME || <span class="branch-1 cbranch-no" title="branch not covered" >'root',</span>
-    password: process.env.DB_PASSWORD || <span class="branch-1 cbranch-no" title="branch not covered" >'root',</span>
-    database: process.env.DB_DATABASE || <span class="branch-1 cbranch-no" title="branch not covered" >'ecommerce_dev',</span>
-    host: process.env.DB_HOST || <span class="branch-1 cbranch-no" title="branch not covered" >'127.0.0.1',</span>
-    dialect: process.env.DB_DIALECT || <span class="branch-1 cbranch-no" title="branch not covered" >'mysql',</span>
+    username: process.env.DB_USERNAME || <span class="branch-1 cbranch-no" title="branch not covered" >"root",</span>
+    password: process.env.DB_PASSWORD || <span class="branch-1 cbranch-no" title="branch not covered" >"root",</span>
+    database: process.env.DB_DATABASE || <span class="branch-1 cbranch-no" title="branch not covered" >"ecommerce_dev",</span>
+    host: process.env.DB_HOST || <span class="branch-1 cbranch-no" title="branch not covered" >"127.0.0.1",</span>
+    dialect: process.env.DB_DIALECT || <span class="branch-1 cbranch-no" title="branch not covered" >"mysql",</span>
     port: process.env.DB_PORT || <span class="branch-1 cbranch-no" title="branch not covered" >3306,</span>
   },
   test: {
-    username: process.env.DB_USERNAME || <span class="branch-1 cbranch-no" title="branch not covered" >'root',</span>
-    password: process.env.DB_PASSWORD || <span class="branch-1 cbranch-no" title="branch not covered" >'root',</span>
-    database: process.env.DB_DATABASE || <span class="branch-1 cbranch-no" title="branch not covered" >'electronics_ecommerce_test',</span>
-    host: process.env.DB_HOST || <span class="branch-1 cbranch-no" title="branch not covered" >'127.0.0.1',</span>
-    dialect: process.env.DB_DIALECT || <span class="branch-1 cbranch-no" title="branch not covered" >'mysql',</span>
+    username: process.env.DB_USERNAME || <span class="branch-1 cbranch-no" title="branch not covered" >"root",</span>
+    password: process.env.DB_PASSWORD || <span class="branch-1 cbranch-no" title="branch not covered" >"root",</span>
+    database: process.env.DB_DATABASE || <span class="branch-1 cbranch-no" title="branch not covered" >"electronics_ecommerce_test",</span>
+    host: process.env.DB_HOST || <span class="branch-1 cbranch-no" title="branch not covered" >"127.0.0.1",</span>
+    dialect: process.env.DB_DIALECT || <span class="branch-1 cbranch-no" title="branch not covered" >"mysql",</span>
     port: process.env.DB_PORT || <span class="branch-1 cbranch-no" title="branch not covered" >3306,</span>
   },
   production: {
@@ -217,7 +219,7 @@ const dbConfigFile = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
-    dialect: process.env.DB_DIALECT || <span class="branch-1 cbranch-no" title="branch not covered" >'mysql',</span>
+    dialect: process.env.DB_DIALECT || <span class="branch-1 cbranch-no" title="branch not covered" >"mysql",</span>
     port: process.env.DB_PORT || <span class="branch-1 cbranch-no" title="branch not covered" >3306,</span>
     dialectOptions: {
       ssl: {
@@ -234,14 +236,15 @@ const dbConfigFile = {
   },
 };
 &nbsp;
-export default dbConfigFile;</pre></td></tr></table></pre>
+export default dbConfigFile;
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-12T08:31:13.337Z
+                at 2025-05-13T07:18:49.231Z
             </div>
         <script src="../prettify.js"></script>
         <script>

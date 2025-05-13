@@ -61,7 +61,7 @@ const updateBrand = async (req, res) => {
     if (!brand) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: MESSAGE.get.none });
+        .json({ message: MESSAGE.put.fail });
     }
 
     // Update fields
@@ -94,7 +94,7 @@ const deleteBrand = async (req, res) => {
     if (!brand) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: MESSAGE.get.none });
+        .json({ message: MESSAGE.get.fail });
     }
 
     await brand.destroy();
