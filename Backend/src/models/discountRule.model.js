@@ -64,6 +64,8 @@ export default (sequelize) => {
     },
     {
       timestamps: true,
+      paranoid: true, // history of past promotions
+
       tableName: "DiscountRules",
       indexes: [
         { fields: ["product_id"] },

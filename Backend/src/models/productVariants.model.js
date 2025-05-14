@@ -34,6 +34,7 @@ export default (sequelize) => {
     {
       timestamps: true,
       tableName: "ProductVariants",
+      paranoid: true, // preserve past variant sales
       indexes: [
         { fields: ["product_id"] },
         { fields: ["sku"] },

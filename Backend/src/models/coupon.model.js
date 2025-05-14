@@ -40,6 +40,8 @@ export default (sequelize) => {
     {
       tableName: "Coupons",
       timestamps: true,
+      paranoid: true, // preserve redemption history
+
       indexes: [
         { fields: ["code"], unique: true },
         { fields: ["product_id"] },

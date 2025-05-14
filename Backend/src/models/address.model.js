@@ -50,7 +50,7 @@ export default (sequelize) => {
     {
       timestamps: true,
       tableName: "Addresses",
-      paranoid: true, // Soft delete
+      paranoid: true, // keep deleted addresses for history
     }
   );
 

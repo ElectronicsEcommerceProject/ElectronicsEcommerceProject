@@ -17,6 +17,8 @@ export default (sequelize) => {
     {
       tableName: "Brands",
       timestamps: true,
+      paranoid: true, // preserve brand history
+
       indexes: [
         { fields: ["name"] },
         { fields: ["slug"] },

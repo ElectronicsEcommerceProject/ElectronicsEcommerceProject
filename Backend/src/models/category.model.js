@@ -22,6 +22,7 @@ export default (sequelize) => {
     {
       tableName: "Categories",
       timestamps: true,
+      paranoid: true, // keep categories for reporting
       indexes: [
         { fields: ["name"] },
         { fields: ["slug"] },
