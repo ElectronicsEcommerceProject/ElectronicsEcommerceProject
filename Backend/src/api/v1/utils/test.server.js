@@ -8,6 +8,7 @@ import {
   adminCategoryController,
   adminBrandController,
   adminAttributeController,
+  adminAttributeValueController,
 } from "../controllers/index.js";
 /**
  * Creates and configures an Express server instance
@@ -154,6 +155,40 @@ export function createServer() {
   app.delete(
     "/api/v1/admin/product-Attributes/:id",
     adminAttributeController.deleteAttribute
+  );
+
+  //product-Attribute-Values routes...
+  app.post(
+    "/api/v1/admin/product-Attributes-Values",
+    validateRequest(validators.attributeValue.attributeValueValidator),
+    adminAttributeValueController.addAttributeValue
+  );
+
+  app.get(
+    "/api/v1/admin/product-Attributes-Values",
+    adminAttributeValueController.getAllAttributeValues
+  );
+
+  app.get(
+    "/api/v1/admin/product-Attributes-Values/:id",
+    // validateRequest(validators.attributeValue.id),
+    adminAttributeValueController.getAttributeValueById
+  );
+
+  app.get(
+    "/api/v1/admin/product-Attributes-Values/attribute/:attributeId",
+    adminAttributeValueController.getAttributeValuesByAttribute
+  );
+
+  app.put(
+    "/api/v1/admin/product-Attributes-Values/:id",
+    validateRequest(validators.attributeValue.id),
+    adminAttributeValueController.updateAttributeValue
+  );
+  app.delete(
+    "/api/v1/admin/product-Attributes-Values/:id",
+    validateRequest(validators.attributeValue.id),
+    adminAttributeValueController.deleteAttributeValue
   );
 
   // If no routes match

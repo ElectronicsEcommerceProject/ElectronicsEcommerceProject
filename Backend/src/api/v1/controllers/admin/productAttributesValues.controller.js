@@ -14,7 +14,7 @@ const addAttributeValue = async (req, res) => {
     if (!attribute) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: MESSAGE.get.none });
+        .json({ message: MESSAGE.get.empty });
     }
 
     // Get the user ID of the creator
