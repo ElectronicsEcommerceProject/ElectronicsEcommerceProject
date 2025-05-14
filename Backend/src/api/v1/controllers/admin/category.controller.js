@@ -95,10 +95,10 @@ const getAllCategories = async (req, res) => {
 // Update a category
 const updateCategoryById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { category_id } = req.params;
     const { name, slug, target_role, parent_id } = req.body;
 
-    const category = await Category.findByPk(id);
+    const category = await Category.findByPk(category_id);
     if (!category) {
       return res.status(StatusCodes.NOT_FOUND).json({ message: MESSAGE.none });
     }
@@ -131,9 +131,9 @@ const updateCategoryById = async (req, res) => {
 // Delete a category
 const deleteCategory = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { category_id } = req.params;
 
-    const category = await Category.findByPk(id);
+    const category = await Category.findByPk(category_id);
     if (!category) {
       return res.status(StatusCodes.NOT_FOUND).json({ message: MESSAGE.none });
     }

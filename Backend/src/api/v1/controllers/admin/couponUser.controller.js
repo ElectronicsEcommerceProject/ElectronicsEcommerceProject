@@ -72,7 +72,13 @@ export const getAllCouponUsers = async (req, res) => {
       include: [
         {
           model: Coupon,
-          attributes: ["id", "code", "description", "type", "discount_value"],
+          attributes: [
+            "coupon_id",
+            "code",
+            "description",
+            "type",
+            "discount_value",
+          ],
         },
         {
           model: User,
@@ -103,7 +109,13 @@ export const getCouponUserById = async (req, res) => {
       include: [
         {
           model: Coupon,
-          attributes: ["id", "code", "description", "type", "discount_value"],
+          attributes: [
+            "coupon_id",
+            "code",
+            "description",
+            "type",
+            "discount_value",
+          ],
         },
         {
           model: User,
@@ -185,7 +197,13 @@ export const getCouponUsersByUserId = async (req, res) => {
       include: [
         {
           model: Coupon,
-          attributes: ["id", "code", "description", "type", "discount_value"],
+          attributes: [
+            "coupon_id",
+            "code",
+            "description",
+            "type",
+            "discount_value",
+          ],
         },
       ],
     });

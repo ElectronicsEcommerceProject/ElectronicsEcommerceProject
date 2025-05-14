@@ -186,9 +186,9 @@ const getProductsByCategoryAndBrand = async (req, res) => {
         {
           model: Category,
           as: "category",
-          attributes: ["id", "name"],
+          attributes: ["category_id", "name"],
         },
-        { model: Brand, as: "brand", attributes: ["id", "name"] },
+        { model: Brand, as: "brand", attributes: ["brand_id", "name"] },
         {
           model: User,
           as: "creator",

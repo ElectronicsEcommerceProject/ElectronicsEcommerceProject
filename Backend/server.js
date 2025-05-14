@@ -36,7 +36,8 @@ app.get("/", (req, res) => {
 
 // ✅ Sync DB and Start Server
 const { sequelize } = db; // ✅ Access sequelize from db object
-const PORT = process.env.PORT || 3000;
+// const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
 (async () => {
   try {

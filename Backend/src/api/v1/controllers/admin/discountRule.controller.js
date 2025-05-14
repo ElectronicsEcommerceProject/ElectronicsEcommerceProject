@@ -133,8 +133,8 @@ export const getAllDiscountRules = async (req, res) => {
       where: whereConditions,
       include: [
         { model: Product, attributes: ["product_id", "name", "slug"] },
-        { model: Category, attributes: ["id", "name", "slug"] },
-        { model: Brand, attributes: ["id", "name", "slug"] },
+        { model: Category, attributes: ["category_id", "name", "slug"] },
+        { model: Brand, attributes: ["brand_id", "name", "slug"] },
         {
           model: ProductVariant,
           attributes: ["product_variant_id", "sku", "price"],
@@ -174,8 +174,8 @@ export const getDiscountRuleById = async (req, res) => {
     const discountRule = await DiscountRule.findByPk(id, {
       include: [
         { model: Product, attributes: ["product_id", "name", "slug"] },
-        { model: Category, attributes: ["id", "name", "slug"] },
-        { model: Brand, attributes: ["id", "name", "slug"] },
+        { model: Category, attributes: ["category_id", "name", "slug"] },
+        { model: Brand, attributes: ["brand_id", "name", "slug"] },
         {
           model: ProductVariant,
           attributes: ["product_variant_id", "sku", "price"],
@@ -335,8 +335,8 @@ export const updateDiscountRule = async (req, res) => {
     const updatedDiscountRule = await DiscountRule.findByPk(id, {
       include: [
         { model: Product, attributes: ["product_id", "name", "slug"] },
-        { model: Category, attributes: ["id", "name", "slug"] },
-        { model: Brand, attributes: ["id", "name", "slug"] },
+        { model: Category, attributes: ["category_id", "name", "slug"] },
+        { model: Brand, attributes: ["brand_id", "name", "slug"] },
         {
           model: ProductVariant,
           attributes: ["product_variant_id", "sku", "price"],

@@ -142,7 +142,7 @@ const createStockAlert = async (req, res) => {
 
     res.status(StatusCodes.CREATED).json({
       message: MESSAGE.post.succ,
-      data: createdAlert,
+      data: newAlert,
     });
   } catch (error) {
     console.error("❌ Error creating stock alert:", error);
