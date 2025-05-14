@@ -50,7 +50,11 @@ export default (sequelize) => {
 
   CartItem.associate = (models) => {
     // Define associations
-    CartItem.belongsTo(models.Cart, { foreignKey: "cart_id", as: "cart" }); // Links cart item to a cart
+    CartItem.belongsTo(models.Cart, {
+      foreignKey: "cart_id",
+      onDelete: "CASCADE",
+      as: "cart",
+    }); // Links cart item to a cart
     CartItem.belongsTo(models.Product, {
       foreignKey: "product_id",
       as: "product",

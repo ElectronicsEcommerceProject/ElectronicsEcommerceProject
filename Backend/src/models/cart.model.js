@@ -23,6 +23,11 @@ export default (sequelize) => {
   Cart.associate = (models) => {
     // Define associations
     Cart.belongsTo(models.User, { foreignKey: "user_id", as: "user" }); // Links cart to a user
+    Cart.hasMany(models.CartItem, {
+      foreignKey: "cart_id",
+      onDelete: "CASCADE",
+      as: "cartItems",
+    }); // Cart has many items
   };
 
   return Cart;

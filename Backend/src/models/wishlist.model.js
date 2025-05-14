@@ -22,6 +22,11 @@ export default (sequelize) => {
 
   Wishlist.associate = (models) => {
     Wishlist.belongsTo(models.User, { foreignKey: "user_id" });
+    Wishlist.hasMany(models.WishListItem, {
+      foreignKey: "wishlist_id",
+      onDelete: "CASCADE",
+      as: "wishlistItems",
+    }); // Wishlist has many items
   };
 
   return Wishlist;
