@@ -9,13 +9,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load environment variables - don't do this here as it's already loaded by Jest setup
-// dotenv.config({ path: "../.env" });
+dotenv.config({ path: "../.env" });
 
 const env = process.env.NODE_ENV || "development";
 console.log(`Current environment: ${env}`); // Debug log
 
 // Get database config for current environment
 const dbConfig = dbConfigFile[env];
+
+console.log("Database config:", dbConfig); // Debug log
 
 if (!dbConfig) {
   throw new Error(
