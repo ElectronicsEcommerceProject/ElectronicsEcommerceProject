@@ -10,7 +10,6 @@ export default (sequelize) => {
         primaryKey: true,
       },
       product_variant_id: { type: DataTypes.UUID, allowNull: false },
-      product_attribute_id: { type: DataTypes.UUID, allowNull: false },
       product_attribute_value_id: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
       created_by: { type: DataTypes.UUID, allowNull: false },
       updated_by: { type: DataTypes.UUID, allowNull: true },
@@ -20,7 +19,6 @@ export default (sequelize) => {
       tableName: "VariantAttributeValues",
       indexes: [
         { fields: ["product_variant_id"] },
-        { fields: ["product_attribute_id"] },
         { fields: ["created_by"] },
         { fields: ["updated_by"] },
       ],
@@ -30,9 +28,6 @@ export default (sequelize) => {
   VariantAttributeValue.associate = (models) => {
     VariantAttributeValue.belongsTo(models.ProductVariant, {
       foreignKey: "product_variant_id",
-    });
-    VariantAttributeValue.belongsTo(models.Attribute, {
-      foreignKey: "product_attribute_id",
     });
     VariantAttributeValue.belongsTo(models.AttributeValue, {
       foreignKey: "product_attribute_value_id",

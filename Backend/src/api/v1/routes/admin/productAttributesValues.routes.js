@@ -43,10 +43,14 @@ router.get(
 // Update an attribute value
 router.put(
   "/:id",
+
   verifyJwtToken,
   adminRoleCheck,
+
   validator(validators.attributeValue.id, "params"),
+
   validator(validators.attributeValue.attributeValueUpdateValidator, null),
+
   adminAttributeValueController.updateAttributeValue
 );
 

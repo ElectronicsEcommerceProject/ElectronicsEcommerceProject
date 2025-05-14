@@ -54,10 +54,10 @@ const getAllBrands = async (req, res) => {
 // Update a brand
 const updateBrand = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { brand_id } = req.params;
     const { name, slug } = req.body;
 
-    const brand = await Brand.findByPk(id);
+    const brand = await Brand.findByPk(brand_id);
     if (!brand) {
       return res
         .status(StatusCodes.NOT_FOUND)
@@ -88,9 +88,9 @@ const updateBrand = async (req, res) => {
 // Delete a brand
 const deleteBrand = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { brand_id } = req.params;
 
-    const brand = await Brand.findByPk(id);
+    const brand = await Brand.findByPk(brand_id);
     if (!brand) {
       return res
         .status(StatusCodes.NOT_FOUND)

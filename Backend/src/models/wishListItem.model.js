@@ -31,6 +31,7 @@ export default (sequelize) => {
   WishListItem.associate = (models) => {
     WishListItem.belongsTo(models.Wishlist, {
       foreignKey: "wishlist_id",
+      onDelete: "CASCADE",
       as: "wishlist",
     });
     WishListItem.belongsTo(models.Product, {

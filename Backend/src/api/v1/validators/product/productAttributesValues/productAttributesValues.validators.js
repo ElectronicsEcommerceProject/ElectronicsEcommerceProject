@@ -37,3 +37,13 @@ export const id = Joi.object({
       "any.required": MESSAGE.custom("ID is required"),
     }),
 });
+
+export const attributeId = Joi.object({
+  attributeId: Joi.string()
+    .uuid()
+    .required()
+    .messages({
+      "string.guid": MESSAGE.custom("Attribute ID must be a valid UUID"),
+      "any.required": MESSAGE.custom("Attribute ID is required"),
+    }),
+});

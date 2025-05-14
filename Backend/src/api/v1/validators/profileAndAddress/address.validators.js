@@ -7,31 +7,17 @@ export const addressValidator = Joi.object({
     .messages({
       "string.guid": MESSAGE.custom("User ID must be a valid UUID"),
     }),
-  status: Joi.string()
-    .valid("default", "history")
+  address_line1: Joi.string()
     .required()
     .messages({
-      "string.empty": MESSAGE.custom("Status is required"),
-      "any.required": MESSAGE.custom("Status is required"),
-      "any.only": MESSAGE.custom(
-        "Status must be either 'default' or 'history'"
-      ),
+      "string.empty": MESSAGE.custom("Address line 1 is required"),
+      "any.required": MESSAGE.custom("Address line 1 is required"),
     }),
-  type: Joi.string()
-    .valid("home", "work", "other")
-    .required()
+  address_line2: Joi.string()
+    .optional()
+    .allow(null, "")
     .messages({
-      "string.empty": MESSAGE.custom("Address type is required"),
-      "any.required": MESSAGE.custom("Address type is required"),
-      "any.only": MESSAGE.custom(
-        "Address type must be one of: home, work, or other"
-      ),
-    }),
-  address: Joi.string()
-    .required()
-    .messages({
-      "string.empty": MESSAGE.custom("Address is required"),
-      "any.required": MESSAGE.custom("Address is required"),
+      "string.base": MESSAGE.custom("Address line 2 must be a string"),
     }),
   city: Joi.string()
     .required()
@@ -39,16 +25,30 @@ export const addressValidator = Joi.object({
       "string.empty": MESSAGE.custom("City is required"),
       "any.required": MESSAGE.custom("City is required"),
     }),
+  state: Joi.string()
+    .required()
+    .messages({
+      "string.empty": MESSAGE.custom("State is required"),
+      "any.required": MESSAGE.custom("State is required"),
+    }),
   postal_code: Joi.string()
     .required()
     .messages({
       "string.empty": MESSAGE.custom("Postal code is required"),
       "any.required": MESSAGE.custom("Postal code is required"),
     }),
-  nearby: Joi.string()
+  country: Joi.string()
     .optional()
-    .allow(null, "")
-    .messages({ "string.base": MESSAGE.custom("Nearby must be a string") }),
+    .default("India")
+    .messages({
+      "string.base": MESSAGE.custom("Country must be a string"),
+    }),
+  is_default: Joi.boolean()
+    .optional()
+    .default(false)
+    .messages({
+      "boolean.base": MESSAGE.custom("Is default must be a boolean"),
+    }),
   is_active: Joi.boolean()
     .optional()
     .default(true)
@@ -57,41 +57,44 @@ export const addressValidator = Joi.object({
     }),
 });
 export const updateAddressValidator = Joi.object({
-  status: Joi.string()
-    .valid("default", "history")
+  address_line1: Joi.string()
     .optional()
     .messages({
-      "any.only": MESSAGE.custom(
-        "Status must be either 'default' or 'history'"
+      "string.empty": MESSAGE.custom(
+        "Address line 1 cannot be empty if provided"
       ),
     }),
-  type: Joi.string()
-    .valid("home", "work", "other")
+  address_line2: Joi.string()
     .optional()
+    .allow(null, "")
     .messages({
-      "any.only": MESSAGE.custom(
-        "Address type must be one of: home, work, or other"
-      ),
-    }),
-  address: Joi.string()
-    .optional()
-    .messages({
-      "string.empty": MESSAGE.custom("Address cannot be empty if provided"),
+      "string.base": MESSAGE.custom("Address line 2 must be a string"),
     }),
   city: Joi.string()
     .optional()
     .messages({
       "string.empty": MESSAGE.custom("City cannot be empty if provided"),
     }),
+  state: Joi.string()
+    .optional()
+    .messages({
+      "string.empty": MESSAGE.custom("State cannot be empty if provided"),
+    }),
   postal_code: Joi.string()
     .optional()
     .messages({
       "string.empty": MESSAGE.custom("Postal code cannot be empty if provided"),
     }),
-  nearby: Joi.string()
+  country: Joi.string()
     .optional()
-    .allow(null, "")
-    .messages({ "string.base": MESSAGE.custom("Nearby must be a string") }),
+    .messages({
+      "string.base": MESSAGE.custom("Country must be a string"),
+    }),
+  is_default: Joi.boolean()
+    .optional()
+    .messages({
+      "boolean.base": MESSAGE.custom("Is default must be a boolean"),
+    }),
   is_active: Joi.boolean()
     .optional()
     .messages({

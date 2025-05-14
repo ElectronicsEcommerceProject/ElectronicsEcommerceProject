@@ -26,19 +26,19 @@ router.get("/", verifyJwtToken, adminBrandController.getAllBrands);
 
 // Update a category
 router.put(
-  "/:id",
+  "/:brand_id",
   verifyJwtToken,
   adminRoleCheck,
-  validator(validators.brand.id, "params"), // Add validator middleware for category update validation
+  validator(validators.brand.brand_id, "params"), // Add validator middleware for category update validation
   adminBrandController.updateBrand // Add brand controller middleware here for brand update validation
 );
 
 // Delete a category
 router.delete(
-  "/:id",
+  "/:brand_id",
   verifyJwtToken,
   adminRoleCheck,
-  validator(validators.brand.id, "params"), // Add validator middleware for category deletion validation
+  validator(validators.brand.brand_id, "params"), // Add validator middleware for category deletion validation
   adminBrandController.deleteBrand // Add brand controller middleware here for brand deletion validation. This middleware will handle the deletion of the brand.
 );
 

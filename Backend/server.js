@@ -36,15 +36,16 @@ app.get("/", (req, res) => {
 
 // ✅ Sync DB and Start Server
 const { sequelize } = db; // ✅ Access sequelize from db object
-const PORT = process.env.PORT || 3000;
+// const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
 (async () => {
   try {
     await sequelize.authenticate();
+    await sequelize.sync();
     // await sequelize.sync({ alter: true });
     // await sequelize.sync({ force: true });
     console.log("✅ Database connection established successfully.");
-    await sequelize.sync(); // Remove { alter: true }
     console.log("✅ Database synced successfully.");
 
     app.listen(PORT, () => {
@@ -55,3 +56,4 @@ const PORT = process.env.PORT || 3000;
     process.exit(1);
   }
 })();
+export default app;

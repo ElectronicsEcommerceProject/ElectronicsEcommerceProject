@@ -48,6 +48,7 @@ export default (sequelize) => {
       },
     },
     {
+      paranoid: true, // enable soft delete
       timestamps: true,
       tableName: "Users",
     }

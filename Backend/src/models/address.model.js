@@ -4,7 +4,7 @@ export default (sequelize) => {
   const Address = sequelize.define(
     "Address",
     {
-      id: {
+      address_id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
@@ -50,7 +50,7 @@ export default (sequelize) => {
     {
       timestamps: true,
       tableName: "Addresses",
-      paranoid: true, // Soft delete
+      paranoid: true, // keep deleted addresses for history
     }
   );
 

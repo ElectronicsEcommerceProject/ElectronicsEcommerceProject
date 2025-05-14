@@ -7,7 +7,16 @@ const { Address, User } = db;
 // Add a new address for the authenticated user
 const addAddress = async (req, res) => {
   try {
-    const { status, type, address, city, postal_code, nearby } = req.body;
+    const {
+      address_line1,
+      address_line2,
+      city,
+      state,
+      postal_code,
+      country,
+      is_default,
+      is_active,
+    } = req.body;
 
     // Get user from JWT token
     const user = await User.findOne({
@@ -18,14 +27,14 @@ const addAddress = async (req, res) => {
       return res.status(StatusCodes.NOT_FOUND).json({ message: MESSAGE.none });
     }
 
-    // If this is a default address, update any existing default addresses to history
-    if (status === "default") {
+    // If this is a default address, update any existing default addresses
+    if (is_default) {
       await Address.update(
-        { status: "history" },
+        { is_default: false },
         {
           where: {
             user_id: user.user_id,
-            status: "default",
+            is_default: true,
           },
         }
       );
@@ -34,22 +43,15 @@ const addAddress = async (req, res) => {
     // Create new address
     const newAddress = await Address.create({
       user_id: user.user_id,
-      status,
-      type,
-      address,
+      address_line1,
+      address_line2,
       city,
+      state,
       postal_code,
-      nearby: nearby || null,
-      is_active: true,
+      country: country || "India",
+      is_default: is_default || false,
+      is_active: is_active !== undefined ? is_active : true,
     });
-
-    // If this is the first address or a default address, update user's current_address_id
-    if (status === "default") {
-      await User.update(
-        { current_address_id: newAddress.address_id },
-        { where: { user_id: user.user_id } }
-      );
-    }
 
     res.status(StatusCodes.CREATED).json({
       message: MESSAGE.post.succ,
@@ -80,7 +82,7 @@ const getAddresses = async (req, res) => {
         is_active: true,
       },
       order: [
-        ["status", "ASC"], // Default addresses first
+        ["is_default", "DESC"], // Default addresses first
         ["updatedAt", "DESC"], // Most recently updated first
       ],
     });
@@ -118,7 +120,6 @@ const getAddressById = async (req, res) => {
 
     const address = await Address.findOne({
       where: {
-        address_id: id,
         user_id: user.user_id,
         is_active: true,
       },
@@ -146,8 +147,16 @@ const getAddressById = async (req, res) => {
 const updateAddress = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, type, address, city, postal_code, nearby, is_active } =
-      req.body;
+    const {
+      address_line1,
+      address_line2,
+      city,
+      state,
+      postal_code,
+      country,
+      is_default,
+      is_active,
+    } = req.body;
 
     const user = await User.findOne({
       where: { email: req.user.email },
@@ -160,7 +169,6 @@ const updateAddress = async (req, res) => {
     // Find the address to update
     const addressToUpdate = await Address.findOne({
       where: {
-        address_id: id,
         user_id: user.user_id,
       },
     });
@@ -171,14 +179,14 @@ const updateAddress = async (req, res) => {
         .json({ message: MESSAGE.get.empty });
     }
 
-    // If changing to default status, update other addresses
-    if (status === "default" && addressToUpdate.status !== "default") {
+    // If changing to default, update other addresses
+    if (is_default && !addressToUpdate.is_default) {
       await Address.update(
-        { status: "history" },
+        { is_default: false },
         {
           where: {
             user_id: user.user_id,
-            status: "default",
+            is_default: true,
           },
         }
       );
@@ -186,30 +194,18 @@ const updateAddress = async (req, res) => {
 
     // Update the address
     const updatedFields = {};
-    if (status !== undefined) updatedFields.status = status;
-    if (type !== undefined) updatedFields.type = type;
-    if (address !== undefined) updatedFields.address = address;
+    if (address_line1 !== undefined)
+      updatedFields.address_line1 = address_line1;
+    if (address_line2 !== undefined)
+      updatedFields.address_line2 = address_line2;
     if (city !== undefined) updatedFields.city = city;
+    if (state !== undefined) updatedFields.state = state;
     if (postal_code !== undefined) updatedFields.postal_code = postal_code;
-    if (nearby !== undefined) updatedFields.nearby = nearby;
+    if (country !== undefined) updatedFields.country = country;
+    if (is_default !== undefined) updatedFields.is_default = is_default;
     if (is_active !== undefined) updatedFields.is_active = is_active;
 
     await addressToUpdate.update(updatedFields);
-
-    // If setting as default, update user's current_address_id
-    if (status === "default") {
-      await User.update(
-        { current_address_id: id },
-        { where: { user_id: user.user_id } }
-      );
-    }
-    // If deactivating the current default address, clear user's current_address_id
-    else if (is_active === false && user.current_address_id === parseInt(id)) {
-      await User.update(
-        { current_address_id: null },
-        { where: { user_id: user.user_id } }
-      );
-    }
 
     res.status(StatusCodes.OK).json({
       message: MESSAGE.put.succ,
@@ -238,7 +234,6 @@ const deleteAddress = async (req, res) => {
 
     const address = await Address.findOne({
       where: {
-        address_id: id,
         user_id: user.user_id,
       },
     });
@@ -251,14 +246,6 @@ const deleteAddress = async (req, res) => {
 
     // Soft delete by setting is_active to false
     await address.update({ is_active: false });
-
-    // If this was the user's current address, clear that reference
-    if (user.current_address_id === parseInt(id)) {
-      await User.update(
-        { current_address_id: null },
-        { where: { user_id: user.user_id } }
-      );
-    }
 
     res.status(StatusCodes.OK).json({
       message: MESSAGE.delete.succ,
@@ -287,7 +274,7 @@ const setDefaultAddress = async (req, res) => {
     // Find the address to set as default
     const address = await Address.findOne({
       where: {
-        address_id: id,
+        id: id,
         user_id: user.user_id,
         is_active: true,
       },
@@ -299,25 +286,19 @@ const setDefaultAddress = async (req, res) => {
         .json({ message: MESSAGE.get.empty });
     }
 
-    // Update all addresses to history status
+    // Update all addresses to non-default
     await Address.update(
-      { status: "history" },
+      { is_default: false },
       {
         where: {
           user_id: user.user_id,
-          status: "default",
+          is_default: true,
         },
       }
     );
 
     // Set this address as default
-    await address.update({ status: "default" });
-
-    // Update user's current_address_id
-    await User.update(
-      { current_address_id: id },
-      { where: { user_id: user.user_id } }
-    );
+    await address.update({ is_default: true });
 
     res.status(StatusCodes.OK).json({
       message: MESSAGE.put.succ,

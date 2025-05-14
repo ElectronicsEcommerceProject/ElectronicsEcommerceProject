@@ -4,7 +4,7 @@ export default (sequelize) => {
   const CouponRedemption = sequelize.define(
     "CouponRedemption",
     {
-      id: {
+      coupon_redemption_id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,

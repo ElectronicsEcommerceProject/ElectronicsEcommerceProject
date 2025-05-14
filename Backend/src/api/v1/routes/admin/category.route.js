@@ -24,19 +24,19 @@ router.get("/", verifyJwtToken, adminCategoryController.getAllCategories);
 
 // Update a category
 router.put(
-  "/:id",
+  "/:category_id",
   verifyJwtToken,
   adminRoleCheck,
-  validator(validators.category.id, "params"), // Add validator middleware for category update validation
+  validator(validators.category.category_id, "params"), // Add validator middleware for category update validation
   adminCategoryController.updateCategoryById
 );
 
 // Delete a category
 router.delete(
-  "/:id",
+  "/:category_id",
   verifyJwtToken,
   adminRoleCheck,
-  validator(validators.category.id, "params"), // Add validator middleware for category deletion validation
+  validator(validators.category.category_id, "params"), // Add validator middleware for category deletion validation
   adminCategoryController.deleteCategory
 );
 

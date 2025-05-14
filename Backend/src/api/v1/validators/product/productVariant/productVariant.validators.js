@@ -9,6 +9,18 @@ export const productVariantValidator = Joi.object({
       "string.guid": MESSAGE.custom("Product ID must be a valid UUID"),
       "any.required": MESSAGE.custom("Product ID is required"),
     }),
+  description: Joi.string()
+    .optional()
+    .allow(null, "")
+    .messages({
+      "string.base": MESSAGE.custom("Description must be a string"),
+    }),
+  short_description: Joi.string()
+    .optional()
+    .allow(null, "")
+    .messages({
+      "string.base": MESSAGE.custom("Short description must be a string"),
+    }),
   price: Joi.number()
     .positive()
     .precision(2)
@@ -32,7 +44,7 @@ export const productVariantValidator = Joi.object({
     .messages({
       "string.base": MESSAGE.custom("SKU must be a string"),
     }),
-  variant_image_url: Joi.string()
+  base_variant_image_url: Joi.string()
     .uri()
     .optional()
     .allow(null, "")
@@ -74,6 +86,34 @@ export const productVariantValidator = Joi.object({
         "Minimum retailer quantity cannot be negative"
       ),
     }),
+  bulk_discount_quantity: Joi.number()
+    .integer()
+    .min(0)
+    .optional()
+    .allow(null)
+    .messages({
+      "number.base": MESSAGE.custom(
+        "Bulk discount quantity must be an integer"
+      ),
+      "number.min": MESSAGE.custom("Bulk discount quantity cannot be negative"),
+    }),
+  bulk_discount_percentage: Joi.number()
+    .precision(2)
+    .min(0)
+    .max(100)
+    .optional()
+    .allow(null)
+    .messages({
+      "number.base": MESSAGE.custom(
+        "Bulk discount percentage must be a decimal value"
+      ),
+      "number.min": MESSAGE.custom(
+        "Bulk discount percentage cannot be negative"
+      ),
+      "number.max": MESSAGE.custom(
+        "Bulk discount percentage cannot exceed 100"
+      ),
+    }),
   attribute_values: Joi.array()
     .items(Joi.string().uuid())
     .optional()
@@ -89,6 +129,18 @@ export const productVariantUpdateValidator = Joi.object({
     .optional()
     .messages({
       "string.guid": MESSAGE.custom("Product ID must be a valid UUID"),
+    }),
+  description: Joi.string()
+    .optional()
+    .allow(null, "")
+    .messages({
+      "string.base": MESSAGE.custom("Description must be a string"),
+    }),
+  short_description: Joi.string()
+    .optional()
+    .allow(null, "")
+    .messages({
+      "string.base": MESSAGE.custom("Short description must be a string"),
     }),
   price: Joi.number()
     .positive()
@@ -112,7 +164,7 @@ export const productVariantUpdateValidator = Joi.object({
     .messages({
       "string.base": MESSAGE.custom("SKU must be a string"),
     }),
-  variant_image_url: Joi.string()
+  base_variant_image_url: Joi.string()
     .uri()
     .optional()
     .allow(null, "")
@@ -152,6 +204,34 @@ export const productVariantUpdateValidator = Joi.object({
       ),
       "number.min": MESSAGE.custom(
         "Minimum retailer quantity cannot be negative"
+      ),
+    }),
+  bulk_discount_quantity: Joi.number()
+    .integer()
+    .min(0)
+    .optional()
+    .allow(null)
+    .messages({
+      "number.base": MESSAGE.custom(
+        "Bulk discount quantity must be an integer"
+      ),
+      "number.min": MESSAGE.custom("Bulk discount quantity cannot be negative"),
+    }),
+  bulk_discount_percentage: Joi.number()
+    .precision(2)
+    .min(0)
+    .max(100)
+    .optional()
+    .allow(null)
+    .messages({
+      "number.base": MESSAGE.custom(
+        "Bulk discount percentage must be a decimal value"
+      ),
+      "number.min": MESSAGE.custom(
+        "Bulk discount percentage cannot be negative"
+      ),
+      "number.max": MESSAGE.custom(
+        "Bulk discount percentage cannot exceed 100"
       ),
     }),
   attribute_values: Joi.array()

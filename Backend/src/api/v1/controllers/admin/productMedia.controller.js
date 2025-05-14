@@ -2,13 +2,12 @@ import { StatusCodes } from "http-status-codes";
 import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
 
-const { ProductMedia, Product, ProductVariant, Attribute, User } = db;
+const { ProductMedia, Product, ProductVariant, User } = db;
 
 // Add a new product media
 const addProductMedia = async (req, res) => {
   try {
-    const { product_id, product_variant_id, product_attribute_id, media_url, media_type } =
-      req.body;
+    const { product_id, product_variant_id, media_type } = req.body;
 
     // Check if product exists
     const product = await Product.findByPk(product_id);
@@ -28,16 +27,6 @@ const addProductMedia = async (req, res) => {
       }
     }
 
-    // Check if attribute exists if provided
-    if (product_attribute_id) {
-      const attribute = await Attribute.findByPk(product_attribute_id);
-      if (!attribute) {
-        return res
-          .status(StatusCodes.NOT_FOUND)
-          .json({ message: "Attribute not found" });
-      }
-    }
-
     // Get the user ID of the creator
     const user = await User.findOne({ where: { email: req.user.email } });
     if (!user) {
@@ -52,8 +41,6 @@ const addProductMedia = async (req, res) => {
     const newProductMedia = await ProductMedia.create({
       product_id,
       product_variant_id,
-      product_attribute_id,
-      media_url,
       media_type: media_type || "image",
       created_by,
     });
@@ -76,7 +63,6 @@ const getAllProductMedia = async (req, res) => {
       include: [
         { model: Product },
         { model: ProductVariant },
-        { model: Attribute },
         { model: User, as: "creator" },
         { model: User, as: "updater" },
       ],
@@ -102,7 +88,6 @@ const getProductMediaById = async (req, res) => {
       include: [
         { model: Product },
         { model: ProductVariant },
-        { model: Attribute },
         { model: User, as: "creator" },
         { model: User, as: "updater" },
       ],
@@ -142,7 +127,6 @@ const getProductMediaByProduct = async (req, res) => {
       where: { product_id: productId },
       include: [
         { model: ProductVariant },
-        { model: Attribute },
         { model: User, as: "creator" },
         { model: User, as: "updater" },
       ],
@@ -176,7 +160,6 @@ const getProductMediaByVariant = async (req, res) => {
       where: { product_variant_id: variantId },
       include: [
         { model: Product },
-        { model: Attribute },
         { model: User, as: "creator" },
         { model: User, as: "updater" },
       ],
@@ -197,8 +180,7 @@ const getProductMediaByVariant = async (req, res) => {
 const updateProductMedia = async (req, res) => {
   try {
     const { id } = req.params;
-    const { product_id, product_variant_id, product_attribute_id, media_url, media_type } =
-      req.body;
+    const { product_id, product_variant_id, media_type } = req.body;
 
     const productMedia = await ProductMedia.findByPk(id);
     if (!productMedia) {
@@ -227,16 +209,6 @@ const updateProductMedia = async (req, res) => {
       }
     }
 
-    // Check if attribute exists if provided
-    if (product_attribute_id) {
-      const attribute = await Attribute.findByPk(product_attribute_id);
-      if (!attribute) {
-        return res
-          .status(StatusCodes.NOT_FOUND)
-          .json({ message: "Attribute not found" });
-      }
-    }
-
     // Get the user ID for updated_by
     const user = await User.findOne({ where: { email: req.user.email } });
     if (!user) {
@@ -247,9 +219,8 @@ const updateProductMedia = async (req, res) => {
 
     // Update fields
     if (product_id) productMedia.product_id = product_id;
-    if (product_variant_id !== undefined) productMedia.product_variant_id = product_variant_id;
-    if (product_attribute_id !== undefined) productMedia.product_attribute_id = product_attribute_id;
-    if (media_url) productMedia.media_url = media_url;
+    if (product_variant_id !== undefined)
+      productMedia.product_variant_id = product_variant_id;
     if (media_type) productMedia.media_type = media_type;
     productMedia.updated_by = user.dataValues.user_id;
 

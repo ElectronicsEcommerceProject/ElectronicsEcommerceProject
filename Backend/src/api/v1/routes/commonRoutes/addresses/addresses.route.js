@@ -7,9 +7,10 @@ import { addressController } from "../../../controllers/index.js";
 const router = express.Router();
 
 router.post(
-  "/",
+  "/:id",
   verifyJwtToken,
   validator(validators.address.addressValidator, null),
+  validator(validators.address.id, "params"), // Add params validation
   addressController.addAddress
 );
 

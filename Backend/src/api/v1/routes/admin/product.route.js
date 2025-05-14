@@ -20,10 +20,20 @@ router.post(
 // Get all products
 router.get("/", verifyJwtToken, adminProductController.getProducts);
 
+// Get products by category_id and brand_id
+// Get products by category_id and brand_id
+router.get(
+  "/category/:category_id/brand/:brand_id",
+  verifyJwtToken,
+
+  adminProductController.getProductsByCategoryAndBrand
+);
+
 // Get products by category ID
 router.get(
-  "/category/:categoryId",
+  "/category/:category_id",
   verifyJwtToken,
+  validator(validators.product.id, "params"),
   adminProductController.getProductsByCategoryId
 );
 

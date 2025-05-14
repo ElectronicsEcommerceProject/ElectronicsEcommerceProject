@@ -21,11 +21,7 @@ export default (sequelize) => {
     {
       timestamps: true,
       tableName: "Attributes",
-      indexes: [
-        { fields: ["product_type_id"] },
-        { fields: ["created_by"] },
-        { fields: ["updated_by"] },
-      ],
+      indexes: [{ fields: ["created_by"] }, { fields: ["updated_by"] }],
     }
   );
 

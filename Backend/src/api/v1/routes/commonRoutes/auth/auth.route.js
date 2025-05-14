@@ -16,7 +16,5 @@ router.post(
   registerController
 );
 router.post("/login", validator(validators.auth.login, null), loginController);
-// router.post('/register', register); // for testing purpose only
-// router.post('/login', login)
 
 export default router;

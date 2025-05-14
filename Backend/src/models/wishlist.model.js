@@ -1,28 +1,32 @@
-import { DataTypes } from 'sequelize';
+import { DataTypes } from "sequelize";
 
 export default (sequelize) => {
-  const Wishlist = sequelize.define('Wishlist', {
-    wishlist_id: {
-      type: DataTypes.UUID, // UUID for primary key
-      defaultValue: DataTypes.UUIDV4, // Automatically generate UUID
-      primaryKey: true,
+  const Wishlist = sequelize.define(
+    "Wishlist",
+    {
+      wishlist_id: {
+        type: DataTypes.UUID, // UUID for primary key
+        defaultValue: DataTypes.UUIDV4, // Automatically generate UUID
+        primaryKey: true,
+      },
+      user_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
     },
-    user_id: {
-      type: DataTypes.UUID,
-      allowNull: false,
-    },
-    quantity: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 1,
-    },
-  }, {
-    timestamps: true, // Enable timestamps for createdAt and updatedAt
-    tableName: 'Wishlists',
-  });
+    {
+      timestamps: true, // Enable timestamps for createdAt and updatedAt
+      tableName: "Wishlists",
+    }
+  );
 
   Wishlist.associate = (models) => {
-    Wishlist.belongsTo(models.User, { foreignKey: 'user_id' });
+    Wishlist.belongsTo(models.User, { foreignKey: "user_id" });
+    Wishlist.hasMany(models.WishListItem, {
+      foreignKey: "wishlist_id",
+      onDelete: "CASCADE",
+      as: "wishlistItems",
+    }); // Wishlist has many items
   };
 
   return Wishlist;

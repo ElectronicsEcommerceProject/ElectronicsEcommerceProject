@@ -2,20 +2,12 @@ import { StatusCodes } from "http-status-codes";
 import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
 
-const { Attribute, ProductType, User } = db;
+const { Attribute, User } = db;
 
 // Add a new attribute
 const addAttribute = async (req, res) => {
   try {
-    const { product_type_id, name, data_type, is_variant_level } = req.body;
-
-    // Check if product type exists
-    const productType = await ProductType.findByPk(product_type_id);
-    if (!productType) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Product type not found" });
-    }
+    const { name, data_type, is_variant_level } = req.body;
 
     // Get the user ID of the creator
     const user = await User.findOne({ where: { email: req.user.email } });
@@ -28,7 +20,6 @@ const addAttribute = async (req, res) => {
 
     // Create the new attribute
     const newAttribute = await Attribute.create({
-      product_type_id,
       name,
       data_type,
       is_variant_level: is_variant_level || false,
@@ -51,12 +42,22 @@ const getAllAttributes = async (req, res) => {
   try {
     const attributes = await Attribute.findAll({
       include: [
-        { model: ProductType, as: "ProductType" },
-        { model: User, as: "creator" },
-        { model: User, as: "updater" },
+        {
+          model: User,
+          as: "creator",
+          attributes: ["user_id", "name", "email"],
+        },
+        {
+          model: User,
+          as: "updater",
+          attributes: ["user_id", "name", "email"],
+        },
       ],
     });
-    res.status(StatusCodes.OK).json({ data: attributes });
+    res.status(StatusCodes.OK).json({
+      message: MESSAGE.get.succ,
+      data: attributes,
+    });
   } catch (error) {
     console.error("Error fetching attributes:", error);
     res
@@ -65,30 +66,38 @@ const getAllAttributes = async (req, res) => {
   }
 };
 
-// Get attributes by product type ID
-const getAttributesByProductType = async (req, res) => {
+// Get attribute by ID
+const getAttributeById = async (req, res) => {
   try {
-    const { productTypeId } = req.params;
+    const { id } = req.params;
 
-    // Check if product type exists
-    const productType = await ProductType.findByPk(productTypeId);
-    if (!productType) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Product type not found" });
-    }
-
-    const attributes = await Attribute.findAll({
-      where: { product_type_id: productTypeId },
+    const attribute = await Attribute.findByPk(id, {
       include: [
-        { model: User, as: "creator" },
-        { model: User, as: "updater" },
+        {
+          model: User,
+          as: "creator",
+          attributes: ["user_id", "name", "email"],
+        },
+        {
+          model: User,
+          as: "updater",
+          attributes: ["user_id", "name", "email"],
+        },
       ],
     });
 
-    res.status(StatusCodes.OK).json({ data: attributes });
+    if (!attribute) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: MESSAGE.get.none });
+    }
+
+    res.status(StatusCodes.OK).json({
+      message: MESSAGE.get.succ,
+      data: attribute,
+    });
   } catch (error) {
-    console.error("Error fetching attributes by product type:", error);
+    console.error("Error fetching attribute:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.get.fail, error: error.message });
@@ -99,23 +108,13 @@ const getAttributesByProductType = async (req, res) => {
 const updateAttribute = async (req, res) => {
   try {
     const { id } = req.params;
-    const { product_type_id, name, data_type, is_variant_level } = req.body;
+    const { name, data_type, is_variant_level } = req.body;
 
     const attribute = await Attribute.findByPk(id);
     if (!attribute) {
       return res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: MESSAGE.get.none });
-    }
-
-    // If product_type_id is being updated, check if it exists
-    if (product_type_id && product_type_id !== attribute.product_type_id) {
-      const productType = await ProductType.findByPk(product_type_id);
-      if (!productType) {
-        return res
-          .status(StatusCodes.NOT_FOUND)
-          .json({ message: "Product type not found" });
-      }
     }
 
     // Get the user ID for updated_by
@@ -127,7 +126,6 @@ const updateAttribute = async (req, res) => {
     }
 
     // Update fields
-    if (product_type_id) attribute.product_type_id = product_type_id;
     if (name) attribute.name = name;
     if (data_type) attribute.data_type = data_type;
     if (is_variant_level !== undefined)
@@ -174,7 +172,7 @@ const deleteAttribute = async (req, res) => {
 export default {
   addAttribute,
   getAllAttributes,
-  getAttributesByProductType,
+  getAttributeById,
   updateAttribute,
   deleteAttribute,
 };

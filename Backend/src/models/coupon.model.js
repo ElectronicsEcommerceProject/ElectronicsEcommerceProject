@@ -4,7 +4,7 @@ export default (sequelize) => {
   const Coupon = sequelize.define(
     "Coupon",
     {
-      id: {
+      coupon_id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
@@ -40,6 +40,8 @@ export default (sequelize) => {
     {
       tableName: "Coupons",
       timestamps: true,
+      paranoid: true, // preserve redemption history
+
       indexes: [
         { fields: ["code"], unique: true },
         { fields: ["product_id"] },

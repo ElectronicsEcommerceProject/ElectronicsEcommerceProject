@@ -1,17 +1,38 @@
 import dotenv from "dotenv";
 import { Sequelize } from "sequelize";
 import dbConfigFile from "../config/db.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
+// Get current directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables - don't do this here as it's already loaded by Jest setup
 dotenv.config({ path: "../.env" });
 
 const env = process.env.NODE_ENV || "development";
+console.log(`Current environment: ${env}`); // Debug log
+
+// Get database config for current environment
 const dbConfig = dbConfigFile[env];
+
+console.log("Database config:", dbConfig); // Debug log
 
 if (!dbConfig) {
   throw new Error(
     `Database configuration for environment "${env}" is missing.`
   );
 }
+
+// Log config for debugging
+console.log("Database config:", {
+  database: dbConfig.database,
+  username: dbConfig.username,
+  host: dbConfig.host,
+  dialect: dbConfig.dialect,
+  port: dbConfig.port,
+});
 
 // Initialize Sequelize
 const sequelize = new Sequelize(
@@ -37,7 +58,7 @@ import AttributeValue from "./productAttributesValues.model.js";
 import ProductMedia from "./productMedia.model.js";
 import ProductMediaUrl from "./productMediaURL.model.js";
 import Category from "./category.model.js";
-import Brand from "./brand.model.js";
+import Brand from "./productBrand.model.js";
 import Coupon from "./coupon.model.js";
 import CouponUser from "./couponUser.model.js";
 import Order from "./order.model.js";
