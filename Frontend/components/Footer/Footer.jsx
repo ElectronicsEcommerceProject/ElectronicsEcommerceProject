@@ -1,211 +1,124 @@
-import React from "react";
-
+import React from 'react';
+import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from 'react-icons/fa';
+import { FiMail } from 'react-icons/fi';
+import { FaCcVisa, FaCcMastercard, FaCcPaypal, FaCcStripe } from 'react-icons/fa'; // Credit card icons
+ //  
 const Footer = () => {
-  const footerStyle = {
-    backgroundColor: "#f8f9fa",
-    padding: "2rem 1rem",
-    fontFamily: "sans-serif",
-    fontSize: "0.95rem",
-    color: "#333",
-  };
-
-  const contentStyle = {
-    maxWidth: "1200px",
-    margin: "0 auto",
-    display: "flex",
-    flexDirection: "column",
-    gap: "2rem",
-  };
-
-  const utilityBarStyle = {
-    borderBottom: "1px solid #ddd",
-    paddingBottom: "1rem",
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.5rem",
-  };
-
-  const utilityContentStyle = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.25rem",
-  };
-
-  const footerSectionsStyle = {
-    display: "flex",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    gap: "2rem",
-  };
-
-  const columnStyle = {
-    flex: "1 1 200px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.5rem",
-  };
-
-  const headingStyle = {
-    fontWeight: "bold",
-    marginBottom: "0.5rem",
-  };
-
-  const linkListStyle = {
-    listStyle: "none",
-    padding: 0,
-    margin: 0,
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.3rem",
-  };
-
-  const linkStyle = {
-    textDecoration: "none",
-    color: "#007bff",
-    transition: "color 0.3s",
-  };
-
-  const socialStyle = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.3rem",
-  };
-
-  const bottomStyle = {
-    borderTop: "1px solid #ddd",
-    paddingTop: "1rem",
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.5rem",
-    fontSize: "0.85rem",
-    color: "#666",
-    textAlign: "center",
-  };
-
   return (
-    <footer style={footerStyle}>
-      <div style={contentStyle}>
-        {/* Utility Bar */}
-        <div style={utilityBarStyle}>
-          <div style={utilityContentStyle}>
-            <div>
-              <span>Call: +91 7485000001</span> |{" "}
-              <span>Tech Support: 10:00 AM - 7:00 PM</span>
-            </div>
-            <div>
-              <span>Email: support@maalakshmielectronics.com</span>
-            </div>
+    <footer className="bg-gray-800 text-white pt-12 pb-6 px-4 sm:px-6 md:px-8 mt-3">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+        {/* Company Info & Social Icons */}
+        <div>
+          <h3 className="text-lg font-bold mb-4 flex items-center">
+            <span className="w-6 h-6 bg-white mr-2 rounded-sm"></span>
+            ShopEase
+          </h3>
+          <p className="text-sm text-gray-300 mb-4">
+            Your trusted destination for quality electronics and gadgets since 2015.
+          </p>
+          <div className="flex space-x-4 mb-4">
+            <a href="#" className="text-gray-300 hover:text-white">
+              <FaFacebookF />
+            </a>
+            <a href="#" className="text-gray-300 hover:text-white">
+              <FaTwitter />
+            </a>
+            <a href="#" className="text-gray-300 hover:text-white">
+              <FaInstagram />
+            </a>
+            <a href="#" className="text-gray-300 hover:text-white">
+              <FaLinkedinIn />
+            </a>
           </div>
+
+          {/* Email Subscription Inside Footer */}
+          <form className="flex flex-col sm:flex-row gap-2 max-w-xs mx-auto">
+            <div className="relative flex-1">
+              <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="email"
+                placeholder="Your email"
+                className="w-full pl-10 pr-3 py-1.5 border border-gray-600 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded text-sm"
+            >
+              Subscribe
+            </button>
+          </form>
         </div>
 
-        {/* Footer Columns */}
-        <div style={footerSectionsStyle}>
-          {/* About Us */}
-          <div style={columnStyle}>
-            <h4 style={headingStyle}>About Us</h4>
-            <ul style={linkListStyle}>
-              <li>
-                <a href="#" style={linkStyle}>
-                  Company Info
-                </a>
-              </li>
-              <li>
-                <a href="#" style={linkStyle}>
-                  Vision
-                </a>
-              </li>
-              <li>
-                <a href="#" style={linkStyle}>
-                  Careers
-                </a>
-              </li>
-              <li>
-                <a href="#" style={linkStyle}>
-                  Contact Us
-                </a>
-              </li>
-            </ul>
-          </div>
+        {/* Quick Links */}
+        <div>
+          <h4 className="font-bold text-lg mb-4">Quick Links</h4>
+          <ul className="space-y-2 text-sm text-gray-300">
+            <li><a href="#" className="hover:text-white">Home</a></li>
+            <li><a href="#" className="hover:text-white">About Us</a></li>
+            <li><a href="#" className="hover:text-white">Products</a></li>
+            <li><a href="#" className="hover:text-white">Blog</a></li>
+            <li><a href="#" className="hover:text-white">Contact</a></li>
+          </ul>
+        </div>
 
-          {/* Categories */}
-          <div style={columnStyle}>
-            <h4 style={headingStyle}>Categories</h4>
-            <ul style={linkListStyle}>
-              <li>
-                <a href="#" style={linkStyle}>
-                  Apple Laptops
-                </a>
-              </li>
-              <li>
-                <a href="#" style={linkStyle}>
-                  HP Laptops
-                </a>
-              </li>
-              <li>
-                <a href="#" style={linkStyle}>
-                  CPUs
-                </a>
-              </li>
-              <li>
-                <a href="#" style={linkStyle}>
-                  Accessories
-                </a>
-              </li>
-            </ul>
-          </div>
+        {/* Customer Service */}
+        <div>
+          <h4 className="font-bold text-lg mb-4">Customer Service</h4>
+          <ul className="space-y-2 text-sm text-gray-300">
+            <li><a href="#" className="hover:text-white">FAQs</a></li>
+            <li><a href="#" className="hover:text-white">Shipping Policy</a></li>
+            <li><a href="#" className="hover:text-white">Return Policy</a></li>
+            <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
+            <li><a href="#" className="hover:text-white">Terms & Conditions</a></li>
+          </ul>
+        </div>
 
-          {/* Customer Support */}
-          <div style={columnStyle}>
-            <h4 style={headingStyle}>Customer Support</h4>
-            <ul style={linkListStyle}>
-              <li>
-                <a href="#" style={linkStyle}>
-                  FAQs
-                </a>
-              </li>
-              <li>
-                <a href="#" style={linkStyle}>
-                  Return Policy
-                </a>
-              </li>
-              <li>
-                <a href="#" style={linkStyle}>
-                  Shipping Info
-                </a>
-              </li>
-              <li>
-                <a href="#" style={linkStyle}>
-                  Track Order
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Follow Us */}
-          <div style={columnStyle}>
-            <h4 style={headingStyle}>Follow Us</h4>
-            <div style={socialStyle}>
-              <a href="#" style={linkStyle}>
-                Facebook
-              </a>
-              <a href="#" style={linkStyle}>
-                Instagram
-              </a>
-              <a href="#" style={linkStyle}>
-                YouTube
-              </a>
-              <a href="#" style={linkStyle}>
-                LinkedIn
-              </a>
+        {/* Contact Info */}
+        <div>
+          <h4 className="font-bold text-lg mb-4">Contact Us</h4>
+          <address className="not-italic text-sm text-gray-300 space-y-3">
+            <div className="flex items-start">
+              <svg className="h-5 w-5 text-gray-400 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>123 Tech Park, Electronic City, Bangalore 560100</span>
             </div>
-          </div>
+            <div className="flex items-center">
+              <svg className="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              <a href="tel:+919876543210">+91 98765 43210</a>
+            </div>
+            <div className="flex items-center">
+              <svg className="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <a href="mailto:support@shopease.com">support@shopease.com</a>
+            </div>
+          </address>
         </div>
+      </div>
 
-        {/* Bottom Info */}
-        <div style={bottomStyle}>
-          <div>Accepted Payments: Visa, Mastercard, UPI, COD</div>
-          <div>© 2025 Maa Lakshmi Electronics. All rights reserved.</div>
-        </div>
+      {/* Payment Icons (Aligned to the right) */}
+    <div className="max-w-7xl mx-auto flex justify-end gap-6 mt-6">
+  <FaCcVisa className="text-blue-500 text-3xl" />
+  <FaCcMastercard className="text-red-600 text-3xl" />
+  <FaCcPaypal className="text-blue-400 text-3xl" />
+  <FaCcStripe className="text-indigo-600 text-3xl" />
+   <span className="text-green-500 text-3xl">₹</span> {/* Rupee symbol as Unicode */}
+</div>
+
+
+      {/* Copyright */}
+      <div className="max-w-7xl mx-auto pt-8 mt-6 border-t border-gray-700 text-center text-sm text-gray-400 px-4 sm:px-6">
+        © {new Date().getFullYear()} ShopEase. All rights reserved.
       </div>
     </footer>
   );

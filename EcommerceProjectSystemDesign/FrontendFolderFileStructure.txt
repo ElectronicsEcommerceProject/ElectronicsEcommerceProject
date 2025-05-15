@@ -1,0 +1,139 @@
+├── /assets/                       # Static files like images, icons, and logo
+│   ├── /icons/                    # Common icons for all roles (e.g., cart icon, user avatar)
+│   ├── /images/                   # UI images or product images that are used across the site
+│   └── logo.png                   # Main logo of the app
+
+├── /components/                  # Reusable UI components used throughout the app
+│   ├── /Header/                  # Different header components for each role
+│   │   ├── CustomerHeader.jsx        # Header for Customers: Contains links like Home, Shop, Cart, Profile, Wishlist.
+│   │       // Example: Shows Cart icon and Profile avatar at the top right.
+│   │   ├── RetailerHeader.jsx        # Header for Retailers: Contains links like Dashboard, Manage Orders, Stock Alerts, Add Product, Profile, and a Logout dropdown.
+│   │   ├── AdminHeader.jsx           # Header for Admins: Contains full admin panel links like User Management, Order Management, CRUD for products, and Dashboard.
+│   │   └── index.js                  # Exports the correct header based on the user's role (checks role and returns CustomerHeader, RetailerHeader, or AdminHeader).
+│   ├── /Footer/
+│   │   └── Footer.jsx               # Common footer for all pages:
+│   │       // Example: Contains links to About Us, Contact, Terms & Conditions, Privacy Policy, Social Media icons (FB, Insta, etc.), and a copyright notice (e.g., "Copyright © SchoolHub 2025").
+│   ├── /ProductCard/               # UI components for displaying product information, tailored per role.
+│   │   ├── CustomerProductCard.jsx     # For Customers: Shows product with selling price.
+│   │   ├── RetailerProductCard.jsx     # For Retailers: Shows product with both purchase and selling price.
+│   │   ├── AdminProductCard.jsx        # For Admins: Provides management options for product information.
+│   │   └── index.js                   # Exports all product card components together.
+│   ├── /CartSummary/                  #Ye React component sirf UI handle karta hai. Yeh service file ko call karta hai, aur jo data aaye use UI mein dikhata hai.           
+
+│   │   ├── CustomerCartSummary.jsx    # Cart summary for Customers: Displays selling price, quantity, total, and a "Place Order" button.
+│   │   ├── RetailerCartSummary.jsx    # Cart summary for Retailers: Displays purchase price, selling price, profit margin, and bulk order options.
+│   │   └── index.js                   # Exports the appropriate CartSummary component based on the user role.
+│   ├── /Alert/
+│   │   ├── AlertMessage.jsx           # Component to display UI alert messages like "Order placed!" or "Error occurred".
+│   │   └── alertSlice.js              # Redux slice to manage the alert state (show/hide alerts with timers).
+│   ├── /Loader/
+│   │   └── Spinner.jsx                # Common loading spinner component used across all roles.
+│   ├── Navbar.js                      # Navigation bar for public pages (and can be used in multiple roles):
+│   │       // Example: Contains the logo, search bar, Login/Signup buttons if the user is not logged in, and displays Profile, Logout, and Cart icons when logged in. Also responsive for mobile with a hamburger menu.
+│   ├── SearchBar.js                   # Component for the product search bar functionality.
+│   ├── FilterBar.js                   # Component to filter products by category, price, or rating.
+│   ├── ReviewForm.js                  # Component for submitting product reviews.
+│   ├── ReviewList.js                  # Displays a list of product reviews.
+│   ├── Wishlist.js                    # Component to show a Customer's wishlist items.
+│   ├── StockAlerts.js                 # Component for displaying out-of-stock alerts.
+│   └── AddCoupon.js                   # Form for Admins to create or edit coupons.
+
+├── /features/                       # Contains Redux slices, services, and business logic
+│   ├── auth/                         # Authentication-related modules (Login, Signup, OTP verification)
+│   │   ├── LoginForm.jsx             # UI for the Login form.
+│   │   ├── SignupForm.jsx            # UI for the Signup form.
+│   │   ├── OtpVerification.jsx       # UI for OTP verification.
+│   │   ├── authSlice.js              # Redux slice to manage auth state (token, role, user info).
+│   │   └── authService.js            # Functions for calling authentication APIs (login, signup, password reset). 
+│   ├── product/                      # Modules related to product data fetch/add/edit functionality
+│   │   ├── productService.js         # API calls for products with role-specific pricing logic.
+│   ├── cart/                         # Modules related to cart data and management (for both Customer and Retailer)
+│   │   ├── cartSlice.js              # Redux slice managing the cart state (items, quantity, price).
+│   │   ├── cartService.js            # Service functions for cart API integration (add, remove, update items).
+│   │   └── cartUtils.js              # Utility functions to calculate subtotal, tax, and discount.
+│   ├── order/                        # Modules for order placement and order history features
+│   │   ├── orderSlice.js             # Redux slice managing order state.
+│   │   ├── orderService.js           # Service functions for order API calls (placing orders, fetching order history, canceling orders).
+│   │   └── useOrderPlacer.js         # Custom hook to handle the order placement process.
+│   ├── payment/                      # Modules for payment gateway integration (e.g., Razorpay)
+│   │   ├── paymentSlice.js           # Redux slice to manage payment process state.
+│   │   ├── paymentService.js         # API integration functions for payments.
+│   │   └── RazorpayButton.jsx        # UI component for the Razorpay payment button.
+│   ├── customer/                     # Components/screens exclusive for Customers
+│   │   ├── Dashboard/CustomerDashboard.jsx      # Dashboard showing customer stats and activity.
+│   │   ├── Orders/CustomerOrderList.jsx        # Screen displaying the customer's order history.
+│   │   ├── Profile/EditProfile.jsx             # Form for customers to update their profile.
+│   │   ├── SavedCards/SavedCards.jsx           # Displays saved payment methods.
+│   │   ├── Addresses/AddressList.jsx           # Manages customer addresses.
+│   │   ├── Notifications/Notifications.jsx     # Component for showing notification alerts.
+│   │   ├── Privacy/PrivacySettings.jsx         # For managing customer's data privacy settings.
+│   │   └── Logout/CustomerLogout.jsx           # Handles logout functionality for customers.
+│   ├── retailer/                     # Components/screens exclusive for Retailers
+│   │   ├── Dashboard/RetailerDashboard.jsx     # Dashboard screen for Retailers.
+│   │   ├── Orders/RetailerOrderList.jsx        # Screen for viewing retailer order history.
+│   │   └── Logout/RetailerLogout.jsx           # Component handling Retailer logout.
+│   ├── admin/                        # Admin-specific panel and screens
+│   │   ├── Dashboard/AdminDashboard.jsx        # Admin dashboard with overall site stats.
+│   │   ├── ManageUsers.jsx                     # Screen to manage users (list, delete, change roles).
+│   │   ├── ManageProducts.jsx                  # Screen to perform CRUD operations on products.
+│   │   ├── ManageOrders.jsx                    # Screen to view and update order statuses.
+│   │   └── adminSlice.js                       # Redux slice for Admin-specific state management.
+│   └── common/                       # Common Redux slices shared across roles
+│       ├── userSlice.js              # Manages logged-in user information.
+│       ├── uiSlice.js                # Handles UI state like loader toggling and modal visibility.
+│       └── notificationsSlice.js     # Stores notification data for all roles.
+
+├── /pages/                           # Pages connected to different routes in the app
+│   ├── Home.jsx                      # Public home page.
+│   ├── Shop.jsx                      # Public product listing page.
+│   ├── Contact.jsx                   # Static page with contact information.
+│   └── NotFound.jsx                  # 404 Not Found page shown when a route doesn't exist.
+
+├── /routes/                          # Route definitions segregated based on user roles
+│   ├── customerRoutes.js             # Routes accessible only to Customers.
+│   ├── retailerRoutes.js             # Routes accessible only to Retailers.
+│   ├── adminRoutes.js                # Routes accessible only to Admins.
+│   └── publicRoutes.js               # Routes that are open to all visitors.
+
+├── /middlewares/                     # Middleware for route protection and role-based access
+│   ├── ProtectedRoute.jsx            # Component that checks if a user is logged in before allowing route access.
+│   └── RoleBasedRoute.jsx            # Component that checks the user's role and permits access accordingly.
+
+├── /services/                        # API service files to interact with the backend
+│   ├── api.js                        # Axios configuration with baseURL and common headers.
+│   ├── authAPI.js                    # API functions for user authentication (login, register, etc.).
+│   ├── productAPI.js                 # API functions for fetching and managing products.
+│   ├── cartAPI.js                    # API functions for cart operations (add, update, delete items).
+│   ├── orderAPI.js                   # API functions for order operations (place order, fetch orders).
+│   └── paymentAPI.js                 # API functions for processing payments.
+
+├── /store/                           # Redux store configuration
+│   └── store.js                      # Combines all Redux slices and creates the store.
+
+├── /constants/                       # Static constant values used across the app
+│   ├── routes.js                     # Defines constant route paths (e.g., CUSTOMER_DASHBOARD = "/customer/dashboard").
+│   ├── messages.js                   # Contains success and error message strings.
+│   ├── roles.js                      # Defines role names as constants (e.g., CUSTOMER, RETAILER, ADMIN).
+│   └── paymentModes.js               # Lists available payment methods (e.g., COD, Razorpay).
+
+├── /utils/                           # Utility functions – reusable helper logic
+│   ├── jwtHelper.js                  # Functions to decode JWT tokens and extract user role.
+│   ├── validators.js                 # Form validation functions (e.g., email, password format).
+│   ├── currencyFormatter.js          # Function to format numbers into currency format (e.g., formatPrice(1000) outputs "₹1,000").
+│   ├── localStorageHelper.js         # Utility for interacting with local storage (CRUD operations).
+│   └── dateFormatter.js              # Functions to format and display dates (e.g., formatDate('2024-04-14') → "14 Apr 2024").
+
+├── /ui/                              # Common UI components for forms and interactive elements
+│   ├── InputField.jsx                # Reusable text input component for forms.
+│   ├── Button.jsx                    # Reusable button component.
+│   ├── SelectField.jsx               # Reusable dropdown menu component.
+│   └── Modal.jsx                     # Reusable modal popup component.
+
+├── /styles/                          # CSS and theming files for the app
+│   ├── global.css                    # Global CSS styles.
+│   ├── variables.css                 # CSS variables for colors, spacing, etc.
+│   └── themes.js                     # Logic for switching between themes (e.g., dark/light mode).
+
+├── App.jsx                           # Root App component where global providers and layout are defined.
+├── index.js                          # Entry point for the React app; renders the App component using ReactDOM.
+└── routes.jsx                        # Merges and exports routes for all user roles.

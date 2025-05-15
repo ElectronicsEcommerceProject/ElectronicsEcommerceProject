@@ -1,0 +1,100 @@
+## ** Database Design**
+Database ko update kiya gaya hai taaki naye requirements fit ho sakein. Ye raha pura schema:
+
+### **Users**
+- `user_id` (PK, INT, AUTO_INCREMENT) – User ka unique ID.
+- `name` (VARCHAR) – User ka naam.
+- `email` (VARCHAR, UNIQUE) – Role decide karne ke liye.
+- `phone_number` (VARCHAR, UNIQUE) – Role decide karne ke liye.
+- `password` (VARCHAR, hashed) – Secure password.
+- `address` (TEXT, optional) – Delivery address.
+- `role` (ENUM: 'customer', 'retailer', 'admin') – User ka type.
+- `created_at` (DATETIME) – Kab bana account.
+
+### **Categories**
+- `category_id` (PK, INT, AUTO_INCREMENT)
+- `name` (VARCHAR) – Category ka naam.
+- `target_role` (ENUM: 'customer', 'retailer') – Kis role ke liye hai.
+- `created_by` (FK → Users.user_id) – Kisne banaya.
+- `created_at` (DATETIME)
+
+### **Products**
+- `product_id` (PK, INT, AUTO_INCREMENT)
+- `name` (VARCHAR) – Product ka naam.
+- `category_id` (FK → Categories.category_id) – Category se link.
+- `price` (DECIMAL) – Price.
+- `stock` (INT) – Kitna stock hai.
+- `description` (TEXT) – Product ki details.
+- `image_url` (VARCHAR) – Product ki photo.
+- `discount_quantity` (INT) – Regular discount ke liye minimum quantity.
+- `discount_percentage` (DECIMAL) – Regular discount ka %.
+- `min_retailer_quantity` (INT, NULL for customer) – Retailer ke liye minimum order.
+- `bulk_discount_quantity` (INT, NULL for customer) – Bulk discount ke liye quantity.
+- `bulk_discount_percentage` (DECIMAL) – Bulk discount ka %.
+- `stock_alert_threshold` (INT) – Low stock ka alert limit.
+- `target_role` (ENUM: 'customer', 'retailer') – Kis role ke liye product hai.
+- `created_by` (FK → Users.user_id)
+
+### **Coupons**
+- `coupon_id` (PK, INT, AUTO_INCREMENT)
+- `code` (VARCHAR, UNIQUE) – Coupon ka unique code.
+- `product_id` (FK → Products.product_id, optional) – Specific product ke liye.
+- `discount_percentage` (DECIMAL) – Discount ka %.
+- `valid_from` (DATETIME) – Kab se valid hai.
+- `valid_until` (DATETIME) – Kab tak valid hai.
+- `target_role` (ENUM: 'customer', 'retailer', 'both') – Kis role ke liye hai.
+- `is_user_specific` (BOOLEAN) – Specific users ke liye ya general.
+- `created_by` (FK → Users.user_id)
+
+### **Coupon_Users (Naya Table)**
+- `coupon_user_id` (PK, INT, AUTO_INCREMENT)
+- `coupon_id` (FK → Coupons.coupon_id)
+- `user_id` (FK → Users.user_id)
+- Ye table user-specific coupons ko specific users se link karta hai.
+
+### **Orders**
+- `order_id` (PK, INT, AUTO_INCREMENT)
+- `user_id` (FK → Users.user_id)
+- `total_amount` (DECIMAL) – Total price.
+- `coupon_id` (FK → Coupons.coupon_id, optional) – Applied coupon.
+- `status` (ENUM: 'pending', 'shipped', 'delivered', 'cancelled', 'cancel_requested')
+- `address` (TEXT) – Delivery address.
+- `mobile_number` (VARCHAR) – Contact number.
+- `created_at` (DATETIME)
+
+### **Order_Items**
+- `order_item_id` (PK, INT, AUTO_INCREMENT)
+- `order_id` (FK → Orders.order_id)
+- `product_id` (FK → Products.product_id)
+- `quantity` (INT) – Kitne items.
+- `price_at_time` (DECIMAL) – Order ke time ka price.
+- `discount_applied` (DECIMAL) – Discount amount.
+
+### **Cart**
+- `cart_id` (PK, INT, AUTO_INCREMENT)
+- `user_id` (FK → Users.user_id)
+- `product_id` (FK → Products.product_id)
+- `quantity` (INT)
+
+### **Wishlist**
+- `wishlist_id` (PK, INT, AUTO_INCREMENT)
+- `user_id` (FK → Users.user_id)
+- `product_id` (FK → Products.product_id)
+- `created_at` (DATETIME)
+
+### **Reviews**
+- `review_id` (PK, INT, AUTO_INCREMENT)
+- `product_id` (FK → Products.product_id)
+- `user_id` (FK → Users.user_id)
+- `rating` (INT, 1-5) – Product ki rating.
+- `comment` (TEXT) – User ka comment.
+- `created_at` (DATETIME)
+
+### **Stock_Alerts**
+- `alert_id` (PK, INT, AUTO_INCREMENT)
+- `product_id` (FK → Products.product_id)
+- `stock_level` (INT) – Current stock.
+- `status` (ENUM: 'pending', 'sent') – Alert bheja ya nahi.
+- `created_at` (DATETIME)
+
+---

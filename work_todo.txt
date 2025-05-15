@@ -1,10 +1,10 @@
-#### Phase 2: Authentication System
-Is phase mein user management implement karo, including registration, login, password reset, profile update, aur address management:
-- **Backend Tasks**:
-  - **User Model** define karo (Users Table: user_id, name, email, phone_number, password, role, status).
-  - **Registration** (`POST /api/auth/register`): Input validate karo (email aur phone_number unique hone chahiye), password hash karo (bcrypt), user ko database mein save karo (role: customer ya retailer).
-  - **Login** (`POST /api/auth/login`): Credentials verify karo, JWT token generate karo (user_id aur role ke saath).
-  - **Password Reset**: `POST /api/auth/forgot-password` ke liye reset token generate karo aur email bhejo, `POST /api/auth/reset-password` ke liye token validate karo aur password update karo.
-  - **Profile Update** (`PUT /api/users/profile`): Name, email, phone_number update karne ka option do, email change ke liye uniqueness check karo.
-  - **Address Management** (Addresses Table): `POST /api/users/addresses` naya address add karo, `PUT /api/users/addresses/:id` existing address update karo, `DELETE /api/users/addresses/:id` address delete karo (soft delete with is_active), `GET /api/users/addresses` user ke sabhi addresses list karo.
-  - JWT middleware banao taaki protected routes secure hon.
+1.Need to correct the cart page look.
+
+
+1.make the cart, wishlist page...
+
+
+2.with email send from frontend login function in authController.js check the 
+email associated with what role don't rely from frontend role given ....
+
+3.All phase Backend completed only all phase frontend need to be done...

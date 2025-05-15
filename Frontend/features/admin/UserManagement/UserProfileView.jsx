@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { 
-  FiArrowLeft, 
-  FiUser, 
-  FiMail, 
-  FiPhone, 
-  FiShoppingBag, 
+import React, { useState } from "react";
+import {
+  FiArrowLeft,
+  FiUser,
+  FiMail,
+  FiPhone,
+  FiShoppingBag,
   FiDollarSign,
   FiSettings,
   FiMessageSquare,
@@ -14,10 +14,10 @@ import {
   FiAlertCircle,
   FiDownload,
   FiLogOut,
-  FiEye
-} from 'react-icons/fi';
-import { FaStore, FaProductHunt } from 'react-icons/fa';
-import { User } from 'lucide-react';
+  FiEye,
+} from "react-icons/fi";
+import { FaStore, FaProductHunt } from "react-icons/fa";
+import { User } from "lucide-react";
 
 const UserProfileView = () => {
   // Sample user data
@@ -68,15 +68,18 @@ const UserProfileView = () => {
   const filteredUsers = users
     .filter((user) => {
       const matchesRole = filters.role === "All" || user.role === filters.role;
-      const matchesStatus = filters.status === "All" || user.status === filters.status;
-      const matchesSearch = filters.search === "" ||
+      const matchesStatus =
+        filters.status === "All" || user.status === filters.status;
+      const matchesSearch =
+        filters.search === "" ||
         user.name.toLowerCase().includes(filters.search.toLowerCase()) ||
         user.email.toLowerCase().includes(filters.search.toLowerCase()) ||
         user.phone.includes(filters.search);
       return matchesRole && matchesStatus && matchesSearch;
     })
     .sort((a, b) => {
-      if (filters.sortBy === "Date Joined") return new Date(b.createdDate) - new Date(a.createdDate);
+      if (filters.sortBy === "Date Joined")
+        return new Date(b.createdDate) - new Date(a.createdDate);
       if (filters.sortBy === "Order Count") return b.orders - a.orders;
       if (filters.sortBy === "Revenue") return b.revenue - a.revenue;
       return 0;
@@ -85,11 +88,29 @@ const UserProfileView = () => {
   const tabs = [
     { id: "general", label: "General Info", icon: <FiUser className="mr-2" /> },
     { id: "orders", label: "Orders", icon: <FiShoppingBag className="mr-2" /> },
-    ...(selectedUser?.role === "Customer" ? 
-      [{ id: "reviews", label: "Reviews", icon: <FiMessageSquare className="mr-2" /> }] : []),
-    ...(selectedUser?.role === "Retailer" ? 
-      [{ id: "products", label: "Products", icon: <FaProductHunt className="mr-2" /> }] : []),
-    { id: "actions", label: "Admin Actions", icon: <FiSettings className="mr-2" /> },
+    ...(selectedUser?.role === "Customer"
+      ? [
+          {
+            id: "reviews",
+            label: "Reviews",
+            icon: <FiMessageSquare className="mr-2" />,
+          },
+        ]
+      : []),
+    ...(selectedUser?.role === "Retailer"
+      ? [
+          {
+            id: "products",
+            label: "Products",
+            icon: <FaProductHunt className="mr-2" />,
+          },
+        ]
+      : []),
+    {
+      id: "actions",
+      label: "Admin Actions",
+      icon: <FiSettings className="mr-2" />,
+    },
   ];
 
   return (
@@ -104,7 +125,9 @@ const UserProfileView = () => {
             >
               <FiArrowLeft className="mr-1" /> Back
             </button>
-            <h2 className="text-2xl font-semibold text-gray-900">{selectedUser.name}'s Profile</h2>
+            <h2 className="text-2xl font-semibold text-gray-900">
+              {selectedUser.name}'s Profile
+            </h2>
           </div>
 
           <div className="flex flex-col md:flex-row gap-6">
@@ -132,19 +155,27 @@ const UserProfileView = () => {
             <div className="md:w-3/4 bg-white p-6 rounded-lg shadow-lg transition-all hover:shadow-xl">
               {activeTab === "general" && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">General Information</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    General Information
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex items-center">
                       <FiUser className="text-gray-500 mr-2" />
-                      <span><strong>Name:</strong> {selectedUser.name}</span>
+                      <span>
+                        <strong>Name:</strong> {selectedUser.name}
+                      </span>
                     </div>
                     <div className="flex items-center">
                       <FiMail className="text-gray-500 mr-2" />
-                      <span><strong>Email:</strong> {selectedUser.email}</span>
+                      <span>
+                        <strong>Email:</strong> {selectedUser.email}
+                      </span>
                     </div>
                     <div className="flex items-center">
                       <FiPhone className="text-gray-500 mr-2" />
-                      <span><strong>Phone:</strong> {selectedUser.phone}</span>
+                      <span>
+                        <strong>Phone:</strong> {selectedUser.phone}
+                      </span>
                     </div>
                     <div className="flex items-center">
                       {selectedUser.role === "Retailer" ? (
@@ -152,15 +183,22 @@ const UserProfileView = () => {
                       ) : (
                         <FiUser className="text-gray-500 mr-2" />
                       )}
-                      <span><strong>Role:</strong> {selectedUser.role}</span>
+                      <span>
+                        <strong>Role:</strong> {selectedUser.role}
+                      </span>
                     </div>
                     <div className="flex items-center">
                       <FiClock className="text-gray-500 mr-2" />
-                      <span><strong>Created Date:</strong> {selectedUser.createdDate}</span>
+                      <span>
+                        <strong>Created Date:</strong>{" "}
+                        {selectedUser.createdDate}
+                      </span>
                     </div>
                     <div className="flex items-center">
                       <FiClock className="text-gray-500 mr-2" />
-                      <span><strong>Last Login:</strong> {selectedUser.lastLogin}</span>
+                      <span>
+                        <strong>Last Login:</strong> {selectedUser.lastLogin}
+                      </span>
                     </div>
                     <div className="flex items-center">
                       {selectedUser.status === "Active" ? (
@@ -170,11 +208,16 @@ const UserProfileView = () => {
                       ) : (
                         <FiAlertCircle className="text-red-500 mr-2" />
                       )}
-                      <span><strong>Status:</strong> {selectedUser.status}</span>
+                      <span>
+                        <strong>Status:</strong> {selectedUser.status}
+                      </span>
                     </div>
                     <div className="flex items-center">
                       <FiMessageSquare className="text-gray-500 mr-2" />
-                      <span><strong>Notes/Tags:</strong> {selectedUser.notes.join(", ") || "None"}</span>
+                      <span>
+                        <strong>Notes/Tags:</strong>{" "}
+                        {selectedUser.notes.join(", ") || "None"}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -182,14 +225,28 @@ const UserProfileView = () => {
 
               {activeTab === "orders" && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Information</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Order Information
+                  </h3>
                   <div className="flex items-center mb-2">
                     <FiShoppingBag className="text-gray-500 mr-2" />
-                    <span><strong>Total Orders:</strong> {selectedUser.orders}</span>
+                    <span>
+                      <strong>Total Orders:</strong> {selectedUser.orders}
+                    </span>
                   </div>
                   <div className="flex items-center mb-4">
                     <FiDollarSign className="text-gray-500 mr-2" />
-                    <span><strong>Total {selectedUser.role === "Customer" ? "Spent" : "Revenue"}:</strong> ${selectedUser.role === "Customer" ? selectedUser.totalSpent : selectedUser.revenue}</span>
+                    <span>
+                      <strong>
+                        Total{" "}
+                        {selectedUser.role === "Customer" ? "Spent" : "Revenue"}
+                        :
+                      </strong>{" "}
+                      $
+                      {selectedUser.role === "Customer"
+                        ? selectedUser.totalSpent
+                        : selectedUser.revenue}
+                    </span>
                   </div>
                   <div className="mt-4 flex flex-wrap gap-4">
                     {["Delivered", "Cancelled", "Returned"].map((filter) => (
@@ -201,7 +258,10 @@ const UserProfileView = () => {
                       </button>
                     ))}
                   </div>
-                  <a href="#" className="flex items-center text-teal-600 hover:text-teal-800 mt-4 transition-colors">
+                  <a
+                    href="#"
+                    className="flex items-center text-teal-600 hover:text-teal-800 mt-4 transition-colors"
+                  >
                     <FiEye className="mr-1" /> View Full Order List
                   </a>
                 </div>
@@ -209,21 +269,33 @@ const UserProfileView = () => {
 
               {activeTab === "reviews" && selectedUser.role === "Customer" && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Reviews</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Reviews
+                  </h3>
                   <div className="flex items-center mb-4">
                     <FiMessageSquare className="text-gray-500 mr-2" />
-                    <span><strong>Number of Reviews:</strong> {selectedUser.reviews.length}</span>
+                    <span>
+                      <strong>Number of Reviews:</strong>{" "}
+                      {selectedUser.reviews.length}
+                    </span>
                   </div>
                   {selectedUser.reviews.length > 0 ? (
                     selectedUser.reviews.map((review, index) => (
-                      <div key={index} className="border-t border-gray-100 pt-4 mt-4">
+                      <div
+                        key={index}
+                        className="border-t border-gray-100 pt-4 mt-4"
+                      >
                         <div className="flex items-center">
                           <FiShoppingBag className="text-gray-500 mr-2" />
-                          <span><strong>Product:</strong> {review.product}</span>
+                          <span>
+                            <strong>Product:</strong> {review.product}
+                          </span>
                         </div>
                         <div className="flex items-center mt-2">
                           <FiCheckCircle className="text-yellow-500 mr-2" />
-                          <span><strong>Rating:</strong> {review.rating}/5</span>
+                          <span>
+                            <strong>Rating:</strong> {review.rating}/5
+                          </span>
                         </div>
                       </div>
                     ))
@@ -235,13 +307,20 @@ const UserProfileView = () => {
 
               {activeTab === "products" && selectedUser.role === "Retailer" && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Product List</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Product List
+                  </h3>
                   {selectedUser.products.length > 0 ? (
                     selectedUser.products.map((product, index) => (
-                      <div key={index} className="border-t border-gray-100 pt-4 mt-4">
+                      <div
+                        key={index}
+                        className="border-t border-gray-100 pt-4 mt-4"
+                      >
                         <div className="flex items-center">
                           <FaProductHunt className="text-gray-500 mr-2" />
-                          <span><strong>Name:</strong> {product.name}</span>
+                          <span>
+                            <strong>Name:</strong> {product.name}
+                          </span>
                         </div>
                         <div className="flex items-center mt-2">
                           {product.status === "Published" ? (
@@ -249,11 +328,15 @@ const UserProfileView = () => {
                           ) : (
                             <FiXCircle className="text-red-500 mr-2" />
                           )}
-                          <span><strong>Status:</strong> {product.status}</span>
+                          <span>
+                            <strong>Status:</strong> {product.status}
+                          </span>
                         </div>
                         <div className="flex items-center mt-2">
                           <FiShoppingBag className="text-gray-500 mr-2" />
-                          <span><strong>Stock:</strong> {product.stock}</span>
+                          <span>
+                            <strong>Stock:</strong> {product.stock}
+                          </span>
                         </div>
                       </div>
                     ))
@@ -265,28 +348,34 @@ const UserProfileView = () => {
 
               {activeTab === "actions" && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Admin Actions</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Admin Actions
+                  </h3>
                   <div className="space-y-6">
                     {[
-                      { 
-                        title: "Status Control", 
+                      {
+                        title: "Status Control",
                         icon: <FiCheckCircle className="mr-2" />,
-                        actions: ["Activate", "Deactivate", "Ban", "Approve"] 
+                        actions: ["Activate", "Deactivate", "Ban", "Approve"],
                       },
-                      { 
-                        title: "Security Actions", 
+                      {
+                        title: "Security Actions",
                         icon: <FiLogOut className="mr-2" />,
-                        actions: ["Reset Password", "Force Logout", "Impersonate"] 
+                        actions: [
+                          "Reset Password",
+                          "Force Logout",
+                          "Impersonate",
+                        ],
                       },
-                      { 
-                        title: "Disciplinary", 
+                      {
+                        title: "Disciplinary",
                         icon: <FiAlertCircle className="mr-2" />,
-                        actions: ["Flag as Fraud", "Add Note", "Limit Usage"] 
+                        actions: ["Flag as Fraud", "Add Note", "Limit Usage"],
                       },
-                      { 
-                        title: "Export & Reports", 
+                      {
+                        title: "Export & Reports",
                         icon: <FiDownload className="mr-2" />,
-                        actions: ["Export Order History", "Export Profile"] 
+                        actions: ["Export Order History", "Export Profile"],
                       },
                     ].map((group) => (
                       <div key={group.title}>
@@ -315,8 +404,6 @@ const UserProfileView = () => {
       ) : (
         // User List View
         <div className="p-6 md:p-8">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">User Management</h2>
-          
           {/* Filters */}
           <div className="mb-6 flex flex-wrap gap-4">
             <select
@@ -331,7 +418,9 @@ const UserProfileView = () => {
             <select
               className="border border-gray-200 p-3 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-teal-500"
               value={filters.status}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              onChange={(e) =>
+                setFilters({ ...filters, status: e.target.value })
+              }
             >
               <option>All</option>
               <option>Active</option>
@@ -344,12 +433,16 @@ const UserProfileView = () => {
               placeholder="Search by Name, Email, Phone"
               className="border border-gray-200 p-3 rounded-lg w-64 shadow-sm focus:ring-2 focus:ring-teal-500"
               value={filters.search}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              onChange={(e) =>
+                setFilters({ ...filters, search: e.target.value })
+              }
             />
             <select
               className="border border-gray-200 p-3 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-teal-500"
               value={filters.sortBy}
-              onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
+              onChange={(e) =>
+                setFilters({ ...filters, sortBy: e.target.value })
+              }
             >
               <option>Date Joined</option>
               <option>Order Count</option>
@@ -418,7 +511,7 @@ const UserProfileView = () => {
                       <td className="border-b p-4">{user.orders}</td>
                       <td className="border-b p-4">${user.revenue}</td>
                       <td className="border-b p-4">
-                        <button 
+                        <button
                           className="flex items-center text-teal-600 hover:text-teal-800 transition-colors"
                           onClick={() => setSelectedUser(user)}
                         >
@@ -468,7 +561,7 @@ const UserProfileView = () => {
                       {user.status}
                     </span>
                   </div>
-                  <button 
+                  <button
                     className="flex items-center text-teal-600 hover:text-teal-800 mt-2 transition-colors"
                     onClick={() => setSelectedUser(user)}
                   >

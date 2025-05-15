@@ -1,12 +1,12 @@
-@tailwind base;
+/* @tailwind base;
 @tailwind components;
-@tailwind utilities;
+@tailwind utilities; */
 
 body {
   font-family: 'Poppins', sans-serif;
 }
  
-/* Existing styles remain unchanged unless modified below */
+Existing styles remain unchanged unless modified below
 .login-container {
   display: flex;
   justify-content: center;

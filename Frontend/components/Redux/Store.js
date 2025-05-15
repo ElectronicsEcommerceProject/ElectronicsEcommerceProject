@@ -1,11 +1,9 @@
-import { configureStore } from "@reduxjs/toolkit";
-import productReducer from "./productSlice";
-import searchReducer from "./SearchSlice"; // Import the search reducer
+import { configureStore } from '@reduxjs/toolkit';
+import filterReducer from '../../components/Redux/filterSlice';
 
-const store = configureStore({
+  const store = configureStore({
   reducer: {
-    product: productReducer,
-    search: searchReducer, // Add the search reducer
+    filters: filterReducer,
   },
 });
 

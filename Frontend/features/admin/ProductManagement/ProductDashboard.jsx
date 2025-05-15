@@ -41,54 +41,6 @@ const productsData = [
   },
 ];
 
-const Sidebar = () => (
-  <div className="w-64 bg-gray-800 text-white h-screen p-4 fixed">
-    <h2 className="text-xl font-bold mb-4">Categories</h2>
-    <ul className="space-y-2 font-semibold pl-0">
-      <li className="pl-0">
-        <button className="w-full text-left hover:text-gray-300">
-          All Products
-        </button>
-      </li>
-      <li className="pl-0">
-        <button className="w-full text-left hover:text-gray-300">
-          Laptops
-        </button>
-      </li>
-      <li className="pl-0">
-        <button className="w-full text-left hover:text-gray-300">
-          Accessories
-        </button>
-      </li>
-      <li className="pl-0">
-        <button className="w-full text-left hover:text-gray-300">
-          Components
-        </button>
-      </li>
-    </ul>
-
-    <h2 className="text-xl font-bold mt-8 mb-4">Filters</h2>
-    <div className="space-y-2 font-semibold pl-0">
-      <label className="flex items-center pl-0">
-        <input type="checkbox" className="mr-2" />
-        In Stock
-      </label>
-      <label className="flex items-center pl-0">
-        <input type="checkbox" className="mr-2" />
-        Out of Stock
-      </label>
-      <label className="flex items-center pl-0">
-        <input type="checkbox" className="mr-2" />
-        Published
-      </label>
-      <label className="flex items-center pl-0">
-        <input type="checkbox" className="mr-2" />
-        Draft
-      </label>
-    </div>
-  </div>
-);
-
 const ProductTable = ({ products }) => (
   <div className="overflow-x-auto">
     <table className="min-w-full bg-white border">
@@ -157,42 +109,41 @@ const ProductGrid = ({ products }) => (
 );
 
 const ProductModal = ({ isOpen, closeModal, addProduct }) => {
-    const categories = [
-      { id: "Laptops", name: "Laptops" },
-      { id: "Accessories", name: "Accessories" },
-      { id: "Components", name: "Components" },
-    ];
-    const brands = [
-      { id: "Dell", name: "Dell" },
-      { id: "Apple", name: "Apple" },
-      { id: "HP", name: "HP" },
-      { id: "Lenovo", name: "Lenovo" },
-    ];
-  
-    const handleSubmit = (newProduct) => {
-      if (newProduct) {
-        addProduct(newProduct);
-      }
-      closeModal();
-    };
-  
-    if (!isOpen) return null;
-  
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
-          <h2 className="text-xl font-bold mb-4">Add New Product</h2>
-          {/* Pass categories, brands, and handleSubmit to ProductForm */}
-          <ProductForm
-            onSubmit={handleSubmit}
-            categories={categories}
-            brands={brands}
-          />
-        </div>
-      </div>
-    );
+  const categories = [
+    { id: "Laptops", name: "Laptops" },
+    { id: "Accessories", name: "Accessories" },
+    { id: "Components", name: "Components" },
+  ];
+  const brands = [
+    { id: "Dell", name: "Dell" },
+    { id: "Apple", name: "Apple" },
+    { id: "HP", name: "HP" },
+    { id: "Lenovo", name: "Lenovo" },
+  ];
+
+  const handleSubmit = (newProduct) => {
+    if (newProduct) {
+      addProduct(newProduct);
+    }
+    closeModal();
   };
-  
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
+        <h2 className="text-xl font-bold mb-4">Add New Product</h2>
+        <ProductForm
+          onSubmit={handleSubmit}
+          categories={categories}
+          brands={brands}
+        />
+      </div>
+    </div>
+  );
+};
+
 const ProductDashboard = () => {
   const [search, setSearch] = useState("");
   const [view, setView] = useState("table");
@@ -223,82 +174,79 @@ const ProductDashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <Sidebar />
-      <div className="flex-1 ml-64 p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Product Management</h1>
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            onClick={() => setIsModalOpen(true)}
+    <div className="min-h-screen bg-gray-100 p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Product Management</h1>
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          onClick={() => setIsModalOpen(true)}
+        >
+          Add New Product
+        </button>
+      </div>
+      <div className="bg-white p-4 rounded-lg shadow mb-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <input
+            type="text"
+            placeholder="Search products..."
+            className="flex-1 p-2 border rounded"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <select
+            className="p-2 border rounded"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
           >
-            Add New Product
-          </button>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <input
-              type="text"
-              placeholder="Search products..."
-              className="flex-1 p-2 border rounded"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <select
-              className="p-2 border rounded"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+            <option value="all">All Categories</option>
+            <option value="Laptops">Laptops</option>
+            <option value="Accessories">Accessories</option>
+            <option value="Components">Components</option>
+          </select>
+          <select
+            className="p-2 border rounded"
+            value={stockFilter}
+            onChange={(e) => setStockFilter(e.target.value)}
+          >
+            <option value="all">All Stock</option>
+            <option value="in">In Stock</option>
+            <option value="out">Out of Stock</option>
+          </select>
+          <select
+            className="p-2 border rounded"
+            value={visibilityFilter}
+            onChange={(e) => setVisibilityFilter(e.target.value)}
+          >
+            <option value="all">All Visibility</option>
+            <option value="Published">Published</option>
+            <option value="Draft">Draft</option>
+          </select>
+          <div className="flex gap-2">
+            <button
+              className={`p-2 ${view === "table" ? "bg-gray-200" : ""}`}
+              onClick={() => setView("table")}
             >
-              <option value="all">All Categories</option>
-              <option value="Laptops">Laptops</option>
-              <option value="Accessories">Accessories</option>
-              <option value="Components">Components</option>
-            </select>
-            <select
-              className="p-2 border rounded"
-              value={stockFilter}
-              onChange={(e) => setStockFilter(e.target.value)}
+              Table
+            </button>
+            <button
+              className={`p-2 ${view === "grid" ? "bg-gray-200" : ""}`}
+              onClick={() => setView("grid")}
             >
-              <option value="all">All Stock</option>
-              <option value="in">In Stock</option>
-              <option value="out">Out of Stock</option>
-            </select>
-            <select
-              className="p-2 border rounded"
-              value={visibilityFilter}
-              onChange={(e) => setVisibilityFilter(e.target.value)}
-            >
-              <option value="all">All Visibility</option>
-              <option value="Published">Published</option>
-              <option value="Draft">Draft</option>
-            </select>
-            <div className="flex gap-2">
-              <button
-                className={`p-2 ${view === "table" ? "bg-gray-200" : ""}`}
-                onClick={() => setView("table")}
-              >
-                Table
-              </button>
-              <button
-                className={`p-2 ${view === "grid" ? "bg-gray-200" : ""}`}
-                onClick={() => setView("grid")}
-              >
-                Grid
-              </button>
-            </div>
+              Grid
+            </button>
           </div>
         </div>
-        {view === "table" ? (
-          <ProductTable products={filteredProducts} />
-        ) : (
-          <ProductGrid products={filteredProducts} />
-        )}
-        <ProductModal
-          isOpen={isModalOpen}
-          closeModal={() => setIsModalOpen(false)}
-          addProduct={addProduct}
-        />
       </div>
+      {view === "table" ? (
+        <ProductTable products={filteredProducts} />
+      ) : (
+        <ProductGrid products={filteredProducts} />
+      )}
+      <ProductModal
+        isOpen={isModalOpen}
+        closeModal={() => setIsModalOpen(false)}
+        addProduct={addProduct}
+      />
     </div>
   );
 };
