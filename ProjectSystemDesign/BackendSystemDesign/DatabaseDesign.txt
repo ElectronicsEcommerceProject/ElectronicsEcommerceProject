@@ -71,7 +71,7 @@ Ye documentation Electronics E-Commerce Project ke liye complete database design
 #### 1.3 Addresses Table
 **Description**: Users ke delivery addresses manage karta hai.  
 **Fields**:  
-- `id` (UUID, Primary Key): Unique ID  
+- `address_id` (UUID, Primary Key): Unique ID  
 - `user_id` (UUID, not null, FK → Users): Kon sa user  
 - `address_line1` (String, not null): Address ka first line  
 - `address_line2` (String, nullable): Address ka second line  
@@ -98,7 +98,7 @@ Ye documentation Electronics E-Commerce Project ke liye complete database design
 #### 2.1 Categories Table
 **Description**: Products ke categories (e.g., Mobiles, TVs).  
 **Fields**:  
-- `id` (UUID, Primary Key): Unique ID  
+- `category_id` (UUID, Primary Key): Unique ID  
 - `name` (String, not null): Category ka naam  
 - `slug` (String, unique, not null): URL-friendly name  
 - `parent_id` (UUID, nullable, FK → Categories): Parent category (for sub-categories)  
@@ -122,7 +122,7 @@ Ye documentation Electronics E-Commerce Project ke liye complete database design
 #### 2.2 Brands Table
 **Description**: Product brands (e.g., Apple, Samsung).  
 **Fields**:  
-- `id` (UUID, Primary Key): Unique ID  
+- `brand_id` (UUID, Primary Key): Unique ID  
 - `name` (String, not null, unique): Brand ka naam  
 - `slug` (String, unique, not null): URL-friendly name  
 - `is_active` (Boolean, default: true): Soft delete ke liye  
@@ -487,7 +487,7 @@ Ye documentation Electronics E-Commerce Project ke liye complete database design
 #### 5.1 Coupons Table
 **Description**: Discount coupons manage karta hai.  
 **Fields**:  
-- `id` (UUID, Primary Key): Unique ID  
+- `coupon_id` (UUID, Primary Key): Unique ID  
 - `code` (String, unique, not null): Coupon code (e.g., "WELCOME10")  
 - `description` (String, nullable): Coupon description  
 - `type` (Enum: percentage, fixed, not null): Discount type  
@@ -524,7 +524,7 @@ Ye documentation Electronics E-Commerce Project ke liye complete database design
 #### 5.2 CouponUsers Table
 **Description**: Coupons aur users ke beech many-to-many relationship.  
 **Fields**:  
-- `id` (UUID, Primary Key): Unique ID  
+- `coupon_user_id` (UUID, Primary Key): Unique ID  
 - `coupon_id` (UUID, not null, FK → Coupons): Kon sa coupon  
 - `user_id` (UUID, not null, FK → Users): Kon sa user  
 - `created_at`, `updated_at` (Timestamp): Auto-managed  
@@ -540,7 +540,7 @@ Ye documentation Electronics E-Commerce Project ke liye complete database design
 #### 5.3 CouponRedemptions Table
 **Description**: Coupon use karne ka record.  
 **Fields**:  
-- `id` (UUID, Primary Key): Unique ID  
+- `coupon_redemption_id` (UUID, Primary Key): Unique ID  
 - `user_id` (UUID, not null, FK → Users): Kon sa user  
 - `coupon_id` (UUID, not null, FK → Coupons): Kon sa coupon  
 - `order_id` (UUID, not null, FK → Orders): Kis order pe use hua  
@@ -560,7 +560,7 @@ Ye documentation Electronics E-Commerce Project ke liye complete database design
 #### 5.4 DiscountRules Table
 **Description**: Special offers aur discounts ke rules.  
 **Fields**:  
-- `id` (UUID, Primary Key): Unique ID  
+- `discount_rule_id` (UUID, Primary Key): Unique ID  
 - `name` (String, not null): Rule ka naam (e.g., "Summer Sale")  
 - `description` (String, nullable): Rule description  
 - `type` (Enum: percentage, fixed, not null): Discount type  
@@ -803,7 +803,7 @@ erDiagram
 
 #### Coupon Example
 **Coupon**:  
-- `id`: UUID  
+- `coupon_id`: UUID  
 - `code`: "WELCOME20"  
 - `type`: "percentage"  
 - `discount_value`: 20  
