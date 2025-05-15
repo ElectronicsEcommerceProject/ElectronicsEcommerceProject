@@ -1,0 +1,130 @@
+/* Main Header Container - Fixed at top */
+.admin-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%; /* Full width */
+  min-width: 100%; /* Prevent shrinking */
+  background: linear-gradient(to right, #1e40af, #2563eb);
+  color: white;
+  z-index: 50;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Hide any potential overflow */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Inner container for proper spacing */
+.admin-header-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 12px 16px;
+  margin: 0 auto;
+}
+
+/* Main header content layout */
+.admin-header-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Logo section styles */
+.admin-header-logo-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Mobile menu button - hidden on desktop */
+.admin-header-mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* Logo styles */
+.admin-header-logo {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Logo icon container */
+.admin-header-logo-icon {
+  width: 32px;
+  height: 32px;
+  background-color: white;
+  margin-right: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Logo text styles */
+.admin-header-logo-text {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* User actions section */
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* User info section - contains login time and welcome */
+.admin-header-user-info {
+  display: flex;
+  justify-content: space-between; /* Forces welcome to right */
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* Welcome message - specifically styled for right alignment */
+.admin-header-welcome {
+  margin-left: auto; /* Pushes to far right */
+  padding: 4px 12px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  white-space: nowrap; /* Prevents text wrapping */
+  font-weight: 500;
+  text-align: right; /* Right-align text */
+}
+
+/* Last login time styles */
+.admin-header-login-time {
+  padding: 4px 12px;
+  background-color: rgba(29, 78, 216, 0.5);
+  border-radius: 6px;
+  font-size: 0.75rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-header-mobile-menu-btn {
+    display: block; /* Show on mobile */
+  }
+  
+  .admin-header-user-info {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .admin-header-welcome {
+    margin-left: 0;
+    text-align: left; /* Left align on mobile */
+  }
+}
+
+/* Zoom-specific fixes */
+@media screen {
+  .admin-header {
+    transform: scale(1);
+    transform-origin: top left;
+  }
+}

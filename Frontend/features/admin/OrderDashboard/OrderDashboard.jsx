@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { jsPDF } from 'jspdf';
-import Header from '../../../components/OrderManagement/Header';
-import FiltersSection from '../../../components/OrderManagement/FilterSection';
-import MetricsSection from '../../../components/OrderManagement/MetricsSection';
-import OrdersTable from '../../../components/OrderManagement/OrdersTable';
-import OrderDetailModal from '../../../components/OrderManagement/OrderDetailModal';
-import ManualOrderModal from '../../../components/OrderManagement/ManualOrderModal';
-import QuickActions from '../../../components/OrderManagement/QuickActions';
-import Notifications from '../../../components/OrderManagement/Notifications';
-import CustomModal from '../../../components/OrderManagement/CustomModal.JSX';
+
+import {Header,FiltersSection,MetricsSection,OrdersTable,OrderDetailModal,ManualOrderModal,QuickActions,Notifications,CustomModal} from '../../../features/admin/index.js'
+// import Header from '../../../components/OrderManagement/Header';
+// import FiltersSection from '../../../components/OrderManagement/FilterSection';
+// import MetricsSection from '../../../components/OrderManagement/MetricsSection';
+// import OrdersTable from '../../../components/OrderManagement/OrdersTable';
+// import OrderDetailModal from '../../../components/OrderManagement/OrderDetailModal';
+// import ManualOrderModal from '../../../components/OrderManagement/ManualOrderModal';
+// import QuickActions from '../../../components/OrderManagement/QuickActions';
+// import Notifications from '../../../components/OrderManagement/Notifications';
+// import CustomModal from '../../../components/OrderManagement/CustomModal.JSX';
 
 const initialOrders = [
   { id: 'ORD001', customer: 'John Doe', email: 'john@example.com', phone: '1234567890', status: 'Pending', amount: 150.00, date: '2025-04-25', items: [{ name: 'Product A', qty: 2, price: 50 }, { name: 'Product B', qty: 1, price: 50 }], address: '123 Example St, City', tracking: null, refundStatus: null },
