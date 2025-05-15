@@ -2364,12 +2364,12 @@ Headers: Authorization: Bearer {{authToken}}
     "message": "Data fetched successfully",
     "data": [
         {
-            "user_id": "b34e363a-a0d5-46d6-9d95-bcc7279f2f2f",
+           "user_id": "b34e363a-a0d5-46d6-9d95-bcc7279f2f2f",
             "name": "admin",
             "email": "admin@gmail.com",
+            "phone_number": "9876543211",
             "role": "admin",
-            "createdAt:": "2025-05-15T08:13:48.000Z",
-            "updatedAt": "2025-05-15T08:13:48.000Z"
+            "createdAt": "2025-05-15T05:57:10.000Z"
         }
     ]
 }
@@ -2391,7 +2391,6 @@ Headers: Authorization: Bearer {{authToken}}
         "email": "admin@gmail.com",
         "role": "admin",
         "createdAt": "2025-05-15T08:13:48.000Z",
-        "updatedAt": "2025-05-15T08:13:48.000Z"
     }
 }
 

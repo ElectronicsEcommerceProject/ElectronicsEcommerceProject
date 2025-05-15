@@ -42,7 +42,7 @@ app.use("/product-Media-Url", productMediaUrlRoutes);
 
 app.use("/coupon", couponRoutes);
 
-app.use("/user", userRoutes);
+app.use("/users", userRoutes);
 
 app.use("/coupon-User", couponUserRoutes);
 

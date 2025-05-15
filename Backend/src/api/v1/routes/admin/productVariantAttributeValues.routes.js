@@ -32,10 +32,7 @@ router.get(
 router.get(
   "/:id",
   verifyJwtToken,
-  validator(
-    validators.productVariantAttributeValues.variantAttributeValueIdSchema,
-    "params"
-  ),
+  validator(validators.productVariantAttributeValues.id, "params"),
   adminVariantAttributeValueController.getVariantAttributeValueById
 );
 
