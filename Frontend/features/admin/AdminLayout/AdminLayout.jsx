@@ -23,30 +23,75 @@ import {
   ReportsAnalytics,
   AdminHeader,
   NotificationPage,
-} from "../../../features/admin/index";
+} from "../../../features/admin/index.js";
 
- 
 const AdminLayout = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [accordionOpen, setAccordionOpen] = useState(true);
   const [notifications, setNotifications] = useState([
-    { id: 1, type: 'warning', message: 'Low stock alert: Product A is running low.' },
-    { id: 2, type: 'error', message: 'Pending return request for Order ORD003.' },
+    {
+      id: 1,
+      type: "warning",
+      message: "Low stock alert: Product A is running low.",
+    },
+    {
+      id: 2,
+      type: "error",
+      message: "Pending return request for Order ORD003.",
+    },
   ]);
 
   // Sidebar navigation items
   const menuItems = [
-    { label: "Dashboard", section: "dashboard", icon: <House size={24} weight="bold" className="text-blue-600" /> },
-    { label: "Product Management", section: "products", icon: <Package size={24} weight="bold" className="text-orange-500" /> },
-    { label: "Order Management", section: "orders", icon: <ShoppingCartSimple size={24} weight="bold" className="text-red-500" /> },
-    { label: "User Management", section: "users", icon: <UsersThree size={24} weight="bold" className="text-green-500" /> },
-    { label: "Review Management", section: "reviews", icon: <Star size={24} weight="bold" className="text-yellow-500" /> },
-    { label: "Coupons & Offers", section: "coupans", icon: <Ticket size={24} weight="bold" className="text-purple-500" /> },
-    { label: "Notifications", section: "notifications", icon: <BellRinging size={24} weight="bold" className="text-pink-500" /> },
-    { label: "Reports & Analytics", section: "reports", icon: <ChartBar size={24} weight="bold" className="text-teal-500" /> },
-    { label: "Logout", section: "logout", icon: <SignOut size={24} weight="bold" className="text-red-600" /> },
+    {
+      label: "Dashboard",
+      section: "dashboard",
+      icon: <House size={24} weight="bold" className="text-blue-600" />,
+    },
+    {
+      label: "Product Management",
+      section: "products",
+      icon: <Package size={24} weight="bold" className="text-orange-500" />,
+    },
+    {
+      label: "Order Management",
+      section: "orders",
+      icon: (
+        <ShoppingCartSimple size={24} weight="bold" className="text-red-500" />
+      ),
+    },
+    {
+      label: "User Management",
+      section: "users",
+      icon: <UsersThree size={24} weight="bold" className="text-green-500" />,
+    },
+    {
+      label: "Review Management",
+      section: "reviews",
+      icon: <Star size={24} weight="bold" className="text-yellow-500" />,
+    },
+    {
+      label: "Coupons & Offers",
+      section: "coupans",
+      icon: <Ticket size={24} weight="bold" className="text-purple-500" />,
+    },
+    {
+      label: "Notifications",
+      section: "notifications",
+      icon: <BellRinging size={24} weight="bold" className="text-pink-500" />,
+    },
+    {
+      label: "Reports & Analytics",
+      section: "reports",
+      icon: <ChartBar size={24} weight="bold" className="text-teal-500" />,
+    },
+    {
+      label: "Logout",
+      section: "logout",
+      icon: <SignOut size={24} weight="bold" className="text-red-600" />,
+    },
   ];
 
   // Handle section switch
@@ -84,7 +129,10 @@ const AdminLayout = () => {
   return (
     <div className="bg-gray-100 font-sans min-h-screen flex flex-col">
       {/* Fixed Header (height: 72px) */}
-      <AdminHeader notifications={notifications} dismissNotification={dismissNotification} />
+      <AdminHeader
+        notifications={notifications}
+        dismissNotification={dismissNotification}
+      />
 
       {/* Button to toggle sidebar (mobile only) */}
       <button
@@ -136,25 +184,33 @@ const AdminLayout = () => {
                 <CaretDown
                   size={20}
                   weight="bold"
-                  className={`transition-transform duration-200 ${accordionOpen ? "rotate-0" : "-rotate-90"}`}
+                  className={`transition-transform duration-200 ${
+                    accordionOpen ? "rotate-0" : "-rotate-90"
+                  }`}
                 />
               </div>
 
               {/* Menu Items */}
-              <div className={`space-y-2 overflow-hidden transition-all duration-300 ${accordionOpen ? "max-h-screen" : "max-h-0"}`}>
+              <div
+                className={`space-y-2 overflow-hidden transition-all duration-300 ${
+                  accordionOpen ? "max-h-screen" : "max-h-0"
+                }`}
+              >
                 {menuItems.map((item) => (
                   <div
                     key={item.section}
                     className={`flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 relative ${
-                      activeSection === item.section && item.section !== "logout"
+                      activeSection === item.section &&
+                      item.section !== "logout"
                         ? "bg-purple-100 text-purple-600"
                         : "text-gray-700 hover:bg-gray-100 hover:text-purple-600"
                     } ${item.section === "logout" ? "text-red-600" : ""}`}
                     onClick={() => handleSectionChange(item.section)}
                   >
-                    {activeSection === item.section && item.section !== "logout" && (
-                      <span className="absolute left-0 top-0 h-full w-1 bg-blue-600 rounded-r" />
-                    )}
+                    {activeSection === item.section &&
+                      item.section !== "logout" && (
+                        <span className="absolute left-0 top-0 h-full w-1 bg-blue-600 rounded-r" />
+                      )}
                     <div className="flex items-center gap-2">{item.icon}</div>
                     <span className="text-sm font-medium">{item.label}</span>
                   </div>
