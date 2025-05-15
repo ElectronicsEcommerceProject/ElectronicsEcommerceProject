@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
-import ProductForm from "../ProductManagement/ProductForm";
+  import{ ProductForm} from "../../../features/admin/index.js";
 
 const productsData = [
   {

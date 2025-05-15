@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import UserProfileView from '../UserManagement/UserProfileView';
+import {UserProfileView }from '../../../features/admin/index.js';
 import { 
   FiDownload,
   FiFileText,

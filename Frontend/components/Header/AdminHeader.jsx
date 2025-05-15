@@ -27,7 +27,7 @@ const AdminHeader = ({ notifications, dismissNotification }) => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-blue-800 to-blue-600 text-white sticky top-0 z-50 shadow-lg">
+<header className="fixed top-0 left-0 w-full z-50 bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow">
       <div className="container mx-auto px-4 py-3">
         {/* Main Header Content */}
         <div className="flex items-center justify-between">
