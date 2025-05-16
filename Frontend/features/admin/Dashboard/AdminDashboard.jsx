@@ -139,7 +139,7 @@ const AdminDashboard = () => {
 
   const customerColumnDefs = [
     {
-      headerName: "Tracking Number",
+      headerName: "Order Number",
       field: "id",
       sortable: true,
       filter: true,
@@ -187,7 +187,7 @@ const AdminDashboard = () => {
 
   const retailerColumnDefs = [
     {
-      headerName: "Tracking Number",
+      headerName: "Order Number",
       field: "id",
       sortable: true,
       filter: true,
