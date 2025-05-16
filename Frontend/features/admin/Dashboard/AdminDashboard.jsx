@@ -4,11 +4,16 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { ClientSideRowModelModule } from "ag-grid-community";
 
-import { allUserRoute, getApi } from "../../../src/index.js";
+import { allUserRoute, orderRoute, getApi } from "../../../src/index.js";
 
 const AdminDashboard = () => {
   const [totalUsers, setTotalUsers] = useState({ customers: 0, retailers: 0 });
-  const totalOrders = { all: 500, pending: 120, delivered: 350, cancelled: 30 };
+  const [totalOrders, setTotalOrders] = useState({
+    all: 0,
+    pending: 0,
+    delivered: 0,
+    cancelled: 0,
+  });
   const totalRevenue = 245000;
 
   useEffect(() => {
@@ -31,6 +36,31 @@ const AdminDashboard = () => {
           console.log("Calculated total users:", calculatedTotalUsers);
         } else {
           console.error("Invalid response format:", response);
+        }
+        const ordersResponse = await getApi(orderRoute);
+        if (
+          ordersResponse &&
+          ordersResponse.message === "Data fetched successfully" &&
+          Array.isArray(ordersResponse.data)
+        ) {
+          const calculatedTotalOrders = ordersResponse.data.reduce(
+            (acc, order) => {
+              acc.all += 1;
+              if (order.order_status === "pending") {
+                acc.pending += 1;
+              } else if (order.order_status === "shipped") {
+                acc.delivered += 1;
+              } else if (order.order_status === "cancelled") {
+                acc.cancelled += 1;
+              }
+              return acc;
+            },
+            { all: 0, pending: 0, delivered: 0, cancelled: 0 }
+          );
+          setTotalOrders(calculatedTotalOrders);
+          console.log("Calculated total orders:", calculatedTotalOrders);
+        } else {
+          console.error("Invalid orders response format:", ordersResponse);
         }
       } catch (error) {
         console.error("Error fetching users:", error);

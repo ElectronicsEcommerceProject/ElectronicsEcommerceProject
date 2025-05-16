@@ -68,4 +68,5 @@ export {
   updateApiById,
   MESSAGE,
   allUserRoute,
+  orderRoute,
 };
