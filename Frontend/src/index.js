@@ -39,6 +39,7 @@ import MESSAGE from "./api/message.js";
 
 //import .env routes
 const allUserRoute = import.meta.env.VITE_USER_ENDPOINT;
+const orderRoute = import.meta.env.VITE_ORDER_ENDPOINT;
 
 export {
   FaEye,

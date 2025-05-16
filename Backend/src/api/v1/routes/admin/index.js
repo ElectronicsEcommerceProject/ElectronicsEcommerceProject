@@ -16,6 +16,7 @@ import productMediaRoutes from "./productMedia.routes.js";
 import productMediaUrlRoutes from "./productMediaUrl.routes.js";
 import couponUserRoutes from "./couponUser.routes.js";
 import discountRuleRoutes from "./discountRule.routes.js";
+import orderRoutes from "./order.routes.js";
 
 const app = express();
 
@@ -39,6 +40,8 @@ app.use(
 app.use("/product-Media", productMediaRoutes); //done upto here...
 
 app.use("/product-Media-Url", productMediaUrlRoutes);
+
+app.use("/order", orderRoutes);
 
 app.use("/coupon", couponRoutes);
 

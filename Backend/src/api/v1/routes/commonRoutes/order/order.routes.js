@@ -1,20 +1,16 @@
 import express from "express";
-import { validator, verifyJwtToken } from "../../../../../middleware/index.js";
+import {
+  isAdmin,
+  validator,
+  verifyJwtToken,
+} from "../../../../../middleware/index.js";
 import { validators } from "../../../validators/index.js";
 import { orderController } from "../../../controllers/index.js";
 
 const router = express.Router();
 
-// Create a new order
-router.post(
-  "/",
-  verifyJwtToken,
-  validator(validators.order.createOrderValidator, null),
-  orderController.createOrder
-);
-
 // Get all orders
-router.get("/", verifyJwtToken, orderController.getAllOrders);
+router.get("/", verifyJwtToken, isAdmin, orderController.getAllOrders);
 
 // Get order by ID
 router.get(
@@ -38,7 +34,7 @@ router.patch(
   "/:order_id/cancel",
   verifyJwtToken,
   validator(validators.order.orderIdValidator, "params"),
-  orderController.cancelOrder
+  orderController.cancelOrderById // This function is undefined
 );
 
 export default router;

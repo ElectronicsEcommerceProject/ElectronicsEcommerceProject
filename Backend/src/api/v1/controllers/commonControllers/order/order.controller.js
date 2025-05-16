@@ -246,7 +246,7 @@ export const updateOrder = async (req, res) => {
 };
 
 // Cancel order
-export const cancelOrder = async (req, res) => {
+export const cancelOrderById = async (req, res) => {
   try {
     const { order_id } = req.params;
 
@@ -273,7 +273,7 @@ export const cancelOrder = async (req, res) => {
       data: order,
     });
   } catch (err) {
-    console.error("❌ Error in cancelOrder:", err);
+    console.error("❌ Error in cancelOrderById:", err);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: "Failed to cancel order",
       error: err.message,
@@ -286,5 +286,5 @@ export default {
   getAllOrders,
   getOrderById,
   updateOrder,
-  cancelOrder,
+  cancelOrderById,
 };
