@@ -30,101 +30,124 @@ const OrdersTable = ({
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {currentOrders.map((order) => (
-            <tr key={order.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap">
-                <button
-                  className="text-blue-600 hover:underline"
-                  onClick={() => {
-                    setSelectedOrder(order);
-                    setShowModal(true);
-                  }}
-                >
-                  {order.id}
-                </button>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <a href="#" className="text-blue-600 hover:underline">
-                  {order.customer}
-                </a>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                    order.status === "Pending"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : order.status === "Shipped"
-                      ? "bg-blue-100 text-blue-800"
-                      : order.status === "Delivered"
-                      ? "bg-green-100 text-green-800"
-                      : order.status === "Cancelled" ||
-                        order.status === "Returned"
-                      ? "bg-red-100 text-red-800"
-                      : ""
-                  }`}
-                >
-                  {order.status}
-                </span>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                ${order.amount.toFixed(2)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">{order.date}</td>
-              <td className="px-6 py-4 whitespace-nowrap space-x-3">
-                <button
-                  className="text-blue-600 hover:text-blue-800 px-2 py-1"
-                  onClick={() => {
-                    setSelectedOrder(order);
-                    setShowModal(true);
-                  }}
-                >
-                  View
-                </button>
-                <select
-                  className="border rounded p-1 text-sm text-blue-600"
-                  value={order.status}
-                  onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                >
-                  <option value="Pending" className="py-1">
-                    Pending
-                  </option>
-                  <option value="Shipped" className="py-1">
-                    Shipped
-                  </option>
-                  <option value="Delivered" className="py-1">
-                    Delivered
-                  </option>
-                  <option value="Cancelled" className="py-1">
+          {currentOrders.length > 0 ? (
+            currentOrders.map((order) => (
+              <tr key={order.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <button
+                    className="text-blue-600 hover:underline"
+                    onClick={() => {
+                      setSelectedOrder(order);
+                      setShowModal(true);
+                    }}
+                  >
+                    {order.id}
+                  </button>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div>
+                    <div className="text-blue-600 hover:underline">
+                      {order.customer}
+                    </div>
+                    <div className="text-xs text-gray-500">{order.email}</div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      order.status === "Pending" || order.status === "pending"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : order.status === "Shipped" ||
+                          order.status === "shipped"
+                        ? "bg-blue-100 text-blue-800"
+                        : order.status === "Delivered" ||
+                          order.status === "delivered"
+                        ? "bg-green-100 text-green-800"
+                        : order.status === "Cancelled" ||
+                          order.status === "cancelled" ||
+                          order.status === "Returned" ||
+                          order.status === "returned"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {order.status || "Unknown"}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  $
+                  {typeof order.amount === "number"
+                    ? order.amount.toFixed(2)
+                    : parseFloat(order.amount || 0).toFixed(2)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {order.date || "N/A"}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap space-x-3">
+                  <button
+                    className="text-blue-600 hover:text-blue-800 px-2 py-1"
+                    onClick={() => {
+                      setSelectedOrder(order);
+                      setShowModal(true);
+                    }}
+                  >
+                    View
+                  </button>
+                  <select
+                    className="border rounded p-1 text-sm text-blue-600"
+                    value={order.status}
+                    onChange={(e) =>
+                      updateOrderStatus(order.id, e.target.value)
+                    }
+                  >
+                    <option value="Pending" className="py-1">
+                      Pending
+                    </option>
+                    <option value="Shipped" className="py-1">
+                      Shipped
+                    </option>
+                    <option value="Delivered" className="py-1">
+                      Delivered
+                    </option>
+                    <option value="Cancelled" className="py-1">
+                      Cancel
+                    </option>
+                    <option value="Returned" className="py-1">
+                      Returned
+                    </option>
+                  </select>
+                  <button
+                    className="text-green-600 hover:text-green-800 px-2 py-1"
+                    onClick={() => {
+                      setSelectedOrder(order);
+                      setShowModal(true);
+                    }}
+                  >
+                    Tracking
+                  </button>
+                  <button
+                    className="text-red-600 hover:text-red-800 px-2 py-1"
+                    onClick={() => updateOrderStatus(order.id, "Cancelled")}
+                  >
                     Cancel
-                  </option>
-                  <option value="Returned" className="py-1">
-                    Returned
-                  </option>
-                </select>
-                <button
-                  className="text-green-600 hover:text-green-800 px-2 py-1"
-                  onClick={() => {
-                    setSelectedOrder(order);
-                    setShowModal(true);
-                  }}
-                >
-                  Tracking
-                </button>
-                <button
-                  className="text-red-600 hover:text-red-800 px-2 py-1"
-                  onClick={() => updateOrderStatus(order.id, "Cancelled")}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="text-blue-600 hover:text-blue-800 px-2 py-1"
-                  onClick={() => downloadInvoice(order)}
-                >
-                  Invoice
-                </button>
+                  </button>
+                  <button
+                    className="text-blue-600 hover:text-blue-800 px-2 py-1"
+                    onClick={() => downloadInvoice(order)}
+                    disabled={!order.items || order.items.length === 0}
+                  >
+                    Invoice
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                No orders found
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>

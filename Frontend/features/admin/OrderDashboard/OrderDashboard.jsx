@@ -1,49 +1,109 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import '@fortawesome/fontawesome-free/css/all.min.css';
-import { jsPDF } from 'jspdf';
+import React, { useState, useEffect, useCallback } from "react";
+import "@fortawesome/fontawesome-free/css/all.min.css";
+import { jsPDF } from "jspdf";
 
-import {Header,FiltersSection,MetricsSection,OrdersTable,OrderDetailModal,ManualOrderModal,QuickActions,Notifications,CustomModal} from '../../../features/admin/index.js'
-// import Header from '../../../components/OrderManagement/Header';
-// import FiltersSection from '../../../components/OrderManagement/FilterSection';
-// import MetricsSection from '../../../components/OrderManagement/MetricsSection';
-// import OrdersTable from '../../../components/OrderManagement/OrdersTable';
-// import OrderDetailModal from '../../../components/OrderManagement/OrderDetailModal';
-// import ManualOrderModal from '../../../components/OrderManagement/ManualOrderModal';
-// import QuickActions from '../../../components/OrderManagement/QuickActions';
-// import Notifications from '../../../components/OrderManagement/Notifications';
-// import CustomModal from '../../../components/OrderManagement/CustomModal.JSX';
+import {
+  Header,
+  FiltersSection,
+  MetricsSection,
+  OrdersTable,
+  OrderDetailModal,
+  ManualOrderModal,
+  QuickActions,
+  Notifications,
+  CustomModal,
+} from "../../../features/admin/index.js";
 
+import { orderRoute, getApi } from "../../../src/index.js";
+
+// Fallback initial orders in case API fails
 const initialOrders = [
-  { id: 'ORD001', customer: 'John Doe', email: 'john@example.com', phone: '1234567890', status: 'Pending', amount: 150.00, date: '2025-04-25', items: [{ name: 'Product A', qty: 2, price: 50 }, { name: 'Product B', qty: 1, price: 50 }], address: '123 Example St, City', tracking: null, refundStatus: null },
-  { id: 'ORD002', customer: 'Jane Smith', email: 'jane@example.com', phone: '0987654321', status: 'Shipped', amount: 200.00, date: '2025-04-24', items: [{ name: 'Product C', qty: 1, price: 200 }], address: '456 Sample Rd, City', tracking: { carrier: 'FedEx', number: '123456' }, refundStatus: null },
-  { id: 'ORD003', customer: 'Alice Brown', email: 'alice@example.com', phone: '5555555555', status: 'Delivered', amount: 300.00, date: '2025-04-23', items: [{ name: 'Product D', qty: 3, price: 100 }], address: '789 Test Ave, City', tracking: { carrier: 'UPS', number: '789012' }, refundStatus: 'Pending' },
+  {
+    id: "ORD001",
+    customer: "John Doe",
+    email: "john@example.com",
+    phone: "1234567890",
+    status: "Pending",
+    amount: 150.0,
+    date: "2025-04-25",
+    items: [
+      { name: "Product A", qty: 2, price: 50 },
+      { name: "Product B", qty: 1, price: 50 },
+    ],
+    address: "123 Example St, City",
+    tracking: null,
+    refundStatus: null,
+  },
+  {
+    id: "ORD002",
+    customer: "Jane Smith",
+    email: "jane@example.com",
+    phone: "0987654321",
+    status: "Shipped",
+    amount: 200.0,
+    date: "2025-04-24",
+    items: [{ name: "Product C", qty: 1, price: 200 }],
+    address: "456 Sample Rd, City",
+    tracking: { carrier: "FedEx", number: "123456" },
+    refundStatus: null,
+  },
+  {
+    id: "ORD003",
+    customer: "Alice Brown",
+    email: "alice@example.com",
+    phone: "5555555555",
+    status: "Delivered",
+    amount: 300.0,
+    date: "2025-04-23",
+    items: [{ name: "Product D", qty: 3, price: 100 }],
+    address: "789 Test Ave, City",
+    tracking: { carrier: "UPS", number: "789012" },
+    refundStatus: "Pending",
+  },
 ];
 
 const OrderDashboard = () => {
   const [orders, setOrders] = useState(initialOrders);
   const [filteredOrders, setFilteredOrders] = useState(initialOrders);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [ordersPerPage, setOrdersPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false);
   const [showCreateOrderModal, setShowCreateOrderModal] = useState(false);
   const [notifications, setNotifications] = useState([
-    { id: 1, type: 'warning', message: 'Low stock alert: Product A is running low.' },
-    { id: 2, type: 'error', message: 'Pending return request for Order ORD003.' },
+    {
+      id: 1,
+      type: "warning",
+      message: "Low stock alert: Product A is running low.",
+    },
+    {
+      id: 2,
+      type: "error",
+      message: "Pending return request for Order ORD003.",
+    },
   ]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // State for CustomModal
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
-    title: '',
-    message: '',
-    type: 'alert',
+    title: "",
+    message: "",
+    type: "alert",
     onConfirm: null,
-    confirmText: 'OK',
-    cancelText: 'Cancel',
+    confirmText: "OK",
+    cancelText: "Cancel",
+  });
+
+  // State for order metrics
+  const [totalOrders, setTotalOrders] = useState({
+    all: 0,
+    pending: 0,
+    shipped: 0,
+    cancelled: 0,
   });
 
   // Function to show modal
@@ -60,11 +120,12 @@ const OrderDashboard = () => {
   useEffect(() => {
     let filtered = orders;
     if (searchQuery) {
-      filtered = filtered.filter((order) =>
-        order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.phone.includes(searchQuery)
+      filtered = filtered.filter(
+        (order) =>
+          order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          order.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          order.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          order.phone?.includes(searchQuery)
       );
     }
     if (statusFilter) {
@@ -73,17 +134,126 @@ const OrderDashboard = () => {
     if (dateRange.start && dateRange.end) {
       filtered = filtered.filter((order) => {
         const orderDate = new Date(order.date);
-        return orderDate >= new Date(dateRange.start) && orderDate <= new Date(dateRange.end);
+        return (
+          orderDate >= new Date(dateRange.start) &&
+          orderDate <= new Date(dateRange.end)
+        );
       });
     }
     setFilteredOrders(filtered);
     setCurrentPage(1);
   }, [searchQuery, statusFilter, dateRange, orders]);
 
+  // Fetch order data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const ordersResponse = await getApi(orderRoute);
+        if (
+          ordersResponse &&
+          ordersResponse.message === "Data fetched successfully" &&
+          Array.isArray(ordersResponse.data)
+        ) {
+          // Calculate metrics from API response
+          const calculatedTotalOrders = ordersResponse.data.reduce(
+            (acc, order) => {
+              acc.all += 1;
+              if (order.order_status === "pending") {
+                acc.pending += 1;
+              } else if (order.order_status === "shipped") {
+                acc.shipped += 1;
+              } else if (order.order_status === "cancelled") {
+                acc.cancelled += 1;
+              }
+              return acc;
+            },
+            { all: 0, pending: 0, shipped: 0, cancelled: 0 }
+          );
+
+          // Update order metrics state
+          setTotalOrders(calculatedTotalOrders);
+
+          // Map API response to the format expected by OrdersTable
+          const mappedOrders = ordersResponse.data.map((order) => {
+            // Get total items count and calculate amount if not available
+            const itemsCount = order.orderItems ? order.orderItems.length : 0;
+            const calculatedAmount = parseFloat(order.total_amount || 0);
+
+            // Extract customer name and email
+            const customerName = order.user ? order.user.name : "Unknown";
+            const customerEmail = order.user ? order.user.email : "No email";
+
+            // Format the date
+            const orderDate = new Date(order.order_date);
+            const formattedDate = orderDate.toISOString().split("T")[0];
+
+            // Map tracking information
+            const tracking = order.tracking_number
+              ? { carrier: "Carrier", number: order.tracking_number }
+              : null;
+
+            // Map the items array
+            const items =
+              order.orderItems && Array.isArray(order.orderItems)
+                ? order.orderItems.map((item) => ({
+                    name: item.product ? item.product.name : "Unknown Product",
+                    qty: item.total_quantity || 1,
+                    price: parseFloat(item.price_at_time || 0),
+                  }))
+                : [];
+
+            // Format address
+            const address = order.address
+              ? `${order.address.address_line1}, ${order.address.city}, ${order.address.state}, ${order.address.postal_code}`
+              : "Address not available";
+
+            // Map the order object to match the format expected by the frontend
+            return {
+              id: order.order_number || `ORD-${order.order_id.substring(0, 8)}`,
+              customer: customerName,
+              email: customerEmail,
+              phone: "(Not available in API)",
+              status:
+                order.order_status.charAt(0).toUpperCase() +
+                order.order_status.slice(1), // Capitalize first letter
+              amount: calculatedAmount,
+              date: formattedDate,
+              items: items,
+              address: address,
+              tracking: tracking,
+              refundStatus: null, // Not provided in API
+              paymentStatus: order.payment_status,
+              paymentMethod: order.payment_method,
+              notes: order.notes,
+              orderId: order.order_id, // Keep the original ID for reference
+            };
+          });
+
+          setOrders(mappedOrders);
+          setFilteredOrders(mappedOrders);
+        } else {
+          console.error("Invalid orders response format:", ordersResponse);
+          // Keep the initial orders as fallback
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        // Keep the initial orders as fallback
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   // Pagination
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+  const currentOrders = filteredOrders.slice(
+    indexOfFirstOrder,
+    indexOfLastOrder
+  );
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -91,9 +261,9 @@ const OrderDashboard = () => {
   // Update order status
   const updateOrderStatus = (orderId, newStatus) => {
     showCustomModal({
-      title: 'Confirm Status Update',
+      title: "Confirm Status Update",
       message: `Are you sure you want to update order ${orderId} to ${newStatus}?`,
-      type: 'confirm',
+      type: "confirm",
       onConfirm: () => {
         setOrders((prevOrders) =>
           prevOrders.map((order) =>
@@ -104,13 +274,13 @@ const OrderDashboard = () => {
           setSelectedOrder({ ...selectedOrder, status: newStatus });
         }
         showCustomModal({
-          title: 'Success',
+          title: "Success",
           message: `Order ${orderId} status updated to ${newStatus}.`,
-          type: 'alert',
-          confirmText: 'OK',
+          type: "alert",
+          confirmText: "OK",
         });
       },
-      confirmText: 'Update',
+      confirmText: "Update",
     });
   };
 
@@ -118,38 +288,55 @@ const OrderDashboard = () => {
   const addTracking = (orderId, carrier, trackingNumber) => {
     setOrders((prevOrders) =>
       prevOrders.map((order) =>
-        order.id === orderId ? { ...order, tracking: { carrier, number: trackingNumber } } : order
+        order.id === orderId
+          ? { ...order, tracking: { carrier, number: trackingNumber } }
+          : order
       )
     );
     if (selectedOrder && selectedOrder.id === orderId) {
-      setSelectedOrder({ ...selectedOrder, tracking: { carrier, number: trackingNumber } });
+      setSelectedOrder({
+        ...selectedOrder,
+        tracking: { carrier, number: trackingNumber },
+      });
     }
   };
 
   // Handle refund/return
   const handleRefund = (orderId, action) => {
     showCustomModal({
-      title: 'Confirm Refund Action',
+      title: "Confirm Refund Action",
       message: `Are you sure you want to ${action} the refund for order ${orderId}?`,
-      type: 'confirm',
+      type: "confirm",
       onConfirm: () => {
         setOrders((prevOrders) =>
           prevOrders.map((order) =>
-            order.id === orderId ? { ...order, refundStatus: action === 'Approve' ? 'Approved' : 'Denied' } : order
+            order.id === orderId
+              ? {
+                  ...order,
+                  refundStatus: action === "Approve" ? "Approved" : "Denied",
+                }
+              : order
           )
         );
         if (selectedOrder && selectedOrder.id === orderId) {
-          setSelectedOrder({ ...selectedOrder, refundStatus: action === 'Approve' ? 'Approved' : 'Denied' });
+          setSelectedOrder({
+            ...selectedOrder,
+            refundStatus: action === "Approve" ? "Approved" : "Denied",
+          });
         }
         setNotifications((prev) => [
           ...prev,
-          { id: Date.now(), type: 'success', message: `Refund ${action.toLowerCase()}d for Order ${orderId}.` },
+          {
+            id: Date.now(),
+            type: "success",
+            message: `Refund ${action.toLowerCase()}d for Order ${orderId}.`,
+          },
         ]);
         showCustomModal({
-          title: 'Success',
+          title: "Success",
           message: `Refund ${action.toLowerCase()}d for Order ${orderId}.`,
-          type: 'alert',
-          confirmText: 'OK',
+          type: "alert",
+          confirmText: "OK",
         });
       },
       confirmText: action,
@@ -158,9 +345,9 @@ const OrderDashboard = () => {
 
   // Export orders
   const exportOrders = (format) => {
-    if (format === 'CSV') {
+    if (format === "CSV") {
       const csvContent = [
-        ['Order ID', 'Customer', 'Email', 'Status', 'Total', 'Date'],
+        ["Order ID", "Customer", "Email", "Status", "Total", "Date"],
         ...filteredOrders.map((order) => [
           order.id,
           order.customer,
@@ -170,18 +357,18 @@ const OrderDashboard = () => {
           order.date,
         ]),
       ]
-        .map((row) => row.join(','))
-        .join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv' });
+        .map((row) => row.join(","))
+        .join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv" });
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = 'orders.csv';
+      a.download = "orders.csv";
       a.click();
       window.URL.revokeObjectURL(url);
-    } else if (format === 'PDF') {
+    } else if (format === "PDF") {
       const doc = new jsPDF();
-      doc.text('Orders Report', 10, 10);
+      doc.text("Orders Report", 10, 10);
       filteredOrders.forEach((order, index) => {
         doc.text(
           `${order.id} | ${order.customer} | ${order.status} | $${order.amount} | ${order.date}`,
@@ -189,7 +376,7 @@ const OrderDashboard = () => {
           20 + index * 10
         );
       });
-      doc.save('orders.pdf');
+      doc.save("orders.pdf");
     }
   };
 
@@ -198,48 +385,52 @@ const OrderDashboard = () => {
     try {
       if (!order || !order.id || !order.items) {
         showCustomModal({
-          title: 'Error',
-          message: 'Invalid order data. Cannot generate invoice.',
-          type: 'alert',
-          confirmText: 'OK',
+          title: "Error",
+          message: "Invalid order data. Cannot generate invoice.",
+          type: "alert",
+          confirmText: "OK",
         });
         return;
       }
       const doc = new jsPDF();
       doc.text(`Invoice for Order ${order.id}`, 10, 10);
-      doc.text(`Customer: ${order.customer || 'N/A'}`, 10, 20);
-      doc.text(`Email: ${order.email || 'N/A'}`, 10, 30);
-      doc.text(`Date: ${order.date || 'N/A'}`, 10, 40);
-      doc.text('Items:', 10, 50);
+      doc.text(`Customer: ${order.customer || "N/A"}`, 10, 20);
+      doc.text(`Email: ${order.email || "N/A"}`, 10, 30);
+      doc.text(`Date: ${order.date || "N/A"}`, 10, 40);
+      doc.text("Items:", 10, 50);
       order.items.forEach((item, index) => {
         doc.text(
-          `${item.name || 'Unknown'} x ${item.qty || 0} - $${item.price || 0}`,
+          `${item.name || "Unknown"} x ${item.qty || 0} - $${item.price || 0}`,
           10,
           60 + index * 10
         );
       });
-      doc.text(`Total: $${order.amount || 0}`, 10, 60 + order.items.length * 10);
+      doc.text(
+        `Total: $${order.amount || 0}`,
+        10,
+        60 + order.items.length * 10
+      );
       doc.save(`invoice_${order.id}.pdf`);
       showCustomModal({
-        title: 'Success',
+        title: "Success",
         message: `Invoice for Order ${order.id} downloaded successfully.`,
-        type: 'alert',
-        confirmText: 'OK',
+        type: "alert",
+        confirmText: "OK",
       });
     } catch (error) {
-      console.error('Error generating invoice:', error);
+      console.error("Error generating invoice:", error);
       showCustomModal({
-        title: 'Error',
-        message: 'Failed to generate invoice. Please try again.',
-        type: 'alert',
-        confirmText: 'OK',
+        title: "Error",
+        message: "Failed to generate invoice. Please try again.",
+        type: "alert",
+        confirmText: "OK",
       });
     }
   }, []);
 
   // Create manual order
   const createOrder = (newOrder) => {
-    const orderId = `ORD${(orders.length + 1).toString().padStart(3, '0')}`;
+    const orderId = `ORD${(orders.length + 1).toString().padStart(3, "0")}`;
     setOrders((prevOrders) => [
       ...prevOrders,
       {
@@ -247,9 +438,12 @@ const OrderDashboard = () => {
         customer: newOrder.customer,
         email: newOrder.email,
         phone: newOrder.phone,
-        status: 'Pending',
-        amount: newOrder.items.reduce((sum, item) => sum + item.qty * item.price, 0),
-        date: new Date().toISOString().split('T')[0],
+        status: "Pending",
+        amount: newOrder.items.reduce(
+          (sum, item) => sum + item.qty * item.price,
+          0
+        ),
+        date: new Date().toISOString().split("T")[0],
         items: newOrder.items,
         address: newOrder.address,
         tracking: null,
@@ -259,7 +453,11 @@ const OrderDashboard = () => {
     setShowCreateOrderModal(false);
     setNotifications((prev) => [
       ...prev,
-      { id: Date.now(), type: 'success', message: `Order ${orderId} created successfully.` },
+      {
+        id: Date.now(),
+        type: "success",
+        message: `Order ${orderId} created successfully.`,
+      },
     ]);
   };
 
@@ -270,7 +468,6 @@ const OrderDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      
       {/* Call Header Component */}
       <Header />
 
@@ -287,22 +484,29 @@ const OrderDashboard = () => {
           exportOrders={exportOrders}
         />
 
-        {/* Call MetricsSection Component */}
-        <MetricsSection orders={orders} />
+        {/* Call MetricsSection Component with the total orders data */}
+        <MetricsSection totalOrders={totalOrders} />
 
-        {/* Call OrdersTable Component */}
-        <OrdersTable
-          currentOrders={currentOrders}
-          setSelectedOrder={setSelectedOrder}
-          setShowModal={setShowModal}
-          updateOrderStatus={updateOrderStatus}
-          downloadInvoice={downloadInvoice}
-          ordersPerPage={ordersPerPage}
-          setOrdersPerPage={setOrdersPerPage}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          paginate={paginate}
-        />
+        {/* Loading indicator */}
+        {isLoading ? (
+          <div className="flex justify-center items-center py-10">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        ) : (
+          /* Call OrdersTable Component with the API data */
+          <OrdersTable
+            currentOrders={currentOrders}
+            setSelectedOrder={setSelectedOrder}
+            setShowModal={setShowModal}
+            updateOrderStatus={updateOrderStatus}
+            downloadInvoice={downloadInvoice}
+            ordersPerPage={ordersPerPage}
+            setOrdersPerPage={setOrdersPerPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            paginate={paginate}
+          />
+        )}
       </main>
 
       {/* Call OrderDetailModal Component */}
@@ -328,7 +532,10 @@ const OrderDashboard = () => {
       <QuickActions setShowCreateOrderModal={setShowCreateOrderModal} />
 
       {/* Call Notifications Component */}
-      <Notifications notifications={notifications} dismissNotification={dismissNotification} />
+      <Notifications
+        notifications={notifications}
+        dismissNotification={dismissNotification}
+      />
 
       {/* Call CustomModal Component */}
       <CustomModal

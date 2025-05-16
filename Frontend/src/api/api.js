@@ -7,7 +7,7 @@ let ROUTE_ENDPOINT;
 // const token = localStorage.getItem("token");
 
 const token =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJfaWQiOiJiMzRlMzYzYS1hMGQ1LTQ2ZDYtOWQ5NS1iY2M3Mjc5ZjJmMmYiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NDczNzUxNTEsImV4cCI6MTc0NzQxMTE1MX0.KhfptGkosME8dn2dxAZu8GhfgTasyyH2nR1B5h9mivc";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJfaWQiOiJiMzRlMzYzYS1hMGQ1LTQ2ZDYtOWQ5NS1iY2M3Mjc5ZjJmMmYiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NDc0MTEyNDMsImV4cCI6MTc0NzQ0NzI0M30.l-nDFK5baeC4lgz7Gsic2j6uzunaOdX1QYL0D8I3ecg";
 
 let decodedToken;
 
