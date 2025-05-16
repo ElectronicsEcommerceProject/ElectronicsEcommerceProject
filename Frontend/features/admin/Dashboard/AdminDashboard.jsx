@@ -104,10 +104,7 @@ const AdminDashboard = () => {
             };
 
             // Check if the order is from a retailer (admin) or customer
-            if (
-              order.user?.role === "admin" ||
-              order.user?.role === "retailer"
-            ) {
+            if (order.user?.role === "retailer") {
               retailerOrdersData.push(orderData);
             } else if (order.user?.role === "customer") {
               customerOrdersData.push(orderData);
