@@ -8,6 +8,15 @@ const router = express.Router();
 // 🧑‍💼 Admin: Get all orders (add below existing routes)
 router.get("/", verifyJwtToken, isAdmin, orderController.getAllOrders);
 
+// Place static/specific routes BEFORE dynamic ones
+router.get(
+  "/latest",
+  verifyJwtToken,
+  isAdmin,
+
+  orderController.getLatestOrder
+);
+
 // 🔍 Get single order by ID
 router.get("/:id", verifyJwtToken, orderController.getOrderById);
 

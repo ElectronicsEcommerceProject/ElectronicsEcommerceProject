@@ -9,6 +9,13 @@ import { orderController } from "../../../controllers/index.js";
 
 const router = express.Router();
 
+router.post(
+  "/",
+  verifyJwtToken,
+  validator(validators.order.createOrderValidator, null),
+  orderController.createOrder
+);
+
 // Get all orders
 router.get("/", verifyJwtToken, isAdmin, orderController.getAllOrders);
 

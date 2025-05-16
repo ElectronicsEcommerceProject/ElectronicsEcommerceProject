@@ -4,7 +4,12 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { ClientSideRowModelModule } from "ag-grid-community";
 
-import { allUserRoute, orderRoute, getApi } from "../../../src/index.js";
+import {
+  allUserRoute,
+  orderRoute,
+  latestOrderRoute,
+  getApi,
+} from "../../../src/index.js";
 
 const AdminDashboard = () => {
   const [totalUsers, setTotalUsers] = useState({ customers: 0, retailers: 0 });
@@ -14,10 +19,14 @@ const AdminDashboard = () => {
     delivered: 0,
     cancelled: 0,
   });
-  const totalRevenue = 245000;
+
+  const [customerOrders, setCustomerOrders] = useState([]);
+  const [retailerOrders, setRetailerOrders] = useState([]);
+
+  const [totalRevenue, setTotalRevenue] = useState(0);
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchData = async () => {
       try {
         const response = await getApi(allUserRoute);
         if (response && response.success && Array.isArray(response.users)) {
@@ -33,10 +42,10 @@ const AdminDashboard = () => {
             { customers: 0, retailers: 0 }
           );
           setTotalUsers(calculatedTotalUsers);
-          console.log("Calculated total users:", calculatedTotalUsers);
         } else {
           console.error("Invalid response format:", response);
         }
+
         const ordersResponse = await getApi(orderRoute);
         if (
           ordersResponse &&
@@ -58,16 +67,67 @@ const AdminDashboard = () => {
             { all: 0, pending: 0, delivered: 0, cancelled: 0 }
           );
           setTotalOrders(calculatedTotalOrders);
-          console.log("Calculated total orders:", calculatedTotalOrders);
+
+          // Calculate total revenue
+          const revenue = ordersResponse.data.reduce(
+            (total, order) => total + parseFloat(order.total_amount),
+            0
+          );
+          setTotalRevenue(revenue);
         } else {
           console.error("Invalid orders response format:", ordersResponse);
         }
+
+        const latestOrderResponse = await getApi(latestOrderRoute);
+        if (
+          latestOrderResponse &&
+          latestOrderResponse.message === "Data fetched successfully"
+        ) {
+          // Process customer and retailer orders
+          const customerOrdersData = [];
+          const retailerOrdersData = [];
+
+          // Check if data is an array or a single object
+          const ordersData = Array.isArray(latestOrderResponse.data)
+            ? latestOrderResponse.data
+            : [latestOrderResponse.data]; // Convert single object to array if needed
+
+          ordersData.forEach((order) => {
+            if (!order) return; // Skip if order is null or undefined
+
+            const orderData = {
+              id: order.tracking_number || order.order_number || order.order_id, // Use tracking number as ID if available
+              customer: order.user?.name || "Unknown",
+              status: order.order_status,
+              date: new Date(order.order_date).toISOString().split("T")[0],
+              tracking: order.tracking_number || "Not available",
+            };
+
+            // Check if the order is from a retailer (admin) or customer
+            if (
+              order.user?.role === "admin" ||
+              order.user?.role === "retailer"
+            ) {
+              retailerOrdersData.push(orderData);
+            } else if (order.user?.role === "customer") {
+              customerOrdersData.push(orderData);
+            }
+          });
+
+          setCustomerOrders(customerOrdersData);
+          setRetailerOrders(retailerOrdersData);
+        } else {
+          console.error(
+            "Invalid latest order response format:",
+            latestOrderResponse
+          );
+        }
       } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
-    fetchUsers();
+    fetchData();
   }, []);
 
   const lowStockAlerts = [
@@ -80,44 +140,9 @@ const AdminDashboard = () => {
     { name: "Product Z", sales: 150 },
   ];
 
-  const customerOrders = [
-    {
-      id: "ORD001",
-      customer: "John Doe",
-      status: "Delivered",
-      date: "2025-04-25",
-    },
-    {
-      id: "ORD002",
-      customer: "Jane Smith",
-      status: "Pending",
-      date: "2025-04-24",
-    },
-    {
-      id: "ORD003",
-      customer: "Mike Ross",
-      status: "Cancelled",
-      date: "2025-04-23",
-    },
-  ];
-  const retailerOrders = [
-    {
-      id: "RET001",
-      retailer: "Retail A",
-      status: "Delivered",
-      date: "2025-04-25",
-    },
-    {
-      id: "RET002",
-      retailer: "Retail B",
-      status: "Pending",
-      date: "2025-04-24",
-    },
-  ];
-
   const customerColumnDefs = [
     {
-      headerName: "Order ID",
+      headerName: "Tracking Number",
       field: "id",
       sortable: true,
       filter: true,
@@ -142,9 +167,9 @@ const AdminDashboard = () => {
       cellRenderer: (params) => (
         <span
           className={`px-2 py-1 rounded-lg text-xs sm:text-sm font-medium ${
-            params.value === "Delivered"
+            params.value === "shipped"
               ? "bg-green-100 text-green-700"
-              : params.value === "Pending"
+              : params.value === "pending"
               ? "bg-yellow-100 text-yellow-700"
               : "bg-red-100 text-red-700"
           }`}
@@ -165,7 +190,7 @@ const AdminDashboard = () => {
 
   const retailerColumnDefs = [
     {
-      headerName: "Order ID",
+      headerName: "Tracking Number",
       field: "id",
       sortable: true,
       filter: true,
@@ -174,7 +199,7 @@ const AdminDashboard = () => {
     },
     {
       headerName: "Retailer",
-      field: "retailer",
+      field: "customer",
       sortable: true,
       filter: true,
       flex: 1,
@@ -190,9 +215,9 @@ const AdminDashboard = () => {
       cellRenderer: (params) => (
         <span
           className={`px-2 py-1 rounded-lg text-xs sm:text-sm font-medium ${
-            params.value === "Delivered"
+            params.value === "shipped"
               ? "bg-green-100 text-green-700"
-              : params.value === "Pending"
+              : params.value === "pending"
               ? "bg-yellow-100 text-yellow-700"
               : "bg-red-100 text-red-700"
           }`}
@@ -420,61 +445,45 @@ const AdminDashboard = () => {
             Latest Orders
           </h2>
           <div className="space-y-0">
-            {/* Customer Orders */}
-            <div>
-              <h3 className="text-base sm:text-lg font-medium text-gray-700 mb-2">
-                Customer Orders
-              </h3>
-              {customerOrders.length === 0 ? (
-                <p className="text-gray-600 text-sm sm:text-base pb-2">
-                  No customer orders found.
-                </p>
-              ) : (
-                <div
-                  className="ag-theme-alpine ag-grid-mobile w-full"
-                  style={{ height: "auto" }}
-                >
-                  <AgGridReact
-                    modules={[ClientSideRowModelModule]}
-                    rowData={customerOrders}
-                    columnDefs={customerColumnDefs}
-                    defaultColDef={defaultColDef}
-                    headerHeight={50}
-                    rowHeight={50}
-                    suppressCellFocus={true}
-                    domLayout="autoHeight"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Retailer Orders */}
-            <div>
-              <h3 className="text-base sm:text-lg font-medium text-gray-700 mb-2 pt-2">
-                Retailer Orders
-              </h3>
-              {retailerOrders.length === 0 ? (
-                <p className="text-gray-600 text-sm sm:text-base">
-                  No retailer orders found.
-                </p>
-              ) : (
-                <div
-                  className="ag-theme-alpine ag-grid-mobile w-full"
-                  style={{ height: "auto" }}
-                >
-                  <AgGridReact
-                    modules={[ClientSideRowModelModule]}
-                    rowData={retailerOrders}
-                    columnDefs={retailerColumnDefs}
-                    defaultColDef={defaultColDef}
-                    headerHeight={50}
-                    rowHeight={50}
-                    suppressCellFocus={true}
-                    domLayout="autoHeight"
-                  />
-                </div>
-              )}
-            </div>
+            {[
+              {
+                title: "Customer Orders",
+                orders: customerOrders,
+                columnDefs: customerColumnDefs,
+              },
+              {
+                title: "Retailer Orders",
+                orders: retailerOrders,
+                columnDefs: retailerColumnDefs,
+              },
+            ].map(({ title, orders, columnDefs }, index) => (
+              <div key={index}>
+                <h3 className="text-base sm:text-lg font-medium text-gray-700 mb-2 pt-2">
+                  {title}
+                </h3>
+                {orders.length === 0 ? (
+                  <p className="text-gray-600 text-sm sm:text-base pb-2">
+                    No {title.toLowerCase()} found.
+                  </p>
+                ) : (
+                  <div
+                    className="ag-theme-alpine ag-grid-mobile w-full"
+                    style={{ height: "auto" }}
+                  >
+                    <AgGridReact
+                      modules={[ClientSideRowModelModule]}
+                      rowData={orders}
+                      columnDefs={columnDefs}
+                      defaultColDef={defaultColDef}
+                      headerHeight={50}
+                      rowHeight={50}
+                      suppressCellFocus={true}
+                      domLayout="autoHeight"
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>

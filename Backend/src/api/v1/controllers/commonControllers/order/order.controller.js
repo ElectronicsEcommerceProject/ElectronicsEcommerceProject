@@ -1,4 +1,5 @@
 import { StatusCodes } from "http-status-codes";
+import { Op } from "sequelize";
 import MESSAGE from "../../../../../constants/message.js";
 import db from "../../../../../models/index.js";
 import { generateOrderNumber } from "../../../../../utils/orderUtils.js";
@@ -281,10 +282,59 @@ export const cancelOrderById = async (req, res) => {
   }
 };
 
+//latest order
+export const getLatestOrder = async (req, res) => {
+  try {
+    const user = await User.findOne({ where: { email: req.user.email } });
+    if (!user)
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "User not found" });
+
+    // Calculate date from 2 days ago
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+    const order = await Order.findAll({
+      where: {
+        order_date: {
+          [Op.gte]: twoDaysAgo,
+        },
+      },
+      order: [["order_date", "DESC"]],
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["user_id", "name", "role"],
+        },
+      ],
+    });
+
+    if (!order) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: "No orders found in the last 2 days",
+      });
+    }
+
+    return res.status(StatusCodes.OK).json({
+      message: MESSAGE.get.succ,
+      data: order,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching recent orders:", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: MESSAGE.get.fail,
+      error: error.message,
+    });
+  }
+};
+
 export default {
   createOrder,
   getAllOrders,
   getOrderById,
   updateOrder,
   cancelOrderById,
+  getLatestOrder,
 };
