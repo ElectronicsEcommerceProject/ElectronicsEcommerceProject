@@ -2368,7 +2368,7 @@ Headers: Authorization: Bearer {{authToken}}
             "name": "admin",
             "email": "admin@gmail.com",
             "phone_number": "9876543211",
-            "role": "admin",
+            "role": "customer",
             "createdAt": "2025-05-15T05:57:10.000Z"
         }
     ]

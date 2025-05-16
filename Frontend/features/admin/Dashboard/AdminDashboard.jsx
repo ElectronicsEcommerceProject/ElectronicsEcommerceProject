@@ -1,13 +1,45 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { ClientSideRowModelModule } from "ag-grid-community";
 
+import { allUserRoute, getApi } from "../../../src/index.js";
+
 const AdminDashboard = () => {
-  const totalUsers = { customers: 1200, retailers: 150 };
+  const [totalUsers, setTotalUsers] = useState({ customers: 0, retailers: 0 });
   const totalOrders = { all: 500, pending: 120, delivered: 350, cancelled: 30 };
   const totalRevenue = 245000;
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await getApi(allUserRoute);
+        if (response && response.success && Array.isArray(response.users)) {
+          const calculatedTotalUsers = response.users.reduce(
+            (acc, user) => {
+              if (user.role === "customer") {
+                acc.customers += 1;
+              } else if (user.role === "retailer") {
+                acc.retailers += 1;
+              }
+              return acc;
+            },
+            { customers: 0, retailers: 0 }
+          );
+          setTotalUsers(calculatedTotalUsers);
+          console.log("Calculated total users:", calculatedTotalUsers);
+        } else {
+          console.error("Invalid response format:", response);
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
   const lowStockAlerts = [
     { name: "Product A", stock: 5 },
     { name: "Product B", stock: 3 },
@@ -368,7 +400,10 @@ const AdminDashboard = () => {
                   No customer orders found.
                 </p>
               ) : (
-                <div className="ag-theme-alpine ag-grid-mobile w-full" style={{height: 'auto'}}>
+                <div
+                  className="ag-theme-alpine ag-grid-mobile w-full"
+                  style={{ height: "auto" }}
+                >
                   <AgGridReact
                     modules={[ClientSideRowModelModule]}
                     rowData={customerOrders}
@@ -377,7 +412,7 @@ const AdminDashboard = () => {
                     headerHeight={50}
                     rowHeight={50}
                     suppressCellFocus={true}
-                    domLayout='autoHeight'
+                    domLayout="autoHeight"
                   />
                 </div>
               )}
@@ -393,7 +428,10 @@ const AdminDashboard = () => {
                   No retailer orders found.
                 </p>
               ) : (
-                <div className="ag-theme-alpine ag-grid-mobile w-full" style={{height: 'auto'}}>
+                <div
+                  className="ag-theme-alpine ag-grid-mobile w-full"
+                  style={{ height: "auto" }}
+                >
                   <AgGridReact
                     modules={[ClientSideRowModelModule]}
                     rowData={retailerOrders}
@@ -402,7 +440,7 @@ const AdminDashboard = () => {
                     headerHeight={50}
                     rowHeight={50}
                     suppressCellFocus={true}
-                    domLayout='autoHeight'
+                    domLayout="autoHeight"
                   />
                 </div>
               )}
