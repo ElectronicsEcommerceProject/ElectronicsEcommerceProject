@@ -68,6 +68,7 @@ const OrderDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const [userType, setUserType] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [ordersPerPage, setOrdersPerPage] = useState(10);
@@ -116,33 +117,10 @@ const OrderDashboard = () => {
     setModalConfig((prev) => ({ ...prev, isOpen: false }));
   };
 
-  // Filter orders
-  useEffect(() => {
-    let filtered = orders;
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (order) =>
-          order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.phone?.includes(searchQuery)
-      );
-    }
-    if (statusFilter) {
-      filtered = filtered.filter((order) => order.status === statusFilter);
-    }
-    if (dateRange.start && dateRange.end) {
-      filtered = filtered.filter((order) => {
-        const orderDate = new Date(order.date);
-        return (
-          orderDate >= new Date(dateRange.start) &&
-          orderDate <= new Date(dateRange.end)
-        );
-      });
-    }
-    setFilteredOrders(filtered);
-    setCurrentPage(1);
-  }, [searchQuery, statusFilter, dateRange, orders]);
+  // // Add a useEffect to log userType changes
+  // useEffect(() => {
+  //   console.log("User Type Changed:", userType);
+  // }, [userType]);
 
   // Fetch order data from API
   useEffect(() => {
@@ -227,6 +205,7 @@ const OrderDashboard = () => {
               paymentMethod: order.payment_method,
               notes: order.notes,
               orderId: order.order_id, // Keep the original ID for reference
+              role: order.user.role,
             };
           });
 
@@ -246,6 +225,53 @@ const OrderDashboard = () => {
 
     fetchData();
   }, []);
+
+  // Filter orders
+  useEffect(() => {
+    let filtered = orders;
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (order) =>
+          order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          order.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          order.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          order.phone?.includes(searchQuery)
+      );
+    }
+    if (statusFilter) {
+      filtered = filtered.filter((order) => order.status === statusFilter);
+    }
+    if (dateRange.start && dateRange.end) {
+      filtered = filtered.filter((order) => {
+        const orderDate = new Date(order.date);
+        return (
+          orderDate >= new Date(dateRange.start) &&
+          orderDate <= new Date(dateRange.end)
+        );
+      });
+    }
+    // User type filtering
+    if (userType) {
+      filtered = filtered.filter((order) => {
+        // Make sure we have the user object with role property
+        if (!order.role) {
+          console.log("testing", order);
+          return false;
+        }
+
+        if (userType === "admin") {
+          return true; // Admin can see all orders
+        } else if (userType === "retailer") {
+          return order.role === "retailer";
+        } else if (userType === "customer") {
+          return order.role === "customer";
+        }
+        return false;
+      });
+    }
+    setFilteredOrders(filtered);
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, dateRange, orders, userType]);
 
   // Pagination
   const indexOfLastOrder = currentPage * ordersPerPage;
@@ -448,6 +474,7 @@ const OrderDashboard = () => {
         address: newOrder.address,
         tracking: null,
         refundStatus: null,
+        role: newOrder.user.role,
       },
     ]);
     setShowCreateOrderModal(false);
@@ -482,6 +509,8 @@ const OrderDashboard = () => {
           dateRange={dateRange}
           setDateRange={setDateRange}
           exportOrders={exportOrders}
+          userType={userType}
+          setUserType={setUserType}
         />
 
         {/* Call MetricsSection Component with the total orders data */}
