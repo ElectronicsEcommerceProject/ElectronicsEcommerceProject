@@ -28,12 +28,12 @@ router.get(
 );
 
 // Update order
-router.put(
+router.patch(
   "/:order_id",
   verifyJwtToken,
   validator(validators.order.orderIdValidator, "params"),
   validator(validators.order.updateOrderValidator, null),
-  orderController.updateOrder
+  orderController.updateOrderById
 );
 
 // Cancel order

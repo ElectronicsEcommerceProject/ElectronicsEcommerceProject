@@ -23,7 +23,7 @@ const constructApiUrl = (baseUrl, routeEndpoint) => {
 };
 
 // 🔐 Create API
-const createApi = async (data, routeEndpoint) => {
+const createApi = async (routeEndpoint, data) => {
   try {
     const API_ENDPOINT = constructApiUrl(
       BASE_URL,
@@ -49,7 +49,7 @@ const getApi = async (routeEndpoint) => {
       BASE_URL,
       `${ROUTE_ENDPOINT}${routeEndpoint}`
     ); // Construct the API URL
-    console.log("API_ENDPOINT:", API_ENDPOINT); // Debugging: Log the constructed API URL
+    // console.log("API_ENDPOINT:", API_ENDPOINT); // Debugging: Log the constructed API URL
     const response = await axios.get(`${API_ENDPOINT}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -60,7 +60,7 @@ const getApi = async (routeEndpoint) => {
 };
 
 // 🔍 Get API by ID
-const getApiById = async (id, routeEndpoint) => {
+const getApiById = async (routeEndpoint, id) => {
   try {
     const API_ENDPOINT = constructApiUrl(
       BASE_URL,
@@ -76,7 +76,7 @@ const getApiById = async (id, routeEndpoint) => {
 };
 
 // 🔄 Update API
-const updateApi = async (id, data, routeEndpoint) => {
+const updateApi = async (routeEndpoint, id, data) => {
   try {
     const API_ENDPOINT = constructApiUrl(
       BASE_URL,
@@ -92,7 +92,7 @@ const updateApi = async (id, data, routeEndpoint) => {
 };
 
 // 🔄 Update API by ID
-const updateApiById = async (id, data, routeEndpoint) => {
+const updateApiById = async (routeEndpoint, id, data) => {
   try {
     const API_ENDPOINT = constructApiUrl(
       BASE_URL,

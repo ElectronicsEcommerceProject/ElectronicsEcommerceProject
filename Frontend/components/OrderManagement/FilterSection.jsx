@@ -28,11 +28,6 @@ const FiltersSection = ({
     });
   };
 
-  // Remove this incorrect redefinition
-  // setUserType = (userType) => {
-  //   alert(`User type selected: ${userType}`);
-  // };
-
   return (
     <div className="bg-white p-4 rounded-md shadow-sm mb-6">
       <div className="flex flex-wrap items-center gap-3">

@@ -14,7 +14,12 @@ import {
   CustomModal,
 } from "../../../features/admin/index.js";
 
-import { orderRoute, getApi } from "../../../src/index.js";
+import {
+  orderRoute,
+  getApi,
+  updateApiById,
+  MESSAGE,
+} from "../../../src/index.js";
 
 // Fallback initial orders in case API fails
 const initialOrders = [
@@ -116,11 +121,6 @@ const OrderDashboard = () => {
   const closeCustomModal = () => {
     setModalConfig((prev) => ({ ...prev, isOpen: false }));
   };
-
-  // // Add a useEffect to log userType changes
-  // useEffect(() => {
-  //   console.log("User Type Changed:", userType);
-  // }, [userType]);
 
   // Fetch order data from API
   useEffect(() => {
@@ -226,6 +226,47 @@ const OrderDashboard = () => {
     fetchData();
   }, []);
 
+  // Update order status
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const updateOrderStatus = await updateApiById(orderRoute, orderId, {
+        order_status: newStatus,
+      });
+
+      if (updateOrderStatus.message === MESSAGE.put.succ) {
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.orderId === orderId ? { ...order, status: newStatus } : order
+          )
+        );
+        setFilteredOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.orderId === orderId ? { ...order, status: newStatus } : order
+          )
+        );
+        if (selectedOrder && selectedOrder.orderId === orderId) {
+          setSelectedOrder({ ...selectedOrder, status: newStatus });
+        }
+        showCustomModal({
+          title: "Success",
+          message: `Order ${orderId} status updated to ${newStatus}.`,
+          type: "alert",
+          confirmText: "OK",
+        });
+      } else {
+        throw new Error("Failed to update order status");
+      }
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      showCustomModal({
+        title: "Error",
+        message: "Failed to update order status. Please try again.",
+        type: "alert",
+        confirmText: "OK",
+      });
+    }
+  };
+
   // Filter orders
   useEffect(() => {
     let filtered = orders;
@@ -241,6 +282,7 @@ const OrderDashboard = () => {
     if (statusFilter) {
       filtered = filtered.filter((order) => order.status === statusFilter);
     }
+
     if (dateRange.start && dateRange.end) {
       filtered = filtered.filter((order) => {
         const orderDate = new Date(order.date);
@@ -252,6 +294,7 @@ const OrderDashboard = () => {
     }
     // User type filtering
     if (userType) {
+      console.log("Selected User Type:", userType);
       filtered = filtered.filter((order) => {
         // Make sure we have the user object with role property
         if (!order.role) {
@@ -283,32 +326,6 @@ const OrderDashboard = () => {
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  // Update order status
-  const updateOrderStatus = (orderId, newStatus) => {
-    showCustomModal({
-      title: "Confirm Status Update",
-      message: `Are you sure you want to update order ${orderId} to ${newStatus}?`,
-      type: "confirm",
-      onConfirm: () => {
-        setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order.id === orderId ? { ...order, status: newStatus } : order
-          )
-        );
-        if (selectedOrder && selectedOrder.id === orderId) {
-          setSelectedOrder({ ...selectedOrder, status: newStatus });
-        }
-        showCustomModal({
-          title: "Success",
-          message: `Order ${orderId} status updated to ${newStatus}.`,
-          type: "alert",
-          confirmText: "OK",
-        });
-      },
-      confirmText: "Update",
-    });
-  };
 
   // Add tracking information
   const addTracking = (orderId, carrier, trackingNumber) => {

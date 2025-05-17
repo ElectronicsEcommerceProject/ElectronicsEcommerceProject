@@ -36,7 +36,8 @@ export default (sequelize) => {
           "processing",
           "shipped",
           "delivered",
-          "cancelled"
+          "cancelled",
+          "returned"
         ),
         defaultValue: "pending",
       },

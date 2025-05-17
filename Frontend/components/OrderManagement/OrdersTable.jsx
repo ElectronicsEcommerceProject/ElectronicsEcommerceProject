@@ -97,23 +97,26 @@ const OrdersTable = ({
                     className="border rounded p-1 text-sm text-blue-600"
                     value={order.status}
                     onChange={(e) =>
-                      updateOrderStatus(order.id, e.target.value)
+                      updateOrderStatus(order.orderId, e.target.value)
                     }
                   >
-                    <option value="Pending" className="py-1">
-                      Pending
+                    <option value="pending" className="py-1">
+                      pending
                     </option>
-                    <option value="Shipped" className="py-1">
-                      Shipped
+                    <option value="processing" className="py-1">
+                      processing
                     </option>
-                    <option value="Delivered" className="py-1">
-                      Delivered
+                    <option value="shipped" className="py-1">
+                      shipped
                     </option>
-                    <option value="Cancelled" className="py-1">
-                      Cancel
+                    <option value="delivered" className="py-1">
+                      delivered
                     </option>
-                    <option value="Returned" className="py-1">
-                      Returned
+                    <option value="cancelled" className="py-1">
+                      cancelled
+                    </option>
+                    <option value="returned" className="py-1">
+                      returned
                     </option>
                   </select>
                   <button

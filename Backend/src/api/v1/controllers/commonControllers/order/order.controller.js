@@ -213,7 +213,7 @@ export const getOrderById = async (req, res) => {
 };
 
 // Update order status
-export const updateOrder = async (req, res) => {
+export const updateOrderById = async (req, res) => {
   try {
     const { order_id } = req.params;
     const { order_status, payment_status, tracking_number, notes } = req.body;
@@ -226,8 +226,8 @@ export const updateOrder = async (req, res) => {
     }
 
     // Update order fields
-    if (order_status) order.order_status = order_status;
-    if (payment_status) order.payment_status = payment_status;
+    if (order_status !== undefined) order.order_status = order_status;
+    if (payment_status !== undefined) order.payment_status = payment_status;
     if (tracking_number !== undefined) order.tracking_number = tracking_number;
     if (notes !== undefined) order.notes = notes;
 
@@ -334,7 +334,7 @@ export default {
   createOrder,
   getAllOrders,
   getOrderById,
-  updateOrder,
+  updateOrderById,
   cancelOrderById,
   getLatestOrder,
 };

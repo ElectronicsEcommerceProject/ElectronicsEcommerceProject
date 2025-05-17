@@ -20,6 +20,14 @@ router.get(
 // 🔍 Get single order by ID
 router.get("/:id", verifyJwtToken, orderController.getOrderById);
 
+// 🔄 Update order by ID
+router.patch(
+  "/:order_id",
+  verifyJwtToken,
+  isAdmin,
+  orderController.updateOrderById
+);
+
 // ❌ Request order cancellation
 router.patch(
   "/:id/cancel",
