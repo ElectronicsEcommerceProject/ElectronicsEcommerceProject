@@ -41,7 +41,8 @@ import MESSAGE from "./api/message.js";
 const allUserRoute = import.meta.env.VITE_USER_ENDPOINT;
 const orderRoute = import.meta.env.VITE_ORDER_ENDPOINT;
 const latestOrderRoute = import.meta.env.VITE_LATEST_ORDER_ENDPOINT;
-const orderByIdRoute = import.meta.env.VITE_ORDER_BY_ID_ENDPOINT;
+const userManagmentDashboardDataRoute = import.meta.env
+  .VITE_USER_MANAGMENT_DASHBOARD_DATA_ENDPOINT;
 
 export {
   FaEye,
@@ -72,4 +73,5 @@ export {
   allUserRoute,
   orderRoute,
   latestOrderRoute,
+  userManagmentDashboardDataRoute,
 };

@@ -139,14 +139,14 @@ const getUserManagementDashboardData = async (req, res) => {
 
     return res.status(StatusCodes.OK).json({
       success: true,
-      message: MESSAGE.DASHBOARD_DATA_FETCHED,
+      message: MESSAGE.get.succ,
       data: response,
     });
   } catch (error) {
     console.error("Error fetching dashboard metrics:", error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: MESSAGE.SOMETHING_WENT_WRONG,
+      message: MESSAGE.get.fail,
       error: error.message,
     });
   }

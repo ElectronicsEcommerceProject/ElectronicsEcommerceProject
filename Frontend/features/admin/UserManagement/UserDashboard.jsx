@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { UserProfileView } from "../../../features/admin/index.js";
 import {
   FiDownload,
@@ -15,21 +15,53 @@ import {
   FiActivity,
 } from "react-icons/fi";
 import { FaStore } from "react-icons/fa";
-import { use } from "react";
-import { getApi } from "../../../src/index.js";
+import {
+  getApi,
+  userManagmentDashboardDataRoute,
+  MESSAGE,
+} from "../../../src/index.js";
 
 const UserDashboard = () => {
   const [activePage, setActivePage] = useState("dashboard");
+  const [userManagementDashboardData, setUserManagementDashboardData] =
+    useState({
+      totalUsers: 0,
+      activeCustomers: 0,
+      activeRetailers: 0,
+      activeUsers: 0,
+      suspendedUsers: 0,
+      pendingRetailers: 0,
+      newSignups: 0,
+      avgOrdersPerUser: 0,
+      avgRevenuePerUser: 0,
+      topBuyers: [],
+      topSellers: [],
+    });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const [UserManagementDashboardData, setUserManagementDashboardData] =
-    useState([]);
+  useEffect(() => {
+    const fetchUserManagementDashboardData = async () => {
+      try {
+        setLoading(true);
+        const response = await getApi(userManagmentDashboardDataRoute);
+        if (response.success === true) {
+          setUserManagementDashboardData(response.data);
+          setError(null);
+        } else {
+          setError("Failed to fetch dashboard data");
+          console.error("Error fetching data:", response);
+        }
+      } catch (error) {
+        setError("An error occurred while fetching data");
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // useEffect(() => {
-  //   const fetchUserManagementDashboardData = async () => {
-  //     try {
-  //       const response = await getApi()
-  //     }
-  //     cat
+    fetchUserManagementDashboardData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -95,14 +127,29 @@ const UserDashboard = () => {
       </nav>
 
       <main className="p-6">
-        {activePage === "dashboard" && <DashboardContent />}
+        {activePage === "dashboard" &&
+          (loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : error ? (
+            <div
+              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+              role="alert"
+            >
+              <strong className="font-bold">Error!</strong>
+              <span className="block sm:inline"> {error}</span>
+            </div>
+          ) : (
+            <DashboardContent data={userManagementDashboardData} />
+          ))}
         {activePage === "users" && <UserProfileView />}
       </main>
     </div>
   );
 };
 
-const DashboardContent = () => (
+const DashboardContent = ({ data }) => (
   <>
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <div className="gradient-border bg-white p-6 rounded-xl shadow-md">
@@ -111,7 +158,9 @@ const DashboardContent = () => (
             <FiUser className="w-5 h-5 mr-2 text-blue-500" />
             Total Users
           </h2>
-          <p className="text-3xl font-bold text-gray-900 mt-2">5,248</p>
+          <p className="text-3xl font-bold text-gray-900 mt-2">
+            {data.totalUsers}
+          </p>
           <p className="text-sm text-gray-500 mt-1">Customers + Retailers</p>
         </div>
       </div>
@@ -121,7 +170,9 @@ const DashboardContent = () => (
             <FiUser className="w-5 h-5 mr-2 text-green-500" />
             Active Customers
           </h2>
-          <p className="text-3xl font-bold text-gray-900 mt-2">3,872</p>
+          <p className="text-3xl font-bold text-gray-900 mt-2">
+            {data.activeCustomers}
+          </p>
           <p className="text-sm text-gray-500 mt-1">30d activity</p>
         </div>
       </div>
@@ -131,7 +182,9 @@ const DashboardContent = () => (
             <FaStore className="w-5 h-5 mr-2 text-purple-500" />
             Active Retailers
           </h2>
-          <p className="text-3xl font-bold text-gray-900 mt-2">1,376</p>
+          <p className="text-3xl font-bold text-gray-900 mt-2">
+            {data.activeRetailers}
+          </p>
           <p className="text-sm text-gray-500 mt-1">Verified partners</p>
         </div>
       </div>
@@ -144,10 +197,12 @@ const DashboardContent = () => (
             <FiCheckCircle className="w-5 h-5 mr-2 text-green-500" />
             Active Users
           </h2>
-          <p className="text-3xl font-bold text-green-600 mt-2">4,915</p>
+          <p className="text-3xl font-bold text-green-600 mt-2">
+            {data.activeUsers}
+          </p>
           <p className="text-sm text-gray-500 mt-1">Fully Active</p>
           <div className="mt-4 flex items-center text-sm text-green-500">
-            <FiTrendingUp className="mr-1" /> 12.5% from last month
+            <FiTrendingUp className="mr-1" /> Updated
           </div>
         </div>
       </div>
@@ -157,7 +212,9 @@ const DashboardContent = () => (
             <FiAlertCircle className="w-5 h-5 mr-2 text-red-500" />
             Suspended Users
           </h2>
-          <p className="text-3xl font-bold text-red-600 mt-2">156</p>
+          <p className="text-3xl font-bold text-red-600 mt-2">
+            {data.suspendedUsers}
+          </p>
           <p className="text-sm text-gray-500 mt-1">Banned/Suspended</p>
         </div>
       </div>
@@ -167,7 +224,9 @@ const DashboardContent = () => (
             <FiClock className="w-5 h-5 mr-2 text-yellow-500" />
             Pending Retailers
           </h2>
-          <p className="text-3xl font-bold text-yellow-600 mt-2">48</p>
+          <p className="text-3xl font-bold text-yellow-600 mt-2">
+            {data.pendingRetailers}
+          </p>
           <p className="text-sm text-gray-500 mt-1">Awaiting Approval</p>
         </div>
       </div>
@@ -180,20 +239,14 @@ const DashboardContent = () => (
             <FiActivity className="w-5 h-5 mr-2 text-blue-400" />
             New Signups
           </h2>
-          <p className="text-3xl font-bold text-gray-900 mt-2">328</p>
-          <p className="text-sm text-gray-500 mt-1">Last 7 Days</p>
+          <p className="text-3xl font-bold text-gray-900 mt-2">
+            {data.newSignups}
+          </p>
+          <p className="text-sm text-gray-500 mt-1">Recent Registrations</p>
           <div className="mt-4 space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Today:</span>
-              <span className="font-medium">52</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">This Week:</span>
-              <span className="font-medium">215</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">This Month:</span>
-              <span className="font-medium">842</span>
+              <span className="text-gray-600">Total:</span>
+              <span className="font-medium">{data.newSignups}</span>
             </div>
           </div>
         </div>
@@ -204,10 +257,12 @@ const DashboardContent = () => (
             <FiShoppingCart className="w-5 h-5 mr-2 text-purple-400" />
             Avg Orders/User
           </h2>
-          <p className="text-3xl font-bold text-gray-900 mt-2">3.4</p>
+          <p className="text-3xl font-bold text-gray-900 mt-2">
+            {data.avgOrdersPerUser}
+          </p>
           <p className="text-sm text-gray-500 mt-1">Per Active User</p>
           <div className="mt-4 flex items-center text-sm text-green-500">
-            <FiTrendingUp className="mr-1" /> 8.2% from last quarter
+            <FiTrendingUp className="mr-1" /> Current Average
           </div>
         </div>
       </div>
@@ -217,7 +272,9 @@ const DashboardContent = () => (
             <FiDollarSign className="w-5 h-5 mr-2 text-green-400" />
             Avg Revenue/User
           </h2>
-          <p className="text-3xl font-bold text-gray-900 mt-2">₹475</p>
+          <p className="text-3xl font-bold text-gray-900 mt-2">
+            ₹{data.avgRevenuePerUser}
+          </p>
           <p className="text-sm text-gray-500 mt-1">Per Active User</p>
         </div>
       </div>
@@ -240,19 +297,28 @@ const DashboardContent = () => (
                 </tr>
               </thead>
               <tbody>
-                {[
-                  { name: "Aarav Sharma", spend: "₹14,800", orders: 28 },
-                  { name: "Priya Patel", spend: "₹12,350", orders: 22 },
-                  { name: "Rohan Singh", spend: "₹9,670", orders: 17 },
-                ].map((user, index) => (
-                  <tr key={index} className="border-t hover:bg-gray-50">
-                    <td className="py-3 px-4 flex items-center">
-                      <FiUser className="mr-2 text-gray-500" /> {user.name}
+                {data.topBuyers && data.topBuyers.length > 0 ? (
+                  data.topBuyers.map((buyer, index) => (
+                    <tr key={index} className="border-t hover:bg-gray-50">
+                      <td className="py-3 px-4 flex items-center">
+                        <FiUser className="mr-2 text-gray-500" /> {buyer.name}
+                      </td>
+                      <td className="py-3 px-4 font-medium">
+                        ₹{buyer.totalSpend.toFixed(2)}
+                      </td>
+                      <td className="py-3 px-4">{buyer.orders}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr className="border-t">
+                    <td
+                      colSpan="3"
+                      className="py-3 px-4 text-center text-gray-500"
+                    >
+                      No buyer data available
                     </td>
-                    <td className="py-3 px-4 font-medium">{user.spend}</td>
-                    <td className="py-3 px-4">{user.orders}</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -274,21 +340,28 @@ const DashboardContent = () => (
                 </tr>
               </thead>
               <tbody>
-                {[
-                  { name: "Urban Styles", orders: 168, revenue: "₹52,400" },
-                  { name: "Tech Haven", orders: 142, revenue: "₹46,800" },
-                  { name: "Home & Living", orders: 125, revenue: "₹39,200" },
-                ].map((retailer, index) => (
-                  <tr key={index} className="border-t hover:bg-gray-50">
-                    <td className="py-3 px-4 flex items-center">
-                      <FaStore className="mr-2 text-gray-500" /> {retailer.name}
-                    </td>
-                    <td className="py-3 px-4">{retailer.orders}</td>
-                    <td className="py-3 px-4 font-medium">
-                      {retailer.revenue}
+                {data.topSellers && data.topSellers.length > 0 ? (
+                  data.topSellers.map((seller, index) => (
+                    <tr key={index} className="border-t hover:bg-gray-50">
+                      <td className="py-3 px-4 flex items-center">
+                        <FaStore className="mr-2 text-gray-500" /> {seller.name}
+                      </td>
+                      <td className="py-3 px-4">{seller.orders}</td>
+                      <td className="py-3 px-4 font-medium">
+                        ₹{seller.revenue.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr className="border-t">
+                    <td
+                      colSpan="3"
+                      className="py-3 px-4 text-center text-gray-500"
+                    >
+                      No seller data available
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
