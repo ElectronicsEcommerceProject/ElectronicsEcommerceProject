@@ -298,7 +298,7 @@ const OrderDashboard = () => {
       filtered = filtered.filter((order) => {
         // Make sure we have the user object with role property
         if (!order.role) {
-          console.log("testing", order);
+          // console.log("testing", order);
           return false;
         }
 
