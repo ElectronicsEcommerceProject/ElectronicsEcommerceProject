@@ -17,6 +17,7 @@ import productMediaUrlRoutes from "./productMediaUrl.routes.js";
 import couponUserRoutes from "./couponUser.routes.js";
 import discountRuleRoutes from "./discountRule.routes.js";
 import orderRoutes from "./order.routes.js";
+import usersManagmentDashboardDataRoutes from "./userManagmentDashboardData.routes.js";
 
 const app = express();
 
@@ -46,6 +47,8 @@ app.use("/order", orderRoutes);
 app.use("/coupon", couponRoutes);
 
 app.use("/users", userRoutes);
+
+app.use("/users-Management-Dashboard-Data", usersManagmentDashboardDataRoutes);
 
 app.use("/coupon-User", couponUserRoutes);
 

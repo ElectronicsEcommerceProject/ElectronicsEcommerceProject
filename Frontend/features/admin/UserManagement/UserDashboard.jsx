@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import {UserProfileView }from '../../../features/admin/index.js';
-import { 
+import React, { useState } from "react";
+import { UserProfileView } from "../../../features/admin/index.js";
+import {
   FiDownload,
   FiFileText,
   FiPlus,
@@ -12,12 +12,24 @@ import {
   FiShoppingCart,
   FiDollarSign,
   FiTrendingUp,
-  FiActivity
-} from 'react-icons/fi';
-import { FaStore } from 'react-icons/fa';
+  FiActivity,
+} from "react-icons/fi";
+import { FaStore } from "react-icons/fa";
+import { use } from "react";
+import { getApi } from "../../../src/index.js";
 
 const UserDashboard = () => {
-  const [activePage, setActivePage] = useState('dashboard');
+  const [activePage, setActivePage] = useState("dashboard");
+
+  const [UserManagementDashboardData, setUserManagementDashboardData] =
+    useState([]);
+
+  // useEffect(() => {
+  //   const fetchUserManagementDashboardData = async () => {
+  //     try {
+  //       const response = await getApi()
+  //     }
+  //     cat
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -49,21 +61,21 @@ const UserDashboard = () => {
       <nav className="bg-white shadow-md p-4 flex justify-between items-center">
         <div className="flex gap-4">
           <button
-            onClick={() => setActivePage('dashboard')}
+            onClick={() => setActivePage("dashboard")}
             className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-              activePage === 'dashboard'
-                ? 'bg-blue-500 text-white border-b-2 border-blue-700'
-                : 'text-gray-600 hover:bg-gray-200'
+              activePage === "dashboard"
+                ? "bg-blue-500 text-white border-b-2 border-blue-700"
+                : "text-gray-600 hover:bg-gray-200"
             }`}
           >
             Dashboard
           </button>
           <button
-            onClick={() => setActivePage('users')}
+            onClick={() => setActivePage("users")}
             className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-              activePage === 'users'
-                ? 'bg-blue-500 text-white border-b-2 border-blue-700'
-                : 'text-gray-600 hover:bg-gray-200'
+              activePage === "users"
+                ? "bg-blue-500 text-white border-b-2 border-blue-700"
+                : "text-gray-600 hover:bg-gray-200"
             }`}
           >
             User Management
@@ -83,8 +95,8 @@ const UserDashboard = () => {
       </nav>
 
       <main className="p-6">
-        {activePage === 'dashboard' && <DashboardContent />}
-        {activePage === 'users' && <UserProfileView />}
+        {activePage === "dashboard" && <DashboardContent />}
+        {activePage === "users" && <UserProfileView />}
       </main>
     </div>
   );
@@ -229,9 +241,9 @@ const DashboardContent = () => (
               </thead>
               <tbody>
                 {[
-                  { name: 'Aarav Sharma', spend: '₹14,800', orders: 28 },
-                  { name: 'Priya Patel', spend: '₹12,350', orders: 22 },
-                  { name: 'Rohan Singh', spend: '₹9,670', orders: 17 }
+                  { name: "Aarav Sharma", spend: "₹14,800", orders: 28 },
+                  { name: "Priya Patel", spend: "₹12,350", orders: 22 },
+                  { name: "Rohan Singh", spend: "₹9,670", orders: 17 },
                 ].map((user, index) => (
                   <tr key={index} className="border-t hover:bg-gray-50">
                     <td className="py-3 px-4 flex items-center">
@@ -263,16 +275,18 @@ const DashboardContent = () => (
               </thead>
               <tbody>
                 {[
-                  { name: 'Urban Styles', orders: 168, revenue: '₹52,400' },
-                  { name: 'Tech Haven', orders: 142, revenue: '₹46,800' },
-                  { name: 'Home & Living', orders: 125, revenue: '₹39,200' }
+                  { name: "Urban Styles", orders: 168, revenue: "₹52,400" },
+                  { name: "Tech Haven", orders: 142, revenue: "₹46,800" },
+                  { name: "Home & Living", orders: 125, revenue: "₹39,200" },
                 ].map((retailer, index) => (
                   <tr key={index} className="border-t hover:bg-gray-50">
                     <td className="py-3 px-4 flex items-center">
                       <FaStore className="mr-2 text-gray-500" /> {retailer.name}
                     </td>
                     <td className="py-3 px-4">{retailer.orders}</td>
-                    <td className="py-3 px-4 font-medium">{retailer.revenue}</td>
+                    <td className="py-3 px-4 font-medium">
+                      {retailer.revenue}
+                    </td>
                   </tr>
                 ))}
               </tbody>

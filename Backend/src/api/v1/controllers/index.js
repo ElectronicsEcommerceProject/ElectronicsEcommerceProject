@@ -26,7 +26,7 @@ export { default as adminVariantAttributeValueController } from "./admin/product
 export { default as adminStockAlertController } from "./admin/stockAlert.controller.js";
 export { default as adminCouponUserController } from "./admin/couponUser.controller.js";
 export { default as adminDiscountRuleController } from "./admin/discountRule.controller.js";
-
+export { default as adminUserManagmentDashboardDataController } from "./admin/userManagmentDashboardData.controller.js";
 // export { default as adminProfileController } from './admin/profile.controller.js';
 export { default as adminCartController } from "./admin/cart.controller.js";
 export { default as adminReviewController } from "./admin/review.controller.js";
