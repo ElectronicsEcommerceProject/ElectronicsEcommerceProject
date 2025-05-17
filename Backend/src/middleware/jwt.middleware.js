@@ -4,7 +4,7 @@ import { StatusCodes } from "http-status-codes";
 import messages from "../constants/message.js";
 
 // Load environment variables from .env file
-dotenv.config({ path: '../.env' });
+dotenv.config({ path: "../.env" });
 
 // Get the secret key from environment variables
 const secretKey = process.env.SECRET_KEY;
@@ -14,7 +14,7 @@ export const encodeJwtToken = (email, user_id, role) => {
   // Payload data to include in the token
   const payload = { email, user_id, role };
   // Options for the token (e.g., expiration time)
-  const options = { expiresIn: "10h" }; // Token expires in 10 hours
+  const options = { expiresIn: "70h" }; // Token expires in 10 hours
 
   // Generate the token
   const token = jwt.sign(payload, secretKey, options);
