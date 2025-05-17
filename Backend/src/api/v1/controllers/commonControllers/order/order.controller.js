@@ -116,7 +116,7 @@ export const getAllOrders = async (req, res) => {
         {
           model: User,
           as: "user",
-          attributes: ["user_id", "name", "email", "role"],
+          attributes: ["user_id", "name", "email", "phone_number", "role"],
         },
         {
           model: Address,

@@ -95,7 +95,7 @@ const OrdersTable = ({
                   </button>
                   <select
                     className="border rounded p-1 text-sm text-blue-600"
-                    value={order.status}
+                    value={order.status.toLowerCase()} // Convert to lowercase to match option values
                     onChange={(e) =>
                       updateOrderStatus(order.orderId, e.target.value)
                     }
@@ -130,7 +130,9 @@ const OrdersTable = ({
                   </button>
                   <button
                     className="text-red-600 hover:text-red-800 px-2 py-1"
-                    onClick={() => updateOrderStatus(order.id, "Cancelled")}
+                    onClick={() =>
+                      updateOrderStatus(order.orderId, "cancelled")
+                    }
                   >
                     Cancel
                   </button>

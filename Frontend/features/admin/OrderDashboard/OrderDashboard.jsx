@@ -128,9 +128,10 @@ const OrderDashboard = () => {
       setIsLoading(true);
       try {
         const ordersResponse = await getApi(orderRoute);
+        console.log("testing", ordersResponse);
         if (
           ordersResponse &&
-          ordersResponse.message === "Data fetched successfully" &&
+          ordersResponse.message === MESSAGE.get.succ &&
           Array.isArray(ordersResponse.data)
         ) {
           // Calculate metrics from API response
@@ -191,10 +192,8 @@ const OrderDashboard = () => {
               id: order.order_number || `ORD-${order.order_id.substring(0, 8)}`,
               customer: customerName,
               email: customerEmail,
-              phone: "(Not available in API)",
-              status:
-                order.order_status.charAt(0).toUpperCase() +
-                order.order_status.slice(1), // Capitalize first letter
+              phone: order.user.phone_number || "(Not available in API)",
+              status: order.order_status, // Keep lowercase as received from API
               amount: calculatedAmount,
               date: formattedDate,
               items: items,
