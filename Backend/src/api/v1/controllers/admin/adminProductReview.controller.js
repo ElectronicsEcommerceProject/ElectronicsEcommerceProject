@@ -75,7 +75,7 @@ export const getAllProductReviews = async (req, res) => {
 
             if (productMedia) {
               mediaId = productMedia.product_media_id;
-              console.log("mediaId", mediaId);
+              // console.log("mediaId", mediaId);
 
               // Then, find the media URL
               const mediaUrl = await ProductMediaUrl.findOne({
