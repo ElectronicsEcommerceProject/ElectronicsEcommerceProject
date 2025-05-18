@@ -128,7 +128,6 @@ const OrderDashboard = () => {
       setIsLoading(true);
       try {
         const ordersResponse = await getApi(orderRoute);
-        console.log("testing", ordersResponse);
         if (
           ordersResponse &&
           ordersResponse.message === MESSAGE.get.succ &&

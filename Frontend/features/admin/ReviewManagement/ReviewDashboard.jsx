@@ -4,6 +4,10 @@ import {
   getApi,
   reviewManagmentDashboardDataRoute,
   MESSAGE,
+  reviewChangeStatusRoute,
+  updateApiById,
+  deleteApiById,
+  deleteReviewByProductReviewIdRoute,
 } from "../../../src/index.js";
 
 const ReviewTable = ({ reviews, onAction, onRowClick }) => (
@@ -29,7 +33,10 @@ const ReviewTable = ({ reviews, onAction, onRowClick }) => (
           >
             <td className="py-4 px-6">
               <img
-                src={review.product.image?.url || "https://via.placeholder.com/150?text=No+Image"}
+                src={
+                  review.product.image?.url ||
+                  "https://via.placeholder.com/150?text=No+Image"
+                }
                 alt={review.product.name}
                 className="w-10 h-10 object-cover rounded"
               />
@@ -84,7 +91,10 @@ const ReviewTable = ({ reviews, onAction, onRowClick }) => (
                 className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition font-medium"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onAction(review.product_review_id, review.status === "flagged" ? "Mark Safe" : "Flag");
+                  onAction(
+                    review.product_review_id,
+                    review.status === "flagged" ? "Mark Safe" : "Flag"
+                  );
                 }}
               >
                 {review.status === "flagged" ? "Mark Safe" : "Flag"}
@@ -203,7 +213,8 @@ const Analytics = () => (
 );
 
 const ReviewDetailModal = ({ review, onClose, onRespond }) => {
-  const [response, setResponse] = useState("");
+  const [reviewChangeStatusResponse, setreviewChangeStatusResponse] =
+    useState("");
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 transition-opacity duration-300">
       <div className="bg-white rounded-lg p-6 w-full max-w-lg animate-slide-in">
@@ -211,7 +222,10 @@ const ReviewDetailModal = ({ review, onClose, onRespond }) => {
         <div className="space-y-3 text-gray-600">
           <div className="flex items-center space-x-4">
             <img
-              src={review.product.image?.url || "https://via.placeholder.com/150?text=No+Image"}
+              src={
+                review.product.image?.url ||
+                "https://via.placeholder.com/150?text=No+Image"
+              }
               alt={review.product.name}
               className="w-16 h-16 object-cover rounded"
             />
@@ -230,11 +244,15 @@ const ReviewDetailModal = ({ review, onClose, onRespond }) => {
           </p>
           <p>
             <strong>Date:</strong>{" "}
-            <span className="font-medium">{new Date(review.date).toLocaleDateString()}</span>
+            <span className="font-medium">
+              {new Date(review.date).toLocaleDateString()}
+            </span>
           </p>
           <p>
             <strong>Status:</strong>{" "}
-            <span className="font-medium">{review.status.charAt(0).toUpperCase() + review.status.slice(1)}</span>
+            <span className="font-medium">
+              {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
+            </span>
           </p>
           {review.title && (
             <p>
@@ -255,20 +273,22 @@ const ReviewDetailModal = ({ review, onClose, onRespond }) => {
         </div>
         <div className="mt-6">
           <label className="block font-bold text-gray-700">
-            Admin Response
+            Admin reviewChangeStatusResponse
           </label>
           <textarea
             className="w-full p-3 border rounded-lg mt-2 focus:ring-2 focus:ring-blue-500"
-            value={response}
-            onChange={(e) => setResponse(e.target.value)}
-            placeholder="Enter your response..."
+            value={reviewChangeStatusResponse}
+            onChange={(e) => setreviewChangeStatusResponse(e.target.value)}
+            placeholder="Enter your reviewChangeStatusResponse..."
             rows="4"
           />
           <button
             className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-bold"
-            onClick={() => onRespond(review.product_review_id, response)}
+            onClick={() =>
+              onRespond(review.product_review_id, reviewChangeStatusResponse)
+            }
           >
-            Submit Response
+            Submit reviewChangeStatusResponse
           </button>
         </div>
         <button
@@ -293,28 +313,32 @@ const ReviewDashboard = () => {
     total: 0,
     page: 1,
     limit: 10,
-    pages: 0
+    pages: 0,
   });
 
   useEffect(() => {
     const reviewManagmentDashboardData = async () => {
       try {
         setLoading(true);
-        const response = await getApi(reviewManagmentDashboardDataRoute);
-        if (response.success === true) {
-          // Extract reviews and pagination from the response
-          const { reviews, pagination } = response.data;
+        const reviewChangeStatusResponse = await getApi(
+          reviewManagmentDashboardDataRoute
+        );
+        if (reviewChangeStatusResponse.success === true) {
+          // Extract reviews and pagination from the reviewChangeStatusResponse
+          const { reviews, pagination } = reviewChangeStatusResponse.data;
           setReviewData(reviews || []);
-          setPagination(pagination || {
-            total: reviews?.length || 0,
-            page: 1,
-            limit: 10,
-            pages: 1
-          });
+          setPagination(
+            pagination || {
+              total: reviews?.length || 0,
+              page: 1,
+              limit: 10,
+              pages: 1,
+            }
+          );
           setError(null);
         } else {
           setError("Failed to fetch dashboard data");
-          console.error("Error fetching data:", response);
+          console.error("Error fetching data:", reviewChangeStatusResponse);
         }
       } catch (error) {
         setError("An error occurred while fetching data");
@@ -328,35 +352,100 @@ const ReviewDashboard = () => {
   }, []);
 
   const handleAction = (id, action) => {
-    setReviewData(
-      reviewData
-        .map((review) => {
-          if (review.product_review_id === id) {
-            if (action === "Approve") return { ...review, status: "approved" };
-            if (action === "Reject") return { ...review, status: "rejected" };
-            if (action === "Delete") return null;
-            if (action === "Flag")
-              return { ...review, status: "flagged" };
-            if (action === "Mark Safe")
-              return { ...review, status: "pending" };
-            if (action === "Ban User") return { ...review, status: "banned" };
+    console.log(`Action for review ${id}: ${action}`);
+    const changeReviewStatus = async () => {
+      try {
+        if (action === "Delete") {
+          const deleteReview = await deleteApiById(
+            deleteReviewByProductReviewIdRoute,
+            id
+          );
+
+          if (deleteReview.success === true) {
+            console.log("Review deleted successfully");
+            setReviewData(
+              reviewData.filter((review) => review.product_review_id !== id)
+            );
+          } else {
+            console.error("Error deleting review:", deleteReview);
           }
-          return review;
-        })
-        .filter(Boolean)
-    );
+        } else if (action === "Mark Safe") {
+          const reviewChangeStatusResponse = await updateApiById(
+            reviewChangeStatusRoute,
+            id,
+            {
+              action: "pending",
+            }
+          );
+
+          if (reviewChangeStatusResponse.success === true) {
+            console.log("Review status changed successfully");
+            setReviewData(
+              reviewData.map((review) => {
+                if (review.product_review_id === id) {
+                  return { ...review, status: "pending" };
+                }
+                return review;
+              })
+            );
+          }
+        } else {
+          const reviewChangeStatusResponse = await updateApiById(
+            reviewChangeStatusRoute,
+            id,
+            {
+              action: action.toLowerCase(),
+            }
+          );
+
+          if (reviewChangeStatusResponse.success === true) {
+            console.log("Review status changed successfully");
+            setReviewData(
+              reviewData
+                .map((review) => {
+                  if (review.product_review_id === id) {
+                    if (action === "Approve")
+                      return { ...review, status: "approved" };
+                    if (action === "Reject")
+                      return { ...review, status: "rejected" };
+                    if (action === "Flag")
+                      return { ...review, status: "flagged" };
+                    if (action === "Mark Safe")
+                      return { ...review, status: "pending" };
+                    if (action === "Ban User")
+                      return { ...review, status: "banned" };
+                  }
+                  return review;
+                })
+                .filter(Boolean)
+            );
+          } else {
+            console.error(
+              "Error changing review status:",
+              reviewChangeStatusResponse
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error changing review status:", error);
+      }
+    };
+
+    changeReviewStatus();
   };
 
-  const handleRespond = (id, response) => {
-    console.log(`Response for review ${id}: ${response}`);
+  const handleRespond = (id, reviewChangeStatusResponse) => {
+    console.log(
+      `reviewChangeStatusResponse for review ${id}: ${reviewChangeStatusResponse}`
+    );
     setSelectedReview(null);
   };
 
   const filteredReviews = reviewData
     .filter((review) => {
-      if (activeTab === "Flagged Reviews") return review.status === "flagged";
-      if (activeTab === "Approved Reviews") return review.status === "approved";
-      if (activeTab === "Rejected Reviews") return review.status === "rejected";
+      if (activeTab === "Flagged Reviews") return review.status === "flag";
+      if (activeTab === "Approved Reviews") return review.status === "approve";
+      if (activeTab === "Rejected Reviews") return review.status === "reject";
       return true;
     })
     .filter(

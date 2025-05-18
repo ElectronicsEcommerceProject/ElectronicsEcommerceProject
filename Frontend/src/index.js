@@ -34,6 +34,8 @@ import {
   getApiById,
   updateApi,
   updateApiById,
+  deleteApi,
+  deleteApiById,
 } from "../src/api/api.js";
 import MESSAGE from "./api/message.js";
 
@@ -49,6 +51,12 @@ const userManagmentDashboardUsersOrdersDataRoute = import.meta.env
 
 const reviewManagmentDashboardDataRoute = import.meta.env
   .VITE_REVIEW_MANAGMENT_DASHBOARD_DATA_ENDPOINT;
+
+const reviewChangeStatusRoute = import.meta.env
+  .VITE_REVIEW_CHANGE_STATUS_ENDPOINT;
+
+const deleteReviewByProductReviewIdRoute = import.meta.env
+  .VITE_DELETE_REVIEW_BY_PRODUCT_REVIEW_ID_ENDPOINT;
 
 export {
   FaEye,
@@ -75,6 +83,8 @@ export {
   getApiById,
   updateApi,
   updateApiById,
+  deleteApi,
+  deleteApiById,
   MESSAGE,
   allUserRoute,
   orderRoute,
@@ -82,4 +92,6 @@ export {
   userManagmentDashboardDataRoute,
   userManagmentDashboardUsersOrdersDataRoute,
   reviewManagmentDashboardDataRoute,
+  reviewChangeStatusRoute,
+  deleteReviewByProductReviewIdRoute,
 };

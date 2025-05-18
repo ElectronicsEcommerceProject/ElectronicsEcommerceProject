@@ -124,7 +124,7 @@ const deleteApi = async (routeEndpoint) => {
 };
 
 // 🗑️ Delete API by ID
-const deleteApiById = async (id, routeEndpoint) => {
+const deleteApiById = async (routeEndpoint, id) => {
   try {
     const API_ENDPOINT = constructApiUrl(
       BASE_URL,

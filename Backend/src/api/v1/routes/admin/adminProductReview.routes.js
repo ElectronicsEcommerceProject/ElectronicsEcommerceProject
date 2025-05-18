@@ -70,8 +70,8 @@ router.put(
  * @desc Approve a review (admin only)
  * @access Private (Admin)
  */
-router.put(
-  "/:review_id/change-status",
+router.patch(
+  "/change-Status/:review_id",
   verifyJwtToken,
   isAdmin,
   validator(validators.productReview.reviewIdValidator, "params"),
