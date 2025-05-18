@@ -9,6 +9,13 @@ export const createReviewValidator = Joi.object({
       "string.guid": MESSAGE.custom("Product ID must be a valid UUID"),
       "any.required": MESSAGE.custom("Product ID is required"),
     }),
+  user_id: Joi.string()
+    .uuid()
+    .required()
+    .messages({
+      "string.guid": MESSAGE.custom("User ID must be a valid UUID"),
+      "any.required": MESSAGE.custom("User ID is required"),
+    }),
   product_variant_id: Joi.string()
     .uuid()
     .allow(null)

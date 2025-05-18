@@ -29,10 +29,10 @@ export { default as adminDiscountRuleController } from "./admin/discountRule.con
 export { default as adminUserManagmentDashboardDataController } from "./admin/userManagmentDashboardData.controller.js";
 // export { default as adminProfileController } from './admin/profile.controller.js';
 export { default as adminCartController } from "./admin/cart.controller.js";
-export { default as adminReviewController } from "./admin/review.controller.js";
 export { default as adminBrandController } from "./admin/brand.controller.js";
 export { default as adminAttributeController } from "./admin/productAttributes.controller.js";
 export { default as adminAttributeValueController } from "./admin/productAttributesValues.controller.js";
+export { default as adminProductReviewController } from "./admin/adminProductReview.controller.js";
 
 //     customer controller
 export { default as customerOrderController } from "./customer/order.controller.js";

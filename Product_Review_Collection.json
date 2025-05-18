@@ -1,0 +1,445 @@
+{
+  "info": {
+    "name": "Product Review",
+    "description": "API endpoints for managing product reviews",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "your_jwt_token_here",
+      "type": "string"
+    },
+    {
+      "key": "product_id",
+      "value": "your_product_id_here",
+      "type": "string"
+    },
+    {
+      "key": "review_id",
+      "value": "your_review_id_here",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "your_user_id_here",
+      "type": "string"
+    },
+    {
+      "key": "product_variant_id",
+      "value": "your_product_variant_id_here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Admin Product Reviews",
+      "item": [
+        {
+          "name": "Get All Product Reviews",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/product-reviews?page=1&limit=10&sort_by=createdAt&sort_order=DESC&status=pending&rating=5&product_id={{product_id}}&user_id={{user_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "product-reviews"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "sort_order",
+                  "value": "DESC"
+                },
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "disabled": true
+                },
+                {
+                  "key": "rating",
+                  "value": "5",
+                  "disabled": true
+                },
+                {
+                  "key": "product_id",
+                  "value": "{{product_id}}",
+                  "disabled": true
+                },
+                {
+                  "key": "user_id",
+                  "value": "{{user_id}}",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all product reviews with filtering and pagination"
+          }
+        },
+        {
+          "name": "Get Review By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/product-reviews/{{review_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "product-reviews", "{{review_id}}"]
+            },
+            "description": "Get a specific review by ID"
+          }
+        },
+        {
+          "name": "Get Reviews By Product",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/product-reviews/product/{{product_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "product-reviews", "product", "{{product_id}}"]
+            },
+            "description": "Get all reviews for a specific product"
+          }
+        },
+        {
+          "name": "Create Review (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"product_id\": \"{{product_id}}\",\n    \"product_variant_id\": \"{{product_variant_id}}\",\n    \"user_id\": \"{{user_id}}\",\n    \"rating\": 4,\n    \"title\": \"Great product\",\n    \"review\": \"This is an excellent product. I highly recommend it.\",\n    \"is_verified_purchase\": true,\n    \"review_action\": \"approve\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/product-reviews",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "product-reviews"]
+            },
+            "description": "Create a new product review (admin can create on behalf of users)"
+          }
+        },
+        {
+          "name": "Update Review (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"rating\": 5,\n    \"title\": \"Updated title\",\n    \"review\": \"Updated review content\",\n    \"review_action\": \"approve\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/product-reviews/{{review_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "product-reviews", "{{review_id}}"]
+            },
+            "description": "Update a review (admin can update any review)"
+          }
+        },
+        {
+          "name": "Change Review Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"approve\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/product-reviews/{{review_id}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "product-reviews", "{{review_id}}", "status"]
+            },
+            "description": "Change review status (approve, reject, flag, pending)"
+          }
+        },
+        {
+          "name": "Delete Review (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/product-reviews/{{review_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "product-reviews", "{{review_id}}"]
+            },
+            "description": "Delete a review (admin only)"
+          }
+        }
+      ],
+      "description": "Admin endpoints for managing product reviews"
+    },
+    {
+      "name": "Customer Product Reviews",
+      "item": [
+        {
+          "name": "Create Product Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"product_id\": \"{{product_id}}\",\n    \"product_variant_id\": \"{{product_variant_id}}\",\n    \"rating\": 4,\n    \"title\": \"Great product\",\n    \"review\": \"This is an excellent product. I highly recommend it.\",\n    \"is_verified_purchase\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/product-reviews",
+              "host": ["{{baseUrl}}"],
+              "path": ["product-reviews"]
+            },
+            "description": "Create a new product review (requires authentication)"
+          }
+        },
+        {
+          "name": "Get Product Reviews",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/product-reviews/product/{{product_id}}?approved_only=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["product-reviews", "product", "{{product_id}}"],
+              "query": [
+                {
+                  "key": "approved_only",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get all reviews for a product (with optional filtering for approved reviews only)"
+          }
+        },
+        {
+          "name": "Get Review By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/product-reviews/{{review_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["product-reviews", "{{review_id}}"]
+            },
+            "description": "Get a specific review by ID"
+          }
+        },
+        {
+          "name": "Update Review",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"rating\": 5,\n    \"title\": \"Updated title\",\n    \"review\": \"Updated review content\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/product-reviews/{{review_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["product-reviews", "{{review_id}}"]
+            },
+            "description": "Update a review (only by the reviewer)"
+          }
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/product-reviews/{{review_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["product-reviews", "{{review_id}}"]
+            },
+            "description": "Delete a review (only by the reviewer)"
+          }
+        },
+        {
+          "name": "Get User Reviews",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/product-reviews/user/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["product-reviews", "user", "me"]
+            },
+            "description": "Get all reviews by the authenticated user"
+          }
+        }
+      ],
+      "description": "Customer endpoints for product reviews"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// You can add pre-request scripts here",
+          "// For example, to automatically set the auth token from login response",
+          "/*",
+          "if (!pm.collectionVariables.get('authToken')) {",
+          "    // Create a login request",
+          "    const loginRequest = {",
+          "        url: pm.collectionVariables.get('baseUrl') + '/auth/login',",
+          "        method: 'POST',",
+          "        header: {",
+          "            'Content-Type': 'application/json'",
+          "        },",
+          "        body: {",
+          "            mode: 'raw',",
+          "            raw: JSON.stringify({",
+          "                email: 'admin@example.com',",
+          "                password: 'password123'",
+          "            })",
+          "        }",
+          "    };",
+          "",
+          "    pm.sendRequest(loginRequest, (err, res) => {",
+          "        if (err) {",
+          "            console.error(err);",
+          "        } else {",
+          "            const responseJson = res.json();",
+          "            if (responseJson && responseJson.data && responseJson.data.token) {",
+          "                pm.collectionVariables.set('authToken', responseJson.data.token);",
+          "                console.log('Auth token set successfully');",
+          "            }",
+          "        }",
+          "    });",
+          "}",
+          "*/"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// You can add test scripts here",
+          "// For example, to save a review_id from a create response",
+          "/*",
+          "if (pm.response.code === 201) {",
+          "    const responseJson = pm.response.json();",
+          "    if (responseJson && responseJson.data && responseJson.data.product_review_id) {",
+          "        pm.collectionVariables.set('review_id', responseJson.data.product_review_id);",
+          "        console.log('Review ID saved:', responseJson.data.product_review_id);",
+          "    }",
+          "}",
+          "*/"
+        ]
+      }
+    }
+  ]
+}

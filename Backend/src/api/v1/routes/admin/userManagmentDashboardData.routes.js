@@ -12,4 +12,10 @@ router.get(
   adminUserManagmentDashboardDataController.getUserManagementDashboardData
 );
 
+router.get(
+  "/users-Orders-Data",
+  verifyJwtToken,
+  isAdmin,
+  adminUserManagmentDashboardDataController.getUsersOrdersData
+);
 export default router;

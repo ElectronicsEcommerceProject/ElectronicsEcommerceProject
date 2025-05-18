@@ -41,7 +41,7 @@ app.use("/user/order-Item", orderItemRoutes);
 
 app.use("/user/coupon-Redemption", couponRedemptionRoutes);
 
-app.use("/user/product-Review", productReviewRoutes);
+app.use("/user/product-Reviews", productReviewRoutes);
 
 app.use("/admin", adminRoutes);
 

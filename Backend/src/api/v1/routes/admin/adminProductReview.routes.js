@@ -1,45 +1,55 @@
 import express from "express";
-import { verifyJwtToken } from "../../../../../../middleware/jwt.middleware.js";
-import { validator } from "../../../../../../middleware/validator/validator.middleware.js";
-import { validators } from "../../../../validators/index.js";
-import { productReviewController } from "../../../../controllers/index.js";
-import { isAdmin } from "../../../../../../middleware/auth.middleware.js";
+import {
+  verifyJwtToken,
+  validator,
+  isAdmin,
+} from "../../../../middleware/index.js";
+import { validators } from "../../validators/index.js";
+import {
+  productReviewController,
+  adminProductReviewController,
+} from "../../controllers/index.js";
 
 const router = express.Router();
+
+router.post("/", verifyJwtToken, productReviewController.createProductReview);
 
 /**
  * @route POST /api/v1/product-reviews
  * @desc Create a new product review (requires authentication)
  * @access Private
  */
-router.post(
+router.get(
   "/",
   verifyJwtToken,
-  validator(validators.productReview.createReviewValidator, null),
-  productReviewController.createProductReview
+  isAdmin,
+  adminProductReviewController.getAllProductReviews
 );
 
 /**
- * @route GET /api/v1/product-reviews/product/:product_id
- * @desc Get all reviews for a product
- * @access Public (with optional filtering for approved reviews only)
+ * @route GET /api/v1/admin/product-reviews/product/:product_id
+ * @desc Get all reviews for a specific product
+ * @access Private (Admin)
  */
 router.get(
   "/product/:product_id",
   verifyJwtToken,
+  isAdmin,
   validator(validators.productReview.productIdValidator, "params"),
-  productReviewController.getProductReviews
+  adminProductReviewController.getProductReviews
 );
 
 /**
- * @route GET /api/v1/product-reviews/:review_id
+ * @route GET /api/v1/admin/product-reviews/:review_id
  * @desc Get a specific review by ID
- * @access Public
+ * @access Private (Admin)
  */
 router.get(
   "/:review_id",
+  verifyJwtToken,
+  isAdmin,
   validator(validators.productReview.reviewIdValidator, "params"),
-  productReviewController.getReviewById
+  adminProductReviewController.getReviewById
 );
 
 /**
@@ -60,6 +70,13 @@ router.put(
  * @desc Approve a review (admin only)
  * @access Private (Admin)
  */
+router.put(
+  "/:review_id/change-status",
+  verifyJwtToken,
+  isAdmin,
+  validator(validators.productReview.reviewIdValidator, "params"),
+  adminProductReviewController.changeReviewStatus
+);
 
 /**
  * @route DELETE /api/v1/product-reviews/:review_id

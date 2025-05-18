@@ -23,7 +23,10 @@ export default (sequelize) => {
       title: { type: DataTypes.STRING, allowNull: true },
       review: { type: DataTypes.TEXT, allowNull: true },
       is_verified_purchase: { type: DataTypes.BOOLEAN, defaultValue: false },
-      is_approved: { type: DataTypes.BOOLEAN, defaultValue: false },
+      review_action: {
+        type: DataTypes.ENUM("pending", "approve", "reject", "flag"),
+        defaultValue: "pending",
+      },
       created_by: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
       updated_by: { type: DataTypes.UUID, allowNull: true }, // Changed to UUID
     },

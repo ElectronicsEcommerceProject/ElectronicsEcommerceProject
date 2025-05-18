@@ -6,7 +6,6 @@ import categoryRoutes from "./category.route.js";
 import couponRoutes from "./coupon.route.js";
 import userRoutes from "./user.route.js";
 import stockAlertRoutes from "./stockAlert.route.js";
-import reviewRoutes from "./review.route.js";
 import brandsRoutes from "./brand.routes.js";
 import productAttributesRoutes from "./productAttributes.routes.js";
 import productAttributesValuesRoutes from "./productAttributesValues.routes.js";
@@ -18,6 +17,7 @@ import couponUserRoutes from "./couponUser.routes.js";
 import discountRuleRoutes from "./discountRule.routes.js";
 import orderRoutes from "./order.routes.js";
 import usersManagmentDashboardDataRoutes from "./userManagmentDashboardData.routes.js";
+import adminProductReviewRoutes from "./adminProductReview.routes.js";
 
 const app = express();
 
@@ -56,6 +56,6 @@ app.use("/discount-Rule", discountRuleRoutes);
 
 app.use("/stock-Alert", stockAlertRoutes);
 
-app.use("/review", reviewRoutes);
+app.use("/product-Reviews", adminProductReviewRoutes);
 
 export default app;

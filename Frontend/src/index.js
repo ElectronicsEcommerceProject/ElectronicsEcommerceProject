@@ -44,6 +44,12 @@ const latestOrderRoute = import.meta.env.VITE_LATEST_ORDER_ENDPOINT;
 const userManagmentDashboardDataRoute = import.meta.env
   .VITE_USER_MANAGMENT_DASHBOARD_DATA_ENDPOINT;
 
+const userManagmentDashboardUsersOrdersDataRoute = import.meta.env
+  .VITE_USER_MANAGMENT_DASHBOARD_USER_ORDERS_DATA_ENDPOINT;
+
+const reviewManagmentDashboardDataRoute = import.meta.env
+  .VITE_REVIEW_MANAGMENT_DASHBOARD_DATA_ENDPOINT;
+
 export {
   FaEye,
   FaEyeSlash,
@@ -74,4 +80,6 @@ export {
   orderRoute,
   latestOrderRoute,
   userManagmentDashboardDataRoute,
+  userManagmentDashboardUsersOrdersDataRoute,
+  reviewManagmentDashboardDataRoute,
 };

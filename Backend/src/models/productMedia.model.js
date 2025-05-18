@@ -31,7 +31,12 @@ export default (sequelize) => {
   );
 
   ProductMedia.associate = (models) => {
+    ProductMedia.hasMany(models.ProductMediaUrl, {
+      foreignKey: "product_media_id",
+    });
+
     ProductMedia.belongsTo(models.Product, { foreignKey: "product_id" });
+
     ProductMedia.belongsTo(models.ProductVariant, {
       foreignKey: "product_variant_id",
     });

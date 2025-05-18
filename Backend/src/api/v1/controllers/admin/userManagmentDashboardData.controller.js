@@ -152,4 +152,100 @@ const getUserManagementDashboardData = async (req, res) => {
   }
 };
 
-export default { getUserManagementDashboardData };
+const getUsersOrdersData = async (req, res) => {
+  try {
+    // Get all users with their basic order statistics
+    const usersWithOrderStats = await User.findAll({
+      attributes: [
+        "user_id",
+        "name",
+        "email",
+        "role",
+        "status",
+        "createdAt",
+        "updatedAt",
+        [Sequelize.fn("COUNT", Sequelize.col("orders.order_id")), "orderCount"],
+        [
+          Sequelize.fn("SUM", Sequelize.col("orders.total_amount")),
+          "totalSpent",
+        ],
+      ],
+      include: [
+        {
+          model: Order,
+          as: "orders",
+          attributes: [],
+          required: false, // Use LEFT JOIN to include users with no orders
+        },
+      ],
+      group: ["User.user_id"],
+      order: [[Sequelize.literal("totalSpent"), "DESC"]],
+    });
+
+    // Get order status counts for each user
+    const userIds = usersWithOrderStats.map((user) => user.user_id);
+
+    // Get order status counts for all users in a single query
+    const orderStatusCounts = await Order.findAll({
+      attributes: [
+        "user_id",
+        "order_status",
+        [Sequelize.fn("COUNT", Sequelize.col("order_id")), "count"],
+      ],
+      where: {
+        user_id: {
+          [Op.in]: userIds,
+        },
+      },
+      group: ["user_id", "order_status"],
+      raw: true,
+    });
+
+    // Create a map of user_id to status counts
+    const statusCountsByUser = {};
+    orderStatusCounts.forEach((item) => {
+      if (!statusCountsByUser[item.user_id]) {
+        statusCountsByUser[item.user_id] = {};
+      }
+      statusCountsByUser[item.user_id][item.order_status] = parseInt(
+        item.count
+      );
+    });
+
+    // Format the response with order status counts
+    const formattedUsers = usersWithOrderStats.map((user) => {
+      const plainUser = user.get({ plain: true });
+      const userId = plainUser.user_id;
+      const statusCounts = statusCountsByUser[userId] || {};
+
+      return {
+        ...plainUser,
+        orderCount: parseInt(plainUser.orderCount || 0),
+        totalSpent: parseFloat(plainUser.totalSpent || 0),
+        orderStatusCounts: {
+          pending: statusCounts.pending || 0,
+          processing: statusCounts.processing || 0,
+          shipped: statusCounts.shipped || 0,
+          delivered: statusCounts.delivered || 0,
+          cancelled: statusCounts.cancelled || 0,
+          returned: statusCounts.returned || 0,
+        },
+      };
+    });
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: MESSAGE.get.succ,
+      data: formattedUsers,
+    });
+  } catch (error) {
+    console.error("Error fetching users and orders data:", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: MESSAGE.get.fail,
+      error: error.message,
+    });
+  }
+};
+
+export default { getUserManagementDashboardData, getUsersOrdersData };

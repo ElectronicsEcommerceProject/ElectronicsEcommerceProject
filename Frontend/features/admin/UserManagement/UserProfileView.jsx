@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   FiArrowLeft,
   FiUser,
@@ -18,44 +18,16 @@ import {
 } from "react-icons/fi";
 import { FaStore, FaProductHunt } from "react-icons/fa";
 import { User } from "lucide-react";
+import { useState, useEffect } from "react";
+
+import {
+  getApi,
+  MESSAGE,
+  userManagmentDashboardUsersOrdersDataRoute,
+} from "../../../src/index.js";
 
 const UserProfileView = () => {
-  // Sample user data
-  const users = [
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john@example.com",
-      phone: "+1234567890",
-      role: "Customer",
-      status: "Active",
-      orders: 12,
-      revenue: 1200,
-      createdDate: "2024-01-15",
-      lastLogin: "2025-04-30",
-      notes: ["VIP"],
-      totalSpent: 1200,
-      reviews: [{ product: "Product A", rating: 4 }],
-      products: [],
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane@example.com",
-      phone: "+0987654321",
-      role: "Retailer",
-      status: "Pending",
-      orders: 0,
-      revenue: 5000,
-      createdDate: "2024-06-20",
-      lastLogin: "2025-04-29",
-      notes: ["Pending Approval"],
-      totalSpent: 0,
-      reviews: [],
-      products: [{ name: "Product X", status: "Published", stock: 50 }],
-    },
-  ];
-
+  const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [filters, setFilters] = useState({
     role: "All",
@@ -64,6 +36,55 @@ const UserProfileView = () => {
     sortBy: "Date Joined",
   });
   const [activeTab, setActiveTab] = useState("general");
+
+  useEffect(() => {
+    const fetchAllUsers = async () => {
+      try {
+        const response = await getApi(
+          userManagmentDashboardUsersOrdersDataRoute
+        );
+        if (
+          response &&
+          response.success === true &&
+          Array.isArray(response.data)
+        ) {
+          // Transform the response to match the expected format in our app
+          const transformedUsers = response.data.map((user) => ({
+            id: user.user_id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone_number || "", // Handle if phone_number isn't in the response
+            role: user.role.charAt(0).toUpperCase() + user.role.slice(1), // Capitalize the role
+            status: user.status.charAt(0).toUpperCase() + user.status.slice(1), // Capitalize the status
+            orders: user.orderCount || 0,
+            revenue: user.totalSpent || 0,
+            createdDate: new Date(user.createdAt).toISOString().split("T")[0], // Format date to YYYY-MM-DD
+            lastLogin: new Date(user.updatedAt).toISOString().split("T")[0], // Using updatedAt as lastLogin
+            notes: [], // Default empty notes
+            totalSpent: user.totalSpent || 0,
+            orderStatusCounts: user.orderStatusCounts || {
+              pending: 0,
+              processing: 0,
+              shipped: 0,
+              delivered: 0,
+              cancelled: 0,
+              returned: 0,
+            },
+            reviews: [], // Default empty reviews
+            products: [], // Default empty products
+          }));
+
+          setUsers(transformedUsers);
+        } else {
+          console.error("Invalid response format:", response);
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchAllUsers();
+  }, []);
 
   const filteredUsers = users
     .filter((user) => {
@@ -74,7 +95,7 @@ const UserProfileView = () => {
         filters.search === "" ||
         user.name.toLowerCase().includes(filters.search.toLowerCase()) ||
         user.email.toLowerCase().includes(filters.search.toLowerCase()) ||
-        user.phone.includes(filters.search);
+        (user.phone && user.phone.includes(filters.search));
       return matchesRole && matchesStatus && matchesSearch;
     })
     .sort((a, b) => {
@@ -171,12 +192,14 @@ const UserProfileView = () => {
                         <strong>Email:</strong> {selectedUser.email}
                       </span>
                     </div>
-                    <div className="flex items-center">
-                      <FiPhone className="text-gray-500 mr-2" />
-                      <span>
-                        <strong>Phone:</strong> {selectedUser.phone}
-                      </span>
-                    </div>
+                    {selectedUser.phone && (
+                      <div className="flex items-center">
+                        <FiPhone className="text-gray-500 mr-2" />
+                        <span>
+                          <strong>Phone:</strong> {selectedUser.phone}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-center">
                       {selectedUser.role === "Retailer" ? (
                         <FaStore className="text-gray-500 mr-2" />
@@ -212,13 +235,15 @@ const UserProfileView = () => {
                         <strong>Status:</strong> {selectedUser.status}
                       </span>
                     </div>
-                    <div className="flex items-center">
-                      <FiMessageSquare className="text-gray-500 mr-2" />
-                      <span>
-                        <strong>Notes/Tags:</strong>{" "}
-                        {selectedUser.notes.join(", ") || "None"}
-                      </span>
-                    </div>
+                    {selectedUser.notes && selectedUser.notes.length > 0 && (
+                      <div className="flex items-center">
+                        <FiMessageSquare className="text-gray-500 mr-2" />
+                        <span>
+                          <strong>Notes/Tags:</strong>{" "}
+                          {selectedUser.notes.join(", ") || "None"}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -242,12 +267,35 @@ const UserProfileView = () => {
                         {selectedUser.role === "Customer" ? "Spent" : "Revenue"}
                         :
                       </strong>{" "}
-                      $
-                      {selectedUser.role === "Customer"
-                        ? selectedUser.totalSpent
-                        : selectedUser.revenue}
+                      ${selectedUser.totalSpent.toFixed(2)}
                     </span>
                   </div>
+
+                  {/* Order Status Counts */}
+                  <div className="mt-6">
+                    <h4 className="font-medium text-gray-700 mb-3">
+                      Order Status Breakdown:
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {Object.entries(selectedUser.orderStatusCounts).map(
+                        ([status, count]) =>
+                          count > 0 && (
+                            <div
+                              key={status}
+                              className="bg-gray-50 p-3 rounded-lg border border-gray-100"
+                            >
+                              <div className="text-sm text-gray-500 capitalize">
+                                {status}
+                              </div>
+                              <div className="text-2xl font-semibold">
+                                {count}
+                              </div>
+                            </div>
+                          )
+                      )}
+                    </div>
+                  </div>
+
                   <div className="mt-4 flex flex-wrap gap-4">
                     {["Delivered", "Cancelled", "Returned"].map((filter) => (
                       <button
@@ -356,21 +404,12 @@ const UserProfileView = () => {
                       {
                         title: "Status Control",
                         icon: <FiCheckCircle className="mr-2" />,
-                        actions: ["Activate", "Deactivate", "Ban", "Approve"],
+                        actions: ["Activate", "Deactivate", "Ban"],
                       },
                       {
                         title: "Security Actions",
                         icon: <FiLogOut className="mr-2" />,
-                        actions: [
-                          "Reset Password",
-                          "Force Logout",
-                          "Impersonate",
-                        ],
-                      },
-                      {
-                        title: "Disciplinary",
-                        icon: <FiAlertCircle className="mr-2" />,
-                        actions: ["Flag as Fraud", "Add Note", "Limit Usage"],
+                        actions: ["Reset Password", "Force Logout"],
                       },
                       {
                         title: "Export & Reports",
@@ -378,16 +417,16 @@ const UserProfileView = () => {
                         actions: ["Export Order History", "Export Profile"],
                       },
                     ].map((group) => (
-                      <div key={group.title}>
-                        <h4 className="font-medium text-gray-700 flex items-center">
+                      <div key={group.title} className="mb-4">
+                        <h4 className="font-medium text-gray-700 flex items-center mb-2">
                           {group.icon}
                           {group.title}
                         </h4>
-                        <div className="flex flex-wrap gap-4 mt-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                           {group.actions.map((action) => (
                             <button
                               key={action}
-                              className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+                              className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm w-full"
                             >
                               {action}
                             </button>
@@ -414,6 +453,7 @@ const UserProfileView = () => {
               <option>All</option>
               <option>Customer</option>
               <option>Retailer</option>
+              <option>Admin</option>
             </select>
             <select
               className="border border-gray-200 p-3 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-teal-500"
@@ -460,7 +500,6 @@ const UserProfileView = () => {
                   <tr className="text-gray-700">
                     <th className="border-b p-4 text-left">Name</th>
                     <th className="border-b p-4 text-left">Email</th>
-                    <th className="border-b p-4 text-left">Phone</th>
                     <th className="border-b p-4 text-left">Role</th>
                     <th className="border-b p-4 text-left">Status</th>
                     <th className="border-b p-4 text-left">Orders</th>
@@ -484,7 +523,6 @@ const UserProfileView = () => {
                         {user.name}
                       </td>
                       <td className="border-b p-4">{user.email}</td>
-                      <td className="border-b p-4">{user.phone}</td>
                       <td className="border-b p-4">{user.role}</td>
                       <td className="border-b p-4">
                         <span
@@ -509,11 +547,16 @@ const UserProfileView = () => {
                         </span>
                       </td>
                       <td className="border-b p-4">{user.orders}</td>
-                      <td className="border-b p-4">${user.revenue}</td>
+                      <td className="border-b p-4">
+                        ${user.revenue.toFixed(2)}
+                      </td>
                       <td className="border-b p-4">
                         <button
                           className="flex items-center text-teal-600 hover:text-teal-800 transition-colors"
-                          onClick={() => setSelectedUser(user)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedUser(user);
+                          }}
                         >
                           <FiEye className="mr-1" /> View
                         </button>
@@ -561,9 +604,22 @@ const UserProfileView = () => {
                       {user.status}
                     </span>
                   </div>
+                  <div className="flex justify-between mt-2">
+                    <div className="text-sm text-gray-600">
+                      <FiShoppingBag className="inline mr-1" /> Orders:{" "}
+                      {user.orders}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      <FiDollarSign className="inline mr-1" /> $
+                      {user.revenue.toFixed(2)}
+                    </div>
+                  </div>
                   <button
                     className="flex items-center text-teal-600 hover:text-teal-800 mt-2 transition-colors"
-                    onClick={() => setSelectedUser(user)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedUser(user);
+                    }}
                   >
                     <FiEye className="mr-1" /> View Details
                   </button>

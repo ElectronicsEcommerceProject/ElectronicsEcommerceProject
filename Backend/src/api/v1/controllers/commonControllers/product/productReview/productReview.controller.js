@@ -14,11 +14,21 @@ export const createProductReview = async (req, res) => {
       title,
       review,
       is_verified_purchase,
+      user_id,
     } = req.body;
 
     // Get user from token
     const user = await User.findOne({ where: { email: req.user.email } });
     if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // check if user_id is in the User table
+    const userExists = await User.findByPk(user_id);
+    if (!userExists) {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
         message: "User not found",
@@ -367,50 +377,6 @@ export const getUserReviews = async (req, res) => {
   }
 };
 
-// Approve a review (admin only)
-export const approveReview = async (req, res) => {
-  try {
-    const { review_id } = req.params;
-
-    // Verify admin user
-    const admin = await User.findOne({
-      where: { email: req.user.email, role: "admin" },
-    });
-    if (!admin) {
-      return res.status(StatusCodes.FORBIDDEN).json({
-        message: "Unauthorized: Only admin can approve reviews",
-      });
-    }
-
-    // Find the review
-    const reviewToApprove = await ProductReview.findByPk(review_id);
-    if (!reviewToApprove) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        success: false,
-        message: "Review not found",
-      });
-    }
-
-    // Approve the review
-    await reviewToApprove.update({
-      is_approved: true,
-    });
-
-    return res.status(StatusCodes.OK).json({
-      success: true,
-      message: MESSAGE.put.succ,
-      data: reviewToApprove,
-    });
-  } catch (err) {
-    console.error("❌ Error approving review:", err);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: MESSAGE.put.fail,
-      error: err.message,
-    });
-  }
-};
-
 export default {
   createProductReview,
   getProductReviews,
@@ -418,5 +384,4 @@ export default {
   updateReview,
   deleteReview,
   getUserReviews,
-  approveReview,
 };
