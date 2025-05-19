@@ -36,7 +36,7 @@ router.get(
 );
 
 // Update coupon
-router.put(
+router.patch(
   "/:coupon_id",
   verifyJwtToken,
   adminRoleCheck,
@@ -52,6 +52,15 @@ router.delete(
   adminRoleCheck,
   validator(validators.coupon.couponIdValidator, "params"),
   adminCouponController.deleteCoupon
+);
+
+// Change coupon status (active/inactive)
+router.patch(
+  "/change-Status/:coupon_id",
+  verifyJwtToken,
+  adminRoleCheck,
+  validator(validators.coupon.couponIdValidator, "params"),
+  adminCouponController.changeCouponStatus
 );
 
 export default router;

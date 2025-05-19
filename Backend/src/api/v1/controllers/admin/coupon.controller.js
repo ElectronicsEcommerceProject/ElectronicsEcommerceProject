@@ -290,10 +290,52 @@ export const deleteCoupon = async (req, res) => {
   }
 };
 
+export const changeCouponStatus = async (req, res) => {
+  try {
+    const { coupon_id } = req.params;
+    const { is_active } = req.body;
+
+    // Verify admin user
+    const admin = await User.findOne({
+      where: { email: req.user.email, role: "admin" },
+    });
+    if (!admin) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        message: "Unauthorized: Only admin can change coupon status",
+      });
+    }
+
+    const coupon = await Coupon.findByPk(coupon_id);
+    if (!coupon) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: "Coupon not found",
+      });
+    }
+
+    // Update coupon status
+    await coupon.update({
+      is_active,
+      updated_by: admin.user_id,
+    });
+
+    return res.status(StatusCodes.OK).json({
+      message: MESSAGE.patch.succ,
+      data: coupon,
+    });
+  } catch (err) {
+    console.error("❌ Error in changeCouponStatus:", err);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: MESSAGE.patch.fail,
+      error: err.message,
+    });
+  }
+};
+
 export default {
   createCoupon,
   getAllCoupons,
   getCouponById,
   updateCoupon,
   deleteCoupon,
+  changeCouponStatus,
 };
