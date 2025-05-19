@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import {
   getApi,
   MESSAGE,
+  createApi,
   updateApiById,
   deleteApiById,
   couponAndOffersDashboardDataRoute,
@@ -105,33 +106,44 @@ const CouponManagement = () => {
   const CouponForm = ({ coupon = null, onSave, onClose }) => {
     const [formData, setFormData] = useState({
       code: coupon?.code || "",
-      description: coupon?.description || "",
+      description: coupon?.description || "Summer sale discount",
       discountType:
         coupon?.type?.toLowerCase() === "flat" ? "fixed" : "percentage",
       discountValue: coupon?.discount
         ? parseFloat(coupon.discount.replace(/%|\$/g, "")) || 0
-        : 0,
+        : 20,
       targetType: coupon?.productId ? "product" : "cart",
       productId: coupon?.productId || null,
       productVariantId: coupon?.productVariantId || null,
       role: coupon?.role?.toLowerCase() || "customer",
-      minCartValue: coupon?.minOrder || 0,
-      maxDiscountValue: coupon?.maxDiscountValue || null,
-      usageLimit: coupon?.usageLimit || null,
-      usagePerUser: coupon?.usagePerUser || null,
+      minCartValue: coupon?.minOrder || 1000,
+      maxDiscountValue: coupon?.maxDiscountValue || 500,
+      usageLimit: coupon?.usageLimit || 100,
+      usagePerUser: coupon?.usagePerUser || 1,
       validFrom: coupon?.validFrom
         ? new Date(coupon.validFrom).toISOString().split("T")[0]
         : new Date().toISOString().split("T")[0],
       validTo: coupon?.validity
         ? new Date(coupon.validity).toISOString().split("T")[0]
-        : "",
-      isActive: coupon?.status === "Active",
+        : new Date(new Date().setMonth(new Date().getMonth() + 1))
+            .toISOString()
+            .split("T")[0],
+      isActive: coupon?.status === "Active" || true,
       isUserNew: coupon?.isUserNew || false,
     });
 
     const [errors, setErrors] = useState({});
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+      // Log initial form data when component mounts
+      console.log("CouponForm initialized with data:", {
+        isEditMode: !!coupon,
+        couponId: coupon?.id,
+        initialFormData: formData,
+      });
+    }, []);
 
     // Fetch products for dropdown
     useEffect(() => {
@@ -154,10 +166,23 @@ const CouponManagement = () => {
 
     const handleChange = (e) => {
       const { name, value, type, checked } = e.target;
-      setFormData((prev) => ({
-        ...prev,
-        [name]: type === "checkbox" ? checked : value,
-      }));
+      const newValue = type === "checkbox" ? checked : value;
+
+      setFormData((prev) => {
+        const updatedFormData = {
+          ...prev,
+          [name]: newValue,
+        };
+
+        // Log the updated form data after each change
+        console.log("Form data updated:", {
+          field: name,
+          newValue: newValue,
+          allFormData: updatedFormData,
+        });
+
+        return updatedFormData;
+      });
     };
 
     const validateForm = () => {
@@ -171,8 +196,12 @@ const CouponManagement = () => {
         newErrors.discountValue = "Discount value must be greater than 0";
       }
 
+      if (!formData.validFrom) {
+        newErrors.validFrom = "Start date is required";
+      }
+
       if (!formData.validTo) {
-        newErrors.validTo = "Validity end date is required";
+        newErrors.validTo = "End date is required";
       }
 
       if (
@@ -201,6 +230,15 @@ const CouponManagement = () => {
         newErrors.usagePerUser = "Usage per user must be at least 1";
       }
 
+      if (formData.minCartValue < 0) {
+        newErrors.minCartValue = "Minimum cart value cannot be negative";
+      }
+
+      if (formData.maxDiscountValue !== null && formData.maxDiscountValue < 0) {
+        newErrors.maxDiscountValue =
+          "Maximum discount value cannot be negative";
+      }
+
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
     };
@@ -208,14 +246,18 @@ const CouponManagement = () => {
     const handleSubmit = async (e) => {
       e.preventDefault();
 
+      // Log all form data before validation
+      console.log("Form submission - Raw form data:", formData);
+
       if (!validateForm()) {
+        console.log("Form validation failed with errors:", errors);
         return;
       }
 
       setLoading(true);
 
       try {
-        // Prepare data for API
+        // Prepare data for API in the exact format required
         const couponData = {
           code: formData.code,
           description: formData.description,
@@ -236,11 +278,19 @@ const CouponManagement = () => {
           usage_per_user: formData.usagePerUser
             ? parseInt(formData.usagePerUser)
             : null,
-          valid_from: formData.validFrom,
-          valid_to: formData.validTo,
+          valid_from: formData.validFrom
+            ? `${formData.validFrom}T00:00:00Z`
+            : null,
+          valid_to: formData.validTo ? `${formData.validTo}T23:59:59Z` : null,
           is_active: formData.isActive,
           is_user_new: formData.isUserNew,
         };
+
+        // Log the formatted API data
+        console.log("Form submission - Formatted API data:", {
+          rawFormData: formData,
+          formattedApiData: couponData,
+        });
 
         // For UI display
         const uiCoupon = {
@@ -270,6 +320,9 @@ const CouponManagement = () => {
           isUserNew: formData.isUserNew,
         };
 
+        // Log the UI display data
+        console.log("Form submission - UI display data:", uiCoupon);
+
         // If editing existing coupon
         if (coupon?.id) {
           // Log all form data when updating
@@ -285,8 +338,10 @@ const CouponManagement = () => {
             coupon.id,
             couponData
           );
+          console.log("Update API response:", response);
+
           if (response.message === MESSAGE.put.succ) {
-            alert(`Coupon updated successfully!`);
+            alert(`Coupon updated successfully! Coupon ID: ${coupon.id}`);
             onSave(uiCoupon);
           } else {
             setErrors({ form: response.message || "Failed to update coupon" });
@@ -295,17 +350,22 @@ const CouponManagement = () => {
           // If creating new coupon
           console.log("Creating new coupon with data:", couponData);
 
-          const response = await postApi(createCouponRoute, couponData);
+          const response = await createApi(
+            couponAndOffersDashboardDataRoute,
+            couponData
+          );
+
           if (response.success) {
-            alert(`Coupon created successfully!`);
+            alert(`Coupon created successfully}`);
+            console.log("Create API response:", response);
             onSave({ ...uiCoupon, id: response.data.coupon_id });
           } else {
             setErrors({ form: response.message || "Failed to create coupon" });
           }
         }
       } catch (error) {
-        setErrors({ form: "An error occurred while saving the coupon" });
         console.error("Error saving coupon:", error);
+        setErrors({ form: "An error occurred while saving the coupon" });
       } finally {
         setLoading(false);
       }

@@ -88,6 +88,7 @@ export const createCoupon = async (req, res) => {
     });
 
     return res.status(StatusCodes.CREATED).json({
+      success: true,
       message: MESSAGE.post.succ,
       data: newCoupon,
     });
@@ -122,6 +123,7 @@ export const getAllCoupons = async (req, res) => {
     });
 
     return res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.get.succ,
       data: coupons,
     });
@@ -164,6 +166,7 @@ export const getCouponById = async (req, res) => {
     }
 
     return res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.get.succ,
       data: coupon,
     });
@@ -240,6 +243,7 @@ export const updateCoupon = async (req, res) => {
     await coupon.update(updateData);
 
     return res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.put.succ,
       data: coupon,
     });
@@ -281,6 +285,7 @@ export const deleteCoupon = async (req, res) => {
     });
 
     return res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.delete.succ,
     });
   } catch (err) {
