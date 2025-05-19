@@ -9,6 +9,7 @@ import {
   deleteApiById,
   deleteReviewByProductReviewIdRoute,
   updateProductReviewByIdRoute,
+  reviewManagmentAnalyticsDataRoute,
 } from "../../../src/index.js";
 
 const ReviewTable = ({ reviews, onAction, onRowClick }) => (
@@ -128,90 +129,191 @@ const ReviewTable = ({ reviews, onAction, onRowClick }) => (
   </div>
 );
 
-const Analytics = () => (
-  <div className="p-6 animate-slide-in">
-    <h3 className="text-2xl font-bold text-gray-800 mb-6">Review Analytics</h3>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h4 className="font-bold text-gray-700 mb-4">Review Counts</h4>
-        <svg className="w-full h-48" viewBox="0 0 400 200">
-          <rect x="50" y="100" width="60" height="100" fill="#3B82F6" />
-          <text x="80" y="190" textAnchor="middle" className="text-xs">
-            Pending
-          </text>
-          <rect x="130" y="50" width="60" height="150" fill="#10B981" />
-          <text x="160" y="190" textAnchor="middle" className="text-xs">
-            Approved
-          </text>
-          <rect x="210" y="80" width="60" height="120" fill="#F59E0B" />
-          <text x="240" y="190" textAnchor="middle" className="text-xs">
-            Flagged
-          </text>
-          <rect x="290" y="20" width="60" height="180" fill="#8B5CF6" />
-          <text x="320" y="190" textAnchor="middle" className="text-xs">
-            Rejected
-          </text>
-        </svg>
-      </div>
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h4 className="font-bold text-gray-700 mb-4">Rating Distribution</h4>
-        <svg className="w-full h-48" viewBox="0 0 200 200">
-          <circle
-            cx="100"
-            cy="100"
-            r="80"
-            fill="#14B8A6"
-            stroke="#fff"
-            strokeWidth="10"
-            strokeDasharray="251.2"
-            strokeDashoffset="50.24"
-            transform="rotate(-90 100 100)"
-          />
-          <circle
-            cx="100"
-            cy="100"
-            r="80"
-            fill="#F87171"
-            stroke="#fff"
-            strokeWidth="10"
-            strokeDasharray="251.2"
-            strokeDashoffset="200.96"
-            transform="rotate(-90 100 100)"
-          />
-          <text
-            x="100"
-            y="100"
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className="text-xl font-bold"
-          >
-            4.2/5
-          </text>
-        </svg>
-      </div>
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h4 className="font-bold text-gray-700 mb-4">Top-Rated Products</h4>
-        <ul className="text-gray-600">
-          <li className="py-2 flex items-center">
-            <span className="inline-block w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
-            <span className="font-medium">Smartphone X</span> -{" "}
-            <span className="ml-1 font-bold text-blue-600">4.8/5</span>
-          </li>
-          <li className="py-2 flex items-center">
-            <span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-            <span className="font-medium">Laptop Pro</span> -{" "}
-            <span className="ml-1 font-bold text-green-600">4.5/5</span>
-          </li>
-          <li className="py-2 flex items-center">
-            <span className="inline-block w-3 h-3 bg-orange-500 rounded-full mr-2"></span>
-            <span className="font-medium">Tablet Air</span> -{" "}
-            <span className="ml-1 font-bold text-orange-600">4.2/5</span>
-          </li>
-        </ul>
+const Analytics = ({ analyticsData }) => {
+  // Default values in case data is not available
+  const reviewCounts = analyticsData?.reviewCounts || {
+    pending: 0,
+    approve: 0,
+    flag: 0,
+    reject: 0,
+  };
+  const ratingDistribution = analyticsData?.ratingDistribution || {
+    average: "0.0/5",
+    total: 0,
+  };
+  const topRatedProducts = analyticsData?.topRatedProducts || [];
+
+  // Calculate the maximum count for scaling the bar heights
+  const maxCount = Math.max(
+    reviewCounts.pending || 0,
+    reviewCounts.approve || 0,
+    reviewCounts.flag || 0,
+    reviewCounts.reject || 0,
+    1 // Ensure we don't divide by zero
+  );
+
+  // Extract the average rating as a number for the pie chart
+  const averageRating =
+    parseFloat(ratingDistribution.average?.split("/")[0]) || 0;
+  const maxRating = 5;
+
+  // Calculate the percentage for the pie chart
+  const ratingPercentage = (averageRating / maxRating) * 100;
+  const circumference = 2 * Math.PI * 80; // 2πr where r=80
+  const dashOffset = circumference * (1 - ratingPercentage / 100);
+
+  return (
+    <div className="p-6 animate-slide-in">
+      <h3 className="text-2xl font-bold text-gray-800 mb-6">
+        Review Analytics
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h4 className="font-bold text-gray-700 mb-4">Review Counts</h4>
+          <svg className="w-full h-48" viewBox="0 0 400 200">
+            {/* Pending */}
+            <rect
+              x="50"
+              y={200 - (reviewCounts.pending / maxCount) * 180}
+              width="60"
+              height={(reviewCounts.pending / maxCount) * 180}
+              fill="#3B82F6"
+            />
+            <text x="80" y="190" textAnchor="middle" className="text-xs">
+              Pending ({reviewCounts.pending})
+            </text>
+
+            {/* Approved */}
+            <rect
+              x="130"
+              y={200 - (reviewCounts.approve / maxCount) * 180}
+              width="60"
+              height={(reviewCounts.approve / maxCount) * 180}
+              fill="#10B981"
+            />
+            <text x="160" y="190" textAnchor="middle" className="text-xs">
+              Approved ({reviewCounts.approve})
+            </text>
+
+            {/* Flagged */}
+            <rect
+              x="210"
+              y={200 - (reviewCounts.flag / maxCount) * 180}
+              width="60"
+              height={(reviewCounts.flag / maxCount) * 180}
+              fill="#F59E0B"
+            />
+            <text x="240" y="190" textAnchor="middle" className="text-xs">
+              Flagged ({reviewCounts.flag})
+            </text>
+
+            {/* Rejected */}
+            <rect
+              x="290"
+              y={200 - (reviewCounts.reject / maxCount) * 180}
+              width="60"
+              height={(reviewCounts.reject / maxCount) * 180}
+              fill="#8B5CF6"
+            />
+            <text x="320" y="190" textAnchor="middle" className="text-xs">
+              Rejected ({reviewCounts.reject})
+            </text>
+          </svg>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h4 className="font-bold text-gray-700 mb-4">Rating Distribution</h4>
+          <svg className="w-full h-48" viewBox="0 0 200 200">
+            <circle
+              cx="100"
+              cy="100"
+              r="80"
+              fill="#14B8A6"
+              stroke="#fff"
+              strokeWidth="10"
+              strokeDasharray={circumference}
+              strokeDashoffset={dashOffset}
+              transform="rotate(-90 100 100)"
+            />
+            <circle
+              cx="100"
+              cy="100"
+              r="80"
+              fill="#F87171"
+              stroke="#fff"
+              strokeWidth="10"
+              strokeDasharray={circumference}
+              strokeDashoffset="0"
+              transform="rotate(-90 100 100)"
+            />
+            <text
+              x="100"
+              y="90"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              className="text-xl font-bold"
+            >
+              {ratingDistribution.average}
+            </text>
+            <text
+              x="100"
+              y="110"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              className="text-sm"
+            >
+              Total: {ratingDistribution.total}
+            </text>
+          </svg>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h4 className="font-bold text-gray-700 mb-4">Top-Rated Products</h4>
+          {topRatedProducts.length > 0 ? (
+            <ul className="text-gray-600">
+              {topRatedProducts.map((product, index) => {
+                // Assign different colors based on index
+                const colors = [
+                  "bg-blue-500",
+                  "bg-green-500",
+                  "bg-orange-500",
+                  "bg-purple-500",
+                  "bg-pink-500",
+                ];
+                const textColors = [
+                  "text-blue-600",
+                  "text-green-600",
+                  "text-orange-600",
+                  "text-purple-600",
+                  "text-pink-600",
+                ];
+                const colorIndex = index % colors.length;
+
+                return (
+                  <li key={index} className="py-2 flex items-center">
+                    <span
+                      className={`inline-block w-3 h-3 ${colors[colorIndex]} rounded-full mr-2`}
+                    ></span>
+                    <span className="font-medium">{product.name}</span> -{" "}
+                    <span
+                      className={`ml-1 font-bold ${textColors[colorIndex]}`}
+                    >
+                      {product.rating}
+                    </span>
+                    <span className="ml-2 text-gray-400">
+                      ({product.reviewCount}{" "}
+                      {product.reviewCount === 1 ? "review" : "reviews"})
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="text-gray-500 italic">No product reviews available</p>
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const ReviewDetailModal = ({ review, onClose, onRespond }) => {
   // Create a state variable that contains ALL the original review data
@@ -387,6 +489,7 @@ const ReviewDashboard = () => {
   const [selectedReview, setSelectedReview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [analyticsData, setAnalyticsData] = useState(null);
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
@@ -427,6 +530,35 @@ const ReviewDashboard = () => {
     };
 
     reviewManagmentDashboardData();
+
+    const analyticsDashboardData = async () => {
+      try {
+        setLoading(true);
+        const analyticsDashboardResponse = await getApi(
+          reviewManagmentAnalyticsDataRoute
+        );
+        if (analyticsDashboardResponse.success === true) {
+          // Extract analytics data from the analyticsDashboardResponse
+          const analyticsData = analyticsDashboardResponse.data;
+          // Update state with analytics data
+          setAnalyticsData(analyticsData);
+          setError(null);
+        } else {
+          setError("Failed to fetch analytics data");
+          console.error(
+            "Error fetching analytics data:",
+            analyticsDashboardResponse
+          );
+        }
+      } catch (error) {
+        setError("An error occurred while fetching analytics data");
+        console.error("Error fetching analytics data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    analyticsDashboardData();
   }, []);
 
   const handleAction = (id, action) => {
@@ -525,24 +657,28 @@ const ReviewDashboard = () => {
       })
     );
 
-    // Here you would implement the API call to update the review with complete data
-    // Example:
-    // updateApiById(updateReviewRoute, id, updatedReviewData);
-
     setSelectedReview(null);
   };
 
   const filteredReviews = reviewData
     .filter((review) => {
-      if (activeTab === "Flagged Reviews") return review.status === "flag";
-      if (activeTab === "Approved Reviews") return review.status === "approve";
-      if (activeTab === "Rejected Reviews") return review.status === "reject";
+      // Check if the review has a status property
+      if (!review.status) return activeTab === "All Reviews";
+
+      // Convert status to lowercase for case-insensitive comparison
+      const status = review.status.toLowerCase();
+
+      if (activeTab === "Flagged Reviews") return status === "flagged";
+      if (activeTab === "Approved Reviews") return status === "approved";
+      if (activeTab === "Rejected Reviews") return status === "rejected";
+
+      // If activeTab is "All Reviews" or any other tab, show all reviews
       return true;
     })
     .filter(
       (review) =>
-        review.product.name.toLowerCase().includes(search.toLowerCase()) ||
-        review.reviewer.name.toLowerCase().includes(search.toLowerCase())
+        review.product?.name?.toLowerCase().includes(search.toLowerCase()) ||
+        review.reviewer?.name?.toLowerCase().includes(search.toLowerCase())
     );
 
   return (
@@ -592,7 +728,7 @@ const ReviewDashboard = () => {
           <p className="text-red-600">{error}</p>
         </div>
       ) : activeTab === "Analytics" ? (
-        <Analytics />
+        <Analytics analyticsData={analyticsData} />
       ) : filteredReviews.length > 0 ? (
         <>
           <ReviewTable

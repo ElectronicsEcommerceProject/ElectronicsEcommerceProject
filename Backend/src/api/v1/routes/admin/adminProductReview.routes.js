@@ -26,6 +26,13 @@ router.get(
   adminProductReviewController.getAllProductReviews
 );
 
+router.get(
+  "/analytics",
+  verifyJwtToken,
+  isAdmin,
+  adminProductReviewController.reviewAnalytics
+);
+
 /**
  * @route GET /api/v1/admin/product-reviews/product/:product_id
  * @desc Get all reviews for a specific product

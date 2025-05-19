@@ -61,6 +61,9 @@ const deleteReviewByProductReviewIdRoute = import.meta.env
 const updateProductReviewByIdRoute = import.meta.env
   .VITE_UPDATE_PRODUCT_REVIEW_BY_ID_ENDPOINT;
 
+const reviewManagmentAnalyticsDataRoute = import.meta.env
+  .VITE_REVIEW_MANAGMENT_ANALYTICS_DASHBOARD_DATA_ENDPOINT;
+
 export {
   FaEye,
   FaEyeSlash,
@@ -98,4 +101,5 @@ export {
   reviewChangeStatusRoute,
   deleteReviewByProductReviewIdRoute,
   updateProductReviewByIdRoute,
+  reviewManagmentAnalyticsDataRoute,
 };

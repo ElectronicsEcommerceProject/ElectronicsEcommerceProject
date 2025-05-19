@@ -392,10 +392,121 @@ export const deleteReview = async (req, res) => {
   }
 };
 
+/**
+ * Get review analytics data for admin dashboard
+ */
+export const reviewAnalytics = async (req, res) => {
+  try {
+    // Get review counts by status
+    const statusCounts = await ProductReview.findAll({
+      attributes: [
+        "review_action",
+        [
+          db.sequelize.fn("COUNT", db.sequelize.col("product_review_id")),
+          "count",
+        ],
+      ],
+      group: ["review_action"],
+      raw: true,
+    });
+
+    // Format status counts for frontend
+    const formattedStatusCounts = {
+      pending: 0,
+      approve: 0,
+      flag: 0,
+      reject: 0,
+    };
+
+    statusCounts.forEach((item) => {
+      formattedStatusCounts[item.review_action] = parseInt(item.count);
+    });
+
+    // Get average rating across all reviews
+    const avgRatingResult = await ProductReview.findOne({
+      attributes: [
+        [db.sequelize.fn("AVG", db.sequelize.col("rating")), "avgRating"],
+        [
+          db.sequelize.fn("COUNT", db.sequelize.col("product_review_id")),
+          "totalReviews",
+        ],
+      ],
+      raw: true,
+    });
+
+    const avgRating = parseFloat(avgRatingResult.avgRating || 0).toFixed(1);
+    const totalReviews = parseInt(avgRatingResult.totalReviews || 0);
+
+    // First, get all products with their IDs and names
+    const products = await Product.findAll({
+      attributes: ["product_id", "name"],
+      raw: true,
+    });
+
+    // Then, for each product, get its average rating and review count
+    const productsWithRatings = await Promise.all(
+      products.map(async (product) => {
+        const ratingData = await ProductReview.findOne({
+          attributes: [
+            [db.sequelize.fn("AVG", db.sequelize.col("rating")), "avgRating"],
+            [
+              db.sequelize.fn("COUNT", db.sequelize.col("product_review_id")),
+              "reviewCount",
+            ],
+          ],
+          where: { product_id: product.product_id },
+          raw: true,
+        });
+
+        return {
+          ...product,
+          avgRating: parseFloat(ratingData.avgRating || 0),
+          reviewCount: parseInt(ratingData.reviewCount || 0),
+        };
+      })
+    );
+
+    // Filter products with at least one review, sort by rating, and take top 3
+    const topRatedProducts = productsWithRatings
+      .filter((product) => product.reviewCount > 0)
+      .sort((a, b) => b.avgRating - a.avgRating)
+      .slice(0, 3);
+
+    // Format top rated products to match the frontend display format
+    const formattedTopProducts = topRatedProducts.map((product) => ({
+      name: product.name,
+      rating: `${product.avgRating.toFixed(1)}/5`,
+      reviewCount: product.reviewCount,
+    }));
+
+    // Return the analytics data
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: MESSAGE.get.succ,
+      data: {
+        reviewCounts: formattedStatusCounts,
+        ratingDistribution: {
+          average: `${avgRating}/5`,
+          total: totalReviews,
+        },
+        topRatedProducts: formattedTopProducts,
+      },
+    });
+  } catch (err) {
+    console.error("❌ Error getting review analytics:", err);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: MESSAGE.get.fail,
+      error: err.message,
+    });
+  }
+};
+
 export default {
   getAllProductReviews,
   getProductReviews,
   getReviewById,
   changeReviewStatus,
   deleteReview,
+  reviewAnalytics,
 };
