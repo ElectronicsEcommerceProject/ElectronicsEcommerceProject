@@ -47,7 +47,7 @@ router.get(
  * @desc Update a review (only by the reviewer)
  * @access Private
  */
-router.put(
+router.patch(
   "/:review_id",
   verifyJwtToken,
   validator(validators.productReview.reviewIdValidator, "params"),

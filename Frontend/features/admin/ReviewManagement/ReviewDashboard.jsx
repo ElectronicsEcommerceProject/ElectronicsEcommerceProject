@@ -8,6 +8,7 @@ import {
   updateApiById,
   deleteApiById,
   deleteReviewByProductReviewIdRoute,
+  updateProductReviewByIdRoute,
 } from "../../../src/index.js";
 
 const ReviewTable = ({ reviews, onAction, onRowClick }) => (
@@ -213,8 +214,75 @@ const Analytics = () => (
 );
 
 const ReviewDetailModal = ({ review, onClose, onRespond }) => {
-  const [reviewChangeStatusResponse, setreviewChangeStatusResponse] =
-    useState("");
+  // Create a state variable that contains ALL the original review data
+  const [updatedReviewData, setUpdatedReviewData] = useState({
+    ...review, // Copy all original fields first
+    rating: review.rating,
+    title: review.title || "",
+    review: review.review || "",
+  });
+
+  // Store original values to compare later for the alert
+  const originalValues = {
+    rating: review.rating,
+    title: review.title || "",
+    review: review.review || "",
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUpdatedReviewData({
+      ...updatedReviewData,
+      [name]: name === "rating" ? Number(value) : value,
+    });
+  };
+
+  const handleUpdate = () => {
+    // Create an object with only the fields that have changed
+    const changedData = {};
+    if (updatedReviewData.rating !== originalValues.rating) {
+      changedData.rating = updatedReviewData.rating;
+    }
+    if (updatedReviewData.title !== originalValues.title) {
+      changedData.title = updatedReviewData.title;
+    }
+    if (updatedReviewData.review !== originalValues.review) {
+      changedData.review = updatedReviewData.review;
+    }
+
+    // Check if any data has changed
+    if (Object.keys(changedData).length === 0) {
+      alert("No changes detected");
+      return;
+    }
+    // Call the API to update the review
+    const updateReview = async () => {
+      try {
+        console.log("Updating review with changed data:", changedData);
+        const response = await updateApiById(
+          updateProductReviewByIdRoute,
+          review.product_review_id,
+          changedData
+        );
+
+        if (response.success === true) {
+          alert("Review updated successfully");
+          onRespond(review.product_review_id, updatedReviewData);
+        } else {
+          alert(
+            "Failed to update review: " + (response.message || "Unknown error")
+          );
+          console.error("Error updating review:", response);
+        }
+      } catch (error) {
+        alert("An error occurred while updating the review");
+        console.error("Error updating review:", error);
+      }
+    };
+
+    updateReview();
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 transition-opacity duration-300">
       <div className="bg-white rounded-lg p-6 w-full max-w-lg animate-slide-in">
@@ -238,10 +306,22 @@ const ReviewDetailModal = ({ review, onClose, onRespond }) => {
             <strong>Reviewer:</strong>{" "}
             <span className="font-medium">{review.reviewer.name}</span>
           </p>
-          <p>
+          <div>
             <strong>Rating:</strong>{" "}
-            <span className="font-medium">{review.rating}/5</span>
-          </p>
+            <select
+              name="rating"
+              value={updatedReviewData.rating}
+              onChange={handleChange}
+              className="ml-2 border rounded p-1 focus:ring-2 focus:ring-blue-500"
+            >
+              {[1, 2, 3, 4, 5].map((num) => (
+                <option key={num} value={num}>
+                  {num}
+                </option>
+              ))}
+            </select>
+            <span className="ml-1">/5</span>
+          </div>
           <p>
             <strong>Date:</strong>{" "}
             <span className="font-medium">
@@ -254,16 +334,26 @@ const ReviewDetailModal = ({ review, onClose, onRespond }) => {
               {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
             </span>
           </p>
-          {review.title && (
-            <p>
-              <strong>Title:</strong>{" "}
-              <span className="font-medium">{review.title}</span>
-            </p>
-          )}
-          <p>
+          <div>
+            <strong>Title:</strong>{" "}
+            <input
+              type="text"
+              name="title"
+              value={updatedReviewData.title}
+              onChange={handleChange}
+              className="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
             <strong>Review:</strong>{" "}
-            <span className="font-medium">{review.review}</span>
-          </p>
+            <textarea
+              name="review"
+              value={updatedReviewData.review}
+              onChange={handleChange}
+              rows="4"
+              className="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
           {review.abuseReason && (
             <p>
               <strong>Abuse Reason:</strong>{" "}
@@ -271,32 +361,20 @@ const ReviewDetailModal = ({ review, onClose, onRespond }) => {
             </p>
           )}
         </div>
-        <div className="mt-6">
-          <label className="block font-bold text-gray-700">
-            Admin reviewChangeStatusResponse
-          </label>
-          <textarea
-            className="w-full p-3 border rounded-lg mt-2 focus:ring-2 focus:ring-blue-500"
-            value={reviewChangeStatusResponse}
-            onChange={(e) => setreviewChangeStatusResponse(e.target.value)}
-            placeholder="Enter your reviewChangeStatusResponse..."
-            rows="4"
-          />
+        <div className="mt-6 flex justify-end space-x-2">
           <button
-            className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-bold"
-            onClick={() =>
-              onRespond(review.product_review_id, reviewChangeStatusResponse)
-            }
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-bold"
+            onClick={handleUpdate}
           >
-            Submit reviewChangeStatusResponse
+            Update Review
+          </button>
+          <button
+            className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition font-bold"
+            onClick={onClose}
+          >
+            Close
           </button>
         </div>
-        <button
-          className="mt-4 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition font-bold"
-          onClick={onClose}
-        >
-          Close
-        </button>
       </div>
     </div>
   );
@@ -434,10 +512,23 @@ const ReviewDashboard = () => {
     changeReviewStatus();
   };
 
-  const handleRespond = (id, reviewChangeStatusResponse) => {
-    console.log(
-      `reviewChangeStatusResponse for review ${id}: ${reviewChangeStatusResponse}`
+  const handleRespond = (id, updatedReviewData) => {
+    console.log(`Updating review ${id} with complete data:`, updatedReviewData);
+
+    // Update the review in the local state
+    setReviewData(
+      reviewData.map((review) => {
+        if (review.product_review_id === id) {
+          return { ...review, ...updatedReviewData };
+        }
+        return review;
+      })
     );
+
+    // Here you would implement the API call to update the review with complete data
+    // Example:
+    // updateApiById(updateReviewRoute, id, updatedReviewData);
+
     setSelectedReview(null);
   };
 
