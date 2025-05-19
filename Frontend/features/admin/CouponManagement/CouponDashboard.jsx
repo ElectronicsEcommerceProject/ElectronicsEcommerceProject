@@ -6,7 +6,8 @@ import {
   updateApiById,
   deleteApiById,
   couponAndOffersDashboardDataRoute,
-  couponeAndOffersDashboardChangeStatusRoute,
+  couponAndOffersDashboardChangeStatusRoute,
+  couponAndOffersDashboardAnalyticsDataRoute,
 } from "../../../src/index.js";
 
 const CouponManagement = () => {
@@ -68,8 +69,37 @@ const CouponManagement = () => {
         setLoading(false);
       }
     };
-
     couponApi();
+  }, []);
+
+  const [analyticsData, setAnalyticsData] = useState({
+    usageStatistics: { Q1: 0, Q2: 0, Q3: 0, Q4: 0 },
+    redemptionRate: "0%",
+    topCoupons: [],
+  });
+
+  useEffect(() => {
+    const analyticsApi = async () => {
+      try {
+        const analyticsApiResponse = await getApi(
+          couponAndOffersDashboardAnalyticsDataRoute
+        );
+
+        if (analyticsApiResponse.success === true) {
+          // Store the analytics data in state
+          setAnalyticsData(analyticsApiResponse.data);
+          console.log("Analytics data loaded:", analyticsApiResponse.data);
+        } else {
+          console.error(
+            "Failed to fetch analytics data:",
+            analyticsApiResponse
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching analytics data:", error);
+      }
+    };
+    analyticsApi();
   }, []);
 
   const CouponForm = ({ coupon = null, onSave, onClose }) => {
@@ -680,7 +710,7 @@ const CouponManagement = () => {
     </div>
   );
 
-  const AnalyticsDashboard = () => (
+  const AnalyticsDashboard = ({ analyticsData }) => (
     <div className="p-6 animate-slide-in">
       <h3 className="text-2xl font-bold text-gray-800 mb-6">
         COUPON ANALYTICS
@@ -689,10 +719,35 @@ const CouponManagement = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <h4 className="font-bold text-gray-700 mb-4">USAGE STATISTICS</h4>
           <svg className="w-full h-48" viewBox="0 0 400 200">
-            <rect x="50" y="120" width="50" height="80" fill="#3B82F6" />
-            <rect x="120" y="80" width="50" height="120" fill="#10B981" />
-            <rect x="190" y="50" width="50" height="150" fill="#8B5CF6" />
-            <rect x="260" y="100" width="50" height="100" fill="#F59E0B" />
+            {/* Calculate bar heights based on data */}
+            <rect
+              x="50"
+              y={120 - analyticsData.usageStatistics.Q1 / 2}
+              width="50"
+              height={80 + analyticsData.usageStatistics.Q1 / 2}
+              fill="#3B82F6"
+            />
+            <rect
+              x="120"
+              y={80 - analyticsData.usageStatistics.Q2 / 2}
+              width="50"
+              height={120 + analyticsData.usageStatistics.Q2 / 2}
+              fill="#10B981"
+            />
+            <rect
+              x="190"
+              y={50 - analyticsData.usageStatistics.Q3 / 2}
+              width="50"
+              height={150 + analyticsData.usageStatistics.Q3 / 2}
+              fill="#8B5CF6"
+            />
+            <rect
+              x="260"
+              y={100 - analyticsData.usageStatistics.Q4 / 2}
+              width="50"
+              height={100 + analyticsData.usageStatistics.Q4 / 2}
+              fill="#F59E0B"
+            />
             <text
               x="75"
               y="195"
@@ -741,7 +796,7 @@ const CouponManagement = () => {
               textAnchor="middle"
               fontWeight="bold"
             >
-              320
+              {analyticsData.usageStatistics.Q1}
             </text>
             <text
               x="145"
@@ -751,7 +806,7 @@ const CouponManagement = () => {
               textAnchor="middle"
               fontWeight="bold"
             >
-              480
+              {analyticsData.usageStatistics.Q2}
             </text>
             <text
               x="215"
@@ -761,7 +816,7 @@ const CouponManagement = () => {
               textAnchor="middle"
               fontWeight="bold"
             >
-              600
+              {analyticsData.usageStatistics.Q3}
             </text>
             <text
               x="285"
@@ -771,7 +826,7 @@ const CouponManagement = () => {
               textAnchor="middle"
               fontWeight="bold"
             >
-              400
+              {analyticsData.usageStatistics.Q4}
             </text>
           </svg>
         </div>
@@ -779,47 +834,59 @@ const CouponManagement = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <h4 className="font-bold text-gray-700 mb-4">REDEMPTION RATE</h4>
           <svg className="w-full h-48" viewBox="0 0 200 200">
-            <circle
-              cx="100"
-              cy="100"
-              r="80"
-              fill="#14B8A6"
-              stroke="#fff"
-              strokeWidth="10"
-              strokeDasharray="251.2"
-              strokeDashoffset="50.24"
-              transform="rotate(-90 100 100)"
-            />
-            <circle
-              cx="100"
-              cy="100"
-              r="80"
-              fill="#F87171"
-              stroke="#fff"
-              strokeWidth="10"
-              strokeDasharray="251.2"
-              strokeDashoffset="200.96"
-              transform="rotate(-90 100 100)"
-            />
-            <text
-              x="100"
-              y="100"
-              textAnchor="middle"
-              dominantBaseline="middle"
-              className="text-xl font-bold"
-            >
-              75%
-            </text>
-            <text
-              x="100"
-              y="130"
-              textAnchor="middle"
-              fontSize="12"
-              fill="#4B5563"
-              fontWeight="bold"
-            >
-              REDEMPTION RATE
-            </text>
+            {/* Calculate redemption rate percentage */}
+            {(() => {
+              const redemptionRate =
+                parseInt(analyticsData.redemptionRate) || 0;
+              const dashArray = 251.2; // Circumference of circle with r=80 (2πr)
+              const dashOffset = dashArray * (1 - redemptionRate / 100);
+
+              return (
+                <>
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r="80"
+                    fill="#14B8A6"
+                    stroke="#fff"
+                    strokeWidth="10"
+                    strokeDasharray={dashArray}
+                    strokeDashoffset={dashOffset}
+                    transform="rotate(-90 100 100)"
+                  />
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r="80"
+                    fill="#F87171"
+                    stroke="#fff"
+                    strokeWidth="10"
+                    strokeDasharray={dashArray}
+                    strokeDashoffset={dashArray - dashOffset}
+                    transform="rotate(-90 100 100)"
+                  />
+                  <text
+                    x="100"
+                    y="100"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    className="text-xl font-bold"
+                  >
+                    {analyticsData.redemptionRate}
+                  </text>
+                  <text
+                    x="100"
+                    y="130"
+                    textAnchor="middle"
+                    fontSize="12"
+                    fill="#4B5563"
+                    fontWeight="bold"
+                  >
+                    REDEMPTION RATE
+                  </text>
+                </>
+              );
+            })()}
           </svg>
         </div>
 
@@ -828,32 +895,38 @@ const CouponManagement = () => {
             TOP-PERFORMING COUPONS
           </h4>
           <div className="space-y-4">
-            {[
-              { code: "SAVE10", redemption: "85%", color: "bg-blue-500" },
-              { code: "FLAT50", redemption: "70%", color: "bg-green-500" },
-              { code: "FREESHIP", redemption: "65%", color: "bg-purple-500" },
-            ].map((item, index) => (
-              <div
-                key={index}
-                className="flex items-center p-3 bg-gray-50 rounded-lg"
-              >
-                <span
-                  className={`inline-block w-4 h-4 ${item.color} rounded-full mr-3`}
-                ></span>
-                <span className="flex-1 font-bold">{item.code}</span>
-                <span
-                  className={`font-bold ${
-                    item.redemption > "80%"
-                      ? "text-green-600"
-                      : item.redemption > "60%"
-                      ? "text-blue-600"
-                      : "text-purple-600"
-                  }`}
-                >
-                  {item.redemption} REDEMPTION
-                </span>
+            {analyticsData.topCoupons.length > 0 ? (
+              analyticsData.topCoupons.map((item, index) => {
+                // Assign different colors based on index
+                const colors = ["bg-blue-500", "bg-green-500", "bg-purple-500"];
+                const color = colors[index % colors.length];
+
+                // Calculate text color based on redemption rate
+                const redemptionRate = parseInt(item.redemptionRate) || 0;
+                let textColor = "text-purple-600";
+                if (redemptionRate > 80) textColor = "text-green-600";
+                else if (redemptionRate > 60) textColor = "text-blue-600";
+
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center p-3 bg-gray-50 rounded-lg"
+                  >
+                    <span
+                      className={`inline-block w-4 h-4 ${color} rounded-full mr-3`}
+                    ></span>
+                    <span className="flex-1 font-bold">{item.code}</span>
+                    <span className={`font-bold ${textColor}`}>
+                      {item.redemptionRate} REDEMPTION
+                    </span>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center text-gray-500 py-4">
+                No coupon data available
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
@@ -896,7 +969,7 @@ const CouponManagement = () => {
         );
 
         const response = await updateApiById(
-          couponeAndOffersDashboardChangeStatusRoute,
+          couponAndOffersDashboardChangeStatusRoute,
           id,
           {
             is_active: isActive,
@@ -1017,7 +1090,9 @@ const CouponManagement = () => {
         </>
       )}
 
-      {activeTab === "Analytics" && <AnalyticsDashboard />}
+      {activeTab === "Analytics" && (
+        <AnalyticsDashboard analyticsData={analyticsData} />
+      )}
 
       {isFormOpen && (
         <CouponForm

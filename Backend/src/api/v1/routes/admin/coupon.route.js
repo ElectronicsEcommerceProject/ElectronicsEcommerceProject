@@ -26,6 +26,14 @@ router.get(
   adminCouponController.getAllCoupons
 );
 
+// Get coupon analytics
+router.get(
+  "/analytics",
+  verifyJwtToken,
+  adminRoleCheck,
+  adminCouponController.getCouponAnalytics
+);
+
 // Get coupon by ID
 router.get(
   "/:coupon_id",

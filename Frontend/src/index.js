@@ -67,8 +67,11 @@ const reviewManagmentAnalyticsDataRoute = import.meta.env
 const couponAndOffersDashboardDataRoute = import.meta.env
   .VITE_COUPON_AND_OFFERS_DASHBOARD_DATA_ENDPOINT;
 
-const couponeAndOffersDashboardChangeStatusRoute = import.meta.env
+const couponAndOffersDashboardChangeStatusRoute = import.meta.env
   .VITE_COUPON_AND_OFFERS_DASHBOARD_CHANGE_COUPON_STATUS_ENDPOINT;
+
+const couponAndOffersDashboardAnalyticsDataRoute = import.meta.env
+  .VITE_COUPON_AND_OFFERS_DASHBOARD_ANALYTICS_DATA_ENDPOINT;
 
 export {
   FaEye,
@@ -109,5 +112,7 @@ export {
   updateProductReviewByIdRoute,
   reviewManagmentAnalyticsDataRoute,
   couponAndOffersDashboardDataRoute,
-  couponeAndOffersDashboardChangeStatusRoute,
+  // couponAndOffersDashboardChangeStatusRoute,
+  couponAndOffersDashboardChangeStatusRoute,
+  couponAndOffersDashboardAnalyticsDataRoute,
 };

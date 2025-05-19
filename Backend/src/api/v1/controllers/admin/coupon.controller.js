@@ -1,8 +1,10 @@
+import sequelize from "sequelize";
 import { StatusCodes } from "http-status-codes";
 import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
 
-const { Coupon, User, Product, ProductVariant } = db;
+const { Coupon, User, Product, ProductVariant, CouponUser, CouponRedemption } =
+  db;
 
 // Create a new coupon
 export const createCoupon = async (req, res) => {
@@ -331,6 +333,109 @@ export const changeCouponStatus = async (req, res) => {
   }
 };
 
+/**
+ * Controller to fetch coupon analytics data
+ */
+export const getCouponAnalytics = async (req, res) => {
+  try {
+    // Step 1: Fetch Usage Statistics (redemptions per quarter)
+    const usageStats = await CouponRedemption.findAll({
+      attributes: [
+        [sequelize.fn("QUARTER", sequelize.col("redeemed_at")), "quarter"],
+        [sequelize.fn("COUNT", sequelize.col("coupon_redemption_id")), "count"],
+      ],
+      group: [sequelize.fn("QUARTER", sequelize.col("redeemed_at"))],
+      order: [[sequelize.literal("quarter"), "ASC"]],
+      raw: true,
+    });
+
+    // Format usage statistics into { Q1: count, Q2: count, ... }
+    const usageStatistics = {
+      Q1: 0,
+      Q2: 0,
+      Q3: 0,
+      Q4: 0,
+    };
+    usageStats.forEach((stat) => {
+      usageStatistics[`Q${stat.quarter}`] = parseInt(stat.count);
+    });
+
+    // Step 2: Fetch Redemption Rate (total redemptions / total assigned coupons)
+    const totalRedemptions = await CouponRedemption.count();
+    const totalAssignedCoupons = await CouponUser.count();
+    const redemptionRate =
+      totalAssignedCoupons > 0
+        ? Math.round((totalRedemptions / totalAssignedCoupons) * 100)
+        : 0;
+
+    // Step 3: Fetch Top-Performing Coupons
+    // First get all coupons
+    const coupons = await Coupon.findAll({
+      attributes: ["coupon_id", "code"],
+      raw: true,
+    });
+
+    // Then for each coupon, get its assignment and redemption counts
+    const couponPerformanceData = await Promise.all(
+      coupons.map(async (coupon) => {
+        const assignmentCount = await CouponUser.count({
+          where: { coupon_id: coupon.coupon_id },
+        });
+
+        const redemptionCount = await CouponRedemption.count({
+          where: { coupon_id: coupon.coupon_id },
+        });
+
+        const redemptionRate =
+          assignmentCount > 0
+            ? Math.round((redemptionCount / assignmentCount) * 100)
+            : 0;
+
+        return {
+          code: coupon.code,
+          assignmentCount,
+          redemptionCount,
+          redemptionRate,
+        };
+      })
+    );
+
+    // Sort by redemption rate and get top 3
+    const topCoupons = couponPerformanceData
+      .filter((coupon) => coupon.assignmentCount > 0)
+      .sort((a, b) => b.redemptionRate - a.redemptionRate)
+      .slice(0, 3)
+      .map((coupon) => ({
+        code: coupon.code,
+        redemptionRate: `${coupon.redemptionRate}%`,
+      }));
+
+    // Step 4: Prepare the response
+    const response = {
+      success: true,
+      message: "Coupon analytics data fetched successfully",
+      data: {
+        usageStatistics,
+        redemptionRate: `${redemptionRate}%`,
+        topCoupons,
+      },
+    };
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: MESSAGE.get.succ,
+      data: response.data,
+    });
+  } catch (error) {
+    console.error("Error fetching coupon analytics:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "An error occurred while fetching coupon analytics.",
+      error: error.message,
+    });
+  }
+};
+
 export default {
   createCoupon,
   getAllCoupons,
@@ -338,4 +443,5 @@ export default {
   updateCoupon,
   deleteCoupon,
   changeCouponStatus,
+  getCouponAnalytics, // Add this line to export the getCouponAnalytics function as well.
 };
