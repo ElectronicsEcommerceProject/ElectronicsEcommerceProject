@@ -88,7 +88,7 @@ const CouponManagement = () => {
         if (analyticsApiResponse.success === true) {
           // Store the analytics data in state
           setAnalyticsData(analyticsApiResponse.data);
-          console.log("Analytics data loaded:", analyticsApiResponse.data);
+          // console.log("Analytics data loaded:", analyticsApiResponse.data);
         } else {
           console.error(
             "Failed to fetch analytics data:",
