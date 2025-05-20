@@ -12,6 +12,17 @@ const ProductCatalogManagement = () => {
     media: [],
   });
 
+  // Store form data for each step
+  const [stepFormData, setStepFormData] = useState({
+    1: {}, // Category form data
+    2: {}, // Brand form data
+    3: {}, // Product form data
+    4: {}, // Variant form data
+    5: {}, // Attribute form data
+    6: {}, // Attribute Value form data
+    7: {}, // Media form data
+  });
+
   // Dummy data for each entity
   const dummyData = {
     categories: [
@@ -247,6 +258,12 @@ const ProductCatalogManagement = () => {
   const handleSubmit = async (e, endpoint, data, nextStep) => {
     e.preventDefault();
     try {
+      // Save the form data for the current step
+      setStepFormData((prev) => ({
+        ...prev,
+        [step]: data,
+      }));
+
       const response = await apiCall(endpoint, "POST", data);
       console.log("Form submitted successfully:", response);
       setTimeout(() => {
@@ -303,8 +320,31 @@ const ProductCatalogManagement = () => {
   );
 
   const FormComponent = ({ title, fields, endpoint, nextStep }) => {
-    const [localData, setLocalData] = useState({});
-    const [filledFields, setFilledFields] = useState({});
+    // Initialize with data from stepFormData if available
+    const [localData, setLocalData] = useState(() => {
+      return { ...stepFormData[step] };
+    });
+
+    const [filledFields, setFilledFields] = useState(() => {
+      // Initialize filledFields based on existing data
+      const filled = {};
+      Object.keys(stepFormData[step] || {}).forEach((key) => {
+        filled[key] = !!stepFormData[step][key];
+      });
+      return filled;
+    });
+
+    // Update localData when step changes to load saved data
+    useEffect(() => {
+      setLocalData({ ...stepFormData[step] });
+
+      // Update filledFields based on the loaded data
+      const filled = {};
+      Object.keys(stepFormData[step] || {}).forEach((key) => {
+        filled[key] = !!stepFormData[step][key];
+      });
+      setFilledFields(filled);
+    }, [step]);
 
     const handleChange = (e) => {
       const { name, value, type, files } = e.target;
@@ -323,12 +363,19 @@ const ProductCatalogManagement = () => {
       );
     });
 
+    // Store form data in parent component when submitting
+    const handleFormSubmit = (e) => {
+      e.preventDefault();
+      // Save the current form data to the parent component
+      handleSubmit(e, endpoint, localData, nextStep);
+    };
+
     return (
       <div className="bg-white p-4 md:p-6 rounded-lg shadow-lg w-full max-w-md mx-auto border-2 border-blue-500">
         <h2 className="text-xl md:text-2xl font-bold mb-4 text-center">
           {title}
         </h2>
-        <div className="space-y-3 md:space-y-4">
+        <form onSubmit={handleFormSubmit} className="space-y-3 md:space-y-4">
           {fields.map((field, index) => (
             <div key={field.name} className="mb-3">
               <label className="block text-sm md:text-base font-medium text-gray-700 mb-1">
@@ -403,7 +450,6 @@ const ProductCatalogManagement = () => {
             )}
             <button
               type="submit"
-              onClick={(e) => handleSubmit(e, endpoint, localData, nextStep)}
               disabled={!isFormValid}
               className={`flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-200 text-sm md:text-base
                 ${!isFormValid ? "opacity-70 cursor-not-allowed" : ""}
@@ -412,7 +458,7 @@ const ProductCatalogManagement = () => {
               Submit
             </button>
           </div>
-        </div>
+        </form>
       </div>
     );
   };

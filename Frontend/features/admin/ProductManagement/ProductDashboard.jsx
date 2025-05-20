@@ -117,11 +117,18 @@ const ProductModal = ({
   categories,
   brands,
 }) => {
+  const [formState, setFormState] = useState({});
+
   const handleSubmit = (newProduct) => {
     if (newProduct) {
       addProduct(newProduct);
     }
     closeModal();
+  };
+
+  // Save form state when form data changes
+  const handleFormDataChange = (data) => {
+    setFormState(data);
   };
 
   if (!isOpen) return null;
@@ -145,9 +152,9 @@ const ProductModal = ({
             onSubmit={handleSubmit}
             categories={categories}
             brands={brands}
+            initialData={formState}
+            onDataChange={handleFormDataChange}
           />
-
-          {/* Submit Button REMOVED */}
         </div>
       </div>
     </div>
