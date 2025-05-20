@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import { X } from "lucide-react";
 import { ProductForm } from "../../../features/admin/index.js";
+import { useNavigate } from "react-router-dom";
 
 const productsData = [
   {
@@ -108,59 +110,6 @@ const ProductGrid = ({ products }) => (
   </div>
 );
 
-import { X } from "lucide-react";
-
-const ProductModal = ({
-  isOpen,
-  closeModal,
-  addProduct,
-  categories,
-  brands,
-}) => {
-  const [formState, setFormState] = useState({});
-
-  const handleSubmit = (newProduct) => {
-    if (newProduct) {
-      addProduct(newProduct);
-    }
-    closeModal();
-  };
-
-  // Save form state when form data changes
-  const handleFormDataChange = (data) => {
-    setFormState(data);
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-      <div className="flex justify-center items-start min-h-screen p-6">
-        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl relative mt-10 mb-10">
-          {/* Close Button */}
-          <button
-            onClick={closeModal}
-            className="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
-
-          <h2 className="text-xl font-bold mb-6 mt-2">Add New Product</h2>
-
-          {/* ProductForm handles its own submit button */}
-          <ProductForm
-            onSubmit={handleSubmit}
-            categories={categories}
-            brands={brands}
-            initialData={formState}
-            onDataChange={handleFormDataChange}
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const ProductDashboard = () => {
   const [search, setSearch] = useState("");
   const [view, setView] = useState("table");
@@ -169,6 +118,7 @@ const ProductDashboard = () => {
   const [visibilityFilter, setVisibilityFilter] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [products, setProducts] = useState(productsData);
+  const navigate = useNavigate();
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name
@@ -190,13 +140,18 @@ const ProductDashboard = () => {
     setProducts([...products, { ...newProduct, id: products.length + 1 }]);
   };
 
+  const handleAddNewProduct = () => {
+    // Navigate to the ProductForm page
+    navigate("/admin/product-form");
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Product Management</h1>
         <button
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleAddNewProduct}
         >
           Add New Product
         </button>
@@ -259,11 +214,6 @@ const ProductDashboard = () => {
       ) : (
         <ProductGrid products={filteredProducts} />
       )}
-      <ProductModal
-        isOpen={isModalOpen}
-        closeModal={() => setIsModalOpen(false)}
-        addProduct={addProduct}
-      />
     </div>
   );
 };

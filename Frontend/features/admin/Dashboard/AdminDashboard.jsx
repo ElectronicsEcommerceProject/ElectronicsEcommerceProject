@@ -3,6 +3,7 @@ import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { ClientSideRowModelModule } from "ag-grid-community";
+import { useNavigate } from "react-router-dom";
 
 import {
   allUserRoute,
@@ -24,6 +25,11 @@ const AdminDashboard = () => {
   const [retailerOrders, setRetailerOrders] = useState([]);
 
   const [totalRevenue, setTotalRevenue] = useState(0);
+  const navigate = useNavigate();
+
+  const handleAddProduct = () => {
+    navigate("/admin/product-form");
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -500,7 +506,10 @@ const AdminDashboard = () => {
               Quick Actions
             </h2>
             <div className="space-y-2 sm:space-y-3">
-              <button className="w-full bg-blue-600 text-white py-1 sm:py-2 rounded-lg hover:bg-blue-700 transition-transform transform hover:scale-[1.02] duration-300 shadow-sm text-sm sm:text-base">
+              <button
+                className="w-full bg-blue-600 text-white py-1 sm:py-2 rounded-lg hover:bg-blue-700 transition-transform transform hover:scale-[1.02] duration-300 shadow-sm text-sm sm:text-base"
+                onClick={handleAddProduct}
+              >
                 Add Product
               </button>
               <button className="w-full bg-blue-600 text-white py-1 sm:py-2 rounded-lg hover:bg-blue-700 transition-transform transform hover:scale-[1.02] duration-300 shadow-sm text-sm sm:text-base">
