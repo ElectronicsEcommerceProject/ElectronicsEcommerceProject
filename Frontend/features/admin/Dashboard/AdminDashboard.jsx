@@ -29,6 +29,7 @@ const AdminDashboard = () => {
     const fetchData = async () => {
       try {
         const response = await getApi(allUserRoute);
+        console.log("Response:", response);
         if (response && response.success && Array.isArray(response.users)) {
           const calculatedTotalUsers = response.users.reduce(
             (acc, user) => {
