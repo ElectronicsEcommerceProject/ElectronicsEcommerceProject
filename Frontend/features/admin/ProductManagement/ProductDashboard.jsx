@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
-  import{ ProductForm} from "../../../features/admin/index.js";
+import { ProductForm } from "../../../features/admin/index.js";
 
 const productsData = [
   {
@@ -108,19 +108,15 @@ const ProductGrid = ({ products }) => (
   </div>
 );
 
-const ProductModal = ({ isOpen, closeModal, addProduct }) => {
-  const categories = [
-    { id: "Laptops", name: "Laptops" },
-    { id: "Accessories", name: "Accessories" },
-    { id: "Components", name: "Components" },
-  ];
-  const brands = [
-    { id: "Dell", name: "Dell" },
-    { id: "Apple", name: "Apple" },
-    { id: "HP", name: "HP" },
-    { id: "Lenovo", name: "Lenovo" },
-  ];
+import { X } from "lucide-react";
 
+const ProductModal = ({
+  isOpen,
+  closeModal,
+  addProduct,
+  categories,
+  brands,
+}) => {
   const handleSubmit = (newProduct) => {
     if (newProduct) {
       addProduct(newProduct);
@@ -131,14 +127,28 @@ const ProductModal = ({ isOpen, closeModal, addProduct }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
-        <h2 className="text-xl font-bold mb-4">Add New Product</h2>
-        <ProductForm
-          onSubmit={handleSubmit}
-          categories={categories}
-          brands={brands}
-        />
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
+      <div className="flex justify-center items-start min-h-screen p-6">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl relative mt-10 mb-10">
+          {/* Close Button */}
+          <button
+            onClick={closeModal}
+            className="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          <h2 className="text-xl font-bold mb-6 mt-2">Add New Product</h2>
+
+          {/* ProductForm handles its own submit button */}
+          <ProductForm
+            onSubmit={handleSubmit}
+            categories={categories}
+            brands={brands}
+          />
+
+          {/* Submit Button REMOVED */}
+        </div>
       </div>
     </div>
   );

@@ -12,7 +12,7 @@ import AdminDashboard from "../features/admin/Dashboard/AdminDashboard";
 import MainDashboard from "../features/customer/Dashboard/MainDashboard";
 import MainZone from "../features/customer/Dashboard/MainZone";
 import BuyNowPage from "../features/customer/Dashboard/Buy Now Page";
-import AdminLayout from "../features/admin/AdminLayout/AdminLayout";
+import { AdminLogin, ForgotPassword, AdminLayout } from "./index.js";
 
 const App = () => {
   return (
@@ -26,6 +26,7 @@ const App = () => {
         <Route path="/mainzone" element={<MainZone />} />
         <Route path="/buynowpage" element={<BuyNowPage />} /> */}
         <Route path="/" element={<AdminLayout />} />
+        <Route path="/adminlogin" element={<AdminLogin />} />
 
         {/* <Route path="/profilePage" element={<ProfilePage />} />
           <Route path="/product/:productId" element={<ShowProductDescription />} />

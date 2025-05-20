@@ -7,8 +7,8 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import "react-toastify/dist/ReactToastify.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
-import AdminLogin from "../features/auth/AdminLogin.jsx";
-import ForgotPassword from "../features/auth/ForgotPassword.jsx";
+// import AdminLogin from "../features/auth/AdminLogin.jsx";
+// import ForgotPassword from "../features/auth/ForgotPassword.jsx";
 import LoginForm from "../features/auth/LoginForm.jsx";
 import SignupForm from "../features/auth/SignupForm.jsx";
 
@@ -24,6 +24,11 @@ import OrderDashboard from "../features/admin/OrderDashboard/OrderDashboard.jsx"
 import ReviewDashboard from "../features/admin/ReviewManagement/ReviewDashboard.jsx";
 import UserDashboard from "../features/admin/UserManagement/UserDashboard.jsx";
 import UserProfileView from "../features/admin/UserManagement/UserProfileView.jsx";
+import AdminLogin from "../features/admin/AdminLayout/AdminLogin.jsx";
+import ForgotPassword from "../features/admin/AdminLayout/ForgotPassword.jsx";
+import ProductDashboard from "../features/admin/ProductManagement/ProductDashboard.jsx";
+import ProductForm from "../features/admin/ProductManagement/ProductForm.jsx";
+import AdminLayout from "../features/admin/AdminLayout/AdminLayout.jsx";
 
 // Components
 import AlertMessage from "../components/Alert/AlertMessage.jsx";
@@ -92,6 +97,9 @@ export {
   ReviewDashboard,
   UserDashboard,
   UserProfileView,
+  ProductDashboard,
+  ProductForm,
+  AdminLayout,
   AlertMessage,
   createApi,
   getApi,
@@ -112,7 +120,6 @@ export {
   updateProductReviewByIdRoute,
   reviewManagmentAnalyticsDataRoute,
   couponAndOffersDashboardDataRoute,
-  // couponAndOffersDashboardChangeStatusRoute,
   couponAndOffersDashboardChangeStatusRoute,
   couponAndOffersDashboardAnalyticsDataRoute,
 };
