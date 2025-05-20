@@ -14,7 +14,7 @@ import OrderDetailModal from "../../components/OrderManagement/OrderDetailModal.
 import ManualOrderModal from "../../components/OrderManagement/ManualOrderModal.jsx";
 import QuickActions from "../../components/OrderManagement/QuickActions.jsx";
 import Notifications from "../../components/OrderManagement/Notifications.jsx";
-import CustomModal from "../../components/OrderManagement/CustomModal.JSX";
+import CustomModal from "../../components/OrderManagement/CustomModal.jsx";
 import UserManagement from "../../features/admin/UserManagement/UserDashboard.jsx";
 import UserProfileView from "../../features/admin/UserManagement/UserProfileView.jsx";
 
