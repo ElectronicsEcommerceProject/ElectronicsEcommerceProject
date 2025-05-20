@@ -33,6 +33,7 @@ export { default as adminBrandController } from "./admin/brand.controller.js";
 export { default as adminAttributeController } from "./admin/productAttributes.controller.js";
 export { default as adminAttributeValueController } from "./admin/productAttributesValues.controller.js";
 export { default as adminProductReviewController } from "./admin/adminProductReview.controller.js";
+export { default as adminDashboardController } from "./admin/adminDashboard.controller.js";
 
 //     customer controller
 export { default as customerOrderController } from "./customer/order.controller.js";

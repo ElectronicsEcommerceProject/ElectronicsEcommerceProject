@@ -5,12 +5,7 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import { ClientSideRowModelModule } from "ag-grid-community";
 import { useNavigate } from "react-router-dom";
 
-import {
-  allUserRoute,
-  orderRoute,
-  latestOrderRoute,
-  getApi,
-} from "../../../src/index.js";
+import { adminDashboardDataRoute, getApi } from "../../../src/index.js";
 
 const AdminDashboard = () => {
   const [totalUsers, setTotalUsers] = useState({ customers: 0, retailers: 0 });
@@ -20,11 +15,16 @@ const AdminDashboard = () => {
     delivered: 0,
     cancelled: 0,
   });
-
   const [customerOrders, setCustomerOrders] = useState([]);
   const [retailerOrders, setRetailerOrders] = useState([]);
-
-  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState({
+    last30Days: 0,
+    last7Days: 0,
+    today: 0,
+  });
+  const [lowStockAlerts, setLowStockAlerts] = useState([]);
+  const [topSellingProducts, setTopSellingProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   const handleAddProduct = () => {
@@ -33,121 +33,142 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
-        const response = await getApi(allUserRoute);
-        console.log("Response:", response);
-        if (response && response.success && Array.isArray(response.users)) {
-          const calculatedTotalUsers = response.users.reduce(
-            (acc, user) => {
-              if (user.role === "customer") {
-                acc.customers += 1;
-              } else if (user.role === "retailer") {
-                acc.retailers += 1;
-              }
-              return acc;
-            },
-            { customers: 0, retailers: 0 }
-          );
-          setTotalUsers(calculatedTotalUsers);
+        const response = await getApi(adminDashboardDataRoute);
+        console.log("Dashboard Response:", response);
+
+        if (response && response.success && response.data) {
+          const data = response.data;
+
+          // Set total users
+          if (data.totalUsers) {
+            setTotalUsers({
+              customers: data.totalUsers.customers || 0,
+              retailers: data.totalUsers.retailers || 0,
+            });
+          }
+
+          // Set total orders
+          if (data.totalOrders) {
+            setTotalOrders({
+              all: data.totalOrders.all || 0,
+              pending: data.totalOrders.pending || 0,
+              delivered: data.totalOrders.delivered || 0,
+              cancelled: data.totalOrders.cancelled || 0,
+            });
+          }
+
+          // Set total revenue
+          if (data.totalRevenue) {
+            setTotalRevenue({
+              last30Days: data.totalRevenue.last30Days || 0,
+              last7Days: data.totalRevenue.last7Days || 0,
+              today: data.totalRevenue.today || 0,
+            });
+          }
+
+          // Set low stock alerts
+          if (data.lowStockAlerts && Array.isArray(data.lowStockAlerts)) {
+            const formattedAlerts = data.lowStockAlerts.map((alert) => ({
+              name: alert.productName,
+              stock: alert.stockLeft,
+            }));
+            setLowStockAlerts(
+              formattedAlerts.length > 0
+                ? formattedAlerts
+                : [{ name: "No low stock alerts", stock: "-" }]
+            );
+          }
+
+          // Set top selling products
+          if (
+            data.topSellingProducts &&
+            Array.isArray(data.topSellingProducts)
+          ) {
+            const formattedProducts = data.topSellingProducts.map(
+              (product) => ({
+                name: product.productName,
+                sales: product.sold,
+              })
+            );
+            setTopSellingProducts(
+              formattedProducts.length > 0
+                ? formattedProducts
+                : [{ name: "No top selling products", sales: "-" }]
+            );
+          }
+
+          // Set latest orders
+          if (data.latestOrders) {
+            // Process customer orders
+            if (
+              data.latestOrders.customerOrders &&
+              Array.isArray(data.latestOrders.customerOrders)
+            ) {
+              const customerOrdersData = data.latestOrders.customerOrders.map(
+                (order) => ({
+                  id: order.orderId,
+                  customer: "Customer", // Default name if not available
+                  status: order.status,
+                  date: new Date().toISOString().split("T")[0], // Current date as fallback
+                  tracking: order.orderId.substring(0, 8), // Use part of order ID as tracking
+                })
+              );
+              setCustomerOrders(customerOrdersData);
+            }
+
+            // Process retailer orders
+            if (
+              data.latestOrders.retailerOrders &&
+              Array.isArray(data.latestOrders.retailerOrders)
+            ) {
+              const retailerOrdersData = data.latestOrders.retailerOrders.map(
+                (order) => ({
+                  id: order.orderId,
+                  customer: "Retailer", // Default name if not available
+                  status: order.status,
+                  date: new Date().toISOString().split("T")[0], // Current date as fallback
+                  tracking: order.orderId.substring(0, 8), // Use part of order ID as tracking
+                })
+              );
+              setRetailerOrders(retailerOrdersData);
+            }
+          }
         } else {
           console.error("Invalid response format:", response);
-        }
-
-        const ordersResponse = await getApi(orderRoute);
-        if (
-          ordersResponse &&
-          ordersResponse.message === "Data fetched successfully" &&
-          Array.isArray(ordersResponse.data)
-        ) {
-          const calculatedTotalOrders = ordersResponse.data.reduce(
-            (acc, order) => {
-              acc.all += 1;
-              if (order.order_status === "pending") {
-                acc.pending += 1;
-              } else if (order.order_status === "shipped") {
-                acc.delivered += 1;
-              } else if (order.order_status === "cancelled") {
-                acc.cancelled += 1;
-              }
-              return acc;
-            },
-            { all: 0, pending: 0, delivered: 0, cancelled: 0 }
-          );
-          setTotalOrders(calculatedTotalOrders);
-
-          // Calculate total revenue
-          const revenue = ordersResponse.data.reduce(
-            (total, order) => total + parseFloat(order.total_amount),
-            0
-          );
-          setTotalRevenue(revenue);
-        } else {
-          console.error("Invalid orders response format:", ordersResponse);
-        }
-
-        const latestOrderResponse = await getApi(latestOrderRoute);
-        if (
-          latestOrderResponse &&
-          latestOrderResponse.message === "Data fetched successfully"
-        ) {
-          // Process customer and retailer orders
-          const customerOrdersData = [];
-          const retailerOrdersData = [];
-
-          // Check if data is an array or a single object
-          const ordersData = Array.isArray(latestOrderResponse.data)
-            ? latestOrderResponse.data
-            : [latestOrderResponse.data]; // Convert single object to array if needed
-
-          ordersData.forEach((order) => {
-            if (!order) return; // Skip if order is null or undefined
-
-            const orderData = {
-              id: order.tracking_number || order.order_number || order.order_id, // Use tracking number as ID if available
-              customer: order.user?.name || "Unknown",
-              status: order.order_status,
-              date: new Date(order.order_date).toISOString().split("T")[0],
-              tracking: order.tracking_number || "Not available",
-            };
-
-            // Check if the order is from a retailer (admin) or customer
-            if (order.user?.role === "retailer") {
-              retailerOrdersData.push(orderData);
-            } else if (order.user?.role === "customer") {
-              customerOrdersData.push(orderData);
-            }
-          });
-
-          setCustomerOrders(customerOrdersData);
-          setRetailerOrders(retailerOrdersData);
-        } else {
-          console.error(
-            "Invalid latest order response format:",
-            latestOrderResponse
-          );
+          // Set default values if response is invalid
+          setLowStockAlerts([
+            { name: "Product A", stock: 5 },
+            { name: "Product B", stock: 3 },
+            { name: "Product C", stock: 7 },
+          ]);
+          setTopSellingProducts([
+            { name: "Product X", sales: 200 },
+            { name: "Product Y", sales: 180 },
+            { name: "Product Z", sales: 150 },
+          ]);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
+        // Set default values if API call fails
+        setLowStockAlerts([
+          { name: "Product A", stock: 5 },
+          { name: "Product B", stock: 3 },
+          { name: "Product C", stock: 7 },
+        ]);
+        setTopSellingProducts([
+          { name: "Product X", sales: 200 },
+          { name: "Product Y", sales: 180 },
+          { name: "Product Z", sales: 150 },
+        ]);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchData();
   }, []);
-
-  const lowStockAlerts = [
-    { name: "Product A", stock: 5 },
-    { name: "Product B", stock: 3 },
-    { name: "Product C", stock: 7 },
-    { name: "Product D", stock: 2 },
-    { name: "Product E", stock: 4 },
-  ];
-  const topSellingProducts = [
-    { name: "Product X", sales: 200 },
-    { name: "Product Y", sales: 180 },
-    { name: "Product Z", sales: 150 },
-    { name: "Product W", sales: 120 },
-    { name: "Product V", sales: 100 },
-  ];
 
   const customerColumnDefs = [
     {
@@ -347,24 +368,9 @@ const AdminDashboard = () => {
                 </p>
               </div>
               {/* Dummy data to test scrolling */}
-              <div>
-                <p className="text-gray-600 text-sm sm:text-base">Admins</p>
-                <p className="text-2xl sm:text-3xl font-bold text-blue-600">
-                  50
-                </p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm sm:text-base">Guests</p>
-                <p className="text-2xl sm:text-3xl font-bold text-blue-600">
-                  300
-                </p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm sm:text-base">Vendors</p>
-                <p className="text-2xl sm:text-3xl font-bold text-blue-600">
-                  75
-                </p>
-              </div>
+              <div></div>
+              <div></div>
+              <div></div>
             </div>
           </div>
         </div>
@@ -424,25 +430,18 @@ const AdminDashboard = () => {
               Total Revenue
             </h2>
             <p className="text-2xl sm:text-3xl font-bold text-green-600">
-              ₹{totalRevenue.toLocaleString()}
+              ₹{totalRevenue.last30Days.toLocaleString()}
             </p>
-            {/* Dummy data to test scrolling */}
             <div className="mt-2">
-              <p className="text-gray-600 text-sm sm:text-base">Last Month</p>
+              <p className="text-gray-600 text-sm sm:text-base">Last 7 Days</p>
               <p className="text-xl sm:text-2xl font-bold text-green-600">
-                ₹200,000
-              </p>
-            </div>
-            <div className="mt-2">
-              <p className="text-gray-600 text-sm sm:text-base">This Week</p>
-              <p className="text-xl sm:text-2xl font-bold text-green-600">
-                ₹50,000
+                ₹{totalRevenue.last7Days.toLocaleString()}
               </p>
             </div>
             <div className="mt-2">
               <p className="text-gray-600 text-sm sm:text-base">Today</p>
               <p className="text-xl sm:text-2xl font-bold text-green-600">
-                ₹10,000
+                ₹{totalRevenue.today.toLocaleString()}
               </p>
             </div>
           </div>
@@ -457,7 +456,9 @@ const AdminDashboard = () => {
             <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-3">
               Low Stock Alerts
             </h2>
-            {lowStockAlerts.length > 0 ? (
+            {isLoading ? (
+              <p className="text-gray-600 text-sm sm:text-base">Loading...</p>
+            ) : lowStockAlerts.length > 0 ? (
               <ul className="space-y-2">
                 {lowStockAlerts.map((item, index) => (
                   <li
@@ -485,17 +486,25 @@ const AdminDashboard = () => {
             <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-3">
               Top Selling Products
             </h2>
-            <ul className="space-y-2">
-              {topSellingProducts.map((product, index) => (
-                <li
-                  key={index}
-                  className="flex justify-between text-gray-700 text-sm sm:text-base"
-                >
-                  <span>{product.name}</span>
-                  <span className="font-semibold">{product.sales} sold</span>
-                </li>
-              ))}
-            </ul>
+            {isLoading ? (
+              <p className="text-gray-600 text-sm sm:text-base">Loading...</p>
+            ) : topSellingProducts.length > 0 ? (
+              <ul className="space-y-2">
+                {topSellingProducts.map((product, index) => (
+                  <li
+                    key={index}
+                    className="flex justify-between text-gray-700 text-sm sm:text-base"
+                  >
+                    <span>{product.name}</span>
+                    <span className="font-semibold">{product.sales} sold</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-600 text-sm sm:text-base">
+                No top selling products.
+              </p>
+            )}
           </div>
         </div>
 
@@ -566,56 +575,6 @@ const AdminDashboard = () => {
                 )}
               </div>
             ))}
-
-            {/* Customer Orders */}
-            <div>
-              <h3 className="text-base sm:text-lg font-medium text-gray-700 mb-2">
-                Customer Orders
-              </h3>
-              {customerOrders.length === 0 ? (
-                <p className="text-gray-600 text-sm sm:text-base pb-2">
-                  No customer orders found.
-                </p>
-              ) : (
-                <div className="ag-theme-alpine ag-grid-mobile w-full">
-                  <AgGridReact
-                    modules={[ClientSideRowModelModule]}
-                    rowData={customerOrders}
-                    columnDefs={customerColumnDefs}
-                    defaultColDef={defaultColDef}
-                    headerHeight={50}
-                    rowHeight={50}
-                    suppressCellFocus={true}
-                    domLayout="normal"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Retailer Orders */}
-            <div>
-              <h3 className="text-base sm:text-lg font-medium text-gray-700 mb-2 pt-2">
-                Retailer Orders
-              </h3>
-              {retailerOrders.length === 0 ? (
-                <p className="text-gray-600 text-sm sm:text-base">
-                  No retailer orders found.
-                </p>
-              ) : (
-                <div className="ag-theme-alpine ag-grid-mobile w-full">
-                  <AgGridReact
-                    modules={[ClientSideRowModelModule]}
-                    rowData={retailerOrders}
-                    columnDefs={retailerColumnDefs}
-                    defaultColDef={defaultColDef}
-                    headerHeight={50}
-                    rowHeight={50}
-                    suppressCellFocus={true}
-                    domLayout="normal"
-                  />
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>

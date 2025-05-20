@@ -42,6 +42,9 @@ export default (sequelize) => {
 
   StockAlert.associate = (models) => {
     StockAlert.belongsTo(models.Product, { foreignKey: "product_id" });
+    StockAlert.belongsTo(models.ProductVariant, {
+      foreignKey: "product_variant_id",
+    });
     StockAlert.belongsTo(models.User, {
       foreignKey: "created_by",
       as: "creator",

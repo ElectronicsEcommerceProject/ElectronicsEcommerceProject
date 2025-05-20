@@ -18,6 +18,7 @@ import discountRuleRoutes from "./discountRule.routes.js";
 import orderRoutes from "./order.routes.js";
 import usersManagmentDashboardDataRoutes from "./userManagmentDashboardData.routes.js";
 import adminProductReviewRoutes from "./adminProductReview.routes.js";
+import adminDashboardDataRoutes from "./adminDashboardData.routes.js";
 
 const app = express();
 
@@ -47,6 +48,8 @@ app.use("/order", orderRoutes);
 app.use("/coupon", couponRoutes);
 
 app.use("/users", userRoutes);
+
+app.use("/admin-Dashboard-Data", adminDashboardDataRoutes);
 
 app.use("/users-Management-Dashboard-Data", usersManagmentDashboardDataRoutes);
 
