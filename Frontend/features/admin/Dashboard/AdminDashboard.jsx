@@ -11,11 +11,16 @@ const AdminDashboard = () => {
   const lowStockAlerts = [
     { name: "Product A", stock: 5 },
     { name: "Product B", stock: 3 },
+    { name: "Product C", stock: 7 },
+    { name: "Product D", stock: 2 },
+    { name: "Product E", stock: 4 },
   ];
   const topSellingProducts = [
     { name: "Product X", sales: 200 },
     { name: "Product Y", sales: 180 },
     { name: "Product Z", sales: 150 },
+    { name: "Product W", sales: 120 },
+    { name: "Product V", sales: 100 },
   ];
 
   const customerOrders = [
@@ -37,7 +42,26 @@ const AdminDashboard = () => {
       status: "Cancelled",
       date: "2025-04-23",
     },
+    {
+      id: "ORD004",
+      customer: "Sarah Johnson",
+      status: "Delivered",
+      date: "2025-04-22",
+    },
+    {
+      id: "ORD005",
+      customer: "Tom Wilson",
+      status: "Pending",
+      date: "2025-04-21",
+    },
+    {
+      id: "ORD006",
+      customer: "Emily Davis",
+      status: "Delivered",
+      date: "2025-04-20",
+    },
   ];
+
   const retailerOrders = [
     {
       id: "RET001",
@@ -50,6 +74,24 @@ const AdminDashboard = () => {
       retailer: "Retail B",
       status: "Pending",
       date: "2025-04-24",
+    },
+    {
+      id: "RET003",
+      retailer: "Retail C",
+      status: "Delivered",
+      date: "2025-04-23",
+    },
+    {
+      id: "RET004",
+      retailer: "Retail D",
+      status: "Cancelled",
+      date: "2025-04-22",
+    },
+    {
+      id: "RET005",
+      retailer: "Retail E",
+      status: "Pending",
+      date: "2025-04-21",
     },
   ];
 
@@ -180,21 +222,40 @@ const AdminDashboard = () => {
           pointer-events: none;
           z-index: 0;
         }
+        .scrollable-box {
+          height: 250px !important; /* Fixed height for all boxes */
+          overflow-y: auto !important; /* Enable vertical scrolling */
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE and Edge */
+        }
+        .scrollable-box::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, Opera */
+        }
         .ag-grid-mobile {
-          height: auto !important;
-          max-height: none !important;
+          height: 250px !important; /* Fixed height for grids */
+          overflow-y: auto !important; /* Enable vertical scrolling */
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE and Edge */
+        }
+        .ag-grid-mobile::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, Opera */
         }
         .ag-grid-mobile .ag-root-wrapper {
-          height: auto !important;
+          height: 100% !important;
         }
         .ag-grid-mobile .ag-center-cols-viewport {
-          overflow: visible !important;
+          overflow-y: auto !important;
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE and Edge */
+        }
+        .ag-grid-mobile .ag-center-cols-viewport::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, Opera */
         }
         .ag-grid-mobile .ag-center-cols-container {
           height: auto !important;
         }
         .ag-grid-mobile .ag-row {
-          height: auto !important;
+          height: 50px !important;
           min-height: 50px !important;
         }
         @media (max-width: 640px) {
@@ -214,7 +275,7 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {/* Total Users */}
         <div className="gradient-border bg-white p-3 sm:p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-          <div className="relative z-10">
+          <div className="relative z-10 scrollable-box">
             <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-3">
               Total Users
             </h2>
@@ -231,13 +292,26 @@ const AdminDashboard = () => {
                   {totalUsers.retailers}
                 </p>
               </div>
+              {/* Dummy data to test scrolling */}
+              <div>
+                <p className="text-gray-600 text-sm sm:text-base">Admins</p>
+                <p className="text-2xl sm:text-3xl font-bold text-blue-600">50</p>
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm sm:text-base">Guests</p>
+                <p className="text-2xl sm:text-3xl font-bold text-blue-600">300</p>
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm sm:text-base">Vendors</p>
+                <p className="text-2xl sm:text-3xl font-bold text-blue-600">75</p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Total Orders */}
         <div className="gradient-border bg-white p-3 sm:p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-          <div className="relative z-10">
+          <div className="relative z-10 scrollable-box">
             <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-3">
               Total Orders
             </h2>
@@ -266,19 +340,41 @@ const AdminDashboard = () => {
                   {totalOrders.cancelled}
                 </p>
               </div>
+              {/* Dummy data to test scrolling */}
+              <div>
+                <p className="text-gray-600 text-sm sm:text-base">Returned</p>
+                <p className="text-xl sm:text-2xl font-bold text-purple-600">25</p>
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm sm:text-base">Processing</p>
+                <p className="text-xl sm:text-2xl font-bold text-orange-600">40</p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Total Revenue */}
         <div className="gradient-border bg-white p-3 sm:p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-          <div className="relative z-10">
+          <div className="relative z-10 scrollable-box">
             <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-3">
               Total Revenue
             </h2>
             <p className="text-2xl sm:text-3xl font-bold text-green-600">
               ₹{totalRevenue.toLocaleString()}
             </p>
+            {/* Dummy data to test scrolling */}
+            <div className="mt-2">
+              <p className="text-gray-600 text-sm sm:text-base">Last Month</p>
+              <p className="text-xl sm:text-2xl font-bold text-green-600">₹200,000</p>
+            </div>
+            <div className="mt-2">
+              <p className="text-gray-600 text-sm sm:text-base">This Week</p>
+              <p className="text-xl sm:text-2xl font-bold text-green-600">₹50,000</p>
+            </div>
+            <div className="mt-2">
+              <p className="text-gray-600 text-sm sm:text-base">Today</p>
+              <p className="text-xl sm:text-2xl font-bold text-green-600">₹10,000</p>
+            </div>
           </div>
         </div>
       </div>
@@ -287,7 +383,7 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mt-4 sm:mt-5">
         {/* Low Stock Alerts */}
         <div className="gradient-border bg-white p-3 sm:p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-          <div className="relative z-10">
+          <div className="relative z-10 scrollable-box">
             <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-3">
               Low Stock Alerts
             </h2>
@@ -315,7 +411,7 @@ const AdminDashboard = () => {
 
         {/* Top Selling Products */}
         <div className="gradient-border bg-white p-3 sm:p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-          <div className="relative z-10">
+          <div className="relative z-10 scrollable-box">
             <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-3">
               Top Selling Products
             </h2>
@@ -368,7 +464,7 @@ const AdminDashboard = () => {
                   No customer orders found.
                 </p>
               ) : (
-                <div className="ag-theme-alpine ag-grid-mobile w-full" style={{height: 'auto'}}>
+                <div className="ag-theme-alpine ag-grid-mobile w-full">
                   <AgGridReact
                     modules={[ClientSideRowModelModule]}
                     rowData={customerOrders}
@@ -377,7 +473,7 @@ const AdminDashboard = () => {
                     headerHeight={50}
                     rowHeight={50}
                     suppressCellFocus={true}
-                    domLayout='autoHeight'
+                    domLayout="normal"
                   />
                 </div>
               )}
@@ -393,7 +489,7 @@ const AdminDashboard = () => {
                   No retailer orders found.
                 </p>
               ) : (
-                <div className="ag-theme-alpine ag-grid-mobile w-full" style={{height: 'auto'}}>
+                <div className="ag-theme-alpine ag-grid-mobile w-full">
                   <AgGridReact
                     modules={[ClientSideRowModelModule]}
                     rowData={retailerOrders}
@@ -402,7 +498,7 @@ const AdminDashboard = () => {
                     headerHeight={50}
                     rowHeight={50}
                     suppressCellFocus={true}
-                    domLayout='autoHeight'
+                    domLayout="normal"
                   />
                 </div>
               )}
