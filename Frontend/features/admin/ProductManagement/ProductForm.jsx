@@ -564,20 +564,48 @@ const ProductCatalogManagement = () => {
                 label: "Category",
                 type: "select",
                 placeholder: "Select category",
-                options: formData.categories.map((c) => ({
-                  id: c.category_id,
-                  name: c.name,
-                })),
+                options: [
+                  // Include the newly created category from step 1 if it exists
+                  ...(stepFormData[1]?.name
+                    ? [
+                        {
+                          id:
+                            stepFormData[1].category_id ||
+                            `cat-temp-${Date.now()}`,
+                          name: stepFormData[1].name,
+                        },
+                      ]
+                    : []),
+                  // Include existing categories from formData
+                  ...formData.categories.map((c) => ({
+                    id: c.category_id,
+                    name: c.name,
+                  })),
+                ],
               },
               {
                 name: "brand_id",
                 label: "Brand",
                 type: "select",
                 placeholder: "Select brand",
-                options: formData.brands.map((b) => ({
-                  id: b.brand_id,
-                  name: b.name,
-                })),
+                options: [
+                  // Include the newly created brand from step 2 if it exists
+                  ...(stepFormData[2]?.name
+                    ? [
+                        {
+                          id:
+                            stepFormData[2].brand_id ||
+                            `brand-temp-${Date.now()}`,
+                          name: stepFormData[2].name,
+                        },
+                      ]
+                    : []),
+                  // Include existing brands from formData
+                  ...formData.brands.map((b) => ({
+                    id: b.brand_id,
+                    name: b.name,
+                  })),
+                ],
               },
             ]}
             endpoint="{{baseUrl}}/admin/product"
