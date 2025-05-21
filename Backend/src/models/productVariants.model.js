@@ -34,7 +34,7 @@ export default (sequelize) => {
     {
       timestamps: true,
       tableName: "ProductVariants",
-      paranoid: true, // preserve past variant sales
+      // paranoid: true, // preserve past variant sales
       indexes: [
         { fields: ["product_id"] },
         { fields: ["sku"] },
@@ -53,6 +53,8 @@ export default (sequelize) => {
     ProductVariant.belongsToMany(models.AttributeValue, {
       through: models.VariantAttributeValue,
       foreignKey: "product_variant_id",
+      otherKey: "product_attribute_value_id",
+      uniqueKey: "var_attr_val", // Match the same uniqueKey name
     });
 
     // Relationship with ProductMedia

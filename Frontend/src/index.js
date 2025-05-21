@@ -47,6 +47,10 @@ import MESSAGE from "./api/message.js";
 //import .env routes
 const adminDashboardDataRoute = import.meta.env
   .VITE_ADMIN_DASHBOARD_DATA_ENDPOINT;
+
+const adminProductManagementDashboardDataRoute = import.meta.env
+  .VITE_PRODUCT_MANAGMENT_DASHBOARD_DATA_ENDPOINT;
+
 const allUserRoute = import.meta.env.VITE_USER_ENDPOINT;
 const orderRoute = import.meta.env.VITE_ORDER_ENDPOINT;
 const latestOrderRoute = import.meta.env.VITE_LATEST_ORDER_ENDPOINT;
@@ -112,6 +116,7 @@ export {
   deleteApiById,
   MESSAGE,
   adminDashboardDataRoute,
+  adminProductManagementDashboardDataRoute,
   allUserRoute,
   orderRoute,
   latestOrderRoute,

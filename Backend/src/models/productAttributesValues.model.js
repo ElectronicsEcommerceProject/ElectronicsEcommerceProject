@@ -46,12 +46,15 @@ export default (sequelize) => {
       as: "updater",
     });
 
-    // Add the many-to-many relationship with ProductVariant with a shorter uniqueKey name
+    // Many-to-many relationship with ProductVariant
     AttributeValue.belongsToMany(models.ProductVariant, {
       through: models.VariantAttributeValue,
       foreignKey: "product_attribute_value_id",
       otherKey: "product_variant_id",
-      uniqueKey: "var_attr_val_unique", // Specify a shorter name for the unique constraint
+      uniqueKey: "var_attr_val",
+    });
+    AttributeValue.belongsTo(models.Attribute, {
+      foreignKey: "product_attribute_id",
     });
   };
 

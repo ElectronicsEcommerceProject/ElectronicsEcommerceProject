@@ -14,6 +14,7 @@ import {
   updateApiById,
   deleteApiById,
   MESSAGE,
+  adminProductManagementDashboardDataRoute,
 } from "../../../src/index.js";
 
 // Initial data - will be replaced with API data
@@ -416,13 +417,88 @@ const ProductDashboard = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // In a real implementation, you would fetch data for each entity type
-        // For now, we'll use the initial data
-        setData(initialData);
-        resetFilters();
+        const response = await getApi(adminProductManagementDashboardDataRoute);
+
+        if (response && response.success === true) {
+          // Transform API response to match component's expected format
+          const transformedData = {
+            categories: response.data.categories.map((category) => ({
+              id: category.category_id,
+              name: category.name,
+              slug: category.name.toLowerCase().replace(/\s+/g, "-"),
+              target_role: category.target_role,
+            })),
+
+            brands: response.data.brands.map((brand) => ({
+              id: brand.brand_id,
+              name: brand.name,
+              slug: brand.slug,
+              // For compatibility with existing filtering logic
+              category_id: [],
+            })),
+
+            products: response.data.products.map((product) => ({
+              id: product.product_id,
+              name: product.name,
+              category: product.category_name,
+              category_id: product.category_id,
+              brand: product.brand_name,
+              brand_id: product.brand_id,
+              // Default values for fields not in the API response
+              price: 0,
+              stock: 0,
+              visibility: "Published",
+              image: `https://via.placeholder.com/50?text=${encodeURIComponent(
+                product.name
+              )}`,
+            })),
+
+            variants: response.data.productVariants.map((variant) => ({
+              id: variant.product_variant_id,
+              product_id: variant.product_id,
+              product_name: variant.product_name,
+              sku: variant.sku,
+              // Default values for fields not in the API response
+              price: 0,
+              stock: 0,
+            })),
+
+            attributes: response.data.productAttributes.map((attr) => ({
+              id: attr.product_attribute_id,
+              name: attr.name,
+              type: attr.data_type || "select",
+              // For compatibility with existing filtering logic
+              product_categories: [],
+            })),
+
+            attributeValues: response.data.attributeValues.map((attrVal) => ({
+              id: attrVal.product_attribute_value_id,
+              attribute_id: attrVal.product_attribute_id,
+              attribute: attrVal.attribute_name,
+              value: attrVal.value,
+            })),
+          };
+
+          setData(transformedData);
+          setFilteredCategories(transformedData.categories);
+          setFilteredBrands(transformedData.brands);
+          setFilteredProducts(transformedData.products);
+          setFilteredVariants(transformedData.variants);
+          setFilteredAttributes(transformedData.attributes);
+          setFilteredAttributeValues(transformedData.attributeValues);
+        } else {
+          console.error("Error in API response:", response);
+          setError("Failed to load data. Please try again.");
+          // Fallback to initial data
+          setData(initialData);
+          resetFilters(initialData);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to load data. Please try again.");
+        // Fallback to initial data
+        setData(initialData);
+        resetFilters(initialData);
       } finally {
         setIsLoading(false);
       }
@@ -432,7 +508,9 @@ const ProductDashboard = () => {
   }, []);
 
   // Reset all filters
-  const resetFilters = () => {
+  const resetFilters = (dataToUse) => {
+    const dataSource = dataToUse || data;
+
     setActiveFilters({
       categories: null,
       brands: null,
@@ -441,6 +519,7 @@ const ProductDashboard = () => {
       attributes: null,
       attributeValues: null,
     });
+
     setSelectedItems({
       categories: null,
       brands: null,
@@ -449,12 +528,13 @@ const ProductDashboard = () => {
       attributes: null,
       attributeValues: null,
     });
-    setFilteredCategories(data.categories);
-    setFilteredBrands(data.brands);
-    setFilteredProducts(data.products);
-    setFilteredVariants(data.variants);
-    setFilteredAttributes(data.attributes);
-    setFilteredAttributeValues(data.attributeValues);
+
+    setFilteredCategories(dataSource.categories || []);
+    setFilteredBrands(dataSource.brands || []);
+    setFilteredProducts(dataSource.products || []);
+    setFilteredVariants(dataSource.variants || []);
+    setFilteredAttributes(dataSource.attributes || []);
+    setFilteredAttributeValues(dataSource.attributeValues || []);
   };
 
   // Handle item selection for filtering
@@ -489,15 +569,6 @@ const ProductDashboard = () => {
     // Apply filters based on the selected entity
     switch (entityType) {
       case "categories":
-        // Filter brands by category
-        const categoryBrands = data.brands.filter((brand) => {
-          if (Array.isArray(brand.category_id)) {
-            return brand.category_id.includes(item.id);
-          }
-          return brand.category_id === item.id;
-        });
-        setFilteredBrands(categoryBrands);
-
         // Filter products by category
         const categoryProducts = data.products.filter(
           (product) => product.category_id === item.id
@@ -511,19 +582,18 @@ const ProductDashboard = () => {
         );
         setFilteredVariants(categoryVariants);
 
-        // Filter attributes by category
-        const categoryAttributes = data.attributes.filter(
-          (attr) =>
-            attr.product_categories && attr.product_categories.includes(item.id)
+        // Filter brands by products
+        const brandIds = [...new Set(categoryProducts.map((p) => p.brand_id))];
+        const categoryBrands = data.brands.filter((brand) =>
+          brandIds.includes(brand.id)
         );
-        setFilteredAttributes(categoryAttributes);
+        setFilteredBrands(categoryBrands);
 
-        // Filter attribute values by attributes
-        const categoryAttributeIds = categoryAttributes.map((a) => a.id);
-        const categoryAttributeValues = data.attributeValues.filter((attrVal) =>
-          categoryAttributeIds.includes(attrVal.attribute_id)
-        );
-        setFilteredAttributeValues(categoryAttributeValues);
+        // Filter attributes and attribute values
+        // For this API response, we don't have direct category-to-attribute mapping
+        // So we'll just show all attributes and values
+        setFilteredAttributes(data.attributes);
+        setFilteredAttributeValues(data.attributeValues);
 
         // Keep all categories visible
         setFilteredCategories(data.categories);
@@ -544,30 +614,19 @@ const ProductDashboard = () => {
         setFilteredVariants(brandVariants);
 
         // Get categories from filtered products
-        const brandCategoryIds = [
+        const categoryIds = [
           ...new Set(brandProducts.map((p) => p.category_id)),
         ];
         const brandCategories = data.categories.filter((category) =>
-          brandCategoryIds.includes(category.id)
+          categoryIds.includes(category.id)
         );
         setFilteredCategories(brandCategories);
 
-        // Filter attributes by categories
-        const brandAttributes = data.attributes.filter(
-          (attr) =>
-            attr.product_categories &&
-            attr.product_categories.some((catId) =>
-              brandCategoryIds.includes(catId)
-            )
-        );
-        setFilteredAttributes(brandAttributes);
-
-        // Filter attribute values by attributes
-        const brandAttributeIds = brandAttributes.map((a) => a.id);
-        const brandAttributeValues = data.attributeValues.filter((attrVal) =>
-          brandAttributeIds.includes(attrVal.attribute_id)
-        );
-        setFilteredAttributeValues(brandAttributeValues);
+        // Filter attributes and attribute values
+        // For this API response, we don't have direct brand-to-attribute mapping
+        // So we'll just show all attributes and values
+        setFilteredAttributes(data.attributes);
+        setFilteredAttributeValues(data.attributeValues);
 
         // Keep all brands visible
         setFilteredBrands(data.brands);
@@ -580,79 +639,63 @@ const ProductDashboard = () => {
         );
         setFilteredVariants(productVariants);
 
-        // Get brand and category from product
-        const product = data.products.find((p) => p.id === item.id);
-        if (product) {
-          // Filter brands
-          const productBrands = data.brands.filter(
-            (brand) => brand.id === product.brand_id
-          );
-          setFilteredBrands(productBrands);
+        // Filter categories to show only the one for this product
+        const productCategories = data.categories.filter(
+          (category) => category.id === item.category_id
+        );
+        setFilteredCategories(productCategories);
 
-          // Filter categories
-          const productCategories = data.categories.filter(
-            (category) => category.id === product.category_id
-          );
-          setFilteredCategories(productCategories);
+        // Filter brands to show only the one for this product
+        const productBrands = data.brands.filter(
+          (brand) => brand.id === item.brand_id
+        );
+        setFilteredBrands(productBrands);
 
-          // Filter attributes by category
-          const productAttributes = data.attributes.filter(
-            (attr) =>
-              attr.product_categories &&
-              attr.product_categories.includes(product.category_id)
-          );
-          setFilteredAttributes(productAttributes);
+        // Filter attributes and attribute values
+        // For this API response, we don't have direct product-to-attribute mapping
+        // So we'll just show all attributes and values
+        setFilteredAttributes(data.attributes);
+        setFilteredAttributeValues(data.attributeValues);
 
-          // Filter attribute values by attributes
-          const productAttributeIds = productAttributes.map((a) => a.id);
-          const productAttributeValues = data.attributeValues.filter(
-            (attrVal) => productAttributeIds.includes(attrVal.attribute_id)
-          );
-          setFilteredAttributeValues(productAttributeValues);
-        }
+        // Keep all products visible
+        setFilteredProducts(data.products);
         break;
 
       case "variants":
-        // Get product from variant
-        const variant = data.variants.find((v) => v.id === item.id);
-        if (variant) {
-          // Filter products
-          const variantProducts = data.products.filter(
-            (product) => product.id === variant.product_id
+        // Find the product for this variant
+        const variant = item;
+        const variantProduct = data.products.find(
+          (p) => p.id === variant.product_id
+        );
+
+        if (variantProduct) {
+          // Filter products to show only the one for this variant
+          setFilteredProducts([variantProduct]);
+
+          // Filter categories to show only the one for this product
+          const variantCategories = data.categories.filter(
+            (category) => category.id === variantProduct.category_id
           );
-          setFilteredProducts(variantProducts);
+          setFilteredCategories(variantCategories);
 
-          // Get brand and category from product
-          const variantProduct = variantProducts[0];
-          if (variantProduct) {
-            // Filter brands
-            const variantBrands = data.brands.filter(
-              (brand) => brand.id === variantProduct.brand_id
-            );
-            setFilteredBrands(variantBrands);
-
-            // Filter categories
-            const variantCategories = data.categories.filter(
-              (category) => category.id === variantProduct.category_id
-            );
-            setFilteredCategories(variantCategories);
-
-            // Filter attributes by category
-            const variantAttributes = data.attributes.filter(
-              (attr) =>
-                attr.product_categories &&
-                attr.product_categories.includes(variantProduct.category_id)
-            );
-            setFilteredAttributes(variantAttributes);
-
-            // Filter attribute values by attributes
-            const variantAttributeIds = variantAttributes.map((a) => a.id);
-            const variantAttributeValues = data.attributeValues.filter(
-              (attrVal) => variantAttributeIds.includes(attrVal.attribute_id)
-            );
-            setFilteredAttributeValues(variantAttributeValues);
-          }
+          // Filter brands to show only the one for this product
+          const variantBrands = data.brands.filter(
+            (brand) => brand.id === variantProduct.brand_id
+          );
+          setFilteredBrands(variantBrands);
+        } else {
+          // If product not found, show all
+          setFilteredProducts(data.products);
+          setFilteredCategories(data.categories);
+          setFilteredBrands(data.brands);
         }
+
+        // Keep all variants visible
+        setFilteredVariants(data.variants);
+
+        // For attributes and attribute values, show all
+        setFilteredAttributes(data.attributes);
+        setFilteredAttributeValues(data.attributeValues);
         break;
 
       case "attributes":
@@ -662,16 +705,32 @@ const ProductDashboard = () => {
         );
         setFilteredAttributeValues(attributeValues);
 
-        // Get categories from attribute
-        const attribute = data.attributes.find((a) => a.id === item.id);
-        if (attribute && attribute.product_categories) {
-          // Filter categories
-          const attributeCategories = data.categories.filter((category) =>
-            attribute.product_categories.includes(category.id)
-          );
-          setFilteredCategories(attributeCategories);
-        }
+        // For other entities, show all
+        setFilteredCategories(data.categories);
+        setFilteredBrands(data.brands);
+        setFilteredProducts(data.products);
+        setFilteredVariants(data.variants);
+        setFilteredAttributes(data.attributes);
         break;
+
+      case "attributeValues":
+        // For all entities, show all
+        setFilteredCategories(data.categories);
+        setFilteredBrands(data.brands);
+        setFilteredProducts(data.products);
+        setFilteredVariants(data.variants);
+        setFilteredAttributes(data.attributes);
+        setFilteredAttributeValues(data.attributeValues);
+        break;
+
+      default:
+        // Reset all filters
+        setFilteredCategories(data.categories);
+        setFilteredBrands(data.brands);
+        setFilteredProducts(data.products);
+        setFilteredVariants(data.variants);
+        setFilteredAttributes(data.attributes);
+        setFilteredAttributeValues(data.attributeValues);
     }
   };
 
@@ -725,31 +784,41 @@ const ProductDashboard = () => {
 
   // Handler for saving edited entities
   const handleSave = async (entityType, updatedItem) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-
-      // In a real implementation, you would call the API to update the item
-      const endpoint = apiEndpoints[entityType.toLowerCase()];
-
-      // Simulate API call
-      // const response = await updateApiById(endpoint, updatedItem.id, updatedItem);
-
-      // Map the entityType to the correct property name in the data object
-      let entityKey;
+      // Map the entityType to the correct property name in the data object and API endpoint
+      let entityKey, idField;
       switch (entityType.toLowerCase()) {
+        case "categories":
+          entityKey = "categories";
+          idField = "category_id";
+          break;
+        case "brands":
+          entityKey = "brands";
+          idField = "brand_id";
+          break;
+        case "products":
+          entityKey = "products";
+          idField = "product_id";
+          break;
         case "product variants":
         case "variants":
-          // In a real implementation, you would call the API to update the item
-          const endpoint = apiEndpoints[entityType.toLowerCase()];
-
-        // Simulate API call
-        // const response = await updateApiById(endpoint, updatedItem.id, updatedItem);
-
+          entityKey = "variants";
+          idField = "product_variant_id";
+          break;
+        case "product attributes":
+        case "attributes":
+          entityKey = "attributes";
+          idField = "product_attribute_id";
+          break;
+        case "attribute values":
         case "attributevalues":
           entityKey = "attributeValues";
+          idField = "product_attribute_value_id";
           break;
         default:
           entityKey = entityType.toLowerCase() + "s";
+          idField = entityType.toLowerCase() + "_id";
       }
 
       // Check if the entityKey exists in the data object
@@ -760,21 +829,63 @@ const ProductDashboard = () => {
         return;
       }
 
-      // Update the local state
-      setData((prevData) => ({
-        ...prevData,
-        [entityKey]: prevData[entityKey].map((item) =>
-          item.id === updatedItem.id ? updatedItem : item
-        ),
-      }));
+      // Get the API endpoint for this entity type
+      const endpoint = apiEndpoints[entityType.toLowerCase()];
+      if (!endpoint) {
+        console.error(`API endpoint for "${entityType}" not found`);
+        toast.error(`Failed to update ${entityType}. Invalid entity type.`);
+        setIsLoading(false);
+        return;
+      }
 
-      toast.success(`${entityType} updated successfully!`);
-      setEditModal({ isOpen: false, entityType: "", item: null });
+      // Prepare the item for the API
+      const apiItem = { ...updatedItem };
+
+      // In a real implementation, you would call the API to update the item
+      // const response = await updateApiById(endpoint, apiItem[idField], apiItem);
+
+      // For now, we'll just update the local state
+      const updatedData = { ...data };
+      const itemIndex = updatedData[entityKey].findIndex(
+        (item) => item.id === updatedItem.id
+      );
+
+      if (itemIndex !== -1) {
+        updatedData[entityKey][itemIndex] = updatedItem;
+        setData(updatedData);
+
+        // Update filtered data
+        switch (entityKey) {
+          case "categories":
+            setFilteredCategories([...updatedData.categories]);
+            break;
+          case "brands":
+            setFilteredBrands([...updatedData.brands]);
+            break;
+          case "products":
+            setFilteredProducts([...updatedData.products]);
+            break;
+          case "variants":
+            setFilteredVariants([...updatedData.variants]);
+            break;
+          case "attributes":
+            setFilteredAttributes([...updatedData.attributes]);
+            break;
+          case "attributeValues":
+            setFilteredAttributeValues([...updatedData.attributeValues]);
+            break;
+        }
+
+        toast.success(`${entityType} updated successfully`);
+      } else {
+        toast.error(`${entityType} not found`);
+      }
     } catch (error) {
       console.error(`Error updating ${entityType}:`, error);
-      toast.error(`Failed to update ${entityType}. Please try again.`);
+      toast.error(`Failed to update ${entityType}`);
     } finally {
       setIsLoading(false);
+      setEditModal({ isOpen: false, entityType: "", item: null });
     }
   };
 
@@ -838,154 +949,147 @@ const ProductDashboard = () => {
     }
   };
 
-  if (isLoading && Object.keys(data).length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center text-red-600">
-          <p>{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-100 p-2 sm:p-4 md:p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-2 sm:gap-0">
         <h1 className="text-xl sm:text-2xl font-bold">Product Management</h1>
-        <button
-          className="bg-blue-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded text-sm sm:text-base hover:bg-blue-700 w-full sm:w-auto"
-          onClick={() => navigate("/admin/product-form")}
-        >
-          Add New Product
-        </button>
+        <div className="flex gap-2">
+          <button
+            className="bg-blue-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded text-sm sm:text-base hover:bg-blue-700 w-full sm:w-auto"
+            onClick={() => navigate("/admin/product-form")}
+          >
+            Add New Product
+          </button>
+          <button
+            onClick={() => resetFilters(data)}
+            className="bg-gray-200 text-gray-700 px-3 py-1.5 sm:px-4 sm:py-2 rounded text-sm sm:text-base hover:bg-gray-300"
+          >
+            Reset Filters
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-        {/* Categories Card */}
-        <EntityCard
-          title="Categories"
-          data={filteredCategories}
-          searchPlaceholder="Search categories..."
-          fields={[
-            { key: "name", label: "Name" },
-            { key: "target_role", label: "Target Role" },
-          ]}
-          onAdd={() => handleAdd("category")}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onSelect={handleSelect}
-          activeFilter={activeFilters.categories}
-          onClearFilter={() => clearFilter("categories")}
-          selectedItem={selectedItems.categories}
-        />
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
 
-        {/* Brands Card */}
-        <EntityCard
-          title="Brands"
-          data={filteredBrands}
-          searchPlaceholder="Search brands..."
-          fields={[
-            { key: "name", label: "Name" },
-            { key: "slug", label: "Slug" },
-          ]}
-          onAdd={() => handleAdd("brand")}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onSelect={handleSelect}
-          activeFilter={activeFilters.brands}
-          onClearFilter={() => clearFilter("brands")}
-          selectedItem={selectedItems.brands}
-        />
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+          {/* Categories Card */}
+          <EntityCard
+            title="Categories"
+            data={filteredCategories}
+            searchPlaceholder="Search categories..."
+            fields={[
+              { key: "name", label: "Name" },
+              { key: "target_role", label: "Target Role" },
+            ]}
+            onAdd={() => handleAdd("category")}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onSelect={handleSelect}
+            activeFilter={activeFilters.categories}
+            onClearFilter={() => clearFilter("categories")}
+            selectedItem={selectedItems.categories}
+          />
 
-        {/* Products Card */}
-        <EntityCard
-          title="Products"
-          data={filteredProducts}
-          searchPlaceholder="Search products..."
-          fields={[
-            { key: "name", label: "Name" },
-            { key: "category", label: "Category" },
-          ]}
-          onAdd={() => handleAdd("product")}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onSelect={handleSelect}
-          activeFilter={activeFilters.products}
-          onClearFilter={() => clearFilter("products")}
-          selectedItem={selectedItems.products}
-        />
+          {/* Brands Card */}
+          <EntityCard
+            title="Brands"
+            data={filteredBrands}
+            searchPlaceholder="Search brands..."
+            fields={[
+              { key: "name", label: "Name" },
+              { key: "slug", label: "Slug" },
+            ]}
+            onAdd={() => handleAdd("brand")}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onSelect={handleSelect}
+            activeFilter={activeFilters.brands}
+            onClearFilter={() => clearFilter("brands")}
+            selectedItem={selectedItems.brands}
+          />
 
-        {/* Variants Card */}
-        <EntityCard
-          title="Product Variants"
-          data={filteredVariants}
-          searchPlaceholder="Search variants..."
-          fields={[
-            { key: "product_name", label: "Product" },
-            { key: "sku", label: "SKU" },
-          ]}
-          onAdd={() => handleAdd("variant")}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onSelect={handleSelect}
-          activeFilter={activeFilters.variants}
-          onClearFilter={() => clearFilter("variants")}
-          selectedItem={selectedItems.variants}
-        />
+          {/* Products Card */}
+          <EntityCard
+            title="Products"
+            data={filteredProducts}
+            searchPlaceholder="Search products..."
+            fields={[
+              { key: "name", label: "Name" },
+              { key: "category", label: "Category" },
+            ]}
+            onAdd={() => handleAdd("product")}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onSelect={handleSelect}
+            activeFilter={activeFilters.products}
+            onClearFilter={() => clearFilter("products")}
+            selectedItem={selectedItems.products}
+          />
 
-        {/* Attributes Card */}
-        <EntityCard
-          title="Product Attributes"
-          data={filteredAttributes}
-          searchPlaceholder="Search attributes..."
-          fields={[
-            { key: "name", label: "Name" },
-            { key: "type", label: "Type" },
-          ]}
-          onAdd={() => handleAdd("attribute")}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onSelect={handleSelect}
-          activeFilter={activeFilters.attributes}
-          onClearFilter={() => clearFilter("attributes")}
-          selectedItem={selectedItems.attributes}
-        />
+          {/* Variants Card */}
+          <EntityCard
+            title="Product Variants"
+            data={filteredVariants}
+            searchPlaceholder="Search variants..."
+            fields={[
+              { key: "product_name", label: "Product" },
+              { key: "sku", label: "SKU" },
+            ]}
+            onAdd={() => handleAdd("variant")}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onSelect={handleSelect}
+            activeFilter={activeFilters.variants}
+            onClearFilter={() => clearFilter("variants")}
+            selectedItem={selectedItems.variants}
+          />
 
-        {/* Attribute Values Card */}
-        <EntityCard
-          title="Attribute Values"
-          data={filteredAttributeValues}
-          searchPlaceholder="Search attribute values..."
-          fields={[
-            { key: "attribute", label: "Attribute" },
-            { key: "value", label: "Value" },
-          ]}
-          onAdd={() => handleAdd("attribute-value")}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onSelect={handleSelect}
-          activeFilter={activeFilters.attributeValues}
-          onClearFilter={() => clearFilter("attributeValues")}
-          selectedItem={selectedItems.attributeValues}
-        />
-      </div>
+          {/* Attributes Card */}
+          <EntityCard
+            title="Product Attributes"
+            data={filteredAttributes}
+            searchPlaceholder="Search attributes..."
+            fields={[
+              { key: "name", label: "Name" },
+              { key: "type", label: "Type" },
+            ]}
+            onAdd={() => handleAdd("attribute")}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onSelect={handleSelect}
+            activeFilter={activeFilters.attributes}
+            onClearFilter={() => clearFilter("attributes")}
+            selectedItem={selectedItems.attributes}
+          />
+
+          {/* Attribute Values Card */}
+          <EntityCard
+            title="Attribute Values"
+            data={filteredAttributeValues}
+            searchPlaceholder="Search attribute values..."
+            fields={[
+              { key: "attribute", label: "Attribute" },
+              { key: "value", label: "Value" },
+            ]}
+            onAdd={() => handleAdd("attribute-value")}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onSelect={handleSelect}
+            activeFilter={activeFilters.attributeValues}
+            onClearFilter={() => clearFilter("attributeValues")}
+            selectedItem={selectedItems.attributeValues}
+          />
+        </div>
+      )}
 
       {/* Edit Modal */}
       <EditModal

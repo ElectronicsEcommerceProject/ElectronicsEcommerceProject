@@ -34,6 +34,9 @@ export default (sequelize) => {
       foreignKey: "updated_by",
       as: "updater",
     });
+    Attribute.hasMany(models.AttributeValue, {
+      foreignKey: "product_attribute_id",
+    });
   };
 
   return Attribute;

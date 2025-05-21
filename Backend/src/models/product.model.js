@@ -61,7 +61,7 @@ export default (sequelize) => {
     },
     {
       timestamps: true,
-      paranoid: true, // soft delete to preserve sales history
+      // paranoid: true, // soft delete to preserve sales history
       tableName: "Products",
       indexes: [
         { fields: ["category_id"] },
