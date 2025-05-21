@@ -23,6 +23,20 @@ const ProductCatalogManagement = () => {
     7: {}, // Media form data
   });
 
+  // Add a new function to transform the stepFormData before displaying it
+  const getFormattedStepData = () => {
+    const formattedData = {
+      categoryFormData: stepFormData[1] || {},
+      brandFormData: stepFormData[2] || {},
+      productFormData: stepFormData[3] || {},
+      variantFormData: stepFormData[4] || {},
+      attributeFormData: stepFormData[5] || {},
+      attributeValueFormData: stepFormData[6] || {},
+      mediaFormData: stepFormData[7] || {},
+    };
+    return formattedData;
+  };
+
   // Dummy data for each entity
   const dummyData = {
     categories: [
@@ -490,9 +504,9 @@ const ProductCatalogManagement = () => {
                 type: "select",
                 placeholder: "Select target role",
                 options: [
+                  { id: "customer", name: "Customer" },
+                  { id: "retailer", name: "Retailer" },
                   { id: "both", name: "Both" },
-                  { id: "admin", name: "Admin" },
-                  { id: "owner", name: "Owner" },
                 ],
               },
             ]}
@@ -712,8 +726,16 @@ const ProductCatalogManagement = () => {
             <h2 className="text-xl md:text-2xl font-bold mb-2 text-green-600">
               Process Completed!
             </h2>
+            <div className="mt-4 mb-4 text-left bg-gray-50 p-3 rounded-lg overflow-auto max-h-60">
+              <pre className="text-xs whitespace-pre-wrap">
+                {JSON.stringify(getFormattedStepData(), null, 2)}
+              </pre>
+            </div>
             <button
-              onClick={() => setStep(1)}
+              onClick={() => {
+                alert(JSON.stringify(getFormattedStepData(), null, 2));
+                setStep(1);
+              }}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-200 text-sm md:text-base mt-4"
             >
               Start Over
