@@ -843,12 +843,18 @@ const ProductDashboard = () => {
 
   // Handler for adding new entities
   const handleAdd = (entityType) => {
-    // For simplicity, we'll navigate to the product form for all entity types
-    navigate(`/admin/product-form`);
+    // Pass the current data to ProductForm via state
+    navigate(`/admin/product-form`, {
+      state: {
+        dashboardData: data,
+        entityType: entityType,
+      },
+    });
   };
 
   // Handler for editing entities
   const handleEdit = (entityType, id, item) => {
+    // For direct editing in modal
     setEditModal({
       isOpen: true,
       entityType,

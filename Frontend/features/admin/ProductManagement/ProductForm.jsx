@@ -1,7 +1,49 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 
 const ProductCatalogManagement = () => {
   const [step, setStep] = useState(1);
+  const location = useLocation();
+  const dashboardData = location.state?.dashboardData;
+  const initialEntityType = location.state?.entityType;
+
+  // Set initial step based on entityType if provided
+  useEffect(() => {
+    if (initialEntityType) {
+      switch (initialEntityType.toLowerCase()) {
+        case "categories":
+        case "category":
+          setStep(1);
+          break;
+        case "brands":
+        case "brand":
+          setStep(2);
+          break;
+        case "products":
+        case "product":
+          setStep(3);
+          break;
+        case "variants":
+        case "variant":
+          setStep(4);
+          break;
+        case "attributes":
+        case "attribute":
+          setStep(5);
+          break;
+        case "attributevalues":
+        case "attribute-value":
+          setStep(6);
+          break;
+        case "media":
+          setStep(7);
+          break;
+        default:
+          setStep(1);
+      }
+    }
+  }, [initialEntityType]);
+
   const [formData, setFormData] = useState({
     categories: [],
     brands: [],
@@ -37,163 +79,37 @@ const ProductCatalogManagement = () => {
     return formattedData;
   };
 
-  // Dummy data for each entity
-  const dummyData = {
-    categories: [
-      {
-        category_id: "47d05299-e4b8-4b4f-9a1b-c581b568a54b",
-        name: "Mobiles",
-        slug: "mobiles",
-        target_role: "both",
-      },
-      {
-        category_id: "57e713ca-8b4d-4fef-aba2-2256fbdb460b",
-        name: "Laptops",
-        slug: "laptops",
-        target_role: "both",
-      },
-      {
-        category_id: "68f824db-9c5e-4f5f-bcb3-3367fcfe571c",
-        name: "Tablets",
-        slug: "tablets",
-        target_role: "both",
-      },
-    ],
-    brands: [
-      {
-        brand_id: "de6a067c-c6d4-45f8-9c22-e2f08b4c9e1f",
-        name: "Apple",
-        slug: "apple",
-      },
-      {
-        brand_id: "1a584622-16c0-4e33-9c6f-3c56dec1b87c",
-        name: "Samsung",
-        slug: "samsung",
-      },
-      {
-        brand_id: "2b695733-27d1-5f44-ad7f-4d67efd2c98d",
-        name: "Dell",
-        slug: "dell",
-      },
-    ],
-    products: [
-      {
-        product_id: "bb896a5d-2338-4627-b6b7-6f24bb931629",
-        name: "iPhone 15",
-        slug: "iphone-15",
-        base_price: 79999,
-        category_id: "47d05299-e4b8-4b4f-9a1b-c581b568a54b",
-        brand_id: "de6a067c-c6d4-45f8-9c22-e2f08b4c9e1f",
-      },
-      {
-        product_id: "cc907b6e-3449-5738-c7c8-7f35cc042730",
-        name: "Galaxy S23",
-        slug: "galaxy-s23",
-        base_price: 69999,
-        category_id: "47d05299-e4b8-4b4f-9a1b-c581b568a54b",
-        brand_id: "1a584622-16c0-4e33-9c6f-3c56dec1b87c",
-      },
-      {
-        product_id: "dd018c7f-4550-6849-d8d9-8f46dd153841",
-        name: "XPS 13",
-        slug: "xps-13",
-        base_price: 99999,
-        category_id: "57e713ca-8b4d-4fef-aba2-2256fbdb460b",
-        brand_id: "2b695733-27d1-5f44-ad7f-4d67efd2c98d",
-      },
-    ],
-    variants: [
-      {
-        product_variant_id: "1b5133a1-7b3e-414f-9001-99f04f06f618",
-        product_id: "bb896a5d-2338-4627-b6b7-6f24bb931629",
-        price: 79999,
-        stock_quantity: 50,
-        sku: "IPH15-128-BLK",
-      },
-      {
-        product_variant_id: "2c6244b2-8c4f-525f-a112-aaf15f07f729",
-        product_id: "cc907b6e-3449-5738-c7c8-7f35cc042730",
-        price: 69999,
-        stock_quantity: 40,
-        sku: "GAL23-256-BLU",
-      },
-      {
-        product_variant_id: "3d7355c3-9d5f-636f-b223-bbf26f08f830",
-        product_id: "dd018c7f-4550-6849-d8d9-8f46dd153841",
-        price: 99999,
-        stock_quantity: 30,
-        sku: "XPS13-512-SIL",
-      },
-    ],
-    attributes: [
-      {
-        product_attribute_id: "e2f327e5-086a-412d-8dba-7795dfda2df1",
-        name: "Color",
-        type: "select",
-      },
-      {
-        product_attribute_id: "f3f438f6-197b-523e-9ecb-88a6efeb3ef2",
-        name: "Storage",
-        type: "select",
-      },
-      {
-        product_attribute_id: "g4f549g7-2a8c-634f-afgc-99b7ffgc4ff3",
-        name: "RAM",
-        type: "select",
-      },
-    ],
-    attributeValues: [
-      {
-        product_attribute_value_id: "b386ca8c-2297-4c2b-88d6-128691348fed",
-        attribute_id: "e2f327e5-086a-412d-8dba-7795dfda2df1",
-        value: "Black",
-      },
-      {
-        product_attribute_value_id: "c497db9d-33a8-5d3c-99e7-2397a2f459fe",
-        attribute_id: "f3f438f6-197b-523e-9ecb-88a6efeb3ef2",
-        value: "128GB",
-      },
-      {
-        product_attribute_value_id: "d5a8eca0-44b9-6e4d-aaf8-34a8b3f56aff",
-        attribute_id: "g4f549g7-2a8c-634f-afgc-99b7ffgc4ff3",
-        value: "16GB",
-      },
-    ],
-    media: [
-      {
-        product_media_id: "554f9e01-d06d-435f-85b6-dbd20aadbedf",
-        product_id: "bb896a5d-2338-4627-b6b7-6f24bb931629",
-        media_type: "image",
-        media_url: "https://example.com/iphone15.jpg",
-      },
-      {
-        product_media_id: "665faf12-e17e-546f-96c7-ece31bbe0cf0",
-        product_id: "cc907b6e-3449-5738-c7c8-7f35cc042730",
-        media_type: "image",
-        media_url: "https://example.com/galaxys23.jpg",
-      },
-      {
-        product_media_id: "776fbg23-f28f-657f-a7d8-fdf42ccf1df1",
-        product_id: "dd018c7f-4550-6849-d8d9-8f46dd153841",
-        media_type: "image",
-        media_url: "https://example.com/xps13.jpg",
-      },
-    ],
-  };
-
-  // Initialize with dummy data
+  // Initialize with data from dashboard only
   useEffect(() => {
-    console.log("Initializing with dummy data");
-    setFormData({
-      categories: dummyData.categories,
-      brands: dummyData.brands,
-      products: dummyData.products,
-      variants: dummyData.variants,
-      attributes: dummyData.attributes,
-      attributeValues: dummyData.attributeValues,
-      media: dummyData.media,
-    });
-  }, []);
+    if (dashboardData) {
+      console.log("Using data from ProductDashboard:", dashboardData);
+
+      // Map dashboard data to our format
+      setFormData({
+        categories: dashboardData.categories || [],
+        brands: dashboardData.brands || [],
+        products: dashboardData.products || [],
+        variants: dashboardData.variants || [],
+        attributes: dashboardData.attributes || [],
+        attributeValues: dashboardData.attributeValues || [],
+        media: dashboardData.media || [],
+      });
+    } else {
+      console.log(
+        "No dashboard data available, initializing with empty arrays"
+      );
+      // Initialize with empty arrays instead of dummy data
+      setFormData({
+        categories: [],
+        brands: [],
+        products: [],
+        variants: [],
+        attributes: [],
+        attributeValues: [],
+        media: [],
+      });
+    }
+  }, [dashboardData]);
 
   // Simulate API calls
   const apiCall = async (url, method, body) => {
@@ -333,6 +249,14 @@ const ProductCatalogManagement = () => {
     </div>
   );
 
+  // Utility function to generate slug
+  const generateSlug = (name) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+  };
+
   const FormComponent = ({ title, fields, endpoint, nextStep }) => {
     // Initialize with data from stepFormData if available
     const [localData, setLocalData] = useState(() => {
@@ -364,8 +288,16 @@ const ProductCatalogManagement = () => {
       const { name, value, type, files } = e.target;
       const newValue = type === "file" ? files[0] : value;
       console.log(`Field changed: ${name} =`, newValue);
+
       setLocalData((prev) => ({ ...prev, [name]: newValue }));
       setFilledFields((prev) => ({ ...prev, [name]: !!newValue }));
+
+      // Auto-generate slug from name for category, brand, and product
+      if (name === "name" && (step === 1 || step === 2 || step === 3)) {
+        const slug = generateSlug(newValue);
+        setLocalData((prev) => ({ ...prev, slug }));
+        setFilledFields((prev) => ({ ...prev, slug: !!slug }));
+      }
     };
 
     const isFormValid = fields.every((field) => {
@@ -384,6 +316,53 @@ const ProductCatalogManagement = () => {
       handleSubmit(e, endpoint, localData, nextStep);
     };
 
+    // Get dropdown options based on field name and step
+    const getDropdownOptions = (fieldName) => {
+      if (step === 1 && fieldName === "target_role") {
+        return [
+          { id: "customer", name: "Customer" },
+          { id: "retailer", name: "Retailer" },
+          { id: "both", name: "Both" },
+        ];
+      } else if (step === 3 && fieldName === "category_id") {
+        return formData.categories.map((cat) => ({
+          id: cat.category_id || cat.id,
+          name: cat.name,
+        }));
+      } else if (step === 3 && fieldName === "brand_id") {
+        return formData.brands.map((brand) => ({
+          id: brand.brand_id || brand.id,
+          name: brand.name,
+        }));
+      } else if (step === 4 && fieldName === "product_id") {
+        return formData.products.map((product) => ({
+          id: product.product_id || product.id,
+          name: product.name,
+        }));
+      } else if (step === 6 && fieldName === "attribute_id") {
+        return formData.attributes.map((attr) => ({
+          id: attr.product_attribute_id || attr.id,
+          name: attr.name,
+        }));
+      } else if (step === 7 && fieldName === "product_id") {
+        return formData.products.map((product) => ({
+          id: product.product_id || product.id,
+          name: product.name,
+        }));
+      } else if (step === 5 && fieldName === "type") {
+        return [
+          { id: "select", name: "Select" },
+          { id: "text", name: "Text" },
+        ];
+      } else if (step === 7 && fieldName === "media_type") {
+        return [
+          { id: "image", name: "Image" },
+          { id: "video", name: "Video" },
+        ];
+      }
+      return [];
+    };
+
     return (
       <div className="bg-white p-4 md:p-6 rounded-lg shadow-lg w-full max-w-md mx-auto border-2 border-blue-500">
         <h2 className="text-xl md:text-2xl font-bold mb-4 text-center">
@@ -395,22 +374,19 @@ const ProductCatalogManagement = () => {
               <label className="block text-sm md:text-base font-medium text-gray-700 mb-1">
                 {field.label}
               </label>
+
               {field.type === "select" ? (
-                <select
+                <SearchableDropdown
                   name={field.name}
-                  onChange={handleChange}
                   value={localData[field.name] || ""}
-                  className="mt-1 block w-full rounded-md border-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500 p-2 text-sm md:text-base"
+                  onChange={handleChange}
+                  placeholder={field.placeholder}
+                  options={getDropdownOptions(field.name)}
+                  displayKey="name"
+                  valueKey="id"
                   disabled={index > 0 && !filledFields[fields[index - 1].name]}
                   required
-                >
-                  <option value="">{field.placeholder}</option>
-                  {field.options?.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.name}
-                    </option>
-                  ))}
-                </select>
+                />
               ) : field.type === "file" ? (
                 <div className="mt-1">
                   <input
@@ -447,7 +423,44 @@ const ProductCatalogManagement = () => {
                   className="mt-1 block w-full rounded-md border-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500 p-2 text-sm md:text-base"
                   disabled={index > 0 && !filledFields[fields[index - 1].name]}
                   required
+                  list={`${field.name}-suggestions`}
                 />
+              )}
+
+              {/* Add datalist for text inputs to show suggestions */}
+              {field.type === "text" && (
+                <datalist id={`${field.name}-suggestions`}>
+                  {step === 1 &&
+                    field.name === "name" &&
+                    formData.categories.map((cat, idx) => (
+                      <option key={idx} value={cat.name} />
+                    ))}
+                  {step === 2 &&
+                    field.name === "name" &&
+                    formData.brands.map((brand, idx) => (
+                      <option key={idx} value={brand.name} />
+                    ))}
+                  {step === 3 &&
+                    field.name === "name" &&
+                    formData.products.map((product, idx) => (
+                      <option key={idx} value={product.name} />
+                    ))}
+                  {step === 4 &&
+                    field.name === "sku" &&
+                    formData.variants.map((variant, idx) => (
+                      <option key={idx} value={variant.sku} />
+                    ))}
+                  {step === 5 &&
+                    field.name === "name" &&
+                    formData.attributes.map((attr, idx) => (
+                      <option key={idx} value={attr.name} />
+                    ))}
+                  {step === 6 &&
+                    field.name === "value" &&
+                    formData.attributeValues.map((attrVal, idx) => (
+                      <option key={idx} value={attrVal.value} />
+                    ))}
+                </datalist>
               )}
             </div>
           ))}
@@ -473,6 +486,122 @@ const ProductCatalogManagement = () => {
             </button>
           </div>
         </form>
+      </div>
+    );
+  };
+
+  // Add this new component for searchable dropdown
+  const SearchableDropdown = ({
+    name,
+    value,
+    onChange,
+    placeholder,
+    options,
+    displayKey = "name",
+    valueKey = "id",
+    disabled,
+    required,
+  }) => {
+    const [searchTerm, setSearchTerm] = useState("");
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    // Find the selected option for display
+    const selectedOption = options.find((option) => option[valueKey] === value);
+
+    // Filter options based on search term
+    const filteredOptions = options.filter((option) =>
+      option[displayKey].toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Handle outside click to close dropdown
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (
+          dropdownRef.current &&
+          !dropdownRef.current.contains(event.target)
+        ) {
+          setIsOpen(false);
+        }
+      };
+
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, []);
+
+    // Handle option selection
+    const handleSelect = (option) => {
+      const syntheticEvent = {
+        target: {
+          name,
+          value: option[valueKey],
+        },
+      };
+      onChange(syntheticEvent);
+      setIsOpen(false);
+      setSearchTerm("");
+    };
+
+    return (
+      <div className="relative" ref={dropdownRef}>
+        <div
+          className="mt-1 flex items-center justify-between w-full rounded-md border-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500 p-2 text-sm md:text-base cursor-pointer"
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+        >
+          <div className="flex-1 truncate">
+            {selectedOption ? selectedOption[displayKey] : placeholder}
+          </div>
+          <svg
+            className={`h-5 w-5 text-gray-400 transition-transform ${
+              isOpen ? "transform rotate-180" : ""
+            }`}
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </div>
+
+        {isOpen && (
+          <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-auto shadow-lg">
+            <div className="sticky top-0 bg-white p-2 border-b">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search..."
+                className="w-full p-2 border rounded-md text-sm"
+                onClick={(e) => e.stopPropagation()}
+                autoFocus
+              />
+            </div>
+
+            {filteredOptions.length > 0 ? (
+              <ul>
+                {filteredOptions.map((option, index) => (
+                  <li
+                    key={option[valueKey] || index}
+                    onClick={() => handleSelect(option)}
+                    className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-sm"
+                  >
+                    {option[displayKey]}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="px-4 py-2 text-sm text-gray-500">
+                No results found
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };
