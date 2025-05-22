@@ -26,16 +26,6 @@ const initialData = {
   attributeValues: [],
 };
 
-// API endpoints for each entity
-const apiEndpoints = {
-  category: "/admin/categories",
-  brand: "/admin/brands",
-  product: "/admin/products",
-  variant: "/admin/product-variants",
-  attribute: "/admin/product-attributes",
-  "attribute-value": "/admin/attribute-values",
-};
-
 // Card component for each entity
 const EntityCard = ({
   title,

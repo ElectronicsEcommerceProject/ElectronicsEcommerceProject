@@ -618,8 +618,12 @@ const ProductCatalogManagement = () => {
               {
                 name: "name",
                 label: "Category Name",
-                type: "text",
+                type: "select", // Change from "text" to "select" to use the SearchableDropdown
                 placeholder: "e.g., Mobiles",
+                options: formData.categories.map((cat) => ({
+                  id: cat.name, // Use name as both id and display value
+                  name: cat.name,
+                })),
               },
               {
                 name: "slug",
