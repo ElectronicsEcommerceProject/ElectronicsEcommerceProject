@@ -512,89 +512,205 @@ const ProductDashboard = () => {
     // Set the selected item for the current entity type
     newSelectedItems[entityType] = item;
 
-    // Handle variant selection
-    if (entityType === "variants") {
+    // Create a new activeFilters object based on the current one
+    const newActiveFilters = { ...activeFilters };
+    newActiveFilters[entityType] = item;
+
+    // Handle specific entity types and their relationships
+    if (entityType === "categories") {
+      // When a category is selected, filter products to show only those in this category
+      const categoryProducts = data.products.filter(
+        (product) => product.category_id === item.id
+      );
+      setFilteredProducts(categoryProducts);
+
+      // Filter brands that have products in this category
+      const categoryProductIds = categoryProducts.map((product) => product.id);
+      const categoryBrands = data.brands.filter(
+        (brand) =>
+          brand.product_ids &&
+          brand.product_ids.some((id) => categoryProductIds.includes(id))
+      );
+      setFilteredBrands(categoryBrands);
+
+      // Filter variants for products in this category
+      const categoryVariants = data.variants.filter((variant) =>
+        categoryProductIds.includes(variant.product_id)
+      );
+      setFilteredVariants(categoryVariants);
+
+      // Filter attribute values for products in this category
+      const categoryAttributeValues = data.attributeValues.filter(
+        (attrVal) =>
+          attrVal.product_ids &&
+          attrVal.product_ids.some((id) => categoryProductIds.includes(id))
+      );
+      setFilteredAttributeValues(categoryAttributeValues);
+    } else if (entityType === "brands") {
+      // When a brand is selected, filter products to show only those from this brand
+      const brandProducts = data.products.filter(
+        (product) => product.brand_id === item.id
+      );
+      setFilteredProducts(brandProducts);
+
+      // Filter categories that have products from this brand
+      const brandProductIds = brandProducts.map((product) => product.id);
+      const brandCategories = data.categories.filter(
+        (category) =>
+          category.product_ids &&
+          category.product_ids.some((id) => brandProductIds.includes(id))
+      );
+      setFilteredCategories(brandCategories);
+
+      // Filter variants for products from this brand
+      const brandVariants = data.variants.filter((variant) =>
+        brandProductIds.includes(variant.product_id)
+      );
+      setFilteredVariants(brandVariants);
+
+      // Filter attribute values for products from this brand
+      const brandAttributeValues = data.attributeValues.filter(
+        (attrVal) =>
+          attrVal.product_ids &&
+          attrVal.product_ids.some((id) => brandProductIds.includes(id))
+      );
+      setFilteredAttributeValues(brandAttributeValues);
+    } else if (entityType === "products") {
+      // When a product is selected, filter variants to show only those for this product
+      const productVariants = data.variants.filter(
+        (variant) => variant.product_id === item.id
+      );
+      setFilteredVariants(productVariants);
+
+      // Filter attribute values for this product
+      const productAttributeValues = data.attributeValues.filter(
+        (attrVal) =>
+          attrVal.product_ids && attrVal.product_ids.includes(item.id)
+      );
+      setFilteredAttributeValues(productAttributeValues);
+
+      // Find and highlight the related category and brand
+      const relatedCategory = data.categories.find(
+        (cat) => cat.id === item.category_id
+      );
+      if (relatedCategory) {
+        newSelectedItems.categories = relatedCategory;
+        setFilteredCategories([relatedCategory]);
+      }
+
+      const relatedBrand = data.brands.find(
+        (brand) => brand.id === item.brand_id
+      );
+      if (relatedBrand) {
+        newSelectedItems.brands = relatedBrand;
+        setFilteredBrands([relatedBrand]);
+      }
+    } else if (entityType === "variants") {
       const variantProduct = data.products.find(
         (product) => product.id === item.product_id
       );
 
       if (variantProduct) {
         newSelectedItems.products = variantProduct;
+        setFilteredProducts([variantProduct]);
 
+        // Find and highlight related category
         const relatedCategory = data.categories.find(
           (cat) => cat.id === variantProduct.category_id
         );
         if (relatedCategory) {
           newSelectedItems.categories = relatedCategory;
+          setFilteredCategories([relatedCategory]);
         }
 
+        // Find and highlight related brand
         const relatedBrand = data.brands.find(
           (brand) => brand.id === variantProduct.brand_id
         );
         if (relatedBrand) {
           newSelectedItems.brands = relatedBrand;
+          setFilteredBrands([relatedBrand]);
         }
+
+        // Filter attribute values for this product
+        const variantAttributeValues = data.attributeValues.filter(
+          (attrVal) =>
+            attrVal.product_ids &&
+            attrVal.product_ids.includes(variantProduct.id)
+        );
+        setFilteredAttributeValues(variantAttributeValues);
       }
-    }
-    // Handle attribute value selection
-    else if (entityType === "attributeValues") {
+    } else if (entityType === "attributeValues") {
       // Find all products related to this attribute value
       const productIds = item.product_ids || [];
       console.log("Attribute value product IDs:", productIds);
 
       if (productIds.length > 0) {
-        // Find the first related product (we can only highlight one)
-        const relatedProduct = data.products.find((product) =>
+        // Filter products related to this attribute value
+        const relatedProducts = data.products.filter((product) =>
           productIds.includes(product.id)
         );
+        setFilteredProducts(relatedProducts);
 
-        if (relatedProduct) {
-          newSelectedItems.products = relatedProduct;
-          console.log("Related product found:", relatedProduct);
+        if (relatedProducts.length > 0) {
+          // Find the first related product (for highlighting)
+          const firstProduct = relatedProducts[0];
+          newSelectedItems.products = firstProduct;
 
-          // Find related category and brand
-          const relatedCategory = data.categories.find(
-            (cat) => cat.id === relatedProduct.category_id
+          // Filter variants for these products
+          const attrValueVariants = data.variants.filter((variant) =>
+            productIds.includes(variant.product_id)
           );
-          if (relatedCategory) {
-            newSelectedItems.categories = relatedCategory;
+          setFilteredVariants(attrValueVariants);
+
+          // Find and highlight the first related variant
+          if (attrValueVariants.length > 0) {
+            newSelectedItems.variants = attrValueVariants[0];
           }
 
-          const relatedBrand = data.brands.find(
-            (brand) => brand.id === relatedProduct.brand_id
+          // Get unique category IDs from related products
+          const categoryIds = [
+            ...new Set(relatedProducts.map((p) => p.category_id)),
+          ];
+          const relatedCategories = data.categories.filter((cat) =>
+            categoryIds.includes(cat.id)
           );
-          if (relatedBrand) {
-            newSelectedItems.brands = relatedBrand;
+          setFilteredCategories(relatedCategories);
+
+          // Highlight the first category
+          if (relatedCategories.length > 0) {
+            newSelectedItems.categories = relatedCategories[0];
           }
 
-          // Find related variants
-          const relatedVariant = data.variants.find(
-            (variant) => variant.product_id === relatedProduct.id
+          // Get unique brand IDs from related products
+          const brandIds = [...new Set(relatedProducts.map((p) => p.brand_id))];
+          const relatedBrands = data.brands.filter((brand) =>
+            brandIds.includes(brand.id)
           );
-          if (relatedVariant) {
-            newSelectedItems.variants = relatedVariant;
+          setFilteredBrands(relatedBrands);
+
+          // Highlight the first brand
+          if (relatedBrands.length > 0) {
+            newSelectedItems.brands = relatedBrands[0];
           }
         }
       }
     }
 
+    // Update active filters
+    setActiveFilters(newActiveFilters);
     console.log("Setting selectedItems to:", newSelectedItems);
     setSelectedItems(newSelectedItems);
-
-    // Keep all items visible
-    setFilteredVariants(data.variants);
-    setFilteredProducts(data.products);
-    setFilteredCategories(data.categories);
-    setFilteredBrands(data.brands);
-    setFilteredAttributeValues(data.attributeValues);
   };
 
   // Clear filter for a specific entity
   const clearFilter = (entityType) => {
+    // Remove the filter for this entity type
     const newActiveFilters = { ...activeFilters };
     delete newActiveFilters[entityType];
     setActiveFilters(newActiveFilters);
 
+    // Clear the selection for this entity type
     const newSelectedItems = { ...selectedItems };
     delete newSelectedItems[entityType];
     setSelectedItems(newSelectedItems);
@@ -619,6 +735,20 @@ const ProductDashboard = () => {
       case "attributeValues":
         setFilteredAttributeValues(data.attributeValues);
         break;
+    }
+
+    // If this was the only active filter, reset all filters
+    if (Object.keys(newActiveFilters).length === 0) {
+      resetFilters(data);
+    } else {
+      // Otherwise, reapply the remaining filters
+      // This ensures that clearing one filter doesn't break the relationship filtering
+      const remainingFilterType = Object.keys(newActiveFilters)[0];
+      if (remainingFilterType) {
+        const remainingItem = newActiveFilters[remainingFilterType];
+        // Re-select the remaining item to reapply its filters
+        handleSelect(remainingFilterType, remainingItem);
+      }
     }
   };
 
