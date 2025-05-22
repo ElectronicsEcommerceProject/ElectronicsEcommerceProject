@@ -19,154 +19,11 @@ import {
 
 // Initial data - will be replaced with API data
 const initialData = {
-  categories: [
-    {
-      id: 1,
-      name: "Laptops",
-      slug: "laptops",
-      target_role: "Both",
-      product_ids: [],
-    },
-    {
-      id: 2,
-      name: "Smartphones",
-      slug: "smartphones",
-      target_role: "Customer",
-      product_ids: [],
-    },
-    {
-      id: 3,
-      name: "Accessories",
-      slug: "accessories",
-      target_role: "Retailer",
-      product_ids: [],
-    },
-  ],
-  brands: [
-    { id: 1, name: "Dell", slug: "dell", category_id: 1, product_ids: [] },
-    {
-      id: 2,
-      name: "Apple",
-      slug: "apple",
-      category_id: [1, 2],
-      product_ids: [],
-    },
-    {
-      id: 3,
-      name: "Samsung",
-      slug: "samsung",
-      category_id: [2, 3],
-      product_ids: [],
-    },
-  ],
-  products: [
-    {
-      id: 1,
-      name: "Dell XPS 13",
-      category: "Laptops",
-      category_id: 1,
-      brand: "Dell",
-      brand_id: 1,
-      price: 1299.99,
-      stock: 50,
-      visibility: "Published",
-      image: "https://via.placeholder.com/50?text=Dell+XPS+13",
-    },
-    {
-      id: 2,
-      name: "MacBook Pro 14",
-      category: "Laptops",
-      category_id: 1,
-      brand: "Apple",
-      brand_id: 2,
-      price: 1999.99,
-      stock: 30,
-      visibility: "Draft",
-      image: "https://via.placeholder.com/50?text=MacBook+Pro+14",
-    },
-    {
-      id: 3,
-      name: "iPhone 14",
-      category: "Smartphones",
-      category_id: 2,
-      brand: "Apple",
-      brand_id: 2,
-      price: 999.99,
-      stock: 100,
-      visibility: "Published",
-      image: "https://via.placeholder.com/50?text=iPhone+14",
-    },
-  ],
-  variants: [
-    {
-      id: 1,
-      product_id: 1,
-      product_name: "Dell XPS 13",
-      sku: "XPS13-8GB-256",
-      price: 1299.99,
-      stock: 25,
-    },
-    {
-      id: 2,
-      product_id: 1,
-      product_name: "Dell XPS 13",
-      sku: "XPS13-16GB-512",
-      price: 1599.99,
-      stock: 15,
-    },
-    {
-      id: 3,
-      product_id: 2,
-      product_name: "MacBook Pro 14",
-      sku: "MBP14-16GB-512",
-      price: 1999.99,
-      stock: 20,
-    },
-  ],
-  attributeValues: [
-    {
-      id: 1,
-      attribute_id: 1,
-      attribute: "RAM",
-      value: "8GB",
-      product_ids: [1],
-    },
-    {
-      id: 2,
-      attribute_id: 1,
-      attribute: "RAM",
-      value: "16GB",
-      product_ids: [1, 2],
-    },
-    {
-      id: 3,
-      attribute_id: 2,
-      attribute: "Storage",
-      value: "256GB",
-      product_ids: [1],
-    },
-    {
-      id: 4,
-      attribute_id: 2,
-      attribute: "Storage",
-      value: "512GB",
-      product_ids: [1, 2],
-    },
-    {
-      id: 5,
-      attribute_id: 3,
-      attribute: "Color",
-      value: "Silver",
-      product_ids: [1, 2, 3],
-    },
-    {
-      id: 6,
-      attribute_id: 3,
-      attribute: "Color",
-      value: "Space Gray",
-      product_ids: [2, 3],
-    },
-  ],
+  categories: [],
+  brands: [],
+  products: [],
+  variants: [],
+  attributeValues: [],
 };
 
 // API endpoints for each entity
@@ -388,7 +245,13 @@ const EditModal = ({ isOpen, onClose, entityType, item, onSave }) => {
 
 const ProductDashboard = () => {
   const navigate = useNavigate();
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState({
+    categories: [],
+    brands: [],
+    products: [],
+    variants: [],
+    attributeValues: [],
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [editModal, setEditModal] = useState({
@@ -534,16 +397,40 @@ const ProductDashboard = () => {
         } else {
           console.error("Error in API response:", response);
           setError("Failed to load data. Please try again.");
-          // Fallback to initial data
-          setData(initialData);
-          resetFilters(initialData);
+          // Initialize with empty arrays instead of initialData
+          setData({
+            categories: [],
+            brands: [],
+            products: [],
+            variants: [],
+            attributeValues: [],
+          });
+          resetFilters({
+            categories: [],
+            brands: [],
+            products: [],
+            variants: [],
+            attributeValues: [],
+          });
         }
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to load data. Please try again.");
-        // Fallback to initial data
-        setData(initialData);
-        resetFilters(initialData);
+        // Initialize with empty arrays instead of initialData
+        setData({
+          categories: [],
+          brands: [],
+          products: [],
+          variants: [],
+          attributeValues: [],
+        });
+        resetFilters({
+          categories: [],
+          brands: [],
+          products: [],
+          variants: [],
+          attributeValues: [],
+        });
       } finally {
         setIsLoading(false);
       }
