@@ -585,16 +585,21 @@ const ProductDashboard = () => {
         );
         setFilteredBrands(productBrands);
 
-        // Debug and filter attribute values by product
-        const productAttributeValues = debugAttributeValuesFiltering(item.id);
+        // Filter attribute values by product
+        const productAttributeValues = data.attributeValues.filter(
+          (attrVal) =>
+            attrVal.product_ids && attrVal.product_ids.includes(item.id)
+        );
         setFilteredAttributeValues(productAttributeValues);
+
+        // Keep all products visible but highlight the selected one
+        setFilteredProducts(data.products);
         break;
 
       case "variants":
         // Find the product for this variant
-        const variant = item;
         const variantProduct = data.products.find(
-          (p) => p.id === variant.product_id
+          (product) => product.id === item.product_id
         );
 
         if (variantProduct) {
@@ -619,10 +624,6 @@ const ProductDashboard = () => {
               attrVal.product_ids &&
               attrVal.product_ids.includes(variantProduct.id)
           );
-          console.log(
-            "Filtered attribute values for variant:",
-            variantAttributeValues
-          ); // Debug log
           setFilteredAttributeValues(variantAttributeValues);
         } else {
           // If product not found, show all
@@ -632,14 +633,13 @@ const ProductDashboard = () => {
           setFilteredAttributeValues(data.attributeValues);
         }
 
-        // Keep all variants visible
+        // Keep all variants visible but highlight the selected one
         setFilteredVariants(data.variants);
         break;
 
       case "attributeValues":
         // Find products that have this attribute value
         const attrValueProductIds = item.product_ids || [];
-        console.log("Attribute value product IDs:", attrValueProductIds); // Debug log
 
         // Filter products by attribute value
         const attrValueProducts = data.products.filter((product) =>
@@ -671,7 +671,7 @@ const ProductDashboard = () => {
         );
         setFilteredBrands(attrValueBrands);
 
-        // Keep all attribute values visible
+        // Keep all attribute values visible but highlight the selected one
         setFilteredAttributeValues(data.attributeValues);
         break;
 
