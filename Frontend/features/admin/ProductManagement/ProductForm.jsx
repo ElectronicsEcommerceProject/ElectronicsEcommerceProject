@@ -111,80 +111,6 @@ const ProductCatalogManagement = () => {
     }
   }, [dashboardData]);
 
-  // Simulate API calls
-  const apiCall = async (url, method, body) => {
-    const endpoint = url.replace("{{baseUrl}}", "");
-    console.log(`API Call: ${method} ${endpoint}`, body);
-
-    let responseData;
-    switch (endpoint) {
-      case "/admin/categories":
-        responseData = { ...body, category_id: `cat-${Date.now()}` };
-        setFormData((prev) => ({
-          ...prev,
-          categories: [...prev.categories, responseData],
-        }));
-        break;
-      case "/admin/brands":
-        responseData = { ...body, brand_id: `brand-${Date.now()}` };
-        setFormData((prev) => ({
-          ...prev,
-          brands: [...prev.brands, responseData],
-        }));
-        break;
-      case "/admin/product":
-        responseData = { ...body, product_id: `prod-${Date.now()}` };
-        setFormData((prev) => ({
-          ...prev,
-          products: [...prev.products, responseData],
-        }));
-        break;
-      case "/admin/product-variant":
-        responseData = { ...body, product_variant_id: `var-${Date.now()}` };
-        setFormData((prev) => ({
-          ...prev,
-          variants: [...prev.variants, responseData],
-        }));
-        break;
-      case "/admin/product-attributes":
-        responseData = { ...body, product_attribute_id: `attr-${Date.now()}` };
-        setFormData((prev) => ({
-          ...prev,
-          attributes: [...prev.attributes, responseData],
-        }));
-        break;
-      case "/admin/product-attribute-values":
-        responseData = {
-          ...body,
-          product_attribute_value_id: `attrval-${Date.now()}`,
-        };
-        setFormData((prev) => ({
-          ...prev,
-          attributeValues: [...prev.attributeValues, responseData],
-        }));
-        break;
-      case "/admin/product-media":
-        responseData = {
-          ...body,
-          product_media_id: `media-${Date.now()}`,
-          media_url: body.media_file
-            ? URL.createObjectURL(body.media_file)
-            : "https://example.com/default.jpg",
-        };
-        setFormData((prev) => ({
-          ...prev,
-          media: [...prev.media, responseData],
-        }));
-        break;
-      default:
-        console.error("Unknown endpoint:", endpoint);
-        throw new Error("Unknown endpoint");
-    }
-
-    console.log("API Response:", responseData);
-    return responseData;
-  };
-
   const handleSubmit = async (e, endpoint, data, nextStep) => {
     e.preventDefault();
     try {
@@ -194,8 +120,75 @@ const ProductCatalogManagement = () => {
         [step]: data,
       }));
 
-      const response = await apiCall(endpoint, "POST", data);
-      console.log("Form submitted successfully:", response);
+      // Generate ID based on entity type
+      let responseData;
+      const entityType = endpoint.split("/").pop();
+
+      switch (entityType) {
+        case "categories":
+          responseData = { ...data, category_id: `cat-${Date.now()}` };
+          setFormData((prev) => ({
+            ...prev,
+            categories: [...prev.categories, responseData],
+          }));
+          break;
+        case "brands":
+          responseData = { ...data, brand_id: `brand-${Date.now()}` };
+          setFormData((prev) => ({
+            ...prev,
+            brands: [...prev.brands, responseData],
+          }));
+          break;
+        case "product":
+          responseData = { ...data, product_id: `prod-${Date.now()}` };
+          setFormData((prev) => ({
+            ...prev,
+            products: [...prev.products, responseData],
+          }));
+          break;
+        case "product-variant":
+          responseData = { ...data, product_variant_id: `var-${Date.now()}` };
+          setFormData((prev) => ({
+            ...prev,
+            variants: [...prev.variants, responseData],
+          }));
+          break;
+        case "product-attributes":
+          responseData = {
+            ...data,
+            product_attribute_id: `attr-${Date.now()}`,
+          };
+          setFormData((prev) => ({
+            ...prev,
+            attributes: [...prev.attributes, responseData],
+          }));
+          break;
+        case "product-attribute-values":
+          responseData = {
+            ...data,
+            product_attribute_value_id: `attrval-${Date.now()}`,
+          };
+          setFormData((prev) => ({
+            ...prev,
+            attributeValues: [...prev.attributeValues, responseData],
+          }));
+          break;
+        case "product-media":
+          responseData = {
+            ...data,
+            product_media_id: `media-${Date.now()}`,
+            media_url: data.media_file
+              ? URL.createObjectURL(data.media_file)
+              : "https://example.com/default.jpg",
+          };
+          setFormData((prev) => ({
+            ...prev,
+            media: [...prev.media, responseData],
+          }));
+          break;
+      }
+
+      console.log("Form submitted successfully:", responseData);
       setTimeout(() => {
         setStep(nextStep);
       }, 500);

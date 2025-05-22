@@ -38,9 +38,12 @@ const EntityCard = ({
   onSelect,
   activeFilter,
   onClearFilter,
-  selectedItem, // Add this new prop to track the selected item
+  selectedItem,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Add debugging to see what selectedItem is being passed
+  console.log(`${title} selectedItem:`, selectedItem);
 
   const filteredData = data.filter((item) =>
     Object.values(item).some(
@@ -49,6 +52,9 @@ const EntityCard = ({
         value.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
+
+  // Convert title to lowercase for use in onSelect
+  const entityType = title.toLowerCase().replace(/\s+/g, " ");
 
   return (
     <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 h-full flex flex-col">
@@ -107,55 +113,65 @@ const EntityCard = ({
           </thead>
           <tbody>
             {filteredData.length > 0 ? (
-              filteredData.map((item) => (
-                <tr
-                  key={item.id}
-                  className={`border-t hover:bg-gray-50 cursor-pointer ${
-                    selectedItem && selectedItem.id === item.id
-                      ? "bg-blue-100 hover:bg-blue-100"
-                      : ""
-                  }`}
-                  onClick={() => onSelect(title.toLowerCase(), item)}
-                >
-                  {fields.map((field, index) => (
-                    <td
-                      key={index}
-                      className="p-1.5 sm:p-2 text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none"
-                    >
-                      {item[field.key]}
+              filteredData.map((item) => {
+                // Fix the highlighting logic
+                const isSelected = selectedItem && selectedItem.id === item.id;
+                console.log(
+                  `Row ${item.id} selected:`,
+                  isSelected,
+                  `(selectedItem?.id: ${selectedItem?.id}, item.id: ${item.id})`
+                );
+
+                return (
+                  <tr
+                    key={item.id}
+                    className={`cursor-pointer ${
+                      isSelected
+                        ? "bg-blue-100 hover:bg-blue-100"
+                        : "hover:bg-gray-50"
+                    }`}
+                    onClick={() => onSelect(entityType, item)}
+                  >
+                    {fields.map((field, index) => (
+                      <td
+                        key={index}
+                        className="p-1.5 sm:p-2 text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none"
+                      >
+                        {item[field.key]}
+                      </td>
+                    ))}
+                    <td className="p-1.5 sm:p-2 text-xs sm:text-sm whitespace-nowrap">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEdit(title.toLowerCase(), item.id, item);
+                        }}
+                        className="text-blue-600 hover:text-blue-800 mr-2"
+                        aria-label={`Edit ${title.toLowerCase()}`}
+                      >
+                        <FaEdit className="text-xs sm:text-sm" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDelete(title.toLowerCase(), item.id);
+                        }}
+                        className="text-red-600 hover:text-red-800"
+                        aria-label={`Delete ${title.toLowerCase()}`}
+                      >
+                        <FaTrash className="text-xs sm:text-sm" />
+                      </button>
                     </td>
-                  ))}
-                  <td className="p-1.5 sm:p-2 text-xs sm:text-sm whitespace-nowrap">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit(title.toLowerCase(), item.id, item);
-                      }}
-                      className="text-blue-600 hover:text-blue-800 mr-2"
-                      aria-label={`Edit ${title.toLowerCase()}`}
-                    >
-                      <FaEdit className="text-xs sm:text-sm" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete(title.toLowerCase(), item.id);
-                      }}
-                      className="text-red-600 hover:text-red-800"
-                      aria-label={`Delete ${title.toLowerCase()}`}
-                    >
-                      <FaTrash className="text-xs sm:text-sm" />
-                    </button>
-                  </td>
-                </tr>
-              ))
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td
                   colSpan={fields.length + 1}
-                  className="p-3 text-center text-xs sm:text-sm text-gray-500"
+                  className="p-2 text-center text-gray-500 italic"
                 >
-                  No items found
+                  No data available
                 </td>
               </tr>
             )}
@@ -288,6 +304,11 @@ const ProductDashboard = () => {
     attributeValues: null,
   });
 
+  // Add a useEffect to log when selectedItems changes
+  useEffect(() => {
+    console.log("selectedItems state updated:", selectedItems);
+  }, [selectedItems]);
+
   // Debug function to check attribute values filtering
   const debugAttributeValuesFiltering = (productId) => {
     console.log(
@@ -312,6 +333,14 @@ const ProductDashboard = () => {
     console.log("Matching attribute values:", matchingAttributeValues);
     return matchingAttributeValues;
   };
+
+  // Add this useEffect to log the structure of attribute values when data is loaded
+  useEffect(() => {
+    if (data && data.attributeValues && data.attributeValues.length > 0) {
+      console.log("Attribute Values structure:", data.attributeValues[0]);
+      console.log("Sample product_ids:", data.attributeValues[0].product_ids);
+    }
+  }, [data]);
 
   // Fetch data from API
   useEffect(() => {
@@ -463,226 +492,101 @@ const ProductDashboard = () => {
   const handleSelect = (entityType, item) => {
     console.log(`Selected ${entityType}:`, item); // Debug log
 
-    // Reset all filters first
-    const newActiveFilters = {
-      categories: null,
-      brands: null,
-      products: null,
-      variants: null,
-      attributeValues: null,
-    };
+    // Normalize entity types
+    if (entityType === "product variants") {
+      entityType = "variants";
+    } else if (entityType === "attribute values") {
+      entityType = "attributeValues";
+    }
 
-    // Reset all selected items
+    // Create a new selectedItems object with all properties set to null
     const newSelectedItems = {
       categories: null,
       brands: null,
       products: null,
       variants: null,
+      attributes: null,
       attributeValues: null,
     };
 
-    // Set the active filter and selected item for the selected entity
-    newActiveFilters[entityType] = item;
+    // Set the selected item for the current entity type
     newSelectedItems[entityType] = item;
 
-    setActiveFilters(newActiveFilters);
-    setSelectedItems(newSelectedItems);
+    // Handle variant selection
+    if (entityType === "variants") {
+      const variantProduct = data.products.find(
+        (product) => product.id === item.product_id
+      );
 
-    // Apply filters based on the selected entity
-    switch (entityType) {
-      case "categories":
-        // Filter products by category
-        const categoryProducts = data.products.filter(
-          (product) => product.category_id === item.id
+      if (variantProduct) {
+        newSelectedItems.products = variantProduct;
+
+        const relatedCategory = data.categories.find(
+          (cat) => cat.id === variantProduct.category_id
         );
-        setFilteredProducts(categoryProducts);
-
-        // Filter variants by products
-        const categoryProductIds = categoryProducts.map((p) => p.id);
-        const categoryVariants = data.variants.filter((variant) =>
-          categoryProductIds.includes(variant.product_id)
-        );
-        setFilteredVariants(categoryVariants);
-
-        // Filter brands by products
-        const brandIds = [...new Set(categoryProducts.map((p) => p.brand_id))];
-        const categoryBrands = data.brands.filter((brand) =>
-          brandIds.includes(brand.id)
-        );
-        setFilteredBrands(categoryBrands);
-
-        // Filter attribute values by products
-        const categoryAttributeValues = data.attributeValues.filter(
-          (attrVal) =>
-            attrVal.product_ids &&
-            attrVal.product_ids.some((pid) => categoryProductIds.includes(pid))
-        );
-        console.log(
-          "Filtered attribute values for category:",
-          categoryAttributeValues
-        ); // Debug log
-        setFilteredAttributeValues(categoryAttributeValues);
-
-        // Keep all categories visible
-        setFilteredCategories(data.categories);
-        break;
-
-      case "brands":
-        // Filter products by brand
-        const brandProducts = data.products.filter(
-          (product) => product.brand_id === item.id
-        );
-        setFilteredProducts(brandProducts);
-
-        // Filter variants by products
-        const brandProductIds = brandProducts.map((p) => p.id);
-        const brandVariants = data.variants.filter((variant) =>
-          brandProductIds.includes(variant.product_id)
-        );
-        setFilteredVariants(brandVariants);
-
-        // Get categories from filtered products
-        const categoryIds = [
-          ...new Set(brandProducts.map((p) => p.category_id)),
-        ];
-        const brandCategories = data.categories.filter((category) =>
-          categoryIds.includes(category.id)
-        );
-        setFilteredCategories(brandCategories);
-
-        // Filter attribute values by products
-        const brandAttributeValues = data.attributeValues.filter(
-          (attrVal) =>
-            attrVal.product_ids &&
-            attrVal.product_ids.some((pid) => brandProductIds.includes(pid))
-        );
-        console.log(
-          "Filtered attribute values for brand:",
-          brandAttributeValues
-        ); // Debug log
-        setFilteredAttributeValues(brandAttributeValues);
-
-        // Keep all brands visible
-        setFilteredBrands(data.brands);
-        break;
-
-      case "products":
-        // Filter variants by product
-        const productVariants = data.variants.filter(
-          (variant) => variant.product_id === item.id
-        );
-        setFilteredVariants(productVariants);
-
-        // Filter categories to show only the one for this product
-        const productCategories = data.categories.filter(
-          (category) => category.id === item.category_id
-        );
-        setFilteredCategories(productCategories);
-
-        // Filter brands to show only the one for this product
-        const productBrands = data.brands.filter(
-          (brand) => brand.id === item.brand_id
-        );
-        setFilteredBrands(productBrands);
-
-        // Filter attribute values by product
-        const productAttributeValues = data.attributeValues.filter(
-          (attrVal) =>
-            attrVal.product_ids && attrVal.product_ids.includes(item.id)
-        );
-        setFilteredAttributeValues(productAttributeValues);
-
-        // Keep all products visible but highlight the selected one
-        setFilteredProducts(data.products);
-        break;
-
-      case "variants":
-        // Find the product for this variant
-        const variantProduct = data.products.find(
-          (product) => product.id === item.product_id
-        );
-
-        if (variantProduct) {
-          // Filter products to show only the one for this variant
-          setFilteredProducts([variantProduct]);
-
-          // Filter categories to show only the one for this product
-          const variantCategories = data.categories.filter(
-            (category) => category.id === variantProduct.category_id
-          );
-          setFilteredCategories(variantCategories);
-
-          // Filter brands to show only the one for this product
-          const variantBrands = data.brands.filter(
-            (brand) => brand.id === variantProduct.brand_id
-          );
-          setFilteredBrands(variantBrands);
-
-          // Filter attribute values by product
-          const variantAttributeValues = data.attributeValues.filter(
-            (attrVal) =>
-              attrVal.product_ids &&
-              attrVal.product_ids.includes(variantProduct.id)
-          );
-          setFilteredAttributeValues(variantAttributeValues);
-        } else {
-          // If product not found, show all
-          setFilteredProducts(data.products);
-          setFilteredCategories(data.categories);
-          setFilteredBrands(data.brands);
-          setFilteredAttributeValues(data.attributeValues);
+        if (relatedCategory) {
+          newSelectedItems.categories = relatedCategory;
         }
 
-        // Keep all variants visible but highlight the selected one
-        setFilteredVariants(data.variants);
-        break;
-
-      case "attributeValues":
-        // Find products that have this attribute value
-        const attrValueProductIds = item.product_ids || [];
-
-        // Filter products by attribute value
-        const attrValueProducts = data.products.filter((product) =>
-          attrValueProductIds.includes(product.id)
+        const relatedBrand = data.brands.find(
+          (brand) => brand.id === variantProduct.brand_id
         );
-        setFilteredProducts(attrValueProducts);
-
-        // Filter variants by products
-        const attrValueVariants = data.variants.filter((variant) =>
-          attrValueProductIds.includes(variant.product_id)
-        );
-        setFilteredVariants(attrValueVariants);
-
-        // Filter categories by products
-        const attrValueCategoryIds = [
-          ...new Set(attrValueProducts.map((p) => p.category_id)),
-        ];
-        const attrValueCategories = data.categories.filter((category) =>
-          attrValueCategoryIds.includes(category.id)
-        );
-        setFilteredCategories(attrValueCategories);
-
-        // Filter brands by products
-        const attrValueBrandIds = [
-          ...new Set(attrValueProducts.map((p) => p.brand_id)),
-        ];
-        const attrValueBrands = data.brands.filter((brand) =>
-          attrValueBrandIds.includes(brand.id)
-        );
-        setFilteredBrands(attrValueBrands);
-
-        // Keep all attribute values visible but highlight the selected one
-        setFilteredAttributeValues(data.attributeValues);
-        break;
-
-      default:
-        // Reset all filters
-        setFilteredCategories(data.categories);
-        setFilteredBrands(data.brands);
-        setFilteredProducts(data.products);
-        setFilteredVariants(data.variants);
-        setFilteredAttributeValues(data.attributeValues);
+        if (relatedBrand) {
+          newSelectedItems.brands = relatedBrand;
+        }
+      }
     }
+    // Handle attribute value selection
+    else if (entityType === "attributeValues") {
+      // Find all products related to this attribute value
+      const productIds = item.product_ids || [];
+      console.log("Attribute value product IDs:", productIds);
+
+      if (productIds.length > 0) {
+        // Find the first related product (we can only highlight one)
+        const relatedProduct = data.products.find((product) =>
+          productIds.includes(product.id)
+        );
+
+        if (relatedProduct) {
+          newSelectedItems.products = relatedProduct;
+          console.log("Related product found:", relatedProduct);
+
+          // Find related category and brand
+          const relatedCategory = data.categories.find(
+            (cat) => cat.id === relatedProduct.category_id
+          );
+          if (relatedCategory) {
+            newSelectedItems.categories = relatedCategory;
+          }
+
+          const relatedBrand = data.brands.find(
+            (brand) => brand.id === relatedProduct.brand_id
+          );
+          if (relatedBrand) {
+            newSelectedItems.brands = relatedBrand;
+          }
+
+          // Find related variants
+          const relatedVariant = data.variants.find(
+            (variant) => variant.product_id === relatedProduct.id
+          );
+          if (relatedVariant) {
+            newSelectedItems.variants = relatedVariant;
+          }
+        }
+      }
+    }
+
+    console.log("Setting selectedItems to:", newSelectedItems);
+    setSelectedItems(newSelectedItems);
+
+    // Keep all items visible
+    setFilteredVariants(data.variants);
+    setFilteredProducts(data.products);
+    setFilteredCategories(data.categories);
+    setFilteredBrands(data.brands);
+    setFilteredAttributeValues(data.attributeValues);
   };
 
   // Clear filter for a specific entity
@@ -859,7 +763,7 @@ const ProductDashboard = () => {
       setIsLoading(true);
 
       // In a real implementation, you would call the API to delete the item
-      const endpoint = apiEndpoints[entityType.toLowerCase()];
+      const endpoint = endpoint[entityType.toLowerCase()];
 
       // Simulate API call
       // const response = await deleteApiById(endpoint, id);
@@ -938,6 +842,12 @@ const ProductDashboard = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+          {/* Add debugging to see what's being passed to each EntityCard */}
+          {console.log(
+            "Rendering EntityCards with selectedItems:",
+            selectedItems
+          )}
+
           {/* Categories Card */}
           <EntityCard
             title="Categories"
