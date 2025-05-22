@@ -182,20 +182,6 @@ const getProductManagementData = async (req, res) => {
         sku: variant.sku,
       })),
 
-      productAttributes: productAttributes.map((attribute) => {
-        const productIds = attributeToProductMap[attribute.product_attribute_id]
-          ? Array.from(attributeToProductMap[attribute.product_attribute_id])
-          : [];
-
-        return {
-          product_attribute_id: attribute.product_attribute_id,
-          name: attribute.name,
-          data_type: attribute.data_type,
-          // Add products that use this attribute for easy filtering
-          product_ids: productIds,
-        };
-      }),
-
       attributeValues: attributeValues.map((attrValue) => {
         // Find products that use this attribute value through variant attribute values
         const productIds = variantAttributeValues

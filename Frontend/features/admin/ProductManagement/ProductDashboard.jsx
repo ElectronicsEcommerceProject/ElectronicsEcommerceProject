@@ -20,24 +20,44 @@ import {
 // Initial data - will be replaced with API data
 const initialData = {
   categories: [
-    { id: 1, name: "Laptops", slug: "laptops", target_role: "Both" },
+    {
+      id: 1,
+      name: "Laptops",
+      slug: "laptops",
+      target_role: "Both",
+      product_ids: [],
+    },
     {
       id: 2,
       name: "Smartphones",
       slug: "smartphones",
       target_role: "Customer",
+      product_ids: [],
     },
     {
       id: 3,
       name: "Accessories",
       slug: "accessories",
       target_role: "Retailer",
+      product_ids: [],
     },
   ],
   brands: [
-    { id: 1, name: "Dell", slug: "dell", category_id: 1 },
-    { id: 2, name: "Apple", slug: "apple", category_id: [1, 2] },
-    { id: 3, name: "Samsung", slug: "samsung", category_id: [2, 3] },
+    { id: 1, name: "Dell", slug: "dell", category_id: 1, product_ids: [] },
+    {
+      id: 2,
+      name: "Apple",
+      slug: "apple",
+      category_id: [1, 2],
+      product_ids: [],
+    },
+    {
+      id: 3,
+      name: "Samsung",
+      slug: "samsung",
+      category_id: [2, 3],
+      product_ids: [],
+    },
   ],
   products: [
     {
@@ -76,18 +96,6 @@ const initialData = {
       visibility: "Published",
       image: "https://via.placeholder.com/50?text=iPhone+14",
     },
-    {
-      id: 4,
-      name: "Samsung Galaxy S23",
-      category: "Smartphones",
-      category_id: 2,
-      brand: "Samsung",
-      brand_id: 3,
-      price: 899.99,
-      stock: 75,
-      visibility: "Published",
-      image: "https://via.placeholder.com/50?text=Samsung+Galaxy+S23",
-    },
   ],
   variants: [
     {
@@ -114,35 +122,50 @@ const initialData = {
       price: 1999.99,
       stock: 20,
     },
+  ],
+  attributeValues: [
+    {
+      id: 1,
+      attribute_id: 1,
+      attribute: "RAM",
+      value: "8GB",
+      product_ids: [1],
+    },
+    {
+      id: 2,
+      attribute_id: 1,
+      attribute: "RAM",
+      value: "16GB",
+      product_ids: [1, 2],
+    },
+    {
+      id: 3,
+      attribute_id: 2,
+      attribute: "Storage",
+      value: "256GB",
+      product_ids: [1],
+    },
     {
       id: 4,
-      product_id: 3,
-      product_name: "iPhone 14",
-      sku: "IP14-128GB-BLK",
-      price: 999.99,
-      stock: 50,
+      attribute_id: 2,
+      attribute: "Storage",
+      value: "512GB",
+      product_ids: [1, 2],
     },
     {
       id: 5,
-      product_id: 4,
-      product_name: "Samsung Galaxy S23",
-      sku: "SGS23-256GB-GRN",
-      price: 899.99,
-      stock: 35,
+      attribute_id: 3,
+      attribute: "Color",
+      value: "Silver",
+      product_ids: [1, 2, 3],
     },
-  ],
-  attributes: [
-    { id: 1, name: "RAM", type: "select", product_categories: [1] },
-    { id: 2, name: "Storage", type: "select", product_categories: [1, 2] },
-    { id: 3, name: "Color", type: "select", product_categories: [1, 2, 3] },
-  ],
-  attributeValues: [
-    { id: 1, attribute_id: 1, attribute: "RAM", value: "8GB" },
-    { id: 2, attribute_id: 1, attribute: "RAM", value: "16GB" },
-    { id: 3, attribute_id: 2, attribute: "Storage", value: "256GB" },
-    { id: 4, attribute_id: 2, attribute: "Storage", value: "512GB" },
-    { id: 5, attribute_id: 3, attribute: "Color", value: "Silver" },
-    { id: 6, attribute_id: 3, attribute: "Color", value: "Space Gray" },
+    {
+      id: 6,
+      attribute_id: 3,
+      attribute: "Color",
+      value: "Space Gray",
+      product_ids: [2, 3],
+    },
   ],
 };
 
@@ -412,12 +435,38 @@ const ProductDashboard = () => {
     attributeValues: null,
   });
 
+  // Debug function to check attribute values filtering
+  const debugAttributeValuesFiltering = (productId) => {
+    console.log(
+      "Debugging attribute values filtering for product ID:",
+      productId
+    );
+    console.log("All attribute values:", data.attributeValues);
+
+    const matchingAttributeValues = data.attributeValues.filter((attrVal) => {
+      const hasProductId =
+        attrVal.product_ids && attrVal.product_ids.includes(productId);
+      console.log(
+        `Attribute value ${attrVal.id} (${attrVal.attribute}: ${attrVal.value}):`,
+        `product_ids:`,
+        attrVal.product_ids,
+        `includes ${productId}:`,
+        hasProductId
+      );
+      return hasProductId;
+    });
+
+    console.log("Matching attribute values:", matchingAttributeValues);
+    return matchingAttributeValues;
+  };
+
   // Fetch data from API
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
         const response = await getApi(adminProductManagementDashboardDataRoute);
+        console.log("API Response:", response); // Debug log
 
         if (response && response.success === true) {
           // Transform API response to match component's expected format
@@ -427,12 +476,14 @@ const ProductDashboard = () => {
               name: category.name,
               slug: category.name.toLowerCase().replace(/\s+/g, "-"),
               target_role: category.target_role,
+              product_ids: category.product_ids || [],
             })),
 
             brands: response.data.brands.map((brand) => ({
               id: brand.brand_id,
               name: brand.name,
               slug: brand.slug,
+              product_ids: brand.product_ids || [],
               // For compatibility with existing filtering logic
               category_id: [],
             })),
@@ -463,28 +514,22 @@ const ProductDashboard = () => {
               stock: 0,
             })),
 
-            attributes: response.data.productAttributes.map((attr) => ({
-              id: attr.product_attribute_id,
-              name: attr.name,
-              type: attr.data_type || "select",
-              // For compatibility with existing filtering logic
-              product_categories: [],
-            })),
-
             attributeValues: response.data.attributeValues.map((attrVal) => ({
               id: attrVal.product_attribute_value_id,
               attribute_id: attrVal.product_attribute_id,
               attribute: attrVal.attribute_name,
               value: attrVal.value,
+              product_ids: attrVal.product_ids || [],
             })),
           };
+
+          console.log("Transformed Data:", transformedData); // Debug log
 
           setData(transformedData);
           setFilteredCategories(transformedData.categories);
           setFilteredBrands(transformedData.brands);
           setFilteredProducts(transformedData.products);
           setFilteredVariants(transformedData.variants);
-          setFilteredAttributes(transformedData.attributes);
           setFilteredAttributeValues(transformedData.attributeValues);
         } else {
           console.error("Error in API response:", response);
@@ -539,13 +584,14 @@ const ProductDashboard = () => {
 
   // Handle item selection for filtering
   const handleSelect = (entityType, item) => {
+    console.log(`Selected ${entityType}:`, item); // Debug log
+
     // Reset all filters first
     const newActiveFilters = {
       categories: null,
       brands: null,
       products: null,
       variants: null,
-      attributes: null,
       attributeValues: null,
     };
 
@@ -555,7 +601,6 @@ const ProductDashboard = () => {
       brands: null,
       products: null,
       variants: null,
-      attributes: null,
       attributeValues: null,
     };
 
@@ -589,11 +634,17 @@ const ProductDashboard = () => {
         );
         setFilteredBrands(categoryBrands);
 
-        // Filter attributes and attribute values
-        // For this API response, we don't have direct category-to-attribute mapping
-        // So we'll just show all attributes and values
-        setFilteredAttributes(data.attributes);
-        setFilteredAttributeValues(data.attributeValues);
+        // Filter attribute values by products
+        const categoryAttributeValues = data.attributeValues.filter(
+          (attrVal) =>
+            attrVal.product_ids &&
+            attrVal.product_ids.some((pid) => categoryProductIds.includes(pid))
+        );
+        console.log(
+          "Filtered attribute values for category:",
+          categoryAttributeValues
+        ); // Debug log
+        setFilteredAttributeValues(categoryAttributeValues);
 
         // Keep all categories visible
         setFilteredCategories(data.categories);
@@ -622,11 +673,17 @@ const ProductDashboard = () => {
         );
         setFilteredCategories(brandCategories);
 
-        // Filter attributes and attribute values
-        // For this API response, we don't have direct brand-to-attribute mapping
-        // So we'll just show all attributes and values
-        setFilteredAttributes(data.attributes);
-        setFilteredAttributeValues(data.attributeValues);
+        // Filter attribute values by products
+        const brandAttributeValues = data.attributeValues.filter(
+          (attrVal) =>
+            attrVal.product_ids &&
+            attrVal.product_ids.some((pid) => brandProductIds.includes(pid))
+        );
+        console.log(
+          "Filtered attribute values for brand:",
+          brandAttributeValues
+        ); // Debug log
+        setFilteredAttributeValues(brandAttributeValues);
 
         // Keep all brands visible
         setFilteredBrands(data.brands);
@@ -651,14 +708,9 @@ const ProductDashboard = () => {
         );
         setFilteredBrands(productBrands);
 
-        // Filter attributes and attribute values
-        // For this API response, we don't have direct product-to-attribute mapping
-        // So we'll just show all attributes and values
-        setFilteredAttributes(data.attributes);
-        setFilteredAttributeValues(data.attributeValues);
-
-        // Keep all products visible
-        setFilteredProducts(data.products);
+        // Debug and filter attribute values by product
+        const productAttributeValues = debugAttributeValuesFiltering(item.id);
+        setFilteredAttributeValues(productAttributeValues);
         break;
 
       case "variants":
@@ -683,43 +735,66 @@ const ProductDashboard = () => {
             (brand) => brand.id === variantProduct.brand_id
           );
           setFilteredBrands(variantBrands);
+
+          // Filter attribute values by product
+          const variantAttributeValues = data.attributeValues.filter(
+            (attrVal) =>
+              attrVal.product_ids &&
+              attrVal.product_ids.includes(variantProduct.id)
+          );
+          console.log(
+            "Filtered attribute values for variant:",
+            variantAttributeValues
+          ); // Debug log
+          setFilteredAttributeValues(variantAttributeValues);
         } else {
           // If product not found, show all
           setFilteredProducts(data.products);
           setFilteredCategories(data.categories);
           setFilteredBrands(data.brands);
+          setFilteredAttributeValues(data.attributeValues);
         }
 
         // Keep all variants visible
         setFilteredVariants(data.variants);
-
-        // For attributes and attribute values, show all
-        setFilteredAttributes(data.attributes);
-        setFilteredAttributeValues(data.attributeValues);
-        break;
-
-      case "attributes":
-        // Filter attribute values by attribute
-        const attributeValues = data.attributeValues.filter(
-          (attrVal) => attrVal.attribute_id === item.id
-        );
-        setFilteredAttributeValues(attributeValues);
-
-        // For other entities, show all
-        setFilteredCategories(data.categories);
-        setFilteredBrands(data.brands);
-        setFilteredProducts(data.products);
-        setFilteredVariants(data.variants);
-        setFilteredAttributes(data.attributes);
         break;
 
       case "attributeValues":
-        // For all entities, show all
-        setFilteredCategories(data.categories);
-        setFilteredBrands(data.brands);
-        setFilteredProducts(data.products);
-        setFilteredVariants(data.variants);
-        setFilteredAttributes(data.attributes);
+        // Find products that have this attribute value
+        const attrValueProductIds = item.product_ids || [];
+        console.log("Attribute value product IDs:", attrValueProductIds); // Debug log
+
+        // Filter products by attribute value
+        const attrValueProducts = data.products.filter((product) =>
+          attrValueProductIds.includes(product.id)
+        );
+        setFilteredProducts(attrValueProducts);
+
+        // Filter variants by products
+        const attrValueVariants = data.variants.filter((variant) =>
+          attrValueProductIds.includes(variant.product_id)
+        );
+        setFilteredVariants(attrValueVariants);
+
+        // Filter categories by products
+        const attrValueCategoryIds = [
+          ...new Set(attrValueProducts.map((p) => p.category_id)),
+        ];
+        const attrValueCategories = data.categories.filter((category) =>
+          attrValueCategoryIds.includes(category.id)
+        );
+        setFilteredCategories(attrValueCategories);
+
+        // Filter brands by products
+        const attrValueBrandIds = [
+          ...new Set(attrValueProducts.map((p) => p.brand_id)),
+        ];
+        const attrValueBrands = data.brands.filter((brand) =>
+          attrValueBrandIds.includes(brand.id)
+        );
+        setFilteredBrands(attrValueBrands);
+
+        // Keep all attribute values visible
         setFilteredAttributeValues(data.attributeValues);
         break;
 
@@ -729,7 +804,6 @@ const ProductDashboard = () => {
         setFilteredBrands(data.brands);
         setFilteredProducts(data.products);
         setFilteredVariants(data.variants);
-        setFilteredAttributes(data.attributes);
         setFilteredAttributeValues(data.attributeValues);
     }
   };
@@ -1051,24 +1125,6 @@ const ProductDashboard = () => {
             activeFilter={activeFilters.variants}
             onClearFilter={() => clearFilter("variants")}
             selectedItem={selectedItems.variants}
-          />
-
-          {/* Attributes Card */}
-          <EntityCard
-            title="Product Attributes"
-            data={filteredAttributes}
-            searchPlaceholder="Search attributes..."
-            fields={[
-              { key: "name", label: "Name" },
-              { key: "type", label: "Type" },
-            ]}
-            onAdd={() => handleAdd("attribute")}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onSelect={handleSelect}
-            activeFilter={activeFilters.attributes}
-            onClearFilter={() => clearFilter("attributes")}
-            selectedItem={selectedItems.attributes}
           />
 
           {/* Attribute Values Card */}
