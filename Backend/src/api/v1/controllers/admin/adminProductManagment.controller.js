@@ -218,4 +218,18 @@ const getProductManagementData = async (req, res) => {
   }
 };
 
-export default { getProductManagementData };
+const addProductManagmentData = async (req, res) => {
+  try {
+    console.log(req.body);
+    // Fetch all required data in parallel for performance)
+  } catch (error) {
+    console.error("Error fetching product management data:", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: MESSAGE.post.fail,
+      error: error.message,
+    });
+  }
+};
+
+export default { getProductManagementData, addProductManagmentData };
