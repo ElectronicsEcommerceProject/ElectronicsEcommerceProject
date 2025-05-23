@@ -95,22 +95,14 @@ const ProductCatalogManagement = () => {
       attributeValueFormData: stepFormData[5] || {}, // Previously step 6
       mediaFormData: stepFormData[6] || {}, // Previously step 7
       // Include the related selections from step 6 (previously step 7)
-      relatedSelections: stepFormData[6]
-        ? {
-            category:
-              stepFormData[6].selected_category ||
-              stepFormData[6].selected_category_name,
-            brand:
-              stepFormData[6].selected_brand ||
-              stepFormData[6].selected_brand_name,
-            product:
-              stepFormData[6].selected_product ||
-              stepFormData[6].selected_product_name,
-            variant:
-              stepFormData[6].selected_variant ||
-              stepFormData[6].selected_variant_name,
-          }
-        : {},
+      relatedSelections: {
+        category: stepFormData[1]?.name || "N/A",
+        brand: stepFormData[2]?.name || "N/A",
+        product: stepFormData[3]?.name || "N/A",
+        variant: stepFormData[4]?.sku || "N/A",
+        attributeValue: stepFormData[5]?.value || "N/A",
+        attributeName: stepFormData[5]?.attribute_name || "N/A",
+      },
     };
   };
 
@@ -1857,182 +1849,110 @@ const ProductCatalogManagement = () => {
         {/* Step 7 is now Review (previously step 8) */}
         {step === 7 && (
           <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-bold mb-4 text-center text-green-600">
-              Product Creation Complete!
-            </h2>
-
-            <div className="mb-6 text-center">
-              <svg
-                className="w-16 h-16 mx-auto text-green-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">
-                Product Information Summary
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                {/* Category Information */}
-                <div className="bg-gray-50 p-3 rounded">
-                  <h4 className="font-medium text-gray-700">Category</h4>
-                  <p className="font-semibold">
-                    {stepFormData[1]?.name ||
-                      stepFormData[6]?.selected_category ||
-                      stepFormData[6]?.selected_category_name ||
-                      stepFormData[6]?.category_name ||
-                      "N/A"}
-                  </p>
-                  {stepFormData[1]?.target_role && (
-                    <p className="text-sm text-gray-500">
-                      Target Role: {stepFormData[1].target_role}
-                    </p>
-                  )}
-                </div>
-
-                {/* Brand Information */}
-                <div className="bg-gray-50 p-3 rounded">
-                  <h4 className="font-medium text-gray-700">Brand</h4>
-                  <p className="font-semibold">
-                    {stepFormData[2]?.name ||
-                      stepFormData[6]?.selected_brand ||
-                      stepFormData[6]?.selected_brand_name ||
-                      stepFormData[6]?.brand_name ||
-                      "N/A"}
-                  </p>
-                  {stepFormData[2]?.slug && (
-                    <p className="text-sm text-gray-500">
-                      Slug: {stepFormData[2].slug}
-                    </p>
-                  )}
-                </div>
-
-                {/* Product Information */}
-                <div className="bg-gray-50 p-3 rounded">
-                  <h4 className="font-medium text-gray-700">Product</h4>
-                  <p className="font-semibold">
-                    {stepFormData[3]?.name ||
-                      stepFormData[6]?.selected_product ||
-                      stepFormData[6]?.selected_product_name ||
-                      stepFormData[6]?.product_name ||
-                      "N/A"}
-                  </p>
-                  {stepFormData[3]?.base_price && (
-                    <p className="text-sm text-gray-500">
-                      Base Price: ${stepFormData[3].base_price}
-                    </p>
-                  )}
-                  {stepFormData[3]?.description && (
-                    <p className="text-sm text-gray-500">
-                      Description: {stepFormData[3].description}
-                    </p>
-                  )}
-                </div>
-
-                {/* Variant Information */}
-                <div className="bg-gray-50 p-3 rounded">
-                  <h4 className="font-medium text-gray-700">Variant</h4>
-                  <p className="font-semibold">
-                    SKU:{" "}
-                    {stepFormData[4]?.sku ||
-                      stepFormData[6]?.selected_variant ||
-                      stepFormData[6]?.selected_variant_name ||
-                      stepFormData[6]?.variant_sku ||
-                      "N/A"}
-                  </p>
-                  {stepFormData[4]?.price && (
-                    <p className="text-sm text-gray-500">
-                      Price: ${stepFormData[4].price}
-                    </p>
-                  )}
-                  {stepFormData[4]?.stock_quantity && (
-                    <p className="text-sm text-gray-500">
-                      Stock: {stepFormData[4].stock_quantity}
-                    </p>
-                  )}
-                </div>
-
-                {/* Attribute Value Information */}
-                <div className="bg-gray-50 p-3 rounded">
-                  <h4 className="font-medium text-gray-700">Attribute Value</h4>
-                  <p className="font-semibold">
-                    {stepFormData[5]?.value ||
-                      stepFormData[6]?.attribute_value ||
-                      stepFormData[6]?.selected_attribute_value ||
-                      "N/A"}
-                  </p>
-                  {stepFormData[5]?.attribute_name && (
-                    <p className="text-sm text-gray-500">
-                      For: {stepFormData[5].attribute_name}
-                    </p>
-                  )}
-                </div>
-
-                {/* Media Information */}
-                <div className="bg-gray-50 p-3 rounded">
-                  <h4 className="font-medium text-gray-700">Media</h4>
-                  <p className="font-semibold">
-                    Type: {stepFormData[6]?.media_type || "N/A"}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    File: {stepFormData[6]?.media_file?.name || "N/A"}
-                  </p>
-
-                  {stepFormData[6]?.media_file && (
-                    <div className="mt-2">
-                      {stepFormData[6].media_type === "image" ? (
-                        <img
-                          src={URL.createObjectURL(stepFormData[6].media_file)}
-                          alt="Product"
-                          className="max-h-40 rounded border"
-                        />
-                      ) : (
-                        <div className="bg-gray-200 p-4 rounded text-center">
-                          Video Preview Not Available
-                        </div>
-                      )}
-                    </div>
-                  )}
+            <div className="flex items-center justify-center mb-6">
+              <div className="text-green-500 text-center">
+                <h2 className="text-2xl font-bold text-green-600 mb-2">
+                  Product Creation Complete!
+                </h2>
+                <div className="flex justify-center">
+                  <svg
+                    className="w-16 h-16 text-green-500"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-center space-x-4">
+            <h3 className="text-xl font-bold mb-4">
+              Product Information Summary
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Category Information */}
+              <div className="bg-gray-50 p-3 rounded">
+                <h4 className="font-medium text-gray-700">Category</h4>
+                <p className="font-semibold">
+                  {stepFormData[1]?.name || "N/A"}
+                </p>
+              </div>
+
+              {/* Brand Information */}
+              <div className="bg-gray-50 p-3 rounded">
+                <h4 className="font-medium text-gray-700">Brand</h4>
+                <p className="font-semibold">
+                  {stepFormData[2]?.name || "N/A"}
+                </p>
+              </div>
+
+              {/* Product Information */}
+              <div className="bg-gray-50 p-3 rounded">
+                <h4 className="font-medium text-gray-700">Product</h4>
+                <p className="font-semibold">
+                  {stepFormData[3]?.name || "N/A"}
+                </p>
+              </div>
+
+              {/* Variant Information */}
+              <div className="bg-gray-50 p-3 rounded">
+                <h4 className="font-medium text-gray-700">Variant</h4>
+                <p className="font-semibold">
+                  SKU: {stepFormData[4]?.sku || "N/A"}
+                </p>
+              </div>
+
+              {/* Attribute Value Information */}
+              <div className="bg-gray-50 p-3 rounded">
+                <h4 className="font-medium text-gray-700">Attribute Value</h4>
+                <p className="font-semibold">
+                  {stepFormData[5]?.value || "N/A"}
+                </p>
+                {stepFormData[5]?.attribute_name && (
+                  <p className="text-sm text-gray-500">
+                    For: {stepFormData[5].attribute_name}
+                  </p>
+                )}
+              </div>
+
+              {/* Media Information */}
+              <div className="bg-gray-50 p-3 rounded">
+                <h4 className="font-medium text-gray-700">Media</h4>
+                <p className="font-semibold">
+                  Type: {stepFormData[6]?.media_type || "image"}
+                </p>
+                <p className="text-sm text-gray-500">
+                  File: {stepFormData[6]?.media_file?.name || "N/A"}
+                </p>
+                {stepFormData[6]?.media_file && (
+                  <div className="mt-2">
+                    <img
+                      src={URL.createObjectURL(stepFormData[6].media_file)}
+                      alt="Media preview"
+                      className="max-w-full h-auto max-h-32 rounded"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-between">
               <button
-                onClick={() => navigate("/admin/product-Dashboard")}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                onClick={handleBack}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+              >
+                Back
+              </button>
+              <button
+                onClick={() => navigate("/admin/product-dashboard")}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
                 Go to Dashboard
-              </button>
-
-              <button
-                onClick={() => {
-                  // Reset form and go back to step 1
-                  setStepFormData({
-                    1: {},
-                    2: {},
-                    3: {},
-                    4: {},
-                    5: {},
-                    6: {},
-                    7: {},
-                  });
-                  setStep(1);
-                }}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-              >
-                Add Another Product
               </button>
             </div>
           </div>

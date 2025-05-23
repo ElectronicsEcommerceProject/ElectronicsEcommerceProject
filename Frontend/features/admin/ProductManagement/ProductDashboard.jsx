@@ -754,6 +754,26 @@ const ProductDashboard = () => {
 
   // Handler for adding new entities
   const handleAdd = (entityType) => {
+    // Check if any filters are applied by checking if any value in selectedItems is not null
+    const hasAnySelection = Object.values(selectedItems).some(
+      (item) => item !== null
+    );
+
+    if (!hasAnySelection) {
+      // No filters applied, show alert to user
+      alert(
+        `Please select at least one ${
+          entityType === "variant"
+            ? "product"
+            : entityType === "attribute-value"
+            ? "product or attribute"
+            : "category, brand, or product"
+        } before adding a new ${entityType}.`
+      );
+      return; // Stop the navigation
+    }
+
+    // If we reach here, at least one filter is applied
     // Pass the current data and selected items to ProductForm via state
     navigate(`/admin/product-form`, {
       state: {
