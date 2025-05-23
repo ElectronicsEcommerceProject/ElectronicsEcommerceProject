@@ -109,8 +109,6 @@ const ProductCatalogManagement = () => {
             variant:
               stepFormData[6].selected_variant ||
               stepFormData[6].selected_variant_name,
-            attribute_name: stepFormData[6].attribute_name,
-            attribute_value: stepFormData[6].attribute_value,
           }
         : {},
     };
@@ -1823,20 +1821,6 @@ const ProductCatalogManagement = () => {
           <EnhancedFormComponent
             title="Upload Product Media"
             fields={[
-              {
-                name: "attribute_name",
-                label: "Attribute Name",
-                type: "text",
-                placeholder: "e.g., Color",
-                required: false,
-              },
-              {
-                name: "attribute_value",
-                label: "Attribute Value",
-                type: "text",
-                placeholder: "e.g., Red",
-                required: false,
-              },
               {
                 name: "media_type",
                 label: "Media Type",
