@@ -714,6 +714,15 @@ const ProductCatalogManagement = () => {
 
     // State for related entity selections
     const [relatedSelections, setRelatedSelections] = useState(() => {
+      // First check if we have selections passed from the dashboard
+      const dashboardSelections = location.state?.selectedItems;
+
+      if (dashboardSelections) {
+        console.log("Using selections from dashboard:", dashboardSelections);
+        // Return the selections from dashboard directly
+        return dashboardSelections;
+      }
+
       // If we started from step 1 and have previous selections, use them
       if (startedFromStep1) {
         // Get previous selections from earlier steps

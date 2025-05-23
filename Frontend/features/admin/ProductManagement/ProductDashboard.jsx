@@ -754,11 +754,13 @@ const ProductDashboard = () => {
 
   // Handler for adding new entities
   const handleAdd = (entityType) => {
-    // Pass the current data to ProductForm via state
+    // Pass the current data and selected items to ProductForm via state
     navigate(`/admin/product-form`, {
       state: {
         dashboardData: data,
         entityType: entityType,
+        // Pass the currently selected items to pre-populate dropdowns
+        selectedItems: selectedItems,
       },
     });
   };
