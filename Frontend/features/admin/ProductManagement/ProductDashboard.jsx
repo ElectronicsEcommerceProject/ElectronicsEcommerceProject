@@ -947,7 +947,7 @@ const ProductDashboard = () => {
         <div className="flex gap-2">
           <button
             className="bg-blue-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded text-sm sm:text-base hover:bg-blue-700 w-full sm:w-auto"
-            onClick={() => navigate("/admin/product-form")}
+            onClick={() => navigate("/admin/product-Form")}
           >
             Add New Product
           </button>

@@ -15,4 +15,8 @@ router.get(
   adminProductManagmentDashboardDataController.getProductManagementData
 );
 
+router.post("/", verifyJwtToken, isAdmin, (req, res) => {
+  res.send("Hello World!");
+});
+
 export default router;

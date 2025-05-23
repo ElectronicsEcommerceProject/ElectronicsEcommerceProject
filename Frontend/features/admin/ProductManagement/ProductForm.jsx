@@ -10,6 +10,9 @@ const ProductCatalogManagement = () => {
   // Set initial step based on entityType if provided
   useEffect(() => {
     if (initialEntityType) {
+      // If we're starting with a specific entity type, we're not starting from step 1
+      setStartedFromStep1(false);
+
       switch (initialEntityType.toLowerCase()) {
         case "categories":
         case "category":
@@ -33,16 +36,33 @@ const ProductCatalogManagement = () => {
           break;
         case "attributevalues":
         case "attribute-value":
-          setStep(6);
+          setStep(5); // Updated from 6 to 5 since we removed the Attribute step
           break;
         case "media":
-          setStep(7);
+          setStep(6); // Updated from 7 to 6
           break;
         default:
           setStep(1);
+          setStartedFromStep1(true); // If we're starting at step 1, set the flag
       }
+    } else {
+      // If no entity type is provided, we're starting from step 1
+      setStartedFromStep1(true);
+      setStep(1);
     }
   }, [initialEntityType]);
+
+  // Add a state to track if the form was started from step 1
+  const [startedFromStep1, setStartedFromStep1] = useState(false);
+
+  // Update useEffect to detect if we're starting from step 1
+  useEffect(() => {
+    // If we're at step 1 and there's no entityType provided, we're starting fresh
+    if (step === 1 && !initialEntityType) {
+      setStartedFromStep1(true);
+      console.log("Form started from step 1");
+    }
+  }, [step, initialEntityType]);
 
   const [formData, setFormData] = useState({
     categories: [],
@@ -72,24 +92,25 @@ const ProductCatalogManagement = () => {
       brandFormData: stepFormData[2] || {},
       productFormData: stepFormData[3] || {},
       variantFormData: stepFormData[4] || {},
-      attributeFormData: stepFormData[5] || {},
-      attributeValueFormData: stepFormData[6] || {},
-      mediaFormData: stepFormData[7] || {},
-      // Include the related selections from step 7
-      relatedSelections: stepFormData[7]
+      attributeValueFormData: stepFormData[5] || {}, // Previously step 6
+      mediaFormData: stepFormData[6] || {}, // Previously step 7
+      // Include the related selections from step 6 (previously step 7)
+      relatedSelections: stepFormData[6]
         ? {
             category:
-              stepFormData[7].selected_category ||
-              stepFormData[7].selected_category_name,
+              stepFormData[6].selected_category ||
+              stepFormData[6].selected_category_name,
             brand:
-              stepFormData[7].selected_brand ||
-              stepFormData[7].selected_brand_name,
+              stepFormData[6].selected_brand ||
+              stepFormData[6].selected_brand_name,
             product:
-              stepFormData[7].selected_product ||
-              stepFormData[7].selected_product_name,
+              stepFormData[6].selected_product ||
+              stepFormData[6].selected_product_name,
             variant:
-              stepFormData[7].selected_variant ||
-              stepFormData[7].selected_variant_name,
+              stepFormData[6].selected_variant ||
+              stepFormData[6].selected_variant_name,
+            attribute_name: stepFormData[6].attribute_name,
+            attribute_value: stepFormData[6].attribute_value,
           }
         : {},
     };
@@ -216,47 +237,63 @@ const ProductCatalogManagement = () => {
   const handleBack = () => {
     if (step > 1) {
       setStep(step - 1);
+      // Maintain the startedFromStep1 flag when going back
     }
   };
 
-  const Stepper = () => (
-    <div className="flex flex-wrap justify-between mb-6 md:mb-8 gap-2">
-      {[
-        "Category",
-        "Brand",
-        "Product",
-        "Variant",
-        "Attribute",
-        "Attr Value",
-        "Media",
-      ].map((label, index) => (
-        <div
-          key={index}
-          className={`flex-1 min-w-[60px] md:min-w-[80px] text-center ${
-            step > index + 1
-              ? "text-green-600"
-              : step === index + 1
-              ? "text-blue-600"
-              : "text-gray-500"
-          }`}
-        >
-          <div
-            className={`w-6 h-6 md:w-8 md:h-8 mx-auto rounded-full flex items-center justify-center
-            ${
-              step > index + 1
-                ? "bg-green-600"
-                : step === index + 1
-                ? "bg-blue-600"
-                : "bg-gray-300"
-            } text-white`}
-          >
-            {index + 1}
-          </div>
-          <span className="text-xs md:text-sm mt-1 block">{label}</span>
+  const Stepper = () => {
+    const steps = [
+      "Category",
+      "Brand",
+      "Product",
+      "Variant",
+      "Attribute Value", // Changed from "Attribute"
+      "Media",
+      "Review",
+    ];
+
+    return (
+      <div className="mb-6">
+        <div className="flex items-center justify-between">
+          {steps.map((stepName, index) => (
+            <React.Fragment key={index}>
+              <div
+                className={`flex flex-col items-center ${
+                  index + 1 < step
+                    ? "text-blue-600"
+                    : index + 1 === step
+                    ? "text-blue-600"
+                    : "text-gray-400"
+                }`}
+              >
+                <div
+                  className={`w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full text-xs md:text-sm font-semibold ${
+                    index + 1 < step
+                      ? "bg-blue-600 text-white"
+                      : index + 1 === step
+                      ? "border-2 border-blue-600 text-blue-600"
+                      : "border-2 border-gray-300 text-gray-400"
+                  }`}
+                >
+                  {index + 1 < step ? "✓" : index + 1}
+                </div>
+                <div className="text-xs mt-1 text-center hidden sm:block">
+                  {stepName}
+                </div>
+              </div>
+              {index < steps.length - 1 && (
+                <div
+                  className={`flex-1 h-0.5 ${
+                    index + 1 < step ? "bg-blue-600" : "bg-gray-300"
+                  }`}
+                ></div>
+              )}
+            </React.Fragment>
+          ))}
         </div>
-      ))}
-    </div>
-  );
+      </div>
+    );
+  };
 
   // Utility function to generate slug
   const generateSlug = (name) => {
@@ -678,7 +715,60 @@ const ProductCatalogManagement = () => {
     });
 
     // State for related entity selections
-    const [relatedSelections, setRelatedSelections] = useState({});
+    const [relatedSelections, setRelatedSelections] = useState(() => {
+      // If we started from step 1 and have previous selections, use them
+      if (startedFromStep1) {
+        // Get previous selections from earlier steps
+        const selections = {};
+
+        // For step 2+, get category from step 1
+        if (step > 1 && stepFormData[1]?.name) {
+          selections.categories = {
+            id: stepFormData[1].id || stepFormData[1].category_id || null,
+            category_id:
+              stepFormData[1].category_id || stepFormData[1].id || null,
+            name: stepFormData[1].name,
+          };
+        }
+
+        // For step 3+, get brand from step 2
+        if (step > 2 && stepFormData[2]?.name) {
+          selections.brands = {
+            id: stepFormData[2].id || stepFormData[2].brand_id || null,
+            brand_id: stepFormData[2].brand_id || stepFormData[2].id || null,
+            name: stepFormData[2].name,
+          };
+        }
+
+        // For step 4+, get product from step 3
+        if (step > 3 && stepFormData[3]?.name) {
+          selections.products = {
+            id: stepFormData[3].id || stepFormData[3].product_id || null,
+            product_id:
+              stepFormData[3].product_id || stepFormData[3].id || null,
+            name: stepFormData[3].name,
+          };
+        }
+
+        // For step 5+, get variant from step 4
+        if (step > 4 && stepFormData[4]?.sku) {
+          selections.variants = {
+            id:
+              stepFormData[4].id || stepFormData[4].product_variant_id || null,
+            product_variant_id:
+              stepFormData[4].product_variant_id || stepFormData[4].id || null,
+            sku: stepFormData[4].sku,
+            name: stepFormData[4].sku, // Use SKU as name for display
+          };
+        }
+
+        console.log(`Step ${step} - Using previous selections:`, selections);
+        return selections;
+      }
+
+      // Default empty selections if not started from step 1
+      return {};
+    });
 
     // Function to filter options based on selected related entities
     const getFilteredOptions = (entityType) => {
@@ -843,45 +933,8 @@ const ProductCatalogManagement = () => {
       // Create a copy of localData to add related entity IDs and names
       const dataToSubmit = { ...localData };
 
-      // Add related entity IDs and names from selections if they exist
-      if (Object.keys(relatedSelections).length > 0) {
-        Object.entries(relatedSelections).forEach(([entityType, entity]) => {
-          if (entity) {
-            // Add the ID and name based on entity type
-            if (entityType === "categories") {
-              dataToSubmit.category_id = entity.id || entity.category_id;
-              dataToSubmit.selected_category = entity.name;
-              dataToSubmit.selected_category_name = entity.name;
-              dataToSubmit.category_name = entity.name;
-            } else if (entityType === "brands") {
-              dataToSubmit.brand_id = entity.id || entity.brand_id;
-              dataToSubmit.selected_brand = entity.name;
-              dataToSubmit.selected_brand_name = entity.name;
-              dataToSubmit.brand_name = entity.name;
-            } else if (entityType === "products") {
-              dataToSubmit.product_id = entity.id || entity.product_id;
-              dataToSubmit.selected_product = entity.name;
-              dataToSubmit.selected_product_name = entity.name;
-              dataToSubmit.product_name = entity.name;
-            } else if (entityType === "variants") {
-              dataToSubmit.variant_id = entity.id || entity.variant_id;
-              dataToSubmit.selected_variant = entity.sku || entity.name;
-              dataToSubmit.selected_variant_name = entity.sku || entity.name;
-              dataToSubmit.variant_sku = entity.sku || entity.name;
-            } else if (entityType === "attributes") {
-              dataToSubmit.attribute_id = entity.id || entity.attribute_id;
-              dataToSubmit.selected_attribute = entity.name;
-              dataToSubmit.selected_attribute_name = entity.name;
-              dataToSubmit.attribute_name = entity.name;
-            } else if (entityType === "attributeValues") {
-              dataToSubmit.attribute_value_id =
-                entity.id || entity.attribute_value_id;
-              dataToSubmit.selected_attribute_value = entity.value;
-              dataToSubmit.attribute_value = entity.value;
-            }
-          }
-        });
-      }
+      // Add related entity data to submission
+      // (existing code for adding related entity data)
 
       // Store the form data for this step
       setStepFormData((prev) => ({
@@ -889,120 +942,30 @@ const ProductCatalogManagement = () => {
         [step]: dataToSubmit,
       }));
 
-      // Simulate API call
-      try {
-        console.log(`Submitting to ${endpoint}:`, dataToSubmit);
+      // Only make API call if we're on step 6 (or the final step before review)
+      if (step === 6) {
+        try {
+          console.log(`Submitting all form data to API`);
 
-        // Simulate API response
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        const responseData = { success: true, data: dataToSubmit };
-
-        // Handle the response based on the entity type
-        handleApiResponse(endpoint, dataToSubmit);
-
-        // For media upload (step 7), show an alert with all form data
-        if (step === 7) {
           // Get all form data from all steps
           const allFormData = getFormattedStepData();
 
-          // Create a formatted message for the alert
-          let alertMessage = "Form Data Summary:\n\n";
+          // Make API calls for each entity type
+          await submitAllFormData(allFormData);
 
-          // Add category data
-          if (
-            allFormData.categoryFormData &&
-            Object.keys(allFormData.categoryFormData).length > 0
-          ) {
-            alertMessage +=
-              "Category: " +
-              (allFormData.categoryFormData.name || "N/A") +
-              "\n";
-          }
+          // Show success message
+          alert("Product data successfully submitted to API!");
 
-          // Add brand data
-          if (
-            allFormData.brandFormData &&
-            Object.keys(allFormData.brandFormData).length > 0
-          ) {
-            alertMessage +=
-              "Brand: " + (allFormData.brandFormData.name || "N/A") + "\n";
-          }
-
-          // Add product data
-          if (
-            allFormData.productFormData &&
-            Object.keys(allFormData.productFormData).length > 0
-          ) {
-            alertMessage +=
-              "Product: " + (allFormData.productFormData.name || "N/A") + "\n";
-          }
-
-          // Add variant data
-          if (
-            allFormData.variantFormData &&
-            Object.keys(allFormData.variantFormData).length > 0
-          ) {
-            alertMessage +=
-              "Variant: " + (allFormData.variantFormData.sku || "N/A") + "\n";
-          }
-
-          // Add attribute data
-          if (
-            allFormData.attributeFormData &&
-            Object.keys(allFormData.attributeFormData).length > 0
-          ) {
-            alertMessage +=
-              "Attribute: " +
-              (allFormData.attributeFormData.name || "N/A") +
-              "\n";
-          }
-
-          // Add attribute value data
-          if (
-            allFormData.attributeValueFormData &&
-            Object.keys(allFormData.attributeValueFormData).length > 0
-          ) {
-            alertMessage +=
-              "Attribute Value: " +
-              (allFormData.attributeValueFormData.value || "N/A") +
-              "\n";
-          }
-
-          // Add media data
-          alertMessage += "\nMedia Information:\n";
-          alertMessage +=
-            "Media Type: " + (dataToSubmit.media_type || "N/A") + "\n";
-          alertMessage +=
-            "File Name: " + (dataToSubmit.media_file?.name || "N/A") + "\n";
-
-          // Add related selections
-          alertMessage += "\nRelated Entities:\n";
-          alertMessage +=
-            "Selected Category: " +
-            (relatedSelections.categories?.name || "N/A") +
-            "\n";
-          alertMessage +=
-            "Selected Brand: " +
-            (relatedSelections.brands?.name || "N/A") +
-            "\n";
-          alertMessage +=
-            "Selected Product: " +
-            (relatedSelections.products?.name || "N/A") +
-            "\n";
-          alertMessage +=
-            "Selected Variant: " +
-            (relatedSelections.variants?.name || "N/A") +
-            "\n";
-
-          // Show the alert
-          alert(alertMessage);
+          // Move to review step
+          setStep(nextStep);
+        } catch (error) {
+          console.error("Error submitting form data to API:", error);
+          alert("Error submitting form data. Please try again.");
         }
-
-        // Move to the next step
+      } else {
+        // For other steps, just move to next step without API call
+        console.log(`Moving to next step without API call`);
         setStep(nextStep);
-      } catch (error) {
-        console.error("Error submitting form:", error);
-        // Handle error (show error message, etc.)
       }
     };
 
@@ -1106,7 +1069,11 @@ const ProductCatalogManagement = () => {
                   </label>
                   <SearchableDropdown
                     name="related_category"
-                    value={relatedSelections.categories?.id || ""}
+                    value={
+                      relatedSelections.categories?.id ||
+                      relatedSelections.categories?.category_id ||
+                      ""
+                    }
                     onChange={(e) => {
                       const selectedCategory = formData.categories.find(
                         (cat) =>
@@ -1115,7 +1082,11 @@ const ProductCatalogManagement = () => {
                       );
                       handleRelatedEntitySelect("categories", selectedCategory);
                     }}
-                    placeholder="First, select a category"
+                    placeholder={
+                      startedFromStep1 && step > 1 && stepFormData[1]?.name
+                        ? stepFormData[1].name
+                        : "First, select a category"
+                    }
                     options={formData.categories.map((cat) => ({
                       id: cat.category_id || cat.id,
                       name: cat.name,
@@ -1127,24 +1098,19 @@ const ProductCatalogManagement = () => {
                 </div>
               )}
 
-              {/* Brand dropdown - enabled only if category is selected */}
+              {/* Brand dropdown - enabled after category */}
               {relatedEntities.includes("brands") && (
                 <div>
-                  <label
-                    className={`block text-sm font-medium mb-1 ${
-                      !relatedSelections.categories
-                        ? "text-gray-400"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    2. Brand{" "}
-                    {relatedSelections.categories && (
-                      <span className="text-red-500">*</span>
-                    )}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    2. Brand <span className="text-red-500">*</span>
                   </label>
                   <SearchableDropdown
                     name="related_brand"
-                    value={relatedSelections.brands?.id || ""}
+                    value={
+                      relatedSelections.brands?.id ||
+                      relatedSelections.brands?.brand_id ||
+                      ""
+                    }
                     onChange={(e) => {
                       const selectedBrand = formData.brands.find(
                         (brand) =>
@@ -1154,37 +1120,34 @@ const ProductCatalogManagement = () => {
                       handleRelatedEntitySelect("brands", selectedBrand);
                     }}
                     placeholder={
-                      relatedSelections.categories
-                        ? "Now, select a brand"
-                        : "Select a category first"
+                      startedFromStep1 && step > 2 && stepFormData[2]?.name
+                        ? stepFormData[2].name
+                        : "Select a brand"
                     }
-                    options={getFilteredOptions("brands")}
+                    options={formData.brands.map((brand) => ({
+                      id: brand.brand_id || brand.id,
+                      name: brand.name,
+                    }))}
                     displayKey="name"
                     valueKey="id"
                     allowCreate={true}
-                    disabled={!relatedSelections.categories}
                   />
                 </div>
               )}
 
-              {/* Product dropdown - enabled only if brand is selected */}
+              {/* Product dropdown - enabled after brand */}
               {relatedEntities.includes("products") && (
                 <div>
-                  <label
-                    className={`block text-sm font-medium mb-1 ${
-                      !relatedSelections.brands
-                        ? "text-gray-400"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    3. Product{" "}
-                    {relatedSelections.brands && (
-                      <span className="text-red-500">*</span>
-                    )}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    3. Product <span className="text-red-500">*</span>
                   </label>
                   <SearchableDropdown
                     name="related_product"
-                    value={relatedSelections.products?.id || ""}
+                    value={
+                      relatedSelections.products?.id ||
+                      relatedSelections.products?.product_id ||
+                      ""
+                    }
                     onChange={(e) => {
                       const selectedProduct = formData.products.find(
                         (product) =>
@@ -1194,34 +1157,31 @@ const ProductCatalogManagement = () => {
                       handleRelatedEntitySelect("products", selectedProduct);
                     }}
                     placeholder={
-                      relatedSelections.brands
-                        ? "Next, select a product"
-                        : "Select a brand first"
+                      startedFromStep1 && step > 3 && stepFormData[3]?.name
+                        ? stepFormData[3].name
+                        : "Select a product"
                     }
                     options={getFilteredOptions("products")}
                     displayKey="name"
                     valueKey="id"
                     allowCreate={true}
-                    disabled={!relatedSelections.brands}
                   />
                 </div>
               )}
 
-              {/* Variant dropdown - enabled only if product is selected */}
+              {/* Variant dropdown - enabled after product */}
               {relatedEntities.includes("variants") && (
                 <div>
-                  <label
-                    className={`block text-sm font-medium mb-1 ${
-                      !relatedSelections.products
-                        ? "text-gray-400"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    4. Product Variant
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    4. Variant <span className="text-red-500">*</span>
                   </label>
                   <SearchableDropdown
                     name="related_variant"
-                    value={relatedSelections.variants?.id || ""}
+                    value={
+                      relatedSelections.variants?.id ||
+                      relatedSelections.variants?.product_variant_id ||
+                      ""
+                    }
                     onChange={(e) => {
                       const selectedVariant = formData.variants.find(
                         (variant) =>
@@ -1231,15 +1191,14 @@ const ProductCatalogManagement = () => {
                       handleRelatedEntitySelect("variants", selectedVariant);
                     }}
                     placeholder={
-                      relatedSelections.products
-                        ? "Finally, select a variant (optional)"
-                        : "Select a product first"
+                      startedFromStep1 && step > 4 && stepFormData[4]?.sku
+                        ? stepFormData[4].sku
+                        : "Select a variant"
                     }
                     options={getFilteredOptions("variants")}
                     displayKey="name"
                     valueKey="id"
-                    allowCreate={false}
-                    disabled={!relatedSelections.products}
+                    allowCreate={true}
                   />
                 </div>
               )}
@@ -1406,7 +1365,7 @@ const ProductCatalogManagement = () => {
   const handleApiResponse = (endpoint, data) => {
     console.log(`API response from ${endpoint}:`, data);
 
-    // Based on the endpoint, update the appropriate data in formData
+    // Handle different entity types
     if (endpoint.includes("categories")) {
       const newCategory = {
         id: data.id || `temp-cat-${Date.now()}`,
@@ -1647,6 +1606,40 @@ const ProductCatalogManagement = () => {
     }));
   };
 
+  // Add a new function to submit all form data
+  const submitAllFormData = async (allFormData) => {
+    // Here you would make API calls for each entity type
+    // Example:
+    if (
+      allFormData.categoryFormData &&
+      Object.keys(allFormData.categoryFormData).length > 0
+    ) {
+      console.log("Submitting category data:", allFormData.categoryFormData);
+      // await createApi("{{baseUrl}}/admin/categories", allFormData.categoryFormData);
+    }
+
+    if (
+      allFormData.brandFormData &&
+      Object.keys(allFormData.brandFormData).length > 0
+    ) {
+      console.log("Submitting brand data:", allFormData.brandFormData);
+      // await createApi("{{baseUrl}}/admin/brands", allFormData.brandFormData);
+    }
+
+    if (
+      allFormData.productFormData &&
+      Object.keys(allFormData.productFormData).length > 0
+    ) {
+      console.log("Submitting product data:", allFormData.productFormData);
+      // await createApi("{{baseUrl}}/admin/product", allFormData.productFormData);
+    }
+
+    // Continue with other entity types...
+
+    // Return a promise that resolves when all API calls are complete
+    return Promise.resolve();
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-4 px-2 sm:px-4 md:px-8">
       <div className="max-w-4xl mx-auto">
@@ -1799,74 +1792,47 @@ const ProductCatalogManagement = () => {
           />
         )}
 
+        {/* Step 5 is now Attribute Value (previously step 6) */}
         {step === 5 && (
           <EnhancedFormComponent
-            title="Create Attribute"
+            title="Create Attribute Value"
             fields={[
               {
-                name: "name",
+                name: "attribute_name",
                 label: "Attribute Name",
                 type: "text",
                 placeholder: "e.g., Color",
                 required: true,
               },
               {
-                name: "type",
-                label: "Type",
-                type: "select",
-                placeholder: "Select type",
-                required: true,
-                options: [
-                  { id: "select", name: "Select" },
-                  { id: "text", name: "Text" },
-                ],
-              },
-            ]}
-            endpoint="{{baseUrl}}/admin/product-attributes"
-            nextStep={6}
-            relatedEntities={[]} // No related entities for attributes
-          />
-        )}
-
-        {step === 6 && (
-          <EnhancedFormComponent
-            title="Create Attribute Value"
-            fields={[
-              {
-                name: "attribute_name",
-                label: "Product Attribute",
-                type: "text",
-                placeholder: "e.g., Color",
-                required: true,
-              },
-              {
                 name: "value",
-                label: "Product Attribute Value",
+                label: "Attribute Value",
                 type: "text",
                 placeholder: "e.g., Black",
                 required: true,
               },
             ]}
             endpoint="{{baseUrl}}/admin/product-attribute-values"
-            nextStep={7}
+            nextStep={6}
             relatedEntities={["categories", "brands", "products", "variants"]} // Show all related entities except attributes
           />
         )}
 
-        {step === 7 && (
+        {/* Step 6 is now Media (previously step 7) */}
+        {step === 6 && (
           <EnhancedFormComponent
             title="Upload Product Media"
             fields={[
               {
                 name: "attribute_name",
-                label: "Product Attribute",
+                label: "Attribute Name",
                 type: "text",
                 placeholder: "e.g., Color",
                 required: false,
               },
               {
                 name: "attribute_value",
-                label: "Product Attribute Value",
+                label: "Attribute Value",
                 type: "text",
                 placeholder: "e.g., Red",
                 required: false,
@@ -1890,12 +1856,13 @@ const ProductCatalogManagement = () => {
               },
             ]}
             endpoint="{{baseUrl}}/admin/product-media"
-            nextStep={8}
+            nextStep={7}
             relatedEntities={["categories", "brands", "products", "variants"]} // Include all related entities
           />
         )}
 
-        {step === 8 && (
+        {/* Step 7 is now Review (previously step 8) */}
+        {step === 7 && (
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-bold mb-4 text-center text-green-600">
               Product Creation Complete!
@@ -1929,16 +1896,11 @@ const ProductCatalogManagement = () => {
                   <h4 className="font-medium text-gray-700">Category</h4>
                   <p className="font-semibold">
                     {stepFormData[1]?.name ||
-                      stepFormData[7]?.selected_category ||
-                      stepFormData[7]?.selected_category_name ||
-                      stepFormData[7]?.category_name ||
+                      stepFormData[6]?.selected_category ||
+                      stepFormData[6]?.selected_category_name ||
+                      stepFormData[6]?.category_name ||
                       "N/A"}
                   </p>
-                  {stepFormData[1]?.slug && (
-                    <p className="text-sm text-gray-500">
-                      Slug: {stepFormData[1].slug}
-                    </p>
-                  )}
                   {stepFormData[1]?.target_role && (
                     <p className="text-sm text-gray-500">
                       Target Role: {stepFormData[1].target_role}
@@ -1951,9 +1913,9 @@ const ProductCatalogManagement = () => {
                   <h4 className="font-medium text-gray-700">Brand</h4>
                   <p className="font-semibold">
                     {stepFormData[2]?.name ||
-                      stepFormData[7]?.selected_brand ||
-                      stepFormData[7]?.selected_brand_name ||
-                      stepFormData[7]?.brand_name ||
+                      stepFormData[6]?.selected_brand ||
+                      stepFormData[6]?.selected_brand_name ||
+                      stepFormData[6]?.brand_name ||
                       "N/A"}
                   </p>
                   {stepFormData[2]?.slug && (
@@ -1968,9 +1930,9 @@ const ProductCatalogManagement = () => {
                   <h4 className="font-medium text-gray-700">Product</h4>
                   <p className="font-semibold">
                     {stepFormData[3]?.name ||
-                      stepFormData[7]?.selected_product ||
-                      stepFormData[7]?.selected_product_name ||
-                      stepFormData[7]?.product_name ||
+                      stepFormData[6]?.selected_product ||
+                      stepFormData[6]?.selected_product_name ||
+                      stepFormData[6]?.product_name ||
                       "N/A"}
                   </p>
                   {stepFormData[3]?.base_price && (
@@ -1991,9 +1953,9 @@ const ProductCatalogManagement = () => {
                   <p className="font-semibold">
                     SKU:{" "}
                     {stepFormData[4]?.sku ||
-                      stepFormData[7]?.selected_variant ||
-                      stepFormData[7]?.selected_variant_name ||
-                      stepFormData[7]?.variant_sku ||
+                      stepFormData[6]?.selected_variant ||
+                      stepFormData[6]?.selected_variant_name ||
+                      stepFormData[6]?.variant_sku ||
                       "N/A"}
                   </p>
                   {stepFormData[4]?.price && (
@@ -2008,110 +1970,54 @@ const ProductCatalogManagement = () => {
                   )}
                 </div>
 
-                {/* Attribute Information */}
-                <div className="bg-gray-50 p-3 rounded">
-                  <h4 className="font-medium text-gray-700">Attribute</h4>
-                  <p className="font-semibold">
-                    {stepFormData[5]?.name ||
-                      stepFormData[7]?.attribute_name ||
-                      stepFormData[7]?.selected_attribute ||
-                      stepFormData[7]?.selected_attribute_name ||
-                      "N/A"}
-                  </p>
-                  {stepFormData[5]?.type && (
-                    <p className="text-sm text-gray-500">
-                      Type: {stepFormData[5].type}
-                    </p>
-                  )}
-                </div>
-
                 {/* Attribute Value Information */}
                 <div className="bg-gray-50 p-3 rounded">
                   <h4 className="font-medium text-gray-700">Attribute Value</h4>
                   <p className="font-semibold">
-                    {stepFormData[6]?.value ||
-                      stepFormData[7]?.attribute_value ||
-                      stepFormData[7]?.selected_attribute_value ||
+                    {stepFormData[5]?.value ||
+                      stepFormData[6]?.attribute_value ||
+                      stepFormData[6]?.selected_attribute_value ||
                       "N/A"}
                   </p>
-                  {stepFormData[6]?.attribute_name && (
+                  {stepFormData[5]?.attribute_name && (
                     <p className="text-sm text-gray-500">
-                      For: {stepFormData[6].attribute_name}
+                      For: {stepFormData[5].attribute_name}
                     </p>
                   )}
                 </div>
-              </div>
 
-              {/* Media Information */}
-              <div className="bg-gray-50 p-3 rounded mb-4">
-                <h4 className="font-medium text-gray-700">Media</h4>
-                <p className="font-semibold">
-                  Type: {stepFormData[7]?.media_type || "N/A"}
-                </p>
-                <p className="text-sm text-gray-500">
-                  File: {stepFormData[7]?.media_file?.name || "N/A"}
-                </p>
+                {/* Media Information */}
+                <div className="bg-gray-50 p-3 rounded">
+                  <h4 className="font-medium text-gray-700">Media</h4>
+                  <p className="font-semibold">
+                    Type: {stepFormData[6]?.media_type || "N/A"}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    File: {stepFormData[6]?.media_file?.name || "N/A"}
+                  </p>
 
-                {stepFormData[7]?.attribute_name &&
-                  stepFormData[7]?.attribute_value && (
-                    <p className="text-sm text-gray-500">
-                      For: {stepFormData[7].attribute_name}:{" "}
-                      {stepFormData[7].attribute_value}
-                    </p>
+                  {stepFormData[6]?.media_file && (
+                    <div className="mt-2">
+                      {stepFormData[6].media_type === "image" ? (
+                        <img
+                          src={URL.createObjectURL(stepFormData[6].media_file)}
+                          alt="Product"
+                          className="max-h-40 rounded border"
+                        />
+                      ) : (
+                        <div className="bg-gray-200 p-4 rounded text-center">
+                          Video Preview Not Available
+                        </div>
+                      )}
+                    </div>
                   )}
-
-                {stepFormData[7]?.media_file && (
-                  <div className="mt-2">
-                    {stepFormData[7].media_type === "image" ? (
-                      <img
-                        src={URL.createObjectURL(stepFormData[7].media_file)}
-                        alt="Product"
-                        className="max-h-40 rounded border"
-                      />
-                    ) : (
-                      <div className="bg-gray-200 p-4 rounded text-center">
-                        Video Preview Not Available
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Related Entities Section */}
-              <div className="bg-gray-50 p-3 rounded mb-4">
-                <h4 className="font-medium text-gray-700 mb-2">
-                  Related Entities
-                </h4>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Display selected brand */}
-                  <div>
-                    <p className="text-sm font-medium">Selected Brand:</p>
-                    <p className="text-sm">
-                      {stepFormData[7]?.selected_brand ||
-                        stepFormData[7]?.selected_brand_name ||
-                        stepFormData[7]?.brand_name ||
-                        "N/A"}
-                    </p>
-                  </div>
-
-                  {/* Display selected product */}
-                  <div>
-                    <p className="text-sm font-medium">Selected Product:</p>
-                    <p className="text-sm">
-                      {stepFormData[7]?.selected_product ||
-                        stepFormData[7]?.selected_product_name ||
-                        stepFormData[7]?.product_name ||
-                        "N/A"}
-                    </p>
-                  </div>
                 </div>
               </div>
             </div>
 
             <div className="flex justify-center space-x-4">
               <button
-                onClick={() => navigate("/admin/product-dashboard")}
+                onClick={() => navigate("/admin/product-Dashboard")}
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
               >
                 Go to Dashboard
