@@ -87,6 +87,8 @@ const ProductCatalogManagement = () => {
 
   // Add a new function to transform the stepFormData before displaying it
   const getFormattedStepData = () => {
+    console.log("Current stepFormData:", stepFormData);
+
     return {
       categoryFormData: stepFormData[1] || {},
       brandFormData: stepFormData[2] || {},
@@ -933,30 +935,178 @@ const ProductCatalogManagement = () => {
       const dataToSubmit = { ...localData };
 
       // Add related entity data to submission
-      // (existing code for adding related entity data)
+      if (
+        relatedEntities.includes("categories") &&
+        relatedSelections.categories
+      ) {
+        dataToSubmit.category_id =
+          relatedSelections.categories.id ||
+          relatedSelections.categories.category_id;
+        dataToSubmit.category_name = relatedSelections.categories.name;
+      }
+
+      if (relatedEntities.includes("brands") && relatedSelections.brands) {
+        dataToSubmit.brand_id =
+          relatedSelections.brands.id || relatedSelections.brands.brand_id;
+        dataToSubmit.brand_name = relatedSelections.brands.name;
+      }
+
+      if (relatedEntities.includes("products") && relatedSelections.products) {
+        dataToSubmit.product_id =
+          relatedSelections.products.id ||
+          relatedSelections.products.product_id;
+        dataToSubmit.product_name = relatedSelections.products.name;
+      }
+
+      if (relatedEntities.includes("variants") && relatedSelections.variants) {
+        dataToSubmit.variant_id =
+          relatedSelections.variants.id ||
+          relatedSelections.variants.product_variant_id;
+        dataToSubmit.variant_name =
+          relatedSelections.variants.name || relatedSelections.variants.sku;
+      }
 
       // Store the form data for this step
-      setStepFormData((prev) => ({
-        ...prev,
-        [step]: dataToSubmit,
-      }));
+      setStepFormData((prev) => {
+        const updatedStepData = {
+          ...prev,
+          [step]: dataToSubmit,
+        };
+        console.log(
+          `Updated step form data for step ${step}:`,
+          updatedStepData
+        );
+        return updatedStepData;
+      });
 
       // Only make API call if we're on step 6 (or the final step before review)
       if (step === 6) {
         try {
           console.log(`Submitting all form data to API`);
 
-          // Get all form data from all steps
-          const allFormData = getFormattedStepData();
+          // Wait for state update to complete before getting form data
+          setTimeout(() => {
+            // Get all form data from all steps
+            const allFormData = getFormattedStepData();
 
-          // Make API calls for each entity type
-          await submitAllFormData(allFormData);
+            // Get dashboard selections if available
+            const dashboardSelections = location.state?.selectedItems;
+            console.log("Dashboard selections:", dashboardSelections);
 
-          // Show success message
-          alert("Product data successfully submitted to API!");
+            // Create a single comprehensive object with all data to be sent to backend
+            const apiSubmissionData = {
+              category:
+                allFormData.categoryFormData ||
+                (dashboardSelections?.categories
+                  ? {
+                      id:
+                        dashboardSelections.categories.id ||
+                        dashboardSelections.categories.category_id,
+                      name: dashboardSelections.categories.name,
+                      category_id:
+                        dashboardSelections.categories.category_id ||
+                        dashboardSelections.categories.id,
+                    }
+                  : {}),
 
-          // Move to review step
-          setStep(nextStep);
+              brand:
+                allFormData.brandFormData ||
+                (dashboardSelections?.brands
+                  ? {
+                      id:
+                        dashboardSelections.brands.id ||
+                        dashboardSelections.brands.brand_id,
+                      name: dashboardSelections.brands.name,
+                      brand_id:
+                        dashboardSelections.brands.brand_id ||
+                        dashboardSelections.brands.id,
+                    }
+                  : {}),
+
+              product:
+                allFormData.productFormData ||
+                (dashboardSelections?.products
+                  ? {
+                      id:
+                        dashboardSelections.products.id ||
+                        dashboardSelections.products.product_id,
+                      name: dashboardSelections.products.name,
+                      product_id:
+                        dashboardSelections.products.product_id ||
+                        dashboardSelections.products.id,
+                    }
+                  : {}),
+
+              variant:
+                allFormData.variantFormData ||
+                (dashboardSelections?.variants
+                  ? {
+                      id:
+                        dashboardSelections.variants.id ||
+                        dashboardSelections.variants.product_variant_id,
+                      sku:
+                        dashboardSelections.variants.sku ||
+                        dashboardSelections.variants.name,
+                      product_variant_id:
+                        dashboardSelections.variants.product_variant_id ||
+                        dashboardSelections.variants.id,
+                    }
+                  : {}),
+
+              attributeValue: allFormData.attributeValueFormData,
+              media: allFormData.mediaFormData,
+
+              // Include relationships for reference
+              relationships: {
+                categoryId:
+                  allFormData.categoryFormData?.category_id ||
+                  allFormData.categoryFormData?.id ||
+                  (dashboardSelections?.categories
+                    ? dashboardSelections.categories.category_id ||
+                      dashboardSelections.categories.id
+                    : null),
+
+                brandId:
+                  allFormData.brandFormData?.brand_id ||
+                  allFormData.brandFormData?.id ||
+                  (dashboardSelections?.brands
+                    ? dashboardSelections.brands.brand_id ||
+                      dashboardSelections.brands.id
+                    : null),
+
+                productId:
+                  allFormData.productFormData?.product_id ||
+                  allFormData.productFormData?.id ||
+                  (dashboardSelections?.products
+                    ? dashboardSelections.products.product_id ||
+                      dashboardSelections.products.id
+                    : null),
+
+                variantId:
+                  allFormData.variantFormData?.product_variant_id ||
+                  allFormData.variantFormData?.id ||
+                  (dashboardSelections?.variants
+                    ? dashboardSelections.variants.product_variant_id ||
+                      dashboardSelections.variants.id
+                    : null),
+              },
+            };
+
+            // Log the complete data as a single object
+            console.log(
+              "=== COMPLETE DATA BEING SENT TO BACKEND apiSubmissionData ===",
+              apiSubmissionData
+            );
+
+            // Make API calls for each entity type
+            submitAllFormData(allFormData);
+
+            // Show success message
+            alert("Product data successfully submitted to API!");
+
+            // Move to review step
+            setStep(nextStep);
+          }, 100);
         } catch (error) {
           console.error("Error submitting form data to API:", error);
           alert("Error submitting form data. Please try again.");
@@ -1607,35 +1757,127 @@ const ProductCatalogManagement = () => {
 
   // Add a new function to submit all form data
   const submitAllFormData = async (allFormData) => {
-    // Here you would make API calls for each entity type
-    // Example:
-    if (
-      allFormData.categoryFormData &&
-      Object.keys(allFormData.categoryFormData).length > 0
-    ) {
-      console.log("Submitting category data:", allFormData.categoryFormData);
-      // await createApi("{{baseUrl}}/admin/categories", allFormData.categoryFormData);
-    }
+    console.log("Submitting all form data to API:", allFormData);
 
-    if (
-      allFormData.brandFormData &&
-      Object.keys(allFormData.brandFormData).length > 0
-    ) {
-      console.log("Submitting brand data:", allFormData.brandFormData);
-      // await createApi("{{baseUrl}}/admin/brands", allFormData.brandFormData);
-    }
+    // Get dashboard selections if available
+    const dashboardSelections = location.state?.selectedItems;
 
-    if (
-      allFormData.productFormData &&
-      Object.keys(allFormData.productFormData).length > 0
-    ) {
-      console.log("Submitting product data:", allFormData.productFormData);
-      // await createApi("{{baseUrl}}/admin/product", allFormData.productFormData);
-    }
+    // Create a comprehensive data object that combines form data with dashboard selections
+    const completeData = {
+      category:
+        allFormData.categoryFormData &&
+        Object.keys(allFormData.categoryFormData).length > 0
+          ? allFormData.categoryFormData
+          : dashboardSelections?.categories
+          ? {
+              id:
+                dashboardSelections.categories.id ||
+                dashboardSelections.categories.category_id,
+              name: dashboardSelections.categories.name,
+              category_id:
+                dashboardSelections.categories.category_id ||
+                dashboardSelections.categories.id,
+            }
+          : {},
 
-    // Continue with other entity types...
+      brand:
+        allFormData.brandFormData &&
+        Object.keys(allFormData.brandFormData).length > 0
+          ? allFormData.brandFormData
+          : dashboardSelections?.brands
+          ? {
+              id:
+                dashboardSelections.brands.id ||
+                dashboardSelections.brands.brand_id,
+              name: dashboardSelections.brands.name,
+              brand_id:
+                dashboardSelections.brands.brand_id ||
+                dashboardSelections.brands.id,
+            }
+          : {},
 
-    // Return a promise that resolves when all API calls are complete
+      product:
+        allFormData.productFormData &&
+        Object.keys(allFormData.productFormData).length > 0
+          ? allFormData.productFormData
+          : dashboardSelections?.products
+          ? {
+              id:
+                dashboardSelections.products.id ||
+                dashboardSelections.products.product_id,
+              name: dashboardSelections.products.name,
+              product_id:
+                dashboardSelections.products.product_id ||
+                dashboardSelections.products.id,
+            }
+          : {},
+
+      variant:
+        allFormData.variantFormData &&
+        Object.keys(allFormData.variantFormData).length > 0
+          ? allFormData.variantFormData
+          : dashboardSelections?.variants
+          ? {
+              id:
+                dashboardSelections.variants.id ||
+                dashboardSelections.variants.product_variant_id,
+              sku:
+                dashboardSelections.variants.sku ||
+                dashboardSelections.variants.name,
+              product_variant_id:
+                dashboardSelections.variants.product_variant_id ||
+                dashboardSelections.variants.id,
+            }
+          : {},
+
+      attributeValue: allFormData.attributeValueFormData,
+      media: allFormData.mediaFormData,
+
+      // Include relationships for reference
+      relationships: {
+        categoryId:
+          allFormData.categoryFormData?.category_id ||
+          allFormData.categoryFormData?.id ||
+          (dashboardSelections?.categories
+            ? dashboardSelections.categories.category_id ||
+              dashboardSelections.categories.id
+            : null),
+
+        brandId:
+          allFormData.brandFormData?.brand_id ||
+          allFormData.brandFormData?.id ||
+          (dashboardSelections?.brands
+            ? dashboardSelections.brands.brand_id ||
+              dashboardSelections.brands.id
+            : null),
+
+        productId:
+          allFormData.productFormData?.product_id ||
+          allFormData.productFormData?.id ||
+          (dashboardSelections?.products
+            ? dashboardSelections.products.product_id ||
+              dashboardSelections.products.id
+            : null),
+
+        variantId:
+          allFormData.variantFormData?.product_variant_id ||
+          allFormData.variantFormData?.id ||
+          (dashboardSelections?.variants
+            ? dashboardSelections.variants.product_variant_id ||
+              dashboardSelections.variants.id
+            : null),
+      },
+    };
+
+    // Log the complete data before making API calls
+    console.log("=== COMPLETE DATA BEING SENT TO BACKEND ===", completeData);
+
+    // Here you would make API calls with the complete data
+    // For example:
+    // await createApi("/api/categories", completeData.category);
+    // await createApi("/api/brands", completeData.brand);
+    // etc.
+
     return Promise.resolve();
   };
 
@@ -1738,6 +1980,13 @@ const ProductCatalogManagement = () => {
                 placeholder: "e.g., Latest iPhone model with A16 chip",
                 required: false,
               },
+              {
+                name: "average_rating",
+                label: "Average Rating",
+                type: "number",
+                placeholder: "e.g., 4.5",
+                required: false,
+              },
             ]}
             endpoint="{{baseUrl}}/admin/product"
             nextStep={4}
@@ -1751,7 +2000,7 @@ const ProductCatalogManagement = () => {
             fields={[
               {
                 name: "sku",
-                label: "SKU",
+                label: "Product Variant SKU",
                 type: "text",
                 placeholder: "e.g., IPH15-128-BLK",
                 required: true,
@@ -1764,6 +2013,14 @@ const ProductCatalogManagement = () => {
                 required: true,
               },
               {
+                name: "description",
+                label: "Description",
+                type: "text",
+                placeholder:
+                  "e.g., 128GB Black variant with extra battery life",
+                required: false,
+              },
+              {
                 name: "stock_quantity",
                 label: "Stock Quantity",
                 type: "number",
@@ -1771,17 +2028,38 @@ const ProductCatalogManagement = () => {
                 required: true,
               },
               {
-                name: "color",
-                label: "Color",
-                type: "text",
-                placeholder: "e.g., Black",
+                name: "discount_percentage",
+                label: "Discount Percentage (%)",
+                type: "number",
+                placeholder: "e.g., 10",
                 required: false,
               },
               {
-                name: "size",
-                label: "Size",
-                type: "text",
-                placeholder: "e.g., 128GB",
+                name: "discount_quantity",
+                label: "Discount Quantity",
+                type: "number",
+                placeholder: "e.g., 3",
+                required: false,
+              },
+              {
+                name: "min_retailer_quantity",
+                label: "Min Retailer Quantity",
+                type: "number",
+                placeholder: "e.g., 5",
+                required: false,
+              },
+              {
+                name: "bulk_discount_percentage",
+                label: "Bulk Discount Percentage (%)",
+                type: "number",
+                placeholder: "e.g., 15",
+                required: false,
+              },
+              {
+                name: "bulk_discount_quantity",
+                label: "Bulk Discount Quantity",
+                type: "number",
+                placeholder: "e.g., 10",
                 required: false,
               },
             ]}
