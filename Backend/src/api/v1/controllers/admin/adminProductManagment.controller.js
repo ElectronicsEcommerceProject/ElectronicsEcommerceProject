@@ -36,7 +36,7 @@ const getProductManagementData = async (req, res) => {
     ] = await Promise.all([
       // 1. Categories
       Category.findAll({
-        attributes: ["category_id", "name", "target_role"],
+        attributes: ["category_id", "name", "slug", "target_role"],
       }),
 
       // 2. Brands
@@ -46,7 +46,16 @@ const getProductManagementData = async (req, res) => {
 
       // 3. Products with their Category and Brand
       Product.findAll({
-        attributes: ["product_id", "name", "category_id", "brand_id"],
+        attributes: [
+          "product_id",
+          "name",
+          "slug",
+          "description",
+          "base_price",
+          "rating_average",
+          "category_id",
+          "brand_id",
+        ],
         include: [
           {
             model: Category,
@@ -63,7 +72,19 @@ const getProductManagementData = async (req, res) => {
 
       // 4. Product Variants with their Product
       ProductVariant.findAll({
-        attributes: ["product_variant_id", "sku", "product_id"],
+        attributes: [
+          "product_variant_id",
+          "sku",
+          "price",
+          "description",
+          "stock_quantity",
+          "discount_percentage",
+          "discount_quantity",
+          "min_retailer_quantity",
+          "bulk_discount_percentage",
+          "bulk_discount_quantity",
+          "product_id",
+        ],
         include: [
           {
             model: Product,
@@ -148,6 +169,7 @@ const getProductManagementData = async (req, res) => {
       categories: categories.map((category) => ({
         category_id: category.category_id,
         name: category.name,
+        slug: category.slug,
         target_role: category.target_role,
         // Add products that belong to this category for easy filtering
         product_ids: products
@@ -168,6 +190,10 @@ const getProductManagementData = async (req, res) => {
       products: products.map((product) => ({
         product_id: product.product_id,
         name: product.name,
+        slug: product.slug,
+        description: product.description,
+        base_price: product.base_price,
+        rating_average: product.rating_average,
         category_id: product.category.category_id,
         category_name: product.category.name,
         brand_id: product.brand.brand_id,
@@ -180,6 +206,14 @@ const getProductManagementData = async (req, res) => {
         product_id: variant.product_id,
         product_name: variant.Product.name,
         sku: variant.sku,
+        price: variant.price,
+        description: variant.description,
+        stock_quantity: variant.stock_quantity,
+        discount_percentage: variant.discount_percentage,
+        discount_quantity: variant.discount_quantity,
+        min_retailer_quantity: variant.min_retailer_quantity,
+        bulk_discount_percentage: variant.bulk_discount_percentage,
+        bulk_discount_quantity: variant.bulk_discount_quantity,
       })),
 
       attributeValues: attributeValues.map((attrValue) => {

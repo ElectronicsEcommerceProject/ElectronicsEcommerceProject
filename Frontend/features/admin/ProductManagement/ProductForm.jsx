@@ -1833,7 +1833,7 @@ const ProductCatalogManagement = () => {
       attributeValue: allFormData.attributeValueFormData,
       media: allFormData.mediaFormData,
 
-      // Include relationships for reference
+      // Add relationships for clarity
       relationships: {
         categoryId:
           allFormData.categoryFormData?.category_id ||
@@ -1842,7 +1842,6 @@ const ProductCatalogManagement = () => {
             ? dashboardSelections.categories.category_id ||
               dashboardSelections.categories.id
             : null),
-
         brandId:
           allFormData.brandFormData?.brand_id ||
           allFormData.brandFormData?.id ||
@@ -1850,7 +1849,6 @@ const ProductCatalogManagement = () => {
             ? dashboardSelections.brands.brand_id ||
               dashboardSelections.brands.id
             : null),
-
         productId:
           allFormData.productFormData?.product_id ||
           allFormData.productFormData?.id ||
@@ -1858,7 +1856,6 @@ const ProductCatalogManagement = () => {
             ? dashboardSelections.products.product_id ||
               dashboardSelections.products.id
             : null),
-
         variantId:
           allFormData.variantFormData?.product_variant_id ||
           allFormData.variantFormData?.id ||
@@ -1869,8 +1866,19 @@ const ProductCatalogManagement = () => {
       },
     };
 
-    // Log the complete data before making API calls
+    // Log the complete data in a more readable format
     console.log("=== COMPLETE DATA BEING SENT TO BACKEND ===", completeData);
+
+    // Add a new formatted log with form-by-form breakdown
+    console.log("=== FORM DATA BREAKDOWN ===", {
+      "Category Form": allFormData.categoryFormData || "Not filled",
+      "Brand Form": allFormData.brandFormData || "Not filled",
+      "Product Form": allFormData.productFormData || "Not filled",
+      "Variant Form": allFormData.variantFormData || "Not filled",
+      "Attribute Value Form":
+        allFormData.attributeValueFormData || "Not filled",
+      "Media Form": allFormData.mediaFormData || "Not filled",
+    });
 
     // Here you would make API calls with the complete data
     // For example:
