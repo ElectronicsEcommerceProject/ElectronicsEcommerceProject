@@ -171,53 +171,48 @@ const ProductCatalogManagement = () => {
       "product-attribute-values": "attributeValues",
       "product-media": "media",
     };
-    const idMap = {
-      categories: "category_id",
-      brands: "brand_id",
-      product: "product_id",
-      "product-variant": "product_variant_id",
-      "product-attributes": "product_attribute_id",
-      "product-attribute-values": "product_attribute_value_id",
-      "product-media": "product_media_id",
-    };
     const entityKey = entityKeyMap[entity];
     if (!entityKey) {
       console.error(`Invalid entity: ${entity}`);
       return;
     }
+
+    // Just use the data as is, without generating any new IDs
     const responseData = {
       ...data,
-      [idMap[entity]]: `${entity.slice(0, 4)}-${Date.now()}`,
       ...(entity === "product-media" && data.media_file
         ? { media_url: URL.createObjectURL(data.media_file) }
         : {}),
     };
-    if (
-      entity === "product-attribute-values" &&
-      data.attribute_name &&
-      !data.attribute_id
-    ) {
-      const attrId = `attr-${Date.now()}`;
-      setFormData((prev) => ({
-        ...prev,
-        attributes: [
-          ...(prev.attributes || []),
-          {
-            id: attrId,
-            product_attribute_id: attrId,
-            name: data.attribute_name,
-            type: "select",
-            isNew: true,
-          },
-        ],
-      }));
-      responseData.attribute_id = attrId;
-    }
+
     setFormData((prev) => ({
       ...prev,
       [entityKey]: [...(prev[entityKey] || []), responseData],
     }));
+
     setStepFormData((prev) => ({ ...prev, [step]: data }));
+
+    // If started from step 1, update relatedSelections with the current step's data
+    if (startedFromStep1) {
+      // Map step to entity type for relatedSelections
+      const stepToEntityMap = {
+        1: "categories",
+        2: "brands",
+        3: "products",
+        4: "variants",
+        5: "attributeValues",
+        6: "media",
+      };
+
+      const currentEntityType = stepToEntityMap[step];
+      if (currentEntityType) {
+        setRelatedSelections((prev) => ({
+          ...prev,
+          [currentEntityType]: responseData,
+        }));
+      }
+    }
+
     setTimeout(() => setStep(nextStep), 500);
   };
 
