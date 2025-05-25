@@ -237,33 +237,38 @@ const EditModal = ({ isOpen, onClose, entityType, item, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] flex flex-col">
         <h2 className="text-xl font-bold mb-4">Edit {entityType}</h2>
-        <form onSubmit={handleSubmit}>
-          {Object.keys(formData).map((key) => {
-            // Skip rendering ID fields in the form, but keep them in formData
-            if (key === "id" || key.includes("_id")) return null;
+        <form
+          onSubmit={handleSubmit}
+          className="flex-grow overflow-y-auto pr-2"
+        >
+          <div className="space-y-4">
+            {Object.keys(formData).map((key) => {
+              // Skip rendering ID fields in the form, but keep them in formData
+              if (key === "id" || key.includes("_id")) return null;
 
-            // Skip image fields
-            if (key === "image") return null;
+              // Skip image fields
+              if (key === "image") return null;
 
-            return (
-              <div key={key} className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
-                  {key.replace(/_/g, " ")}
-                </label>
-                <input
-                  type={typeof formData[key] === "number" ? "number" : "text"}
-                  name={key}
-                  value={formData[key] || ""}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded"
-                />
-              </div>
-            );
-          })}
+              return (
+                <div key={key} className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
+                    {key.replace(/_/g, " ")}
+                  </label>
+                  <input
+                    type={typeof formData[key] === "number" ? "number" : "text"}
+                    name={key}
+                    value={formData[key] || ""}
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded"
+                  />
+                </div>
+              );
+            })}
+          </div>
 
-          <div className="flex justify-end space-x-3 mt-6">
+          <div className="flex justify-end space-x-3 mt-6 sticky bottom-0 bg-white pt-3 border-t">
             <button
               type="button"
               onClick={onClose}
