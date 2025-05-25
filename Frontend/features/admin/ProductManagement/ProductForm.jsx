@@ -1,69 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const ProductCatalogManagement = () => {
   const [step, setStep] = useState(1);
+  const [startedFromStep1, setStartedFromStep1] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const dashboardData = location.state?.dashboardData;
   const initialEntityType = location.state?.entityType;
-
-  // Set initial step based on entityType if provided
-  useEffect(() => {
-    if (initialEntityType) {
-      // If we're starting with a specific entity type, we're not starting from step 1
-      setStartedFromStep1(false);
-
-      switch (initialEntityType.toLowerCase()) {
-        case "categories":
-        case "category":
-          setStep(1);
-          break;
-        case "brands":
-        case "brand":
-          setStep(2);
-          break;
-        case "products":
-        case "product":
-          setStep(3);
-          break;
-        case "variants":
-        case "variant":
-          setStep(4);
-          break;
-        case "attributes":
-        case "attribute":
-          setStep(5);
-          break;
-        case "attributevalues":
-        case "attribute-value":
-          setStep(5); // Updated from 6 to 5 since we removed the Attribute step
-          break;
-        case "media":
-          setStep(6); // Updated from 7 to 6
-          break;
-        default:
-          setStep(1);
-          setStartedFromStep1(true); // If we're starting at step 1, set the flag
-      }
-    } else {
-      // If no entity type is provided, we're starting from step 1
-      setStartedFromStep1(true);
-      setStep(1);
-    }
-  }, [initialEntityType]);
-
-  // Add a state to track if the form was started from step 1
-  const [startedFromStep1, setStartedFromStep1] = useState(false);
-
-  // Update useEffect to detect if we're starting from step 1
-  useEffect(() => {
-    // If we're at step 1 and there's no entityType provided, we're starting fresh
-    if (step === 1 && !initialEntityType) {
-      setStartedFromStep1(true);
-      console.log("Form started from step 1");
-    }
-  }, [step, initialEntityType]);
-
   const [formData, setFormData] = useState({
     categories: [],
     brands: [],
@@ -73,47 +17,38 @@ const ProductCatalogManagement = () => {
     attributeValues: [],
     media: [],
   });
-
-  // Store form data for each step
   const [stepFormData, setStepFormData] = useState({
-    1: {}, // Category form data
-    2: {}, // Brand form data
-    3: {}, // Product form data
-    4: {}, // Variant form data
-    5: {}, // Attribute form data
-    6: {}, // Attribute Value form data
-    7: {}, // Media form data
+    1: {},
+    2: {},
+    3: {},
+    4: {},
+    5: {},
+    6: {},
+    7: {},
   });
+  const [relatedSelections, setRelatedSelections] = useState({});
 
-  // Add a new function to transform the stepFormData before displaying it
-  const getFormattedStepData = () => {
-    // console.log("Current stepFormData:", stepFormData);
-
-    return {
-      categoryFormData: stepFormData[1] || {},
-      brandFormData: stepFormData[2] || {},
-      productFormData: stepFormData[3] || {},
-      variantFormData: stepFormData[4] || {},
-      attributeValueFormData: stepFormData[5] || {}, // Previously step 6
-      mediaFormData: stepFormData[6] || {}, // Previously step 7
-      // Include the related selections from step 6 (previously step 7)
-      relatedSelections: {
-        category: stepFormData[1]?.name || "N/A",
-        brand: stepFormData[2]?.name || "N/A",
-        product: stepFormData[3]?.name || "N/A",
-        variant: stepFormData[4]?.sku || "N/A",
-        attributeValue: stepFormData[5]?.value || "N/A",
-        attributeName: stepFormData[5]?.attribute_name || "N/A",
-      },
+  useEffect(() => {
+    const stepMap = {
+      category: 1,
+      brand: 2,
+      product: 3,
+      variant: 4,
+      attribute: 5,
+      attributevalue: 5,
+      media: 6,
     };
-  };
+    if (initialEntityType) {
+      setStartedFromStep1(false);
+      setStep(stepMap[initialEntityType.toLowerCase().replace("s", "")] || 1);
+    } else {
+      setStartedFromStep1(true);
+      setStep(1);
+    }
+  }, [initialEntityType]);
 
-  // Initialize with data from dashboard only
   useEffect(() => {
     if (dashboardData) {
-      console.log("Using data from ProductDashboard page:", dashboardData);
-
-      // Map dashboard data to our format
       setFormData({
         categories: dashboardData.categories || [],
         brands: dashboardData.brands || [],
@@ -123,412 +58,199 @@ const ProductCatalogManagement = () => {
         attributeValues: dashboardData.attributeValues || [],
         media: dashboardData.media || [],
       });
-    } else {
-      console.log(
-        "No dashboard data available, initializing with empty arrays"
-      );
-      // Initialize with empty arrays instead of dummy data
-      setFormData({
-        categories: [],
-        brands: [],
-        products: [],
-        variants: [],
-        attributes: [],
-        attributeValues: [],
-        media: [],
-      });
-    }
-  }, [dashboardData]);
-
-  const handleSubmit = async (e, endpoint, data, nextStep) => {
-    e.preventDefault();
-    try {
-      // Save the form data for the current step
+      const selections = location.state?.selectedItems || {};
       setStepFormData((prev) => ({
         ...prev,
-        [step]: data,
+        1: selections.categories || {},
+        2: selections.brands || {},
+        3: selections.products || {},
+        4: selections.variants || {},
+        5: selections.attributeValues || {},
+        6: selections.media || {},
       }));
-
-      // Generate ID based on entity type
-      let responseData;
-      const entityType = endpoint.split("/").pop();
-
-      switch (entityType) {
-        case "categories":
-          responseData = { ...data, category_id: `cat-${Date.now()}` };
-          setFormData((prev) => ({
-            ...prev,
-            categories: [...prev.categories, responseData],
-          }));
-          break;
-        case "brands":
-          responseData = { ...data, brand_id: `brand-${Date.now()}` };
-          setFormData((prev) => ({
-            ...prev,
-            brands: [...prev.brands, responseData],
-          }));
-          break;
-        case "product":
-          responseData = { ...data, product_id: `prod-${Date.now()}` };
-          setFormData((prev) => ({
-            ...prev,
-            products: [...prev.products, responseData],
-          }));
-          break;
-        case "product-variant":
-          responseData = { ...data, product_variant_id: `var-${Date.now()}` };
-          setFormData((prev) => ({
-            ...prev,
-            variants: [...prev.variants, responseData],
-          }));
-          break;
-        case "product-attributes":
-          responseData = {
-            ...data,
-            product_attribute_id: `attr-${Date.now()}`,
-          };
-          setFormData((prev) => ({
-            ...prev,
-            attributes: [...prev.attributes, responseData],
-          }));
-          break;
-        case "product-attribute-values":
-          responseData = {
-            ...data,
-            product_attribute_value_id: `attrval-${Date.now()}`,
-          };
-          setFormData((prev) => ({
-            ...prev,
-            attributeValues: [...prev.attributeValues, responseData],
-          }));
-          break;
-        case "product-media":
-          responseData = {
-            ...data,
-            product_media_id: `media-${Date.now()}`,
-            media_url: data.media_file
-              ? URL.createObjectURL(data.media_file)
-              : "https://example.com/default.jpg",
-          };
-          setFormData((prev) => ({
-            ...prev,
-            media: [...prev.media, responseData],
-          }));
-          break;
-      }
-
-      console.log("Form submitted successfully:", responseData);
-      setTimeout(() => {
-        setStep(nextStep);
-      }, 500);
-    } catch (err) {
-      console.error("Form submission error:", err);
+      setRelatedSelections(selections);
     }
-  };
+  }, [dashboardData, location.state?.selectedItems]);
 
-  const handleBack = () => {
-    if (step > 1) {
-      setStep(step - 1);
-      // Maintain the startedFromStep1 flag when going back
-    }
-  };
-
-  const Stepper = () => {
-    const steps = [
-      "Category",
-      "Brand",
-      "Product",
-      "Variant",
-      "Attribute Value", // Changed from "Attribute"
-      "Media",
-      "Review",
-    ];
-
-    return (
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          {steps.map((stepName, index) => (
-            <React.Fragment key={index}>
-              <div
-                className={`flex flex-col items-center ${
-                  index + 1 < step
-                    ? "text-blue-600"
-                    : index + 1 === step
-                    ? "text-blue-600"
-                    : "text-gray-400"
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full text-xs md:text-sm font-semibold ${
-                    index + 1 < step
-                      ? "bg-blue-600 text-white"
-                      : index + 1 === step
-                      ? "border-2 border-blue-600 text-blue-600"
-                      : "border-2 border-gray-300 text-gray-400"
-                  }`}
-                >
-                  {index + 1 < step ? "✓" : index + 1}
-                </div>
-                <div className="text-xs mt-1 text-center hidden sm:block">
-                  {stepName}
-                </div>
-              </div>
-              {index < steps.length - 1 && (
-                <div
-                  className={`flex-1 h-0.5 ${
-                    index + 1 < step ? "bg-blue-600" : "bg-gray-300"
-                  }`}
-                ></div>
-              )}
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  // Utility function to generate slug
-  const generateSlug = (name) => {
-    return name
+  const generateSlug = (name) =>
+    name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
+
+  const handleNewItemCreation = (fieldName, newItem) => {
+    const entityMap = {
+      category: "categories",
+      brand: "brands",
+      product: "products",
+      attribute: "attributes",
+    };
+    const entity = fieldName.split("_").pop();
+    if (entityMap[entity]) {
+      const newEntity = {
+        id: newItem.id,
+        [`${entity}_id`]: newItem.id,
+        name: newItem.name,
+        slug: entity !== "attribute" ? generateSlug(newItem.name) : undefined,
+        isNew: true,
+      };
+      setFormData((prev) => ({
+        ...prev,
+        [entityMap[entity]]: [...(prev[entityMap[entity]] || []), newEntity],
+      }));
+    }
   };
 
-  const FormComponent = ({ title, fields, endpoint, nextStep }) => {
-    // Initialize with data from stepFormData if available
-    const [localData, setLocalData] = useState(() => {
-      return { ...stepFormData[step] };
-    });
-
-    const [filledFields, setFilledFields] = useState(() => {
-      // Initialize filledFields based on existing data
-      const filled = {};
-      Object.keys(stepFormData[step] || {}).forEach((key) => {
-        filled[key] = !!stepFormData[step][key];
-      });
-      return filled;
-    });
-
-    // Update localData when step changes to load saved data
-    useEffect(() => {
-      setLocalData({ ...stepFormData[step] });
-
-      // Update filledFields based on the loaded data
-      const filled = {};
-      Object.keys(stepFormData[step] || {}).forEach((key) => {
-        filled[key] = !!stepFormData[step][key];
-      });
-      setFilledFields(filled);
-    }, [step]);
-
-    const handleChange = (e) => {
-      const { name, value, type, files } = e.target;
-      const newValue = type === "file" ? files[0] : value;
-      console.log(`Field changed: ${name} =`, newValue);
-
-      setLocalData((prev) => ({ ...prev, [name]: newValue }));
-      setFilledFields((prev) => ({ ...prev, [name]: !!newValue }));
-
-      // Auto-generate slug from name for category, brand, and product
-      if (name === "name" && (step === 1 || step === 2 || step === 3)) {
-        const slug = generateSlug(newValue);
-        setLocalData((prev) => ({ ...prev, slug }));
-        setFilledFields((prev) => ({ ...prev, slug: !!slug }));
-      }
+  const getFilteredOptions = (entityType) => {
+    const entityMap = {
+      products: "product_id",
+      variants: "product_variant_id",
+      attributes: "product_attribute_id",
     };
-
-    const isFormValid = fields.every((field) => {
-      if (field.type === "file") {
-        return localData[field.name] instanceof File;
-      }
-      return (
-        localData[field.name] && localData[field.name].toString().trim() !== ""
+    const nameField = entityType === "variants" ? "sku" : "name";
+    if (entityType === "brands" || !relatedSelections.categories) {
+      return formData[entityType].map((item) => ({
+        id: item[entityMap[entityType]] || item.id,
+        name:
+          item[nameField] ||
+          (entityType === "variants"
+            ? `Variant of ${
+                formData.products.find((p) => p.id === item.product_id)?.name ||
+                "Unknown"
+              }`
+            : item.name),
+      }));
+    }
+    const categoryId =
+      relatedSelections.categories?.id ||
+      relatedSelections.categories?.category_id;
+    if (entityType === "products") {
+      const filtered = formData.products.filter(
+        (p) => p.category_id === categoryId
       );
-    });
-
-    // Store form data in parent component when submitting
-    const handleFormSubmit = (e) => {
-      e.preventDefault();
-      // Save the current form data to the parent component
-      handleSubmit(e, endpoint, localData, nextStep);
-    };
-
-    // Get dropdown options based on field name and step
-    const getDropdownOptions = (fieldName) => {
-      if (step === 1 && fieldName === "target_role") {
-        return [
-          { id: "customer", name: "Customer" },
-          { id: "retailer", name: "Retailer" },
-          { id: "both", name: "Both" },
-        ];
-      } else if (step === 3 && fieldName === "category_id") {
-        return formData.categories.map((cat) => ({
-          id: cat.category_id || cat.id,
-          name: cat.name,
-        }));
-      } else if (step === 3 && fieldName === "brand_id") {
-        return formData.brands.map((brand) => ({
-          id: brand.brand_id || brand.id,
-          name: brand.name,
-        }));
-      } else if (step === 4 && fieldName === "product_id") {
-        return formData.products.map((product) => ({
-          id: product.product_id || product.id,
-          name: product.name,
-        }));
-      } else if (step === 6 && fieldName === "attribute_id") {
-        return formData.attributes.map((attr) => ({
-          id: attr.product_attribute_id || attr.id,
-          name: attr.name,
-        }));
-      } else if (step === 7 && fieldName === "product_id") {
-        return formData.products.map((product) => ({
-          id: product.product_id || product.id,
-          name: product.name,
-        }));
-      } else if (step === 5 && fieldName === "type") {
-        return [
-          { id: "select", name: "Select" },
-          { id: "text", name: "Text" },
-        ];
-      } else if (step === 7 && fieldName === "media_type") {
-        return [
-          { id: "image", name: "Image" },
-          { id: "video", name: "Video" },
-        ];
+      if (relatedSelections.brands) {
+        const brandId =
+          relatedSelections.brands?.id || relatedSelections.brands?.brand_id;
+        return filtered
+          .filter((p) => p.brand_id === brandId)
+          .map((p) => ({ id: p.product_id || p.id, name: p.name }));
       }
-      return [];
-    };
-
-    return (
-      <div className="bg-white p-4 md:p-6 rounded-lg shadow-lg w-full max-w-md mx-auto border-2 border-blue-500">
-        <h2 className="text-xl md:text-2xl font-bold mb-4 text-center">
-          {title}
-        </h2>
-        <form onSubmit={handleFormSubmit} className="space-y-3 md:space-y-4">
-          {fields.map((field, index) => (
-            <div key={field.name} className="mb-3">
-              <label className="block text-sm md:text-base font-medium text-gray-700 mb-1">
-                {field.label}
-              </label>
-
-              {field.type === "select" ? (
-                <SearchableDropdown
-                  name={field.name}
-                  value={localData[field.name] || ""}
-                  onChange={handleChange}
-                  placeholder={field.placeholder}
-                  options={getDropdownOptions(field.name)}
-                  displayKey="name"
-                  valueKey="id"
-                  disabled={index > 0 && !filledFields[fields[index - 1].name]}
-                  required
-                />
-              ) : field.type === "file" ? (
-                <div className="mt-1">
-                  <input
-                    type="file"
-                    name={field.name}
-                    onChange={handleChange}
-                    accept="image/*,video/*"
-                    className="block w-full text-sm text-gray-500
-                      file:mr-2 file:py-1 file:px-3
-                      md:file:mr-4 md:file:py-2 md:file:px-4
-                      file:rounded-md file:border-0
-                      file:text-sm md:file:text-base
-                      file:font-medium
-                      file:bg-blue-50 file:text-blue-700
-                      hover:file:bg-blue-100"
-                    disabled={
-                      index > 0 && !filledFields[fields[index - 1].name]
-                    }
-                    required
-                  />
-                  {localData[field.name] && (
-                    <div className="mt-2 text-xs text-gray-500">
-                      Selected: {localData[field.name].name}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <input
-                  type={field.type}
-                  name={field.name}
-                  value={localData[field.name] || ""}
-                  onChange={handleChange}
-                  placeholder={field.placeholder}
-                  className="mt-1 block w-full rounded-md border-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500 p-2 text-sm md:text-base"
-                  disabled={index > 0 && !filledFields[fields[index - 1].name]}
-                  required
-                  list={`${field.name}-suggestions`}
-                />
-              )}
-
-              {/* Add datalist for text inputs to show suggestions */}
-              {field.type === "text" && (
-                <datalist id={`${field.name}-suggestions`}>
-                  {step === 1 &&
-                    field.name === "name" &&
-                    formData.categories.map((cat, idx) => (
-                      <option key={idx} value={cat.name} />
-                    ))}
-                  {step === 2 &&
-                    field.name === "name" &&
-                    formData.brands.map((brand, idx) => (
-                      <option key={idx} value={brand.name} />
-                    ))}
-                  {step === 3 &&
-                    field.name === "name" &&
-                    formData.products.map((product, idx) => (
-                      <option key={idx} value={product.name} />
-                    ))}
-                  {step === 4 &&
-                    field.name === "sku" &&
-                    formData.variants.map((variant, idx) => (
-                      <option key={idx} value={variant.sku} />
-                    ))}
-                  {step === 5 &&
-                    field.name === "name" &&
-                    formData.attributes.map((attr, idx) => (
-                      <option key={idx} value={attr.name} />
-                    ))}
-                  {step === 6 &&
-                    field.name === "value" &&
-                    formData.attributeValues.map((attrVal, idx) => (
-                      <option key={idx} value={attrVal.value} />
-                    ))}
-                </datalist>
-              )}
-            </div>
-          ))}
-
-          <div className="flex space-x-2 md:space-x-4 pt-2">
-            {step > 1 && (
-              <button
-                type="button"
-                onClick={handleBack}
-                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md transition duration-200 text-sm md:text-base"
-              >
-                Back
-              </button>
-            )}
-            <button
-              type="submit"
-              disabled={!isFormValid}
-              className={`flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-200 text-sm md:text-base
-                ${!isFormValid ? "opacity-70 cursor-not-allowed" : ""}
-                ${step === 1 ? "w-full" : ""}`}
-            >
-              Submit
-            </button>
-          </div>
-        </form>
-      </div>
-    );
+      return filtered.map((p) => ({ id: p.product_id || p.id, name: p.name }));
+    }
+    if (entityType === "variants") {
+      const productIds = formData.products
+        .filter((p) => p.category_id === categoryId)
+        .map((p) => p.id || p.product_id);
+      return formData.variants
+        .filter((v) => productIds.includes(v.product_id))
+        .map((v) => ({
+          id: v.product_variant_id || v.id,
+          name:
+            v.sku ||
+            `Variant of ${
+              formData.products.find((p) => p.id === v.product_id)?.name ||
+              "Unknown"
+            }`,
+        }));
+    }
+    return formData[entityType].map((item) => ({
+      id: item[entityMap[entityType]] || item.id,
+      name: item[nameField],
+    }));
   };
 
-  // Add this new component for searchable dropdown
+  const handleSubmit = async (e, endpoint, data, nextStep) => {
+    e.preventDefault();
+    const entity = endpoint.split("/").pop();
+    const entityKeyMap = {
+      categories: "categories",
+      brands: "brands",
+      product: "products",
+      "product-variant": "variants",
+      "product-attributes": "attributes",
+      "product-attribute-values": "attributeValues",
+      "product-media": "media",
+    };
+    const idMap = {
+      categories: "category_id",
+      brands: "brand_id",
+      product: "product_id",
+      "product-variant": "product_variant_id",
+      "product-attributes": "product_attribute_id",
+      "product-attribute-values": "product_attribute_value_id",
+      "product-media": "product_media_id",
+    };
+    const entityKey = entityKeyMap[entity];
+    if (!entityKey) {
+      console.error(`Invalid entity: ${entity}`);
+      return;
+    }
+    const responseData = {
+      ...data,
+      [idMap[entity]]: `${entity.slice(0, 4)}-${Date.now()}`,
+      ...(entity === "product-media" && data.media_file
+        ? { media_url: URL.createObjectURL(data.media_file) }
+        : {}),
+    };
+    if (
+      entity === "product-attribute-values" &&
+      data.attribute_name &&
+      !data.attribute_id
+    ) {
+      const attrId = `attr-${Date.now()}`;
+      setFormData((prev) => ({
+        ...prev,
+        attributes: [
+          ...(prev.attributes || []),
+          {
+            id: attrId,
+            product_attribute_id: attrId,
+            name: data.attribute_name,
+            type: "select",
+            isNew: true,
+          },
+        ],
+      }));
+      responseData.attribute_id = attrId;
+    }
+    setFormData((prev) => ({
+      ...prev,
+      [entityKey]: [...(prev[entityKey] || []), responseData],
+    }));
+    setStepFormData((prev) => ({ ...prev, [step]: data }));
+    setTimeout(() => setStep(nextStep), 500);
+  };
+
+  const submitAllFormData = async () => {
+    const allFormData = {
+      category: stepFormData[1],
+      brand: stepFormData[2],
+      product: stepFormData[3],
+      variant: stepFormData[4],
+      attributeValue: stepFormData[5],
+      media: {
+        ...stepFormData[6],
+        ...(stepFormData[6].media_file
+          ? { fileName: stepFormData[6].media_file.name }
+          : {}),
+      },
+    };
+    console.log(
+      "Submitting all form data:",
+      JSON.stringify(
+        allFormData,
+        (key, value) => {
+          if (value instanceof File) {
+            return { fileName: value.name, type: value.type, size: value.size };
+          }
+          return value;
+        },
+        2
+      )
+    );
+    alert("Product data successfully submitted!");
+  };
+
   const SearchableDropdown = ({
     name,
     value,
@@ -537,71 +259,44 @@ const ProductCatalogManagement = () => {
     options,
     displayKey = "name",
     valueKey = "id",
-    disabled = false,
+    disabled,
     required,
-    allowCreate = false,
+    allowCreate,
   }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
-
-    // Find the selected option for display
-    const selectedOption = options.find((option) => option[valueKey] === value);
-
-    // Filter options based on search term
-    const filteredOptions = options.filter((option) =>
-      option[displayKey].toLowerCase().includes(searchTerm.toLowerCase())
+    const selectedOption = options.find((opt) => opt[valueKey] === value);
+    const filteredOptions = options.filter((opt) =>
+      opt[displayKey].toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Handle outside click to close dropdown
     useEffect(() => {
-      const handleClickOutside = (event) => {
-        if (
-          dropdownRef.current &&
-          !dropdownRef.current.contains(event.target)
-        ) {
+      const handleClickOutside = (e) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(e.target))
           setIsOpen(false);
-        }
       };
-
       document.addEventListener("mousedown", handleClickOutside);
-      return () => {
+      return () =>
         document.removeEventListener("mousedown", handleClickOutside);
-      };
     }, []);
 
-    // Handle option selection
     const handleSelect = (option) => {
-      const syntheticEvent = {
-        target: {
-          name,
-          value: option[valueKey],
-        },
-      };
-      onChange(syntheticEvent);
+      onChange({ target: { name, value: option[valueKey] } });
       setIsOpen(false);
       setSearchTerm("");
     };
 
-    // Handle creating a new item
     const handleCreateNew = () => {
       if (!searchTerm.trim()) return;
-
       const newId = `new-${name}-${Date.now()}`;
-      const newItem = {
-        [valueKey]: newId,
-        [displayKey]: searchTerm.trim(),
-      };
-
-      const syntheticEvent = {
+      onChange({
         target: {
           name,
           value: newId,
-          newItem: newItem,
+          newItem: { id: newId, [displayKey]: searchTerm.trim() },
         },
-      };
-
-      onChange(syntheticEvent);
+      });
       setIsOpen(false);
       setSearchTerm("");
     };
@@ -611,11 +306,9 @@ const ProductCatalogManagement = () => {
         <div
           className={`mt-1 flex items-center justify-between w-full rounded-md border-2 ${
             disabled
-              ? "bg-gray-100 border-gray-200"
-              : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-          } p-2 text-sm md:text-base ${
-            disabled ? "cursor-not-allowed" : "cursor-pointer"
-          }`}
+              ? "bg-gray-100 border-gray-200 cursor-not-allowed"
+              : "border-gray-300 focus:border-blue-500"
+          } p-2 text-sm`}
           onClick={() => !disabled && setIsOpen(!isOpen)}
         >
           <div className={`flex-1 truncate ${disabled ? "text-gray-400" : ""}`}>
@@ -624,7 +317,7 @@ const ProductCatalogManagement = () => {
           <svg
             className={`h-5 w-5 ${
               disabled ? "text-gray-300" : "text-gray-400"
-            } transition-transform ${isOpen ? "transform rotate-180" : ""}`}
+            } ${isOpen ? "transform rotate-180" : ""}`}
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
             fill="currentColor"
@@ -636,9 +329,8 @@ const ProductCatalogManagement = () => {
             />
           </svg>
         </div>
-
         {isOpen && !disabled && (
-          <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-auto shadow-lg">
+          <div className="absolute z-10 w-full bg-white border rounded-md mt-1 max-h-60 overflow-auto shadow-lg">
             <div className="sticky top-0 bg-white p-2 border-b">
               <input
                 type="text"
@@ -650,16 +342,15 @@ const ProductCatalogManagement = () => {
                 autoFocus
               />
             </div>
-
-            {filteredOptions.length > 0 ? (
+            {filteredOptions.length ? (
               <ul>
-                {filteredOptions.map((option, index) => (
+                {filteredOptions.map((opt, i) => (
                   <li
-                    key={option[valueKey] || index}
-                    onClick={() => handleSelect(option)}
+                    key={opt[valueKey] || i}
+                    onClick={() => handleSelect(opt)}
                     className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-sm"
                   >
-                    {option[displayKey]}
+                    {opt[displayKey]}
                   </li>
                 ))}
               </ul>
@@ -668,11 +359,9 @@ const ProductCatalogManagement = () => {
                 No results found
               </div>
             )}
-
-            {/* Add option to create new item if allowed and search term is not empty */}
             {allowCreate && searchTerm.trim() && (
               <div
-                className="px-4 py-2 bg-blue-50 hover:bg-blue-100 cursor-pointer text-sm border-t border-gray-300"
+                className="px-4 py-2 bg-blue-50 hover:bg-blue-100 cursor-pointer text-sm border-t"
                 onClick={handleCreateNew}
               >
                 <span className="font-medium">Create new:</span> {searchTerm}
@@ -684,778 +373,159 @@ const ProductCatalogManagement = () => {
     );
   };
 
-  // Add a new component for the enhanced form with related entity dropdowns
   const EnhancedFormComponent = ({
     title,
     fields,
     endpoint,
     nextStep,
-    relatedEntities = [], // Array of related entities to show as dropdowns
+    relatedEntities = [],
   }) => {
-    // Initialize with data from stepFormData if available
-    const [localData, setLocalData] = useState(() => {
-      // First check if we have data from dashboard selections
-      const dashboardSelections = location.state?.selectedItems;
+    const [localData, setLocalData] = useState(stepFormData[step]);
+    const [filledFields, setFilledFields] = useState(() =>
+      Object.keys(localData).reduce(
+        (acc, key) => ({ ...acc, [key]: !!localData[key] }),
+        {}
+      )
+    );
 
-      // Initialize with data from stepFormData if available
-      let initialData = { ...stepFormData[step] };
-
-      // If we have dashboard selections, merge them with the initial data based on the current step
-      if (dashboardSelections) {
-        if (step === 1 && dashboardSelections.categories) {
-          // For category step, use category data
-          initialData = {
-            ...initialData,
-            name: dashboardSelections.categories.name,
-            slug: dashboardSelections.categories.slug,
-            target_role: dashboardSelections.categories.target_role,
-          };
-        } else if (step === 2 && dashboardSelections.brands) {
-          // For brand step, use brand data
-          initialData = {
-            ...initialData,
-            name: dashboardSelections.brands.name,
-            slug: dashboardSelections.brands.slug,
-          };
-        } else if (step === 3 && dashboardSelections.products) {
-          // For product step, use product data
-          initialData = {
-            ...initialData,
-            name: dashboardSelections.products.name,
-            slug: dashboardSelections.products.slug,
-            description: dashboardSelections.products.description,
-            base_price: dashboardSelections.products.base_price,
-            category_id: dashboardSelections.products.category_id,
-            brand_id: dashboardSelections.products.brand_id,
-          };
-        } else if (step === 4 && dashboardSelections.variants) {
-          // For variant step, use variant data
-          initialData = {
-            ...initialData,
-            sku: dashboardSelections.variants.sku,
-            price: dashboardSelections.variants.price,
-            description: dashboardSelections.variants.description,
-            stock_quantity: dashboardSelections.variants.stock_quantity,
-            discount_percentage:
-              dashboardSelections.variants.discount_percentage,
-            discount_quantity: dashboardSelections.variants.discount_quantity,
-            min_retailer_quantity:
-              dashboardSelections.variants.min_retailer_quantity,
-            bulk_discount_percentage:
-              dashboardSelections.variants.bulk_discount_percentage,
-            bulk_discount_quantity:
-              dashboardSelections.variants.bulk_discount_quantity,
-            product_id: dashboardSelections.variants.product_id,
-          };
-        }
-      }
-
-      return initialData;
-    });
-
-    const [filledFields, setFilledFields] = useState(() => {
-      // Initialize filledFields based on existing data
-      const filled = {};
-      Object.keys(localData).forEach((key) => {
-        filled[key] = !!localData[key];
-      });
-      return filled;
-    });
-
-    // State for related entity selections
-    const [relatedSelections, setRelatedSelections] = useState(() => {
-      // First check if we have selections passed from the dashboard
-      const dashboardSelections = location.state?.selectedItems;
-
-      if (dashboardSelections) {
-        console.log("Using selections from dashboard:", dashboardSelections);
-        // Return the selections from dashboard directly
-        return dashboardSelections;
-      }
-
-      // If we started from step 1 and have previous selections, use them
-      if (startedFromStep1) {
-        // Get previous selections from earlier steps
-        const selections = {};
-
-        // For step 2+, get category from step 1
-        if (step > 1 && stepFormData[1]?.name) {
-          selections.categories = {
-            id: stepFormData[1].id || stepFormData[1].category_id || null,
-            category_id:
-              stepFormData[1].category_id || stepFormData[1].id || null,
-            name: stepFormData[1].name,
-          };
-        }
-
-        // For step 3+, get brand from step 2
-        if (step > 2 && stepFormData[2]?.name) {
-          selections.brands = {
-            id: stepFormData[2].id || stepFormData[2].brand_id || null,
-            brand_id: stepFormData[2].brand_id || stepFormData[2].id || null,
-            name: stepFormData[2].name,
-          };
-        }
-
-        // For step 4+, get product from step 3
-        if (step > 3 && stepFormData[3]?.name) {
-          selections.products = {
-            id: stepFormData[3].id || stepFormData[3].product_id || null,
-            product_id:
-              stepFormData[3].product_id || stepFormData[3].id || null,
-            name: stepFormData[3].name,
-          };
-        }
-
-        // For step 5+, get variant from step 4
-        if (step > 4 && stepFormData[4]?.sku) {
-          selections.variants = {
-            id:
-              stepFormData[4].id || stepFormData[4].product_variant_id || null,
-            product_variant_id:
-              stepFormData[4].product_variant_id || stepFormData[4].id || null,
-            sku: stepFormData[4].sku,
-            name: stepFormData[4].sku, // Use SKU as name for display
-          };
-        }
-
-        console.log(`Step ${step} - Using previous selections:`, selections);
-        return selections;
-      }
-
-      // Default empty selections if not started from step 1
-      return {};
-    });
-
-    // Function to filter options based on selected related entities
-    const getFilteredOptions = (entityType) => {
-      // For brands, always return all brands regardless of category selection
-      if (entityType === "brands") {
-        return formData.brands.map((brand) => ({
-          id: brand.brand_id || brand.id,
-          name: brand.name,
-        }));
-      }
-
-      // If no category is selected, return all options for other entity types
-      if (!relatedSelections.categories) {
-        return formData[entityType].map((item) => {
-          const idField =
-            entityType === "products"
-              ? "product_id"
-              : entityType === "variants"
-              ? "product_variant_id"
-              : "id";
-
-          const nameField = entityType === "variants" ? "sku" : "name";
-
-          return {
-            id: item[idField] || item.id,
-            name:
-              item[nameField] ||
-              (entityType === "variants"
-                ? `Variant of ${
-                    formData.products.find((p) => p.id === item.product_id)
-                      ?.name || "Unknown Product"
-                  }`
-                : item.name),
-          };
-        });
-      }
-
-      const selectedCategoryId =
-        relatedSelections.categories.id ||
-        relatedSelections.categories.category_id;
-
-      // Filter products based on selected category
-      if (entityType === "products") {
-        return formData.products
-          .filter((product) => product.category_id === selectedCategoryId)
-          .map((product) => ({
-            id: product.product_id || product.id,
-            name: product.name,
-          }));
-      }
-
-      // Filter variants based on selected category
-      if (entityType === "variants") {
-        // Find products in this category
-        const categoryProducts = formData.products.filter(
-          (product) => product.category_id === selectedCategoryId
-        );
-
-        // Get product IDs
-        const productIds = categoryProducts.map(
-          (product) => product.id || product.product_id
-        );
-
-        // Filter variants by these product IDs
-        return formData.variants
-          .filter((variant) => productIds.includes(variant.product_id))
-          .map((variant) => ({
-            id: variant.product_variant_id || variant.id,
-            name:
-              variant.sku ||
-              `Variant of ${
-                formData.products.find((p) => p.id === variant.product_id)
-                  ?.name || "Unknown Product"
-              }`,
-          }));
-      }
-
-      // Filter products based on selected brand
-      if (entityType === "products" && relatedSelections.brands) {
-        const selectedBrandId =
-          relatedSelections.brands.id || relatedSelections.brands.brand_id;
-
-        return formData.products
-          .filter((product) => {
-            // If category is selected, filter by both category and brand
-            if (relatedSelections.categories) {
-              const selectedCategoryId =
-                relatedSelections.categories.id ||
-                relatedSelections.categories.category_id;
-              return (
-                product.category_id === selectedCategoryId &&
-                product.brand_id === selectedBrandId
-              );
-            }
-            // Otherwise just filter by brand
-            return product.brand_id === selectedBrandId;
-          })
-          .map((product) => ({
-            id: product.product_id || product.id,
-            name: product.name,
-          }));
-      }
-
-      // Filter variants based on selected product
-      if (entityType === "variants" && relatedSelections.products) {
-        const selectedProductId =
-          relatedSelections.products.id ||
-          relatedSelections.products.product_id;
-
-        return formData.variants
-          .filter((variant) => variant.product_id === selectedProductId)
-          .map((variant) => ({
-            id: variant.product_variant_id || variant.id,
-            name:
-              variant.sku ||
-              `Variant of ${
-                formData.products.find((p) => p.id === variant.product_id)
-                  ?.name || "Unknown Product"
-              }`,
-          }));
-      }
-
-      // Default case - return all items
-      return formData[entityType].map((item) => ({
-        id: item.id || item[`${entityType.slice(0, -1)}_id`],
-        name: item.name || item.sku || item.value,
-      }));
-    };
-
-    // Check if all required fields are filled and required related entities are selected
-    const isFormValid = () => {
-      // Check if all required form fields are filled
-      const areRequiredFieldsFilled = fields.every(
-        (field) => !field.required || filledFields[field.name]
+    useEffect(() => {
+      setLocalData(stepFormData[step]);
+      setFilledFields(
+        Object.keys(stepFormData[step]).reduce(
+          (acc, key) => ({ ...acc, [key]: !!stepFormData[step][key] }),
+          {}
+        )
       );
+    }, [step]);
 
-      // Check if required related entities are selected
-      let areRelatedEntitiesSelected = true;
-
-      if (relatedEntities.includes("categories")) {
-        areRelatedEntitiesSelected = !!relatedSelections.categories;
-      }
-
-      if (relatedEntities.includes("brands") && areRelatedEntitiesSelected) {
-        areRelatedEntitiesSelected = !!relatedSelections.brands;
-      }
-
-      if (relatedEntities.includes("products") && areRelatedEntitiesSelected) {
-        areRelatedEntitiesSelected = !!relatedSelections.products;
-      }
-
-      // Variants are optional, so we don't check for them
-
-      return areRequiredFieldsFilled && areRelatedEntitiesSelected;
-    };
-
-    // Handle form submission
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      console.log("Form submitted with data:", localData);
-
-      // Create a copy of localData to add related entity IDs and names
-      const dataToSubmit = { ...localData };
-
-      // Add related entity data to submission
-      if (
-        relatedEntities.includes("categories") &&
-        relatedSelections.categories
-      ) {
-        dataToSubmit.category_id =
-          relatedSelections.categories.id ||
-          relatedSelections.categories.category_id;
-        dataToSubmit.category_name = relatedSelections.categories.name;
-      }
-
-      if (relatedEntities.includes("brands") && relatedSelections.brands) {
-        dataToSubmit.brand_id =
-          relatedSelections.brands.id || relatedSelections.brands.brand_id;
-        dataToSubmit.brand_name = relatedSelections.brands.name;
-      }
-
-      if (relatedEntities.includes("products") && relatedSelections.products) {
-        dataToSubmit.product_id =
-          relatedSelections.products.id ||
-          relatedSelections.products.product_id;
-        dataToSubmit.product_name = relatedSelections.products.name;
-      }
-
-      if (relatedEntities.includes("variants") && relatedSelections.variants) {
-        dataToSubmit.variant_id =
-          relatedSelections.variants.id ||
-          relatedSelections.variants.product_variant_id;
-        dataToSubmit.variant_name =
-          relatedSelections.variants.name || relatedSelections.variants.sku;
-      }
-
-      // Store the form data for this step
-      setStepFormData((prev) => {
-        const updatedStepData = {
-          ...prev,
-          [step]: dataToSubmit,
-        };
-        console.log(
-          `Updated step form data for step ${step}:`,
-          updatedStepData
-        );
-        return updatedStepData;
-      });
-
-      // Only make API call if we're on step 6 (or the final step before review)
-      if (step === 6) {
-        try {
-          console.log(`Submitting all form data to API`);
-
-          // Wait for state update to complete before getting form data
-          setTimeout(() => {
-            // Get all form data from all steps
-            const allFormData = getFormattedStepData();
-
-            // Get dashboard selections if available
-            const dashboardSelections = location.state?.selectedItems;
-            console.log(
-              "product Managment selections data:",
-              dashboardSelections
-            );
-
-            // Create a single comprehensive object with all data to be sent to backend
-            const apiSubmissionData = {
-              category:
-                allFormData.categoryFormData ||
-                (dashboardSelections?.categories
-                  ? {
-                      id:
-                        dashboardSelections.categories.id ||
-                        dashboardSelections.categories.category_id,
-                      name: dashboardSelections.categories.name,
-                      category_id:
-                        dashboardSelections.categories.category_id ||
-                        dashboardSelections.categories.id,
-                    }
-                  : {}),
-
-              brand:
-                allFormData.brandFormData ||
-                (dashboardSelections?.brands
-                  ? {
-                      id:
-                        dashboardSelections.brands.id ||
-                        dashboardSelections.brands.brand_id,
-                      name: dashboardSelections.brands.name,
-                      brand_id:
-                        dashboardSelections.brands.brand_id ||
-                        dashboardSelections.brands.id,
-                    }
-                  : {}),
-
-              product:
-                allFormData.productFormData ||
-                (dashboardSelections?.products
-                  ? {
-                      id:
-                        dashboardSelections.products.id ||
-                        dashboardSelections.products.product_id,
-                      name: dashboardSelections.products.name,
-                      product_id:
-                        dashboardSelections.products.product_id ||
-                        dashboardSelections.products.id,
-                    }
-                  : {}),
-
-              variant:
-                allFormData.variantFormData ||
-                (dashboardSelections?.variants
-                  ? {
-                      id:
-                        dashboardSelections.variants.id ||
-                        dashboardSelections.variants.product_variant_id,
-                      sku:
-                        dashboardSelections.variants.sku ||
-                        dashboardSelections.variants.name,
-                      product_variant_id:
-                        dashboardSelections.variants.product_variant_id ||
-                        dashboardSelections.variants.id,
-                    }
-                  : {}),
-
-              attributeValue: allFormData.attributeValueFormData,
-              media: allFormData.mediaFormData,
-
-              // Include relationships for reference
-              relationships: {
-                categoryId:
-                  allFormData.categoryFormData?.category_id ||
-                  allFormData.categoryFormData?.id ||
-                  (dashboardSelections?.categories
-                    ? dashboardSelections.categories.category_id ||
-                      dashboardSelections.categories.id
-                    : null),
-
-                brandId:
-                  allFormData.brandFormData?.brand_id ||
-                  allFormData.brandFormData?.id ||
-                  (dashboardSelections?.brands
-                    ? dashboardSelections.brands.brand_id ||
-                      dashboardSelections.brands.id
-                    : null),
-
-                productId:
-                  allFormData.productFormData?.product_id ||
-                  allFormData.productFormData?.id ||
-                  (dashboardSelections?.products
-                    ? dashboardSelections.products.product_id ||
-                      dashboardSelections.products.id
-                    : null),
-
-                variantId:
-                  allFormData.variantFormData?.product_variant_id ||
-                  allFormData.variantFormData?.id ||
-                  (dashboardSelections?.variants
-                    ? dashboardSelections.variants.product_variant_id ||
-                      dashboardSelections.variants.id
-                    : null),
-              },
-            };
-
-            // Log the complete data as a single object
-            console.log(
-              "=== COMPLETE DATA BEING SENT TO BACKEND apiSubmissionData ===",
-              apiSubmissionData
-            );
-
-            // Make API calls for each entity type
-            submitAllFormData(allFormData);
-
-            // Show success message
-            alert("Product data successfully submitted to API!");
-
-            // Move to review step
-            setStep(nextStep);
-          }, 100);
-        } catch (error) {
-          console.error("Error submitting form data to API:", error);
-          alert("Error submitting form data. Please try again.");
-        }
-      } else {
-        // For other steps, just move to next step without API call
-        console.log(`Moving to next step without API call`);
-        setStep(nextStep);
-      }
-    };
-
-    // Handle change in form fields
     const handleChange = (e) => {
       const { name, value, type, files, newItem } = e.target;
       const newValue = type === "file" ? files[0] : value;
-      console.log(`Field changed: ${name} =`, newValue);
-
       setLocalData((prev) => ({ ...prev, [name]: newValue }));
       setFilledFields((prev) => ({ ...prev, [name]: !!newValue }));
-
-      // Auto-generate slug from name for category, brand, and product
-      if (name === "name" && (step === 1 || step === 2 || step === 3)) {
+      if (name === "name" && [1, 2, 3].includes(step)) {
         const slug = generateSlug(newValue);
         setLocalData((prev) => ({ ...prev, slug }));
         setFilledFields((prev) => ({ ...prev, slug: !!slug }));
       }
-
-      // Handle new item creation
-      if (newItem) {
-        handleNewItemCreation(name, newItem);
-      }
+      if (newItem) handleNewItemCreation(name, newItem);
     };
 
-    // Add this function to the EnhancedFormComponent to handle related entity selections
     const handleRelatedEntitySelect = (entityType, entity) => {
       if (!entity) return;
-
-      // console.log(`Selected ${entityType}:`, entity);
-
-      // Update the related selections state
-      setRelatedSelections((prev) => ({
+      setRelatedSelections((prev) => ({ ...prev, [entityType]: entity }));
+      setLocalData((prev) => ({
         ...prev,
-        [entityType]: entity,
+        [`${entityType.slice(0, -1)}_id`]:
+          entity.id || entity[`${entityType.slice(0, -1)}_id`],
+        [`selected_${entityType.slice(0, -1)}`]: entity.name,
+        [`${entityType.slice(0, -1)}_name`]: entity.name,
       }));
-
-      // Update the form data with the selected entity information
-      const updatedData = { ...localData };
-
-      // Store both ID and name for each entity type
-      if (entityType === "categories") {
-        updatedData.category_id = entity.id || entity.category_id;
-        updatedData.selected_category = entity.name;
-        updatedData.selected_category_name = entity.name;
-        updatedData.category_name = entity.name;
-      } else if (entityType === "brands") {
-        updatedData.brand_id = entity.id || entity.brand_id;
-        updatedData.selected_brand = entity.name;
-        updatedData.selected_brand_name = entity.name;
-        updatedData.brand_name = entity.name;
-      } else if (entityType === "products") {
-        updatedData.product_id = entity.id || entity.product_id;
-        updatedData.selected_product = entity.name;
-        updatedData.selected_product_name = entity.name;
-        updatedData.product_name = entity.name;
-      } else if (entityType === "variants") {
-        updatedData.variant_id = entity.id || entity.variant_id;
-        updatedData.selected_variant = entity.sku || entity.name;
-        updatedData.selected_variant_name = entity.sku || entity.name;
-        updatedData.variant_sku = entity.sku || entity.name;
-      } else if (entityType === "attributes") {
-        updatedData.attribute_id = entity.id || entity.attribute_id;
-        updatedData.selected_attribute = entity.name;
-        updatedData.selected_attribute_name = entity.name;
-        updatedData.attribute_name = entity.name;
-      } else if (entityType === "attributeValues") {
-        updatedData.attribute_value_id = entity.id || entity.attribute_value_id;
-        updatedData.selected_attribute_value = entity.value;
-        updatedData.attribute_value = entity.value;
-      }
-
-      setLocalData(updatedData);
-      console.log("Updated localData with selection:", updatedData);
     };
 
-    // Handle back button
-    const handleBack = () => {
-      setStep(step - 1);
+    const isFormValid = () =>
+      fields.every(
+        (f) =>
+          !f.required ||
+          (f.type === "file"
+            ? localData[f.name] instanceof File
+            : localData[f.name]?.toString().trim())
+      ) && relatedEntities.every((e) => relatedSelections[e]);
+
+    const handleFormSubmit = async (e) => {
+      e.preventDefault();
+      const dataToSubmit = { ...localData };
+      relatedEntities.forEach((e) => {
+        if (relatedSelections[e]) {
+          dataToSubmit[`${e.slice(0, -1)}_id`] =
+            relatedSelections[e].id ||
+            relatedSelections[e][`${e.slice(0, -1)}_id`];
+          dataToSubmit[`${e.slice(0, -1)}_name`] = relatedSelections[e].name;
+        }
+      });
+      await handleSubmit(e, endpoint, dataToSubmit, nextStep);
     };
 
     return (
-      <div className="bg-white p-4 md:p-6 rounded-lg shadow-lg">
-        <h2 className="text-xl md:text-2xl font-bold mb-4 text-gray-800">
-          {title}
-        </h2>
-
-        {/* Related Entity Dropdowns */}
+      <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto border-2 border-blue-500">
+        <h2 className="text-2xl font-bold mb-4 text-center">{title}</h2>
         {relatedEntities.length > 0 && (
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <h3 className="text-md font-semibold mb-3 text-gray-700">
-              Select Related Items (in order)
-            </h3>
-
-            <div className="grid grid-cols-1 gap-4">
-              {/* Category dropdown - always enabled first */}
-              {relatedEntities.includes("categories") && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    1. Category <span className="text-red-500">*</span>
-                  </label>
-                  <SearchableDropdown
-                    name="related_category"
-                    value={
-                      relatedSelections.categories?.id ||
-                      relatedSelections.categories?.category_id ||
-                      ""
-                    }
-                    onChange={(e) => {
-                      const selectedCategory = formData.categories.find(
-                        (cat) =>
-                          cat.id === e.target.value ||
-                          cat.category_id === e.target.value
-                      );
-                      handleRelatedEntitySelect("categories", selectedCategory);
-                    }}
-                    placeholder={
-                      startedFromStep1 && step > 1 && stepFormData[1]?.name
-                        ? stepFormData[1].name
-                        : "First, select a category"
-                    }
-                    options={formData.categories.map((cat) => ({
-                      id: cat.category_id || cat.id,
-                      name: cat.name,
-                    }))}
-                    displayKey="name"
-                    valueKey="id"
-                    allowCreate={true}
-                  />
-                </div>
-              )}
-
-              {/* Brand dropdown - enabled after category */}
-              {relatedEntities.includes("brands") && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    2. Brand <span className="text-red-500">*</span>
-                  </label>
-                  <SearchableDropdown
-                    name="related_brand"
-                    value={
-                      relatedSelections.brands?.id ||
-                      relatedSelections.brands?.brand_id ||
-                      ""
-                    }
-                    onChange={(e) => {
-                      const selectedBrand = formData.brands.find(
-                        (brand) =>
-                          brand.id === e.target.value ||
-                          brand.brand_id === e.target.value
-                      );
-                      handleRelatedEntitySelect("brands", selectedBrand);
-                    }}
-                    placeholder={
-                      startedFromStep1 && step > 2 && stepFormData[2]?.name
-                        ? stepFormData[2].name
-                        : "Select a brand"
-                    }
-                    options={formData.brands.map((brand) => ({
-                      id: brand.brand_id || brand.id,
-                      name: brand.name,
-                    }))}
-                    displayKey="name"
-                    valueKey="id"
-                    allowCreate={true}
-                  />
-                </div>
-              )}
-
-              {/* Product dropdown - enabled after brand */}
-              {relatedEntities.includes("products") && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    3. Product <span className="text-red-500">*</span>
-                  </label>
-                  <SearchableDropdown
-                    name="related_product"
-                    value={
-                      relatedSelections.products?.id ||
-                      relatedSelections.products?.product_id ||
-                      ""
-                    }
-                    onChange={(e) => {
-                      const selectedProduct = formData.products.find(
-                        (product) =>
-                          product.id === e.target.value ||
-                          product.product_id === e.target.value
-                      );
-                      handleRelatedEntitySelect("products", selectedProduct);
-                    }}
-                    placeholder={
-                      startedFromStep1 && step > 3 && stepFormData[3]?.name
-                        ? stepFormData[3].name
-                        : "Select a product"
-                    }
-                    options={getFilteredOptions("products")}
-                    displayKey="name"
-                    valueKey="id"
-                    allowCreate={true}
-                  />
-                </div>
-              )}
-
-              {/* Variant dropdown - enabled after product */}
-              {relatedEntities.includes("variants") && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    4. Variant <span className="text-red-500">*</span>
-                  </label>
-                  <SearchableDropdown
-                    name="related_variant"
-                    value={
-                      relatedSelections.variants?.id ||
-                      relatedSelections.variants?.product_variant_id ||
-                      ""
-                    }
-                    onChange={(e) => {
-                      const selectedVariant = formData.variants.find(
-                        (variant) =>
-                          variant.id === e.target.value ||
-                          variant.product_variant_id === e.target.value
-                      );
-                      handleRelatedEntitySelect("variants", selectedVariant);
-                    }}
-                    placeholder={
-                      startedFromStep1 && step > 4 && stepFormData[4]?.sku
-                        ? stepFormData[4].sku
-                        : "Select a variant"
-                    }
-                    options={getFilteredOptions("variants")}
-                    displayKey="name"
-                    valueKey="id"
-                    allowCreate={true}
-                  />
-                </div>
-              )}
-            </div>
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+            <h3 className="text-md font-semibold mb-3">Select Related Items</h3>
+            {relatedEntities.map((entity, i) => (
+              <div key={entity} className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {i + 1}.{" "}
+                  {entity.charAt(0).toUpperCase() + entity.slice(1, -1)}{" "}
+                  <span className="text-red-500">*</span>
+                </label>
+                <SearchableDropdown
+                  name={`related_${entity.slice(0, -1)}`}
+                  value={
+                    relatedSelections[entity]?.id ||
+                    relatedSelections[entity]?.[`${entity.slice(0, -1)}_id`] ||
+                    ""
+                  }
+                  onChange={(e) =>
+                    handleRelatedEntitySelect(
+                      entity,
+                      formData[entity].find(
+                        (item) =>
+                          item.id === e.target.value ||
+                          item[`${entity.slice(0, -1)}_id`] === e.target.value
+                      )
+                    )
+                  }
+                  placeholder={
+                    (startedFromStep1 && stepFormData[step - i - 1]?.name) ||
+                    stepFormData[step - i - 1]?.sku ||
+                    `Select a ${entity.slice(0, -1)}`
+                  }
+                  options={getFilteredOptions(entity)}
+                  allowCreate
+                />
+              </div>
+            ))}
           </div>
         )}
-
-        <form onSubmit={handleSubmit}>
-          {fields.map((field, index) => (
-            <div key={field.name} className="mb-4">
-              <label
-                htmlFor={field.name}
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+        <form onSubmit={handleFormSubmit} className="space-y-4">
+          {fields.map((field, i) => (
+            <div key={field.name} className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 {field.label}
                 {field.required && <span className="text-red-500">*</span>}
               </label>
-
               {field.type === "select" ? (
                 <SearchableDropdown
                   name={field.name}
                   value={localData[field.name] || ""}
                   onChange={handleChange}
                   placeholder={field.placeholder}
-                  options={field.options || []}
-                  displayKey="name"
-                  valueKey="id"
-                  disabled={index > 0 && !filledFields[fields[index - 1].name]}
+                  options={
+                    field.options ||
+                    getFilteredOptions(
+                      field.name === "category_id"
+                        ? "categories"
+                        : field.name === "brand_id"
+                        ? "brands"
+                        : field.name === "product_id"
+                        ? "products"
+                        : "attributes"
+                    )
+                  }
+                  disabled={i > 0 && !filledFields[fields[i - 1].name]}
                   required={field.required}
-                  allowCreate={field.allowCreate || false}
+                  allowCreate={field.allowCreate}
                 />
               ) : field.type === "file" ? (
-                <div className="mt-1">
+                <div>
                   <input
                     type="file"
                     name={field.name}
                     onChange={handleChange}
                     accept="image/*,video/*"
-                    className="block w-full text-sm text-gray-500
-                      file:mr-2 file:py-1 file:px-3
-                      md:file:mr-4 md:file:py-2 md:file:px-4
-                      file:rounded-md file:border-0
-                      file:text-sm md:file:text-base
-                      file:font-medium
-                      file:bg-blue-50 file:text-blue-700
-                      hover:file:bg-blue-100"
-                    disabled={
-                      index > 0 && !filledFields[fields[index - 1].name]
-                    }
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    disabled={i > 0 && !filledFields[fields[i - 1].name]}
                     required={field.required}
                   />
                   {localData[field.name] && (
@@ -1471,20 +541,52 @@ const ProductCatalogManagement = () => {
                   value={localData[field.name] || ""}
                   onChange={handleChange}
                   placeholder={field.placeholder}
-                  className="mt-1 block w-full rounded-md border-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500 p-2 text-sm md:text-base"
-                  disabled={index > 0 && !filledFields[fields[index - 1].name]}
+                  className="mt-1 block w-full rounded-md border-2 border-gray-300 focus:border-blue-500 p-2 text-sm"
+                  disabled={i > 0 && !filledFields[fields[i - 1].name]}
                   required={field.required}
+                  list={`${field.name}-suggestions`}
                 />
+              )}
+              {field.type === "text" && (
+                <datalist id={`${field.name}-suggestions`}>
+                  {formData[
+                    field.name === "sku"
+                      ? "variants"
+                      : field.name === "value"
+                      ? "attributeValues"
+                      : field.name === "attribute_name"
+                      ? "attributes"
+                      : field.name === "name" && step === 1
+                      ? "categories"
+                      : step === 2
+                      ? "brands"
+                      : "products"
+                  ].map((item, idx) => (
+                    <option
+                      key={idx}
+                      value={
+                        item[
+                          field.name === "sku"
+                            ? "sku"
+                            : field.name === "value"
+                            ? "value"
+                            : field.name === "attribute_name"
+                            ? "name"
+                            : "name"
+                        ]
+                      }
+                    />
+                  ))}
+                </datalist>
               )}
             </div>
           ))}
-
-          <div className="flex space-x-2 md:space-x-4 pt-2">
+          <div className="flex space-x-4 pt-2">
             {step > 1 && (
               <button
                 type="button"
-                onClick={handleBack}
-                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md transition duration-200 text-sm md:text-base"
+                onClick={() => setStep(step - 1)}
+                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md text-sm"
               >
                 Back
               </button>
@@ -1492,9 +594,9 @@ const ProductCatalogManagement = () => {
             <button
               type="submit"
               disabled={!isFormValid()}
-              className={`flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-200 text-sm md:text-base
-                ${!isFormValid() ? "opacity-70 cursor-not-allowed" : ""}
-                ${step === 1 ? "w-full" : ""}`}
+              className={`flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm ${
+                !isFormValid() ? "opacity-70 cursor-not-allowed" : ""
+              } ${step === 1 ? "w-full" : ""}`}
             >
               Submit
             </button>
@@ -1504,940 +606,372 @@ const ProductCatalogManagement = () => {
     );
   };
 
-  // Add a helper function to handle new item creation
-  const handleNewItemCreation = (fieldName, newItem) => {
-    console.log(`Creating new item for ${fieldName}:`, newItem);
-
-    // Based on the field name and current step, add the new item to the appropriate array
-    if (fieldName === "related_category" || fieldName.includes("category")) {
-      const newCategory = {
-        id: newItem.id,
-        category_id: newItem.id,
-        name: newItem.name,
-        slug: generateSlug(newItem.name),
-        isNew: true,
-      };
-
-      setFormData((prev) => ({
-        ...prev,
-        categories: [...prev.categories, newCategory],
-      }));
-    } else if (fieldName === "related_brand" || fieldName.includes("brand")) {
-      const newBrand = {
-        id: newItem.id,
-        brand_id: newItem.id,
-        name: newItem.name,
-        slug: generateSlug(newItem.name),
-        isNew: true,
-      };
-
-      setFormData((prev) => ({
-        ...prev,
-        brands: [...prev.brands, newBrand],
-      }));
-    } else if (
-      fieldName === "related_product" ||
-      fieldName.includes("product")
-    ) {
-      const newProduct = {
-        id: newItem.id,
-        product_id: newItem.id,
-        name: newItem.name,
-        slug: generateSlug(newItem.name),
-        isNew: true,
-      };
-
-      setFormData((prev) => ({
-        ...prev,
-        products: [...prev.products, newProduct],
-      }));
-    } else if (
-      fieldName === "related_attribute" ||
-      fieldName.includes("attribute")
-    ) {
-      const newAttribute = {
-        id: newItem.id,
-        product_attribute_id: newItem.id,
-        name: newItem.name,
-        isNew: true,
-      };
-
-      setFormData((prev) => ({
-        ...prev,
-        attributes: [...prev.attributes, newAttribute],
-      }));
-    }
-  };
-
-  // Add a helper function to handle API responses
-  const handleApiResponse = (endpoint, data) => {
-    console.log(`API response from ${endpoint}:`, data);
-
-    // Handle different entity types
-    if (endpoint.includes("categories")) {
-      const newCategory = {
-        id: data.id || `temp-cat-${Date.now()}`,
-        category_id: data.id || `temp-cat-${Date.now()}`,
-        name: data.name,
-        slug: data.slug,
-        target_role: data.target_role,
-      };
-
-      setFormData((prev) => ({
-        ...prev,
-        categories: [...prev.categories, newCategory],
-      }));
-    } else if (endpoint.includes("brands")) {
-      const newBrand = {
-        id: data.id || `temp-brand-${Date.now()}`,
-        brand_id: data.id || `temp-brand-${Date.now()}`,
-        name: data.name,
-        slug: data.slug,
-      };
-
-      setFormData((prev) => ({
-        ...prev,
-        brands: [...prev.brands, newBrand],
-      }));
-    } else if (
-      endpoint.includes("product") &&
-      !endpoint.includes("variant") &&
-      !endpoint.includes("attribute")
-    ) {
-      const newProduct = {
-        id: data.id || `temp-product-${Date.now()}`,
-        product_id: data.id || `temp-product-${Date.now()}`,
-        name: data.name,
-        slug: data.slug,
-        category_id: data.category_id,
-        brand_id: data.brand_id,
-      };
-
-      setFormData((prev) => ({
-        ...prev,
-        products: [...prev.products, newProduct],
-      }));
-    } else if (endpoint.includes("variant")) {
-      const newVariant = {
-        id: data.id || `temp-variant-${Date.now()}`,
-        product_variant_id: data.id || `temp-variant-${Date.now()}`,
-        product_id: data.product_id,
-        sku: data.sku,
-        price: data.price,
-        stock_quantity: data.stock_quantity,
-      };
-
-      setFormData((prev) => ({
-        ...prev,
-        variants: [...prev.variants, newVariant],
-      }));
-    } else if (endpoint.includes("attribute") && !endpoint.includes("value")) {
-      const newAttribute = {
-        id: data.id || `temp-attr-${Date.now()}`,
-        product_attribute_id: data.id || `temp-attr-${Date.now()}`,
-        name: data.name,
-        type: data.type,
-      };
-
-      setFormData((prev) => ({
-        ...prev,
-        attributes: [...prev.attributes, newAttribute],
-      }));
-    } else if (endpoint.includes("attribute-value")) {
-      // Create a new attribute first if it doesn't exist
-      let attributeId = data.attribute_id;
-
-      if (!attributeId && data.attribute_name) {
-        // Generate a temporary attribute ID
-        attributeId = `temp-attr-${Date.now()}`;
-
-        // Create a new attribute
-        const newAttribute = {
-          id: attributeId,
-          product_attribute_id: attributeId,
-          name: data.attribute_name,
-          type: "select", // Default type
-          isNew: true,
-        };
-
-        // Add the new attribute to formData
-        setFormData((prev) => ({
-          ...prev,
-          attributes: [...prev.attributes, newAttribute],
-        }));
-      }
-
-      // Now create the attribute value
-      const newAttributeValue = {
-        id: data.id || `temp-attr-val-${Date.now()}`,
-        product_attribute_value_id: data.id || `temp-attr-val-${Date.now()}`,
-        attribute_id: attributeId,
-        attribute_name: data.attribute_name,
-        value: data.value,
-        product_id: data.product_id,
-        variant_id: data.variant_id,
-        category_id: data.category_id,
-        brand_id: data.brand_id,
-      };
-
-      setFormData((prev) => ({
-        ...prev,
-        attributeValues: [...prev.attributeValues, newAttributeValue],
-      }));
-    }
-  };
-
-  // Add this function to filter options based on selected related entities
-  const getFilteredOptions = (entityType) => {
-    // For brands, always return all brands regardless of category selection
-    if (entityType === "brands") {
-      return formData.brands.map((brand) => ({
-        id: brand.brand_id || brand.id,
-        name: brand.name,
-      }));
-    }
-
-    // If no category is selected, return all options for other entity types
-    if (!relatedSelections.categories) {
-      return formData[entityType].map((item) => {
-        const idField =
-          entityType === "products"
-            ? "product_id"
-            : entityType === "variants"
-            ? "product_variant_id"
-            : "id";
-
-        const nameField = entityType === "variants" ? "sku" : "name";
-
-        return {
-          id: item[idField] || item.id,
-          name:
-            item[nameField] ||
-            (entityType === "variants"
-              ? `Variant of ${
-                  formData.products.find((p) => p.id === item.product_id)
-                    ?.name || "Unknown Product"
-                }`
-              : item.name),
-        };
-      });
-    }
-
-    const selectedCategoryId =
-      relatedSelections.categories.id ||
-      relatedSelections.categories.category_id;
-
-    // Filter products based on selected category
-    if (entityType === "products") {
-      return formData.products
-        .filter((product) => product.category_id === selectedCategoryId)
-        .map((product) => ({
-          id: product.product_id || product.id,
-          name: product.name,
-        }));
-    }
-
-    // Filter variants based on selected category
-    if (entityType === "variants") {
-      // Find products in this category
-      const categoryProducts = formData.products.filter(
-        (product) => product.category_id === selectedCategoryId
-      );
-
-      // Get product IDs
-      const productIds = categoryProducts.map(
-        (product) => product.id || product.product_id
-      );
-
-      // Filter variants by these product IDs
-      return formData.variants
-        .filter((variant) => productIds.includes(variant.product_id))
-        .map((variant) => ({
-          id: variant.product_variant_id || variant.id,
-          name:
-            variant.sku ||
-            `Variant of ${
-              formData.products.find((p) => p.id === variant.product_id)
-                ?.name || "Unknown Product"
-            }`,
-        }));
-    }
-
-    // Filter products based on selected brand
-    if (entityType === "products" && relatedSelections.brands) {
-      const selectedBrandId =
-        relatedSelections.brands.id || relatedSelections.brands.brand_id;
-
-      return formData.products
-        .filter((product) => {
-          // If category is selected, filter by both category and brand
-          if (relatedSelections.categories) {
-            const selectedCategoryId =
-              relatedSelections.categories.id ||
-              relatedSelections.categories.category_id;
-            return (
-              product.category_id === selectedCategoryId &&
-              product.brand_id === selectedBrandId
-            );
-          }
-          // Otherwise just filter by brand
-          return product.brand_id === selectedBrandId;
-        })
-        .map((product) => ({
-          id: product.product_id || product.id,
-          name: product.name,
-        }));
-    }
-
-    // Filter variants based on selected product
-    if (entityType === "variants" && relatedSelections.products) {
-      const selectedProductId =
-        relatedSelections.products.id || relatedSelections.products.product_id;
-
-      return formData.variants
-        .filter((variant) => variant.product_id === selectedProductId)
-        .map((variant) => ({
-          id: variant.product_variant_id || variant.id,
-          name:
-            variant.sku ||
-            `Variant of ${
-              formData.products.find((p) => p.id === variant.product_id)
-                ?.name || "Unknown Product"
-            }`,
-        }));
-    }
-
-    // Default case - return all items
-    return formData[entityType].map((item) => ({
-      id: item.id || item[`${entityType.slice(0, -1)}_id`],
-      name: item.name || item.sku || item.value,
-    }));
-  };
-
-  // Add a new function to submit all form data
-  const submitAllFormData = async (allFormData) => {
-    console.log("Submitting all form data to API:", allFormData);
-
-    // Get dashboard selections if available
-    const dashboardSelections = location.state?.selectedItems;
-
-    // Create a comprehensive data object that combines form data with dashboard selections
-    const completeData = {
-      // For category: Use form data if available, otherwise use dashboard selection
-      category:
-        allFormData.categoryFormData &&
-        Object.keys(allFormData.categoryFormData).length > 0
-          ? allFormData.categoryFormData
-          : dashboardSelections?.categories
-          ? {
-              id:
-                dashboardSelections.categories.id ||
-                dashboardSelections.categories.category_id,
-              name: dashboardSelections.categories.name,
-              slug: dashboardSelections.categories.slug,
-              target_role: dashboardSelections.categories.target_role,
-              category_id:
-                dashboardSelections.categories.category_id ||
-                dashboardSelections.categories.id,
-            }
-          : {},
-
-      // For brand: Use form data if available, otherwise use dashboard selection
-      brand:
-        allFormData.brandFormData &&
-        Object.keys(allFormData.brandFormData).length > 0
-          ? allFormData.brandFormData
-          : dashboardSelections?.brands
-          ? {
-              id:
-                dashboardSelections.brands.id ||
-                dashboardSelections.brands.brand_id,
-              name: dashboardSelections.brands.name,
-              slug: dashboardSelections.brands.slug,
-              brand_id:
-                dashboardSelections.brands.brand_id ||
-                dashboardSelections.brands.id,
-            }
-          : {},
-
-      // For product: Use form data if available, otherwise use dashboard selection
-      product:
-        allFormData.productFormData &&
-        Object.keys(allFormData.productFormData).length > 0
-          ? allFormData.productFormData
-          : dashboardSelections?.products
-          ? {
-              id:
-                dashboardSelections.products.id ||
-                dashboardSelections.products.product_id,
-              name: dashboardSelections.products.name,
-              slug: dashboardSelections.products.slug,
-              description: dashboardSelections.products.description,
-              base_price: dashboardSelections.products.base_price,
-              rating_average: dashboardSelections.products.rating_average,
-              category_id: dashboardSelections.products.category_id,
-              brand_id: dashboardSelections.products.brand_id,
-              product_id:
-                dashboardSelections.products.product_id ||
-                dashboardSelections.products.id,
-            }
-          : {},
-
-      // For variant: Use form data if available, otherwise use dashboard selection
-      variant:
-        allFormData.variantFormData &&
-        Object.keys(allFormData.variantFormData).length > 0
-          ? allFormData.variantFormData
-          : dashboardSelections?.variants
-          ? {
-              id:
-                dashboardSelections.variants.id ||
-                dashboardSelections.variants.product_variant_id,
-              sku:
-                dashboardSelections.variants.sku ||
-                dashboardSelections.variants.name,
-              price: dashboardSelections.variants.price,
-              description: dashboardSelections.variants.description,
-              stock_quantity: dashboardSelections.variants.stock_quantity,
-              discount_percentage:
-                dashboardSelections.variants.discount_percentage,
-              discount_quantity: dashboardSelections.variants.discount_quantity,
-              min_retailer_quantity:
-                dashboardSelections.variants.min_retailer_quantity,
-              bulk_discount_percentage:
-                dashboardSelections.variants.bulk_discount_percentage,
-              bulk_discount_quantity:
-                dashboardSelections.variants.bulk_discount_quantity,
-              product_variant_id:
-                dashboardSelections.variants.product_variant_id ||
-                dashboardSelections.variants.id,
-              product_id: dashboardSelections.variants.product_id,
-            }
-          : {},
-
-      // For attribute value and media: Use form data
-      attributeValue: allFormData.attributeValueFormData || {},
-      media: allFormData.mediaFormData || {},
-
-      // Include relationships for reference
-      relationships: {
-        categoryId:
-          allFormData.categoryFormData?.category_id ||
-          allFormData.categoryFormData?.id ||
-          (dashboardSelections?.categories
-            ? dashboardSelections.categories.category_id ||
-              dashboardSelections.categories.id
-            : null),
-
-        brandId:
-          allFormData.brandFormData?.brand_id ||
-          allFormData.brandFormData?.id ||
-          (dashboardSelections?.brands
-            ? dashboardSelections.brands.brand_id ||
-              dashboardSelections.brands.id
-            : null),
-
-        productId:
-          allFormData.productFormData?.product_id ||
-          allFormData.productFormData?.id ||
-          (dashboardSelections?.products
-            ? dashboardSelections.products.product_id ||
-              dashboardSelections.products.id
-            : null),
-
-        variantId:
-          allFormData.variantFormData?.product_variant_id ||
-          allFormData.variantFormData?.id ||
-          (dashboardSelections?.variants
-            ? dashboardSelections.variants.product_variant_id ||
-              dashboardSelections.variants.id
-            : null),
-      },
-    };
-
-    // Add a comprehensive console log to review all form data before sending to backend
-    console.log(
-      "=== COMPLETE FORM DATA READY FOR SUBMISSION ===",
-      completeData
+  const Stepper = () => {
+    const steps = [
+      "Category",
+      "Brand",
+      "Product",
+      "Variant",
+      "Attribute Value",
+      "Media",
+      "Review",
+    ];
+    return (
+      <div className="mb-6 flex items-center justify-between">
+        {steps.map((name, i) => (
+          <React.Fragment key={i}>
+            <div
+              className={`flex flex-col items-center ${
+                i + 1 <= step ? "text-blue-600" : "text-gray-400"
+              }`}
+            >
+              <div
+                className={`w-10 h-10 flex items-center justify-center rounded-full text-sm font-semibold ${
+                  i + 1 < step
+                    ? "bg-blue-600 text-white"
+                    : i + 1 === step
+                    ? "border-2 border-blue-600 text-blue-600"
+                    : "border-2 border-gray-300 text-gray-400"
+                }`}
+              >
+                {i + 1 < step ? "✓" : i + 1}
+              </div>
+              <div className="text-xs mt-1 hidden sm:block">{name}</div>
+            </div>
+            {i < steps.length - 1 && (
+              <div
+                className={`flex-1 h-0.5 ${
+                  i + 1 < step ? "bg-blue-600" : "bg-gray-300"
+                }`}
+              ></div>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
     );
-    console.log("=== FORM DATA BREAKDOWN ===", {
-      "Category Form": completeData.category || "Not filled",
-      "Brand Form": completeData.brand || "Not filled",
-      "Product Form": completeData.product || "Not filled",
-      "Variant Form": completeData.variant || "Not filled",
-      "Attribute Value Form": completeData.attributeValue || "Not filled",
-      "Media Form": completeData.media || "Not filled",
-      Relationships: completeData.relationships || "Not available",
-    });
-
-    // Here you would make API calls with the complete data
-    // For example:
-    // await createApi("/api/categories", completeData.category);
-    // await createApi("/api/brands", completeData.brand);
-    // etc.
-
-    return Promise.resolve(completeData);
   };
 
-  // Add this useEffect to initialize stepFormData with dashboard selections when component mounts
+  const ReviewStep = () => (
+    <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="flex items-center justify-center mb-6">
+        <div className="text-green-500 text-center">
+          <h2 className="text-2xl font-bold text-green-600 mb-2">
+            Product Creation Complete!
+          </h2>
+          <svg
+            className="w-16 h-16 text-green-500"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </div>
+      </div>
+      <h3 className="text-xl font-bold mb-4">Product Information Summary</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[
+          "Category",
+          "Brand",
+          "Product",
+          "Variant",
+          "Attribute Value",
+          "Media",
+        ].map((label, i) => (
+          <div key={label} className="bg-gray-50 p-3 rounded">
+            <h4 className="font-medium text-gray-700">{label}</h4>
+            <p className="font-semibold">
+              {stepFormData[i + 1]?.[
+                i < 4 ? "name" : i === 4 ? "value" : "media_type"
+              ] || "N/A"}
+            </p>
+            {i === 4 && stepFormData[5]?.attribute_name && (
+              <p className="text-sm text-gray-500">
+                For: {stepFormData[5].attribute_name}
+              </p>
+            )}
+            {i === 5 && stepFormData[6]?.media_file && (
+              <>
+                <p className="text-sm text-gray-500">
+                  File: {stepFormData[6].media_file.name}
+                </p>
+                <img
+                  src={URL.createObjectURL(stepFormData[6].media_file)}
+                  alt="Media preview"
+                  className="mt-2 max-w-full h-auto max-h-32 rounded"
+                />
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 flex justify-between">
+        <button
+          onClick={() => setStep(6)}
+          className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+        >
+          Back
+        </button>
+        <button
+          onClick={() => navigate("/admin/product-dashboard")}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Go to Dashboard
+        </button>
+      </div>
+    </div>
+  );
+
+  const stepsConfig = [
+    {
+      title: "Create Category",
+      endpoint: "{{baseUrl}}/admin/categories",
+      nextStep: 2,
+      relatedEntities: [],
+      fields: [
+        {
+          name: "name",
+          label: "Category Name",
+          type: "text",
+          placeholder: "e.g., Mobiles",
+          required: true,
+        },
+        {
+          name: "slug",
+          label: "Slug",
+          type: "text",
+          placeholder: "e.g., mobiles",
+          required: true,
+        },
+        {
+          name: "target_role",
+          label: "Target Role",
+          type: "select",
+          placeholder: "Select target role",
+          required: true,
+          options: [
+            { id: "customer", name: "Customer" },
+            { id: "retailer", name: "Retailer" },
+            { id: "both", name: "Both" },
+          ],
+        },
+      ],
+    },
+    {
+      title: "Create Brand",
+      endpoint: "{{baseUrl}}/admin/brands",
+      nextStep: 3,
+      relatedEntities: ["categories"],
+      fields: [
+        {
+          name: "name",
+          label: "Brand Name",
+          type: "text",
+          placeholder: "e.g., Apple",
+          required: true,
+        },
+        {
+          name: "slug",
+          label: "Slug",
+          type: "text",
+          placeholder: "e.g., apple",
+          required: true,
+        },
+      ],
+    },
+    {
+      title: "Create Product",
+      endpoint: "{{baseUrl}}/admin/product",
+      nextStep: 4,
+      relatedEntities: ["categories", "brands"],
+      fields: [
+        {
+          name: "name",
+          label: "Product Name",
+          type: "text",
+          placeholder: "e.g., iPhone 15",
+          required: true,
+        },
+        {
+          name: "slug",
+          label: "Slug",
+          type: "text",
+          placeholder: "e.g., iphone-15",
+          required: true,
+        },
+        {
+          name: "base_price",
+          label: "Base Price",
+          type: "number",
+          placeholder: "e.g., 79999",
+          required: true,
+        },
+        {
+          name: "description",
+          label: "Description",
+          type: "text",
+          placeholder: "e.g., Latest iPhone model",
+          required: false,
+        },
+        {
+          name: "average_rating",
+          label: "Average Rating",
+          type: "number",
+          placeholder: "e.g., 4.5",
+          required: false,
+        },
+      ],
+    },
+    {
+      title: "Create Variant",
+      endpoint: "{{baseUrl}}/admin/product-variant",
+      nextStep: 5,
+      relatedEntities: ["categories", "brands", "products"],
+      fields: [
+        {
+          name: "sku",
+          label: "Product Variant SKU",
+          type: "text",
+          placeholder: "e.g., IPH15-128-BLK",
+          required: true,
+        },
+        {
+          name: "price",
+          label: "Price",
+          type: "number",
+          placeholder: "e.g., 79999",
+          required: true,
+        },
+        {
+          name: "description",
+          label: "Description",
+          type: "text",
+          placeholder: "e.g., 128GB Black variant",
+          required: false,
+        },
+        {
+          name: "stock_quantity",
+          label: "Stock Quantity",
+          type: "number",
+          placeholder: "e.g., 50",
+          required: true,
+        },
+        {
+          name: "discount_percentage",
+          label: "Discount Percentage (%)",
+          type: "number",
+          placeholder: "e.g., 10",
+          required: false,
+        },
+        {
+          name: "discount_quantity",
+          label: "Discount Quantity",
+          type: "number",
+          placeholder: "e.g., 3",
+          required: false,
+        },
+        {
+          name: "min_retailer_quantity",
+          label: "Min Retailer Quantity",
+          type: "number",
+          placeholder: "e.g., 5",
+          required: false,
+        },
+        {
+          name: "bulk_discount_percentage",
+          label: "Bulk Discount Percentage (%)",
+          type: "number",
+          placeholder: "e.g., 15",
+          required: false,
+        },
+        {
+          name: "bulk_discount_quantity",
+          label: "Bulk Discount Quantity",
+          type: "number",
+          placeholder: "e.g., 10",
+          required: false,
+        },
+      ],
+    },
+    {
+      title: "Create Attribute Value",
+      endpoint: "{{baseUrl}}/admin/product-attribute-values",
+      nextStep: 6,
+      relatedEntities: ["categories", "brands", "products", "variants"],
+      fields: [
+        {
+          name: "attribute_name",
+          label: "Attribute Name",
+          type: "text",
+          placeholder: "e.g., Storage, Color",
+          required: true,
+        },
+        {
+          name: "type",
+          label: "Attribute Type",
+          type: "select",
+          placeholder: "Select attribute type",
+          required: true,
+          options: [
+            { id: "select", name: "Select" },
+            { id: "text", name: "Text" },
+          ],
+        },
+        {
+          name: "value",
+          label: "Value",
+          type: "text",
+          placeholder: "e.g., 128GB, Black",
+          required: true,
+        },
+      ],
+    },
+    {
+      title: "Upload Product Media",
+      endpoint: "{{baseUrl}}/admin/product-media",
+      nextStep: 7,
+      relatedEntities: ["categories", "brands", "products", "variants"],
+      fields: [
+        {
+          name: "media_type",
+          label: "Media Type",
+          type: "select",
+          placeholder: "Select media type",
+          required: true,
+          options: [
+            { id: "image", name: "Image" },
+            { id: "video", name: "Video" },
+          ],
+        },
+        {
+          name: "media_file",
+          label: "Upload Media",
+          type: "file",
+          placeholder: "Upload an image or video",
+          required: true,
+        },
+      ],
+    },
+  ];
+
   useEffect(() => {
-    const dashboardSelections = location.state?.selectedItems;
-
-    if (dashboardSelections) {
-      console.log(
-        "Initializing all step form data with dashboard selections:",
-        dashboardSelections
-      );
-
-      // Create a new stepFormData object with dashboard selections for all steps
-      const initializedStepData = { ...stepFormData };
-
-      // Initialize step 1 (Category) data if category selection exists
-      if (dashboardSelections.categories) {
-        initializedStepData[1] = {
-          id:
-            dashboardSelections.categories.id ||
-            dashboardSelections.categories.category_id,
-          category_id:
-            dashboardSelections.categories.category_id ||
-            dashboardSelections.categories.id,
-          name: dashboardSelections.categories.name,
-          slug: dashboardSelections.categories.slug,
-          target_role: dashboardSelections.categories.target_role,
-        };
-      }
-
-      // Initialize step 2 (Brand) data if brand selection exists
-      if (dashboardSelections.brands) {
-        initializedStepData[2] = {
-          id:
-            dashboardSelections.brands.id ||
-            dashboardSelections.brands.brand_id,
-          brand_id:
-            dashboardSelections.brands.brand_id ||
-            dashboardSelections.brands.id,
-          name: dashboardSelections.brands.name,
-          slug: dashboardSelections.brands.slug,
-        };
-      }
-
-      // Initialize step 3 (Product) data if product selection exists
-      if (dashboardSelections.products) {
-        initializedStepData[3] = {
-          id:
-            dashboardSelections.products.id ||
-            dashboardSelections.products.product_id,
-          product_id:
-            dashboardSelections.products.product_id ||
-            dashboardSelections.products.id,
-          name: dashboardSelections.products.name,
-          slug: dashboardSelections.products.slug,
-          description: dashboardSelections.products.description,
-          base_price: dashboardSelections.products.base_price,
-          rating_average: dashboardSelections.products.rating_average,
-          category_id: dashboardSelections.products.category_id,
-          brand_id: dashboardSelections.products.brand_id,
-        };
-      }
-
-      // Initialize step 4 (Variant) data if variant selection exists
-      if (dashboardSelections.variants) {
-        initializedStepData[4] = {
-          id:
-            dashboardSelections.variants.id ||
-            dashboardSelections.variants.product_variant_id,
-          product_variant_id:
-            dashboardSelections.variants.product_variant_id ||
-            dashboardSelections.variants.id,
-          product_id: dashboardSelections.variants.product_id,
-          sku: dashboardSelections.variants.sku,
-          price: dashboardSelections.variants.price,
-          description: dashboardSelections.variants.description,
-          stock_quantity: dashboardSelections.variants.stock_quantity,
-          discount_percentage: dashboardSelections.variants.discount_percentage,
-          discount_quantity: dashboardSelections.variants.discount_quantity,
-          min_retailer_quantity:
-            dashboardSelections.variants.min_retailer_quantity,
-          bulk_discount_percentage:
-            dashboardSelections.variants.bulk_discount_percentage,
-          bulk_discount_quantity:
-            dashboardSelections.variants.bulk_discount_quantity,
-        };
-      }
-
-      // Set the initialized step form data
-      setStepFormData(initializedStepData);
-      console.log(
-        "Initialized step form data with dashboard selections:",
-        initializedStepData
-      );
+    if (step === 7) {
+      submitAllFormData();
     }
-  }, [location.state?.selectedItems]); // Only run when selectedItems changes
+    // eslint-disable-next-line
+  }, [step]);
 
   return (
-    <div className="min-h-screen bg-gray-100 py-4 px-2 sm:px-4 md:px-8">
+    <div className="min-h-screen bg-gray-100 py-4 px-4 md:px-8">
       <div className="max-w-4xl mx-auto">
         <Stepper />
-
-        {step === 1 && (
-          <EnhancedFormComponent
-            title="Create Category"
-            fields={[
-              {
-                name: "name",
-                label: "Category Name",
-                type: "text",
-                placeholder: "e.g., Mobiles",
-                required: true,
-              },
-              {
-                name: "slug",
-                label: "Slug",
-                type: "text",
-                placeholder: "e.g., mobiles",
-                required: true,
-              },
-              {
-                name: "target_role",
-                label: "Target Role",
-                type: "select",
-                placeholder: "Select target role",
-                required: true,
-                options: [
-                  { id: "customer", name: "Customer" },
-                  { id: "retailer", name: "Retailer" },
-                  { id: "both", name: "Both" },
-                ],
-              },
-            ]}
-            endpoint="{{baseUrl}}/admin/categories"
-            nextStep={2}
-            relatedEntities={[]} // No related entities for categories
-          />
-        )}
-
-        {step === 2 && (
-          <EnhancedFormComponent
-            title="Create Brand"
-            fields={[
-              {
-                name: "name",
-                label: "Brand Name",
-                type: "text",
-                placeholder: "e.g., Apple",
-                required: true,
-              },
-              {
-                name: "slug",
-                label: "Slug",
-                type: "text",
-                placeholder: "e.g., apple",
-                required: true,
-              },
-            ]}
-            endpoint="{{baseUrl}}/admin/brands"
-            nextStep={3}
-            relatedEntities={["categories"]} // Brands can be related to categories
-          />
-        )}
-
-        {step === 3 && (
-          <EnhancedFormComponent
-            title="Create Product"
-            fields={[
-              {
-                name: "name",
-                label: "Product Name",
-                type: "text",
-                placeholder: "e.g., iPhone 15",
-                required: true,
-              },
-              {
-                name: "slug",
-                label: "Slug",
-                type: "text",
-                placeholder: "e.g., iphone-15",
-                required: true,
-              },
-              {
-                name: "base_price",
-                label: "Base Price",
-                type: "number",
-                placeholder: "e.g., 79999",
-                required: true,
-              },
-              {
-                name: "description",
-                label: "Description",
-                type: "text",
-                placeholder: "e.g., Latest iPhone model with A16 chip",
-                required: false,
-              },
-              {
-                name: "average_rating",
-                label: "Average Rating",
-                type: "number",
-                placeholder: "e.g., 4.5",
-                required: false,
-              },
-            ]}
-            endpoint="{{baseUrl}}/admin/product"
-            nextStep={4}
-            relatedEntities={["categories", "brands"]} // Products are related to categories and brands
-          />
-        )}
-
-        {step === 4 && (
-          <EnhancedFormComponent
-            title="Create Variant"
-            fields={[
-              {
-                name: "sku",
-                label: "Product Variant SKU",
-                type: "text",
-                placeholder: "e.g., IPH15-128-BLK",
-                required: true,
-              },
-              {
-                name: "price",
-                label: "Price",
-                type: "number",
-                placeholder: "e.g., 79999",
-                required: true,
-              },
-              {
-                name: "description",
-                label: "Description",
-                type: "text",
-                placeholder:
-                  "e.g., 128GB Black variant with extra battery life",
-                required: false,
-              },
-              {
-                name: "stock_quantity",
-                label: "Stock Quantity",
-                type: "number",
-                placeholder: "e.g., 50",
-                required: true,
-              },
-              {
-                name: "discount_percentage",
-                label: "Discount Percentage (%)",
-                type: "number",
-                placeholder: "e.g., 10",
-                required: false,
-              },
-              {
-                name: "discount_quantity",
-                label: "Discount Quantity",
-                type: "number",
-                placeholder: "e.g., 3",
-                required: false,
-              },
-              {
-                name: "min_retailer_quantity",
-                label: "Min Retailer Quantity",
-                type: "number",
-                placeholder: "e.g., 5",
-                required: false,
-              },
-              {
-                name: "bulk_discount_percentage",
-                label: "Bulk Discount Percentage (%)",
-                type: "number",
-                placeholder: "e.g., 15",
-                required: false,
-              },
-              {
-                name: "bulk_discount_quantity",
-                label: "Bulk Discount Quantity",
-                type: "number",
-                placeholder: "e.g., 10",
-                required: false,
-              },
-            ]}
-            endpoint="{{baseUrl}}/admin/product-variant"
-            nextStep={5}
-            relatedEntities={["categories", "brands", "products"]} // Variants are related to categories, brands, and products
-          />
-        )}
-
-        {/* Step 5 is now Attribute Value (previously step 6) */}
-        {step === 5 && (
-          <EnhancedFormComponent
-            title="Create Attribute Value"
-            fields={[
-              {
-                name: "attribute_name",
-                label: "Attribute Name",
-                type: "text",
-                placeholder: "e.g., Storage, Color, RAM",
-                required: true,
-              },
-              {
-                name: "type",
-                label: "Attribute Type",
-                type: "select",
-                placeholder: "Select attribute type",
-                required: true,
-                options: [
-                  { id: "select", name: "Select" },
-                  { id: "text", name: "Text" },
-                ],
-              },
-              {
-                name: "value",
-                label: "Value",
-                type: "text",
-                placeholder: "e.g., 128GB, Black, 8GB",
-                required: true,
-              },
-            ]}
-            endpoint="{{baseUrl}}/admin/product-attribute-values"
-            nextStep={6}
-            relatedEntities={["categories", "brands", "products", "variants"]}
-          />
-        )}
-
-        {step === 6 && (
-          <EnhancedFormComponent
-            title="Upload Product Media"
-            fields={[
-              {
-                name: "media_type",
-                label: "Media Type",
-                type: "select",
-                placeholder: "Select media type",
-                required: true,
-                options: [
-                  { id: "image", name: "Image" },
-                  { id: "video", name: "Video" },
-                ],
-              },
-              {
-                name: "media_file",
-                label: "Upload Media",
-                type: "file",
-                placeholder: "Upload an image or video",
-                required: true,
-              },
-            ]}
-            endpoint="{{baseUrl}}/admin/product-media"
-            nextStep={7}
-            relatedEntities={["categories", "brands", "products", "variants"]} // Include all related entities
-          />
-        )}
-
-        {/* Step 7 is now Review (previously step 8) */}
-        {step === 7 && (
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="flex items-center justify-center mb-6">
-              <div className="text-green-500 text-center">
-                <h2 className="text-2xl font-bold text-green-600 mb-2">
-                  Product Creation Complete!
-                </h2>
-                <div className="flex justify-center">
-                  <svg
-                    className="w-16 h-16 text-green-500"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <h3 className="text-xl font-bold mb-4">
-              Product Information Summary
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Category Information */}
-              <div className="bg-gray-50 p-3 rounded">
-                <h4 className="font-medium text-gray-700">Category</h4>
-                <p className="font-semibold">
-                  {stepFormData[1]?.name || "N/A"}
-                </p>
-              </div>
-
-              {/* Brand Information */}
-              <div className="bg-gray-50 p-3 rounded">
-                <h4 className="font-medium text-gray-700">Brand</h4>
-                <p className="font-semibold">
-                  {stepFormData[2]?.name || "N/A"}
-                </p>
-              </div>
-
-              {/* Product Information */}
-              <div className="bg-gray-50 p-3 rounded">
-                <h4 className="font-medium text-gray-700">Product</h4>
-                <p className="font-semibold">
-                  {stepFormData[3]?.name || "N/A"}
-                </p>
-              </div>
-
-              {/* Variant Information */}
-              <div className="bg-gray-50 p-3 rounded">
-                <h4 className="font-medium text-gray-700">Variant</h4>
-                <p className="font-semibold">
-                  SKU: {stepFormData[4]?.sku || "N/A"}
-                </p>
-              </div>
-
-              {/* Attribute Value Information */}
-              <div className="bg-gray-50 p-3 rounded">
-                <h4 className="font-medium text-gray-700">Attribute Value</h4>
-                <p className="font-semibold">
-                  {stepFormData[5]?.value || "N/A"}
-                </p>
-                {stepFormData[5]?.attribute_name && (
-                  <p className="text-sm text-gray-500">
-                    For: {stepFormData[5].attribute_name}
-                  </p>
-                )}
-              </div>
-
-              {/* Media Information */}
-              <div className="bg-gray-50 p-3 rounded">
-                <h4 className="font-medium text-gray-700">Media</h4>
-                <p className="font-semibold">
-                  Type: {stepFormData[6]?.media_type || "image"}
-                </p>
-                <p className="text-sm text-gray-500">
-                  File: {stepFormData[6]?.media_file?.name || "N/A"}
-                </p>
-                {stepFormData[6]?.media_file && (
-                  <div className="mt-2">
-                    <img
-                      src={URL.createObjectURL(stepFormData[6].media_file)}
-                      alt="Media preview"
-                      className="max-w-full h-auto max-h-32 rounded"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-between">
-              <button
-                onClick={handleBack}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-              >
-                Back
-              </button>
-              <button
-                onClick={() => navigate("/admin/product-dashboard")}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Go to Dashboard
-              </button>
-            </div>
-          </div>
+        {step === 7 ? (
+          <ReviewStep />
+        ) : (
+          <EnhancedFormComponent {...stepsConfig[step - 1]} />
         )}
       </div>
     </div>
