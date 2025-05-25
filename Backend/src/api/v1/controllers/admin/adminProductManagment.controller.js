@@ -1,6 +1,8 @@
 import db from "../../../../models/index.js";
 import { StatusCodes } from "http-status-codes";
 import MESSAGE from "../../../../constants/message.js";
+import path from "path";
+import fs from "fs";
 
 const {
   Category,
@@ -10,6 +12,9 @@ const {
   Attribute,
   AttributeValue,
   VariantAttributeValue,
+  ProductMedia,
+  ProductMediaUrl,
+  User,
 } = db;
 
 /**
@@ -254,10 +259,217 @@ const getProductManagementData = async (req, res) => {
 
 const addProductManagmentData = async (req, res) => {
   try {
-    console.log(req.body);
-    // Fetch all required data in parallel for performance)
+    // Get the user from the token
+    const user = await User.findOne({ where: { email: req.user.email } });
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: MESSAGE.get.none,
+      });
+    }
+
+    const { category, brand, product, variant, attributeValue, media } =
+      req.body;
+    const created_by = user.user_id;
+
+    // Handle file upload - req.file is available from the upload middleware
+    let productImageUrl = null;
+    if (req.file) {
+      // Store relative path in DB
+      productImageUrl = `uploads/product_images/${req.file.filename}`;
+    }
+
+    // Use transaction to ensure data consistency
+    const result = await db.sequelize.transaction(async (t) => {
+      // Step 1: Create or find Category
+      let categoryRecord;
+      const existingCategory = await Category.findOne({
+        where: { name: category.name },
+        transaction: t,
+      });
+
+      if (existingCategory) {
+        categoryRecord = existingCategory;
+      } else {
+        categoryRecord = await Category.create(
+          {
+            name: category.name,
+            slug: category.slug,
+            target_role: category.target_role,
+            created_by,
+          },
+          { transaction: t }
+        );
+      }
+
+      // Step 2: Create or find Brand
+      let brandRecord;
+      const existingBrand = await Brand.findOne({
+        where: { name: brand.name },
+        transaction: t,
+      });
+
+      if (existingBrand) {
+        brandRecord = existingBrand;
+      } else {
+        brandRecord = await Brand.create(
+          {
+            name: brand.name,
+            slug: brand.slug,
+            created_by,
+          },
+          { transaction: t }
+        );
+      }
+
+      // Step 3: Create Product
+      const productRecord = await Product.create(
+        {
+          name: product.name,
+          slug: product.slug,
+          description: product.description,
+          base_price: product.base_price,
+          rating_average: product.average_rating || 0,
+          category_id: categoryRecord.category_id,
+          brand_id: brandRecord.brand_id,
+          created_by,
+        },
+        { transaction: t }
+      );
+
+      // Step 4: Create Product Variant
+      const productVariantRecord = await ProductVariant.create(
+        {
+          product_id: productRecord.product_id,
+          sku: variant.sku,
+          price: variant.price,
+          description: variant.description,
+          stock_quantity: variant.stock_quantity,
+          discount_percentage: variant.discount_percentage,
+          discount_quantity: variant.discount_quantity,
+          min_retailer_quantity: variant.min_retailer_quantity,
+          bulk_discount_percentage: variant.bulk_discount_percentage,
+          bulk_discount_quantity: variant.bulk_discount_quantity,
+          created_by,
+        },
+        { transaction: t }
+      );
+
+      // Step 5: Create or find Attribute
+      let attributeRecord;
+      const existingAttribute = await Attribute.findOne({
+        where: { name: attributeValue.attribute_name },
+        transaction: t,
+      });
+
+      if (existingAttribute) {
+        attributeRecord = existingAttribute;
+      } else {
+        attributeRecord = await Attribute.create(
+          {
+            name: attributeValue.attribute_name,
+            data_type: attributeValue.type,
+            created_by,
+          },
+          { transaction: t }
+        );
+      }
+
+      // Step 6: Create Attribute Value
+      const attributeValueRecord = await AttributeValue.create(
+        {
+          product_attribute_id: attributeRecord.product_attribute_id,
+          value: attributeValue.value,
+          created_by,
+        },
+        { transaction: t }
+      );
+
+      // Step 7: Create Variant Attribute Value mapping
+      const variantAttributeValueRecord = await VariantAttributeValue.create(
+        {
+          product_variant_id: productVariantRecord.product_variant_id,
+          product_attribute_value_id:
+            attributeValueRecord.product_attribute_value_id,
+          created_by,
+        },
+        { transaction: t }
+      );
+
+      // Step 8: Create Product Media
+      const productMediaRecord = await ProductMedia.create(
+        {
+          product_id: productRecord.product_id,
+          product_variant_id: productVariantRecord.product_variant_id,
+          media_type: media?.media_type || "image",
+          created_by,
+        },
+        { transaction: t }
+      );
+
+      // Step 9: Create Product Media URL using the uploaded file
+      const productMediaUrlRecord = await ProductMediaUrl.create(
+        {
+          product_media_id: productMediaRecord.product_media_id,
+          product_media_url:
+            productImageUrl ||
+            media?.media_file?.fileName ||
+            "default-product-image.jpg",
+          media_type: media?.media_type || "image",
+          created_by,
+        },
+        { transaction: t }
+      );
+
+      // Return all created records
+      return {
+        category: categoryRecord,
+        brand: brandRecord,
+        product: productRecord,
+        variant: productVariantRecord,
+        attribute: attributeRecord,
+        attributeValue: attributeValueRecord,
+        variantAttributeValue: variantAttributeValueRecord,
+        productMedia: productMediaRecord,
+        productMediaUrl: productMediaUrlRecord,
+      };
+    });
+
+    // Convert relative path to full URL for response
+    if (
+      result.productMediaUrl.product_media_url &&
+      !result.productMediaUrl.product_media_url.startsWith("http")
+    ) {
+      result.productMediaUrl.product_media_url = `${req.protocol}://${req.get(
+        "host"
+      )}/${result.productMediaUrl.product_media_url.replace(/\\/g, "/")}`;
+    }
+
+    return res.status(StatusCodes.CREATED).json({
+      success: true,
+      message: MESSAGE.post.succ,
+      data: result,
+    });
   } catch (error) {
-    console.error("Error fetching product management data:", error);
+    console.error("Error adding product management data:", error);
+
+    // If there was an error and we uploaded a file, clean it up
+    if (req.file) {
+      try {
+        const filePath = path.join(
+          __dirname,
+          "../../../../../",
+          `uploads/product_images/${req.file.filename}`
+        );
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+          console.log("🗑 Uploaded file deleted due to error:", filePath);
+        }
+      } catch (cleanupError) {
+        console.error("Error cleaning up file:", cleanupError);
+      }
+    }
+
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: MESSAGE.post.fail,

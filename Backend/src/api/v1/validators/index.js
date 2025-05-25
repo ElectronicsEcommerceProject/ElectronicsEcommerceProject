@@ -122,6 +122,8 @@ import {
   reviewIdValidator,
 } from "./product/productReview/productReview.validators.js";
 
+import { addProductManagementValidator } from "./product/ProductManagment/addProductManagment.validators.js";
+
 export const validators = {
   auth: {
     register: registerValidator,
@@ -241,5 +243,8 @@ export const validators = {
     updateReviewValidator,
     productIdValidator,
     reviewIdValidator,
+  },
+  productManagement: {
+    addProductManagementValidator,
   },
 };
