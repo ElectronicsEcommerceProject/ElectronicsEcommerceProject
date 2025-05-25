@@ -87,7 +87,7 @@ const ProductCatalogManagement = () => {
 
   // Add a new function to transform the stepFormData before displaying it
   const getFormattedStepData = () => {
-    console.log("Current stepFormData:", stepFormData);
+    // console.log("Current stepFormData:", stepFormData);
 
     return {
       categoryFormData: stepFormData[1] || {},
@@ -111,7 +111,7 @@ const ProductCatalogManagement = () => {
   // Initialize with data from dashboard only
   useEffect(() => {
     if (dashboardData) {
-      console.log("Using data from ProductDashboard:", dashboardData);
+      console.log("Using data from ProductDashboard page:", dashboardData);
 
       // Map dashboard data to our format
       setFormData({
@@ -694,14 +694,70 @@ const ProductCatalogManagement = () => {
   }) => {
     // Initialize with data from stepFormData if available
     const [localData, setLocalData] = useState(() => {
-      return { ...stepFormData[step] };
+      // First check if we have data from dashboard selections
+      const dashboardSelections = location.state?.selectedItems;
+
+      // Initialize with data from stepFormData if available
+      let initialData = { ...stepFormData[step] };
+
+      // If we have dashboard selections, merge them with the initial data based on the current step
+      if (dashboardSelections) {
+        if (step === 1 && dashboardSelections.categories) {
+          // For category step, use category data
+          initialData = {
+            ...initialData,
+            name: dashboardSelections.categories.name,
+            slug: dashboardSelections.categories.slug,
+            target_role: dashboardSelections.categories.target_role,
+          };
+        } else if (step === 2 && dashboardSelections.brands) {
+          // For brand step, use brand data
+          initialData = {
+            ...initialData,
+            name: dashboardSelections.brands.name,
+            slug: dashboardSelections.brands.slug,
+          };
+        } else if (step === 3 && dashboardSelections.products) {
+          // For product step, use product data
+          initialData = {
+            ...initialData,
+            name: dashboardSelections.products.name,
+            slug: dashboardSelections.products.slug,
+            description: dashboardSelections.products.description,
+            base_price: dashboardSelections.products.base_price,
+            category_id: dashboardSelections.products.category_id,
+            brand_id: dashboardSelections.products.brand_id,
+          };
+        } else if (step === 4 && dashboardSelections.variants) {
+          // For variant step, use variant data
+          initialData = {
+            ...initialData,
+            sku: dashboardSelections.variants.sku,
+            price: dashboardSelections.variants.price,
+            description: dashboardSelections.variants.description,
+            stock_quantity: dashboardSelections.variants.stock_quantity,
+            discount_percentage:
+              dashboardSelections.variants.discount_percentage,
+            discount_quantity: dashboardSelections.variants.discount_quantity,
+            min_retailer_quantity:
+              dashboardSelections.variants.min_retailer_quantity,
+            bulk_discount_percentage:
+              dashboardSelections.variants.bulk_discount_percentage,
+            bulk_discount_quantity:
+              dashboardSelections.variants.bulk_discount_quantity,
+            product_id: dashboardSelections.variants.product_id,
+          };
+        }
+      }
+
+      return initialData;
     });
 
     const [filledFields, setFilledFields] = useState(() => {
       // Initialize filledFields based on existing data
       const filled = {};
-      Object.keys(stepFormData[step] || {}).forEach((key) => {
-        filled[key] = !!stepFormData[step][key];
+      Object.keys(localData).forEach((key) => {
+        filled[key] = !!localData[key];
       });
       return filled;
     });
@@ -991,7 +1047,10 @@ const ProductCatalogManagement = () => {
 
             // Get dashboard selections if available
             const dashboardSelections = location.state?.selectedItems;
-            console.log("Dashboard selections:", dashboardSelections);
+            console.log(
+              "product Managment selections data:",
+              dashboardSelections
+            );
 
             // Create a single comprehensive object with all data to be sent to backend
             const apiSubmissionData = {
@@ -1144,7 +1203,7 @@ const ProductCatalogManagement = () => {
     const handleRelatedEntitySelect = (entityType, entity) => {
       if (!entity) return;
 
-      console.log(`Selected ${entityType}:`, entity);
+      // console.log(`Selected ${entityType}:`, entity);
 
       // Update the related selections state
       setRelatedSelections((prev) => ({
@@ -1764,6 +1823,7 @@ const ProductCatalogManagement = () => {
 
     // Create a comprehensive data object that combines form data with dashboard selections
     const completeData = {
+      // For category: Use form data if available, otherwise use dashboard selection
       category:
         allFormData.categoryFormData &&
         Object.keys(allFormData.categoryFormData).length > 0
@@ -1774,12 +1834,15 @@ const ProductCatalogManagement = () => {
                 dashboardSelections.categories.id ||
                 dashboardSelections.categories.category_id,
               name: dashboardSelections.categories.name,
+              slug: dashboardSelections.categories.slug,
+              target_role: dashboardSelections.categories.target_role,
               category_id:
                 dashboardSelections.categories.category_id ||
                 dashboardSelections.categories.id,
             }
           : {},
 
+      // For brand: Use form data if available, otherwise use dashboard selection
       brand:
         allFormData.brandFormData &&
         Object.keys(allFormData.brandFormData).length > 0
@@ -1790,12 +1853,14 @@ const ProductCatalogManagement = () => {
                 dashboardSelections.brands.id ||
                 dashboardSelections.brands.brand_id,
               name: dashboardSelections.brands.name,
+              slug: dashboardSelections.brands.slug,
               brand_id:
                 dashboardSelections.brands.brand_id ||
                 dashboardSelections.brands.id,
             }
           : {},
 
+      // For product: Use form data if available, otherwise use dashboard selection
       product:
         allFormData.productFormData &&
         Object.keys(allFormData.productFormData).length > 0
@@ -1806,12 +1871,19 @@ const ProductCatalogManagement = () => {
                 dashboardSelections.products.id ||
                 dashboardSelections.products.product_id,
               name: dashboardSelections.products.name,
+              slug: dashboardSelections.products.slug,
+              description: dashboardSelections.products.description,
+              base_price: dashboardSelections.products.base_price,
+              rating_average: dashboardSelections.products.rating_average,
+              category_id: dashboardSelections.products.category_id,
+              brand_id: dashboardSelections.products.brand_id,
               product_id:
                 dashboardSelections.products.product_id ||
                 dashboardSelections.products.id,
             }
           : {},
 
+      // For variant: Use form data if available, otherwise use dashboard selection
       variant:
         allFormData.variantFormData &&
         Object.keys(allFormData.variantFormData).length > 0
@@ -1824,16 +1896,30 @@ const ProductCatalogManagement = () => {
               sku:
                 dashboardSelections.variants.sku ||
                 dashboardSelections.variants.name,
+              price: dashboardSelections.variants.price,
+              description: dashboardSelections.variants.description,
+              stock_quantity: dashboardSelections.variants.stock_quantity,
+              discount_percentage:
+                dashboardSelections.variants.discount_percentage,
+              discount_quantity: dashboardSelections.variants.discount_quantity,
+              min_retailer_quantity:
+                dashboardSelections.variants.min_retailer_quantity,
+              bulk_discount_percentage:
+                dashboardSelections.variants.bulk_discount_percentage,
+              bulk_discount_quantity:
+                dashboardSelections.variants.bulk_discount_quantity,
               product_variant_id:
                 dashboardSelections.variants.product_variant_id ||
                 dashboardSelections.variants.id,
+              product_id: dashboardSelections.variants.product_id,
             }
           : {},
 
-      attributeValue: allFormData.attributeValueFormData,
-      media: allFormData.mediaFormData,
+      // For attribute value and media: Use form data
+      attributeValue: allFormData.attributeValueFormData || {},
+      media: allFormData.mediaFormData || {},
 
-      // Add relationships for clarity
+      // Include relationships for reference
       relationships: {
         categoryId:
           allFormData.categoryFormData?.category_id ||
@@ -1842,6 +1928,7 @@ const ProductCatalogManagement = () => {
             ? dashboardSelections.categories.category_id ||
               dashboardSelections.categories.id
             : null),
+
         brandId:
           allFormData.brandFormData?.brand_id ||
           allFormData.brandFormData?.id ||
@@ -1849,6 +1936,7 @@ const ProductCatalogManagement = () => {
             ? dashboardSelections.brands.brand_id ||
               dashboardSelections.brands.id
             : null),
+
         productId:
           allFormData.productFormData?.product_id ||
           allFormData.productFormData?.id ||
@@ -1856,6 +1944,7 @@ const ProductCatalogManagement = () => {
             ? dashboardSelections.products.product_id ||
               dashboardSelections.products.id
             : null),
+
         variantId:
           allFormData.variantFormData?.product_variant_id ||
           allFormData.variantFormData?.id ||
@@ -1866,18 +1955,19 @@ const ProductCatalogManagement = () => {
       },
     };
 
-    // Log the complete data in a more readable format
-    console.log("=== COMPLETE DATA BEING SENT TO BACKEND ===", completeData);
-
-    // Add a new formatted log with form-by-form breakdown
+    // Add a comprehensive console log to review all form data before sending to backend
+    console.log(
+      "=== COMPLETE FORM DATA READY FOR SUBMISSION ===",
+      completeData
+    );
     console.log("=== FORM DATA BREAKDOWN ===", {
-      "Category Form": allFormData.categoryFormData || "Not filled",
-      "Brand Form": allFormData.brandFormData || "Not filled",
-      "Product Form": allFormData.productFormData || "Not filled",
-      "Variant Form": allFormData.variantFormData || "Not filled",
-      "Attribute Value Form":
-        allFormData.attributeValueFormData || "Not filled",
-      "Media Form": allFormData.mediaFormData || "Not filled",
+      "Category Form": completeData.category || "Not filled",
+      "Brand Form": completeData.brand || "Not filled",
+      "Product Form": completeData.product || "Not filled",
+      "Variant Form": completeData.variant || "Not filled",
+      "Attribute Value Form": completeData.attributeValue || "Not filled",
+      "Media Form": completeData.media || "Not filled",
+      Relationships: completeData.relationships || "Not available",
     });
 
     // Here you would make API calls with the complete data
@@ -1886,8 +1976,103 @@ const ProductCatalogManagement = () => {
     // await createApi("/api/brands", completeData.brand);
     // etc.
 
-    return Promise.resolve();
+    return Promise.resolve(completeData);
   };
+
+  // Add this useEffect to initialize stepFormData with dashboard selections when component mounts
+  useEffect(() => {
+    const dashboardSelections = location.state?.selectedItems;
+
+    if (dashboardSelections) {
+      console.log(
+        "Initializing all step form data with dashboard selections:",
+        dashboardSelections
+      );
+
+      // Create a new stepFormData object with dashboard selections for all steps
+      const initializedStepData = { ...stepFormData };
+
+      // Initialize step 1 (Category) data if category selection exists
+      if (dashboardSelections.categories) {
+        initializedStepData[1] = {
+          id:
+            dashboardSelections.categories.id ||
+            dashboardSelections.categories.category_id,
+          category_id:
+            dashboardSelections.categories.category_id ||
+            dashboardSelections.categories.id,
+          name: dashboardSelections.categories.name,
+          slug: dashboardSelections.categories.slug,
+          target_role: dashboardSelections.categories.target_role,
+        };
+      }
+
+      // Initialize step 2 (Brand) data if brand selection exists
+      if (dashboardSelections.brands) {
+        initializedStepData[2] = {
+          id:
+            dashboardSelections.brands.id ||
+            dashboardSelections.brands.brand_id,
+          brand_id:
+            dashboardSelections.brands.brand_id ||
+            dashboardSelections.brands.id,
+          name: dashboardSelections.brands.name,
+          slug: dashboardSelections.brands.slug,
+        };
+      }
+
+      // Initialize step 3 (Product) data if product selection exists
+      if (dashboardSelections.products) {
+        initializedStepData[3] = {
+          id:
+            dashboardSelections.products.id ||
+            dashboardSelections.products.product_id,
+          product_id:
+            dashboardSelections.products.product_id ||
+            dashboardSelections.products.id,
+          name: dashboardSelections.products.name,
+          slug: dashboardSelections.products.slug,
+          description: dashboardSelections.products.description,
+          base_price: dashboardSelections.products.base_price,
+          rating_average: dashboardSelections.products.rating_average,
+          category_id: dashboardSelections.products.category_id,
+          brand_id: dashboardSelections.products.brand_id,
+        };
+      }
+
+      // Initialize step 4 (Variant) data if variant selection exists
+      if (dashboardSelections.variants) {
+        initializedStepData[4] = {
+          id:
+            dashboardSelections.variants.id ||
+            dashboardSelections.variants.product_variant_id,
+          product_variant_id:
+            dashboardSelections.variants.product_variant_id ||
+            dashboardSelections.variants.id,
+          product_id: dashboardSelections.variants.product_id,
+          sku: dashboardSelections.variants.sku,
+          price: dashboardSelections.variants.price,
+          description: dashboardSelections.variants.description,
+          stock_quantity: dashboardSelections.variants.stock_quantity,
+          discount_percentage: dashboardSelections.variants.discount_percentage,
+          discount_quantity: dashboardSelections.variants.discount_quantity,
+          min_retailer_quantity:
+            dashboardSelections.variants.min_retailer_quantity,
+          bulk_discount_percentage:
+            dashboardSelections.variants.bulk_discount_percentage,
+          bulk_discount_quantity:
+            dashboardSelections.variants.bulk_discount_quantity,
+        };
+      }
+
+      // Set the initialized step form data
+      setStepFormData(initializedStepData);
+      console.log(
+        "Initialized step form data with dashboard selections:",
+        initializedStepData
+      );
+    }
+  }, [location.state?.selectedItems]); // Only run when selectedItems changes
 
   return (
     <div className="min-h-screen bg-gray-100 py-4 px-2 sm:px-4 md:px-8">
@@ -2086,24 +2271,34 @@ const ProductCatalogManagement = () => {
                 name: "attribute_name",
                 label: "Attribute Name",
                 type: "text",
-                placeholder: "e.g., Color",
+                placeholder: "e.g., Storage, Color, RAM",
                 required: true,
               },
               {
+                name: "type",
+                label: "Attribute Type",
+                type: "select",
+                placeholder: "Select attribute type",
+                required: true,
+                options: [
+                  { id: "select", name: "Select" },
+                  { id: "text", name: "Text" },
+                ],
+              },
+              {
                 name: "value",
-                label: "Attribute Value",
+                label: "Value",
                 type: "text",
-                placeholder: "e.g., Black",
+                placeholder: "e.g., 128GB, Black, 8GB",
                 required: true,
               },
             ]}
             endpoint="{{baseUrl}}/admin/product-attribute-values"
             nextStep={6}
-            relatedEntities={["categories", "brands", "products", "variants"]} // Show all related entities except attributes
+            relatedEntities={["categories", "brands", "products", "variants"]}
           />
         )}
 
-        {/* Step 6 is now Media (previously step 7) */}
         {step === 6 && (
           <EnhancedFormComponent
             title="Upload Product Media"
@@ -2123,6 +2318,7 @@ const ProductCatalogManagement = () => {
                 name: "media_file",
                 label: "Upload Media",
                 type: "file",
+                placeholder: "Upload an image or video",
                 required: true,
               },
             ]}

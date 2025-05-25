@@ -43,7 +43,7 @@ const EntityCard = ({
   const [searchTerm, setSearchTerm] = useState("");
 
   // Add debugging to see what selectedItem is being passed
-  console.log(`${title} selectedItem:`, selectedItem);
+  // console.log(`${title} selectedItem:`, selectedItem);
 
   const filteredData = data.filter((item) =>
     Object.values(item).some(
@@ -116,11 +116,11 @@ const EntityCard = ({
               filteredData.map((item) => {
                 // Fix the highlighting logic
                 const isSelected = selectedItem && selectedItem.id === item.id;
-                console.log(
-                  `Row ${item.id} selected:`,
-                  isSelected,
-                  `(selectedItem?.id: ${selectedItem?.id}, item.id: ${item.id})`
-                );
+                // console.log(
+                //   `Row ${item.id} selected:`,
+                //   isSelected,
+                //   `(selectedItem?.id: ${selectedItem?.id}, item.id: ${item.id})`
+                // );
 
                 return (
                   <tr
@@ -306,39 +306,39 @@ const ProductDashboard = () => {
 
   // Add a useEffect to log when selectedItems changes
   useEffect(() => {
-    console.log("selectedItems state updated:", selectedItems);
+    // console.log("selectedItems state updated:", selectedItems);
   }, [selectedItems]);
 
   // Debug function to check attribute values filtering
   const debugAttributeValuesFiltering = (productId) => {
-    console.log(
-      "Debugging attribute values filtering for product ID:",
-      productId
-    );
-    console.log("All attribute values:", data.attributeValues);
+    // console.log(
+    //   "Debugging attribute values filtering for product ID:",
+    //   productId
+    // );
+    // console.log("All attribute values:", data.attributeValues);
 
     const matchingAttributeValues = data.attributeValues.filter((attrVal) => {
       const hasProductId =
         attrVal.product_ids && attrVal.product_ids.includes(productId);
-      console.log(
-        `Attribute value ${attrVal.id} (${attrVal.attribute}: ${attrVal.value}):`,
-        `product_ids:`,
-        attrVal.product_ids,
-        `includes ${productId}:`,
-        hasProductId
-      );
+      // console.log(
+      //   `Attribute value ${attrVal.id} (${attrVal.attribute}: ${attrVal.value}):`,
+      //   `product_ids:`,
+      //   attrVal.product_ids,
+      //   `includes ${productId}:`,
+      //   hasProductId
+      // );
       return hasProductId;
     });
 
-    console.log("Matching attribute values:", matchingAttributeValues);
+    // console.log("Matching attribute values:", matchingAttributeValues);
     return matchingAttributeValues;
   };
 
   // Add this useEffect to log the structure of attribute values when data is loaded
   useEffect(() => {
     if (data && data.attributeValues && data.attributeValues.length > 0) {
-      console.log("Attribute Values structure:", data.attributeValues[0]);
-      console.log("Sample product_ids:", data.attributeValues[0].product_ids);
+      // console.log("Attribute Values structure:", data.attributeValues[0]);
+      // console.log("Sample product_ids:", data.attributeValues[0].product_ids);
     }
   }, [data]);
 
@@ -356,7 +356,7 @@ const ProductDashboard = () => {
             categories: response.data.categories.map((category) => ({
               id: category.category_id,
               name: category.name,
-              slug: category.name.toLowerCase().replace(/\s+/g, "-"),
+              slug: category.slug,
               target_role: category.target_role,
               product_ids: category.product_ids || [],
             })),
@@ -373,17 +373,18 @@ const ProductDashboard = () => {
             products: response.data.products.map((product) => ({
               id: product.product_id,
               name: product.name,
+              slug: product.slug,
+              description: product.description,
+              base_price: product.base_price,
+              rating_average: product.rating_average,
+              category_name: product.category_name,
+              brand_name: product.brand_name,
+              brand_slug: product.brand_slug,
+
               category: product.category_name,
               category_id: product.category_id,
               brand: product.brand_name,
               brand_id: product.brand_id,
-              // Default values for fields not in the API response
-              price: 0,
-              stock: 0,
-              visibility: "Published",
-              image: `https://via.placeholder.com/50?text=${encodeURIComponent(
-                product.name
-              )}`,
             })),
 
             variants: response.data.productVariants.map((variant) => ({
@@ -391,9 +392,15 @@ const ProductDashboard = () => {
               product_id: variant.product_id,
               product_name: variant.product_name,
               sku: variant.sku,
-              // Default values for fields not in the API response
-              price: 0,
-              stock: 0,
+
+              price: variant.price,
+              description: variant.description,
+              stock_quantity: variant.stock_quantity,
+              discount_percentage: variant.discount_percentage,
+              discount_quantity: variant.discount_quantity,
+              min_retailer_quantity: variant.min_retailer_quantity,
+              bulk_discount_percentage: variant.bulk_discount_percentage,
+              bulk_discount_quantity: variant.bulk_discount_quantity,
             })),
 
             attributeValues: response.data.attributeValues.map((attrVal) => ({
@@ -405,7 +412,7 @@ const ProductDashboard = () => {
             })),
           };
 
-          console.log("Transformed Data:", transformedData); // Debug log
+          // console.log("Transformed Data:", transformedData); // Debug log
 
           setData(transformedData);
           setFilteredCategories(transformedData.categories);
@@ -490,7 +497,7 @@ const ProductDashboard = () => {
 
   // Handle item selection for filtering
   const handleSelect = (entityType, item) => {
-    console.log(`Selected ${entityType}:`, item); // Debug log
+    // console.log(`Selected ${entityType}:`, item); // Debug log
 
     // Normalize entity types
     if (entityType === "product variants") {
@@ -643,7 +650,7 @@ const ProductDashboard = () => {
     } else if (entityType === "attributeValues") {
       // Find all products related to this attribute value
       const productIds = item.product_ids || [];
-      console.log("Attribute value product IDs:", productIds);
+      // console.log("Attribute value product IDs:", productIds);
 
       if (productIds.length > 0) {
         // Filter products related to this attribute value
@@ -699,7 +706,7 @@ const ProductDashboard = () => {
 
     // Update active filters
     setActiveFilters(newActiveFilters);
-    console.log("Setting selectedItems to:", newSelectedItems);
+    // console.log("Setting selectedItems to:", newSelectedItems);
     setSelectedItems(newSelectedItems);
   };
 
@@ -775,6 +782,7 @@ const ProductDashboard = () => {
 
     // If we reach here, at least one filter is applied
     // Pass the current data and selected items to ProductForm via state
+    // console.log("testing", data);
     navigate(`/admin/product-form`, {
       state: {
         dashboardData: data,
