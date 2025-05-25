@@ -938,30 +938,68 @@ const ProductDashboard = () => {
     try {
       setIsLoading(true);
 
-      // In a real implementation, you would call the API to delete the item
-      const endpoint = endpoint[entityType.toLowerCase()];
-
-      // Simulate API call
-      // const response = await deleteApiById(endpoint, id);
-
-      // Map the entityType to the correct property name in the data object
-      let entityKey;
+      // Map the entityType to the correct property name in the data object and API endpoint
+      let entityKey, idField;
       switch (entityType.toLowerCase()) {
+        case "categories":
+          entityKey = "categories";
+          idField = "category_id";
+          break;
+        case "brands":
+          entityKey = "brands";
+          idField = "brand_id";
+          break;
+        case "products":
+          entityKey = "products";
+          idField = "product_id";
+          break;
         case "product variants":
         case "variants":
           entityKey = "variants";
+          idField = "product_variant_id";
           break;
         case "product attributes":
         case "attributes":
           entityKey = "attributes";
+          idField = "product_attribute_id";
           break;
         case "attribute values":
         case "attributevalues":
           entityKey = "attributeValues";
+          idField = "product_attribute_value_id";
           break;
         default:
           entityKey = entityType.toLowerCase() + "s";
+          idField = entityType.toLowerCase() + "_id";
       }
+
+      // Find the item to be deleted to log its details
+      const itemToDelete = data[entityKey].find((item) => item.id === id);
+
+      if (itemToDelete) {
+        // Create a proper ID field if it doesn't exist
+        if (!itemToDelete[idField]) {
+          itemToDelete[idField] = id;
+        }
+
+        // Log the complete item with proper ID field
+        console.log(`Deleting ${entityType} with complete data:`, itemToDelete);
+        console.log(`Entity ID field: ${idField} = ${itemToDelete[idField]}`);
+      } else {
+        console.log(`Deleting ${entityType} with ID: ${id}`);
+      }
+
+      // Get the API endpoint for this entity type
+      const endpoint = apiEndpoints[entityType.toLowerCase()];
+      if (!endpoint) {
+        console.error(`API endpoint for "${entityType}" not found`);
+        toast.error(`Failed to delete ${entityType}. Invalid entity type.`);
+        setIsLoading(false);
+        return;
+      }
+
+      // In a real implementation, you would call the API to delete the item
+      // const response = await deleteApiById(endpoint, id);
 
       // Check if the entityKey exists in the data object
       if (!data[entityKey]) {
