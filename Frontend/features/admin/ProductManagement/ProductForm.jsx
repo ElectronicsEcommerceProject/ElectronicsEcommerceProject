@@ -222,19 +222,75 @@ const ProductCatalogManagement = () => {
   };
 
   const submitAllFormData = async () => {
-    const allFormData = {
-      category: stepFormData[1],
-      brand: stepFormData[2],
-      product: stepFormData[3],
-      variant: stepFormData[4],
-      attributeValue: stepFormData[5],
+    // First, create the basic structure
+    let allFormData = {
+      category: {
+        ...stepFormData[1],
+        category_id: stepFormData[1].id || stepFormData[1].category_id,
+      },
+      brand: {
+        ...stepFormData[2],
+        brand_id: stepFormData[2].id || stepFormData[2].brand_id,
+      },
+      product: {
+        ...stepFormData[3],
+        product_id: stepFormData[3].id || stepFormData[3].product_id,
+      },
+      variant: {
+        ...stepFormData[4],
+        product_variant_id:
+          stepFormData[4].id || stepFormData[4].product_variant_id,
+      },
+      attributeValue: {
+        ...stepFormData[5],
+        product_attribute_value_id:
+          stepFormData[5].id || stepFormData[5].product_attribute_value_id,
+      },
       media: {
         ...stepFormData[6],
+        product_media_id:
+          stepFormData[6].id || stepFormData[6].product_media_id,
         ...(stepFormData[6].media_file
           ? { fileName: stepFormData[6].media_file.name }
           : {}),
       },
     };
+
+    // Fix misspelled field names
+    const fixFieldNames = (obj) => {
+      const newObj = { ...obj };
+
+      // Replace categorie_id with category_id
+      if (newObj.categorie_id !== undefined) {
+        newObj.category_id = newObj.categorie_id;
+        delete newObj.categorie_id;
+      }
+
+      // Replace categorie_name with category_name
+      if (newObj.categorie_name !== undefined) {
+        newObj.category_name = newObj.categorie_name;
+        delete newObj.categorie_name;
+      }
+
+      // Replace variant_id with product_variant_id if needed
+      if (newObj.variant_id !== undefined && !newObj.product_variant_id) {
+        newObj.product_variant_id = newObj.variant_id;
+        delete newObj.variant_id;
+      }
+
+      return newObj;
+    };
+
+    // Apply the fix to each object
+    allFormData = {
+      category: fixFieldNames(allFormData.category),
+      brand: fixFieldNames(allFormData.brand),
+      product: fixFieldNames(allFormData.product),
+      variant: fixFieldNames(allFormData.variant),
+      attributeValue: fixFieldNames(allFormData.attributeValue),
+      media: fixFieldNames(allFormData.media),
+    };
+
     console.log(
       "Submitting all form data:",
       JSON.stringify(
@@ -685,7 +741,13 @@ const ProductCatalogManagement = () => {
             <h4 className="font-medium text-gray-700">{label}</h4>
             <p className="font-semibold">
               {stepFormData[i + 1]?.[
-                i < 4 ? "name" : i === 4 ? "value" : "media_type"
+                i < 3
+                  ? "name"
+                  : i === 3
+                  ? "sku"
+                  : i === 4
+                  ? "value"
+                  : "media_type"
               ] || "N/A"}
             </p>
             {i === 4 && stepFormData[5]?.attribute_name && (
