@@ -188,9 +188,35 @@ const EditModal = ({ isOpen, onClose, entityType, item, onSave }) => {
 
   useEffect(() => {
     if (item) {
-      setFormData({ ...item });
+      // Ensure proper ID field naming based on entity type
+      const properData = { ...item };
+
+      // If there's a generic 'id' field, rename it to the specific entity ID field
+      if (properData.id) {
+        switch (entityType.toLowerCase()) {
+          case "categories":
+            properData.category_id = properData.id;
+            break;
+          case "brands":
+            properData.brand_id = properData.id;
+            break;
+          case "products":
+            properData.product_id = properData.id;
+            break;
+          case "product variants":
+          case "variants":
+            properData.product_variant_id = properData.id;
+            break;
+          case "attribute values":
+          case "attributevalues":
+            properData.product_attribute_value_id = properData.id;
+            break;
+        }
+      }
+
+      setFormData(properData);
     }
-  }, [item]);
+  }, [item, entityType]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -199,6 +225,11 @@ const EditModal = ({ isOpen, onClose, entityType, item, onSave }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Log all form data with proper ID fields
+    console.log(`Saving ${entityType} with complete data:`, formData);
+
+    // Pass the complete formData to onSave
     onSave(entityType, formData);
   };
 
@@ -210,29 +241,33 @@ const EditModal = ({ isOpen, onClose, entityType, item, onSave }) => {
         <h2 className="text-xl font-bold mb-4">Edit {entityType}</h2>
         <form onSubmit={handleSubmit}>
           {Object.keys(formData).map((key) => {
-            // Skip id field and any image fields
-            if (key === "id" || key === "image") return null;
+            // Skip rendering ID fields in the form, but keep them in formData
+            if (key === "id" || key.includes("_id")) return null;
+
+            // Skip image fields
+            if (key === "image") return null;
 
             return (
               <div key={key} className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
-                  {key.replace("_", " ")}
+                  {key.replace(/_/g, " ")}
                 </label>
                 <input
                   type={typeof formData[key] === "number" ? "number" : "text"}
                   name={key}
-                  value={formData[key]}
+                  value={formData[key] || ""}
                   onChange={handleChange}
                   className="w-full p-2 border rounded"
                 />
               </div>
             );
           })}
-          <div className="flex justify-end space-x-2 mt-6">
+
+          <div className="flex justify-end space-x-3 mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
             >
               Cancel
             </button>
@@ -842,6 +877,15 @@ const ProductDashboard = () => {
           idField = entityType.toLowerCase() + "_id";
       }
 
+      // Ensure the proper ID field is set
+      if (updatedItem.id && !updatedItem[idField]) {
+        updatedItem[idField] = updatedItem.id;
+      }
+
+      // Log the complete item with proper ID field
+      console.log(`Saving ${entityType} with complete data:`, updatedItem);
+      console.log(`Entity ID field: ${idField} = ${updatedItem[idField]}`);
+
       // Check if the entityKey exists in the data object
       if (!data[entityKey]) {
         console.error(`Entity key "${entityKey}" not found in data object`);
@@ -859,54 +903,26 @@ const ProductDashboard = () => {
         return;
       }
 
-      // Prepare the item for the API
-      const apiItem = { ...updatedItem };
-
       // In a real implementation, you would call the API to update the item
-      // const response = await updateApiById(endpoint, apiItem[idField], apiItem);
+      // const response = await updateApiById(endpoint, updatedItem[idField], updatedItem);
 
-      // For now, we'll just update the local state
-      const updatedData = { ...data };
-      const itemIndex = updatedData[entityKey].findIndex(
-        (item) => item.id === updatedItem.id
-      );
+      // Update the local state
+      setData((prevData) => ({
+        ...prevData,
+        [entityKey]: prevData[entityKey].map((item) =>
+          item.id === updatedItem.id ? updatedItem : item
+        ),
+      }));
 
-      if (itemIndex !== -1) {
-        updatedData[entityKey][itemIndex] = updatedItem;
-        setData(updatedData);
+      // Close the edit modal
+      setEditModal({ isOpen: false, entityType: "", item: null });
 
-        // Update filtered data
-        switch (entityKey) {
-          case "categories":
-            setFilteredCategories([...updatedData.categories]);
-            break;
-          case "brands":
-            setFilteredBrands([...updatedData.brands]);
-            break;
-          case "products":
-            setFilteredProducts([...updatedData.products]);
-            break;
-          case "variants":
-            setFilteredVariants([...updatedData.variants]);
-            break;
-          case "attributes":
-            setFilteredAttributes([...updatedData.attributes]);
-            break;
-          case "attributeValues":
-            setFilteredAttributeValues([...updatedData.attributeValues]);
-            break;
-        }
-
-        toast.success(`${entityType} updated successfully`);
-      } else {
-        toast.error(`${entityType} not found`);
-      }
+      toast.success(`${entityType} updated successfully!`);
     } catch (error) {
       console.error(`Error updating ${entityType}:`, error);
-      toast.error(`Failed to update ${entityType}`);
+      toast.error(`Failed to update ${entityType}. Please try again.`);
     } finally {
       setIsLoading(false);
-      setEditModal({ isOpen: false, entityType: "", item: null });
     }
   };
 
@@ -1015,6 +1031,7 @@ const ProductDashboard = () => {
             searchPlaceholder="Search categories..."
             fields={[
               { key: "name", label: "Name" },
+              { key: "slug", label: "Slug" },
               { key: "target_role", label: "Target Role" },
             ]}
             onAdd={() => handleAdd("category")}
@@ -1051,7 +1068,9 @@ const ProductDashboard = () => {
             searchPlaceholder="Search products..."
             fields={[
               { key: "name", label: "Name" },
-              { key: "category", label: "Category" },
+              { key: "slug", label: "Slug" },
+              { key: "base_price", label: "Price" },
+              { key: "rating_average", label: "Rating" },
             ]}
             onAdd={() => handleAdd("product")}
             onEdit={handleEdit}
@@ -1070,6 +1089,13 @@ const ProductDashboard = () => {
             fields={[
               { key: "product_name", label: "Product" },
               { key: "sku", label: "SKU" },
+              { key: "price", label: "Price" },
+              { key: "stock_quantity", label: "Stock" },
+              { key: "discount_percentage", label: "Discount %" },
+              { key: "discount_quantity", label: "Discount Qty" },
+              { key: "min_retailer_quantity", label: "Min Retailer Qty" },
+              { key: "bulk_discount_percentage", label: "Bulk Discount %" },
+              { key: "bulk_discount_quantity", label: "Bulk Discount Qty" },
             ]}
             onAdd={() => handleAdd("variant")}
             onEdit={handleEdit}
