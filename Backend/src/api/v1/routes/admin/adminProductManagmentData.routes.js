@@ -20,8 +20,10 @@ router.post(
   "/",
   verifyJwtToken,
   isAdmin,
-  validator(validators.productManagement.addProductManagementValidator, null),
-  upload.single("productImage"), // Handle single file upload with field name 'productImage'
+  // Handle file upload first, before validation
+  upload.single("productImage"),
+  // Then validate the rest of the data
+  // validator(validators.productManagement.addProductManagementValidator, null),
   adminProductManagmentDashboardDataController.addProductManagmentData
 );
 

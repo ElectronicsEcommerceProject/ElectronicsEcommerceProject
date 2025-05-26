@@ -3,6 +3,11 @@ import { StatusCodes } from "http-status-codes";
 import MESSAGE from "../../../../constants/message.js";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const {
   Category,
@@ -258,7 +263,13 @@ const getProductManagementData = async (req, res) => {
 };
 
 const addProductManagmentData = async (req, res) => {
+  // Declare productImageUrl outside the try block so it's accessible in the catch block
+  let productImageUrl = null;
+
   try {
+    console.log("Request body:", req.body);
+    console.log("File:", req.file);
+
     // Get the user from the token
     const user = await User.findOne({ where: { email: req.user.email } });
     if (!user) {
@@ -268,21 +279,46 @@ const addProductManagmentData = async (req, res) => {
       });
     }
 
-    const { category, brand, product, variant, attributeValue, media } =
-      req.body;
+    // Parse JSON strings if they're coming from form-data
+    let { category, brand, product, variant, attributeValue, media } = req.body;
+
+    try {
+      // Check if the data is coming as strings (from form-data) and parse them
+      if (typeof category === "string") category = JSON.parse(category);
+      if (typeof brand === "string") brand = JSON.parse(brand);
+      if (typeof product === "string") product = JSON.parse(product);
+      if (typeof variant === "string") variant = JSON.parse(variant);
+      if (typeof attributeValue === "string")
+        attributeValue = JSON.parse(attributeValue);
+      if (typeof media === "string") media = JSON.parse(media);
+    } catch (parseError) {
+      console.error("Error parsing JSON data:", parseError);
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "Invalid JSON format in form data",
+        error: parseError.message,
+      });
+    }
+
     const created_by = user.user_id;
 
     // Handle file upload - req.file is available from the upload middleware
-    let productImageUrl = null;
     if (req.file) {
-      // Store relative path in DB
+      // Store relative path in DB - use forward slashes for consistency
       productImageUrl = `uploads/product_images/${req.file.filename}`;
+      console.log("Product image URL:", productImageUrl);
     }
 
     // Use transaction to ensure data consistency
     const result = await db.sequelize.transaction(async (t) => {
       // Step 1: Create or find Category
       let categoryRecord;
+
+      // Make sure category.name exists before using it in the query
+      if (!category || !category.name) {
+        throw new Error("Category name is required");
+      }
+
       const existingCategory = await Category.findOne({
         where: { name: category.name },
         transaction: t,
@@ -454,13 +490,12 @@ const addProductManagmentData = async (req, res) => {
     console.error("Error adding product management data:", error);
 
     // If there was an error and we uploaded a file, clean it up
-    if (req.file) {
+    if (req.file && productImageUrl) {
       try {
-        const filePath = path.join(
-          __dirname,
-          "../../../../../",
-          `uploads/product_images/${req.file.filename}`
-        );
+        // Use the correct path to the uploaded file
+        const filePath = path.join(__dirname, "../", productImageUrl);
+        console.log("File path for cleanup:", filePath);
+
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
           console.log("🗑 Uploaded file deleted due to error:", filePath);
