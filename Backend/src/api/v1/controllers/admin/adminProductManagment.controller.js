@@ -272,7 +272,7 @@ const addProductManagmentData = async (req, res) => {
 
     // Check if we have media data in the request body
     if (req.body.media) {
-      console.log("Media data from body:", req.body.media);
+      console.log("Media data from body:");
     }
 
     // Get the user from the token
