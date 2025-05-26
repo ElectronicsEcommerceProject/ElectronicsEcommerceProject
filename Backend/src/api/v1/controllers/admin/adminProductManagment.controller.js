@@ -263,12 +263,17 @@ const getProductManagementData = async (req, res) => {
 };
 
 const addProductManagmentData = async (req, res) => {
-  // Declare productImageUrl outside the try block so it's accessible in the catch block
   let productImageUrl = null;
 
   try {
-    console.log("Request body:", req.body);
-    console.log("File:", req.file);
+    // console.log("Headers:", req.headers);
+    // console.log("Request body keys:", Object.keys(req.body));
+    // console.log("File:", req.file);
+
+    // Check if we have media data in the request body
+    if (req.body.media) {
+      console.log("Media data from body:", req.body.media);
+    }
 
     // Get the user from the token
     const user = await User.findOne({ where: { email: req.user.email } });
@@ -283,7 +288,6 @@ const addProductManagmentData = async (req, res) => {
     let { category, brand, product, variant, attributeValue, media } = req.body;
 
     try {
-      // Check if the data is coming as strings (from form-data) and parse them
       if (typeof category === "string") category = JSON.parse(category);
       if (typeof brand === "string") brand = JSON.parse(brand);
       if (typeof product === "string") product = JSON.parse(product);
@@ -292,10 +296,10 @@ const addProductManagmentData = async (req, res) => {
         attributeValue = JSON.parse(attributeValue);
       if (typeof media === "string") media = JSON.parse(media);
     } catch (parseError) {
-      console.error("Error parsing JSON data:", parseError);
+      console.error("Error parsing form data:", parseError);
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
-        message: "Invalid JSON format in form data",
+        message: "Invalid JSON in form data",
         error: parseError.message,
       });
     }
@@ -492,13 +496,15 @@ const addProductManagmentData = async (req, res) => {
     // If there was an error and we uploaded a file, clean it up
     if (req.file && productImageUrl) {
       try {
-        // Use the correct path to the uploaded file
-        const filePath = path.join(__dirname, "../", productImageUrl);
-        console.log("File path for cleanup:", filePath);
+        // Use the actual file path from req.file
+        const filePath = req.file.path;
+        console.log("Actual file path for cleanup:", filePath);
 
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
           console.log("🗑 Uploaded file deleted due to error:", filePath);
+        } else {
+          console.log("❌ File not found at path:", filePath);
         }
       } catch (cleanupError) {
         console.error("Error cleaning up file:", cleanupError);

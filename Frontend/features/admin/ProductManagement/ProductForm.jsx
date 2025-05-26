@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import {
+  createApi,
+  adminProductManagementDashboardDataRoute,
+} from "../../../src/index.js";
+
 const ProductCatalogManagement = () => {
   const [step, setStep] = useState(1);
   const [startedFromStep1, setStartedFromStep1] = useState(false);
@@ -245,9 +250,6 @@ const ProductCatalogManagement = () => {
         ...stepFormData[6],
         product_media_id:
           stepFormData[6].id || stepFormData[6].product_media_id,
-        ...(stepFormData[6].media_file
-          ? { fileName: stepFormData[6].media_file.name }
-          : {}),
       },
     };
 
@@ -286,20 +288,51 @@ const ProductCatalogManagement = () => {
       media: fixFieldNames(allFormData.media),
     };
 
-    console.log(
-      "Submitting all form data:",
-      JSON.stringify(
-        allFormData,
-        (key, value) => {
-          if (value instanceof File) {
-            return { fileName: value.name, type: value.type, size: value.size };
-          }
-          return value;
-        },
-        2
-      )
-    );
-    alert("Product data successfully submitted!");
+    console.log("Submitting all form data:", allFormData);
+
+    try {
+      // Create a FormData object for multipart/form-data submission
+      const formData = new FormData();
+
+      // Add the file if it exists
+      if (stepFormData[6]?.media_file instanceof File) {
+        formData.append("media_file", stepFormData[6].media_file);
+      }
+
+      // Add all other data as JSON strings
+      formData.append("category", JSON.stringify(allFormData.category));
+      formData.append("brand", JSON.stringify(allFormData.brand));
+      formData.append("product", JSON.stringify(allFormData.product));
+      formData.append("variant", JSON.stringify(allFormData.variant));
+      formData.append(
+        "attributeValue",
+        JSON.stringify(allFormData.attributeValue)
+      );
+      formData.append("media", JSON.stringify(allFormData.media));
+
+      // Make the API call with FormData using createApi
+      const response = await createApi(
+        adminProductManagementDashboardDataRoute,
+        formData
+      );
+
+      const data = await response.json();
+
+      if (data && data.success) {
+        alert("Product data successfully submitted!");
+        // Navigate to dashboard after successful submission
+        navigate("/admin/product-dashboard");
+      } else {
+        alert(
+          "Error submitting product data: " + (data?.message || "Unknown error")
+        );
+      }
+    } catch (error) {
+      console.error("Error submitting product data:", error);
+      alert(
+        "Error submitting product data: " + (error?.message || "Unknown error")
+      );
+    }
   };
 
   const SearchableDropdown = ({
@@ -974,7 +1007,10 @@ const ProductCatalogManagement = () => {
           required: true,
           options: [
             { id: "select", name: "Select" },
-            { id: "text", name: "Text" },
+            { id: "string", name: "String" },
+            { id: "integer", name: "int" },
+            { id: "float", name: "float" },
+            { id: "enum", name: "enum" },
           ],
         },
         {

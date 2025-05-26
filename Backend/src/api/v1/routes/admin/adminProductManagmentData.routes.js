@@ -20,10 +20,8 @@ router.post(
   "/",
   verifyJwtToken,
   isAdmin,
-  // Handle file upload first, before validation
-  upload.single("productImage"),
-  // Then validate the rest of the data
-  // validator(validators.productManagement.addProductManagementValidator, null),
+  // Update the field name to match what's used in the frontend
+  upload.single("media_file"),
   adminProductManagmentDashboardDataController.addProductManagmentData
 );
 
