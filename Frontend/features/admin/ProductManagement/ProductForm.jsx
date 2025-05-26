@@ -316,8 +316,8 @@ const ProductCatalogManagement = () => {
         formData
       );
 
-      const data = await response.json();
-
+      const data = response; // Since createApi already returns parsed JSON
+      console.log("API Response of ProductForm:", data);
       if (data && data.success) {
         alert("Product data successfully submitted!");
         // Navigate to dashboard after successful submission
@@ -546,23 +546,24 @@ const ProductCatalogManagement = () => {
                 <SearchableDropdown
                   name={`related_${entity.slice(0, -1)}`}
                   value={
+                    // Always use the correct relatedSelections key for value
                     relatedSelections[entity]?.id ||
                     relatedSelections[entity]?.[`${entity.slice(0, -1)}_id`] ||
                     ""
                   }
-                  onChange={(e) =>
-                    handleRelatedEntitySelect(
-                      entity,
-                      formData[entity].find(
-                        (item) =>
-                          item.id === e.target.value ||
-                          item[`${entity.slice(0, -1)}_id`] === e.target.value
-                      )
-                    )
-                  }
+                  onChange={(e) => {
+                    // Always update the correct relatedSelections key
+                    const found = formData[entity].find(
+                      (item) =>
+                        item.id === e.target.value ||
+                        item[`${entity.slice(0, -1)}_id`] === e.target.value
+                    );
+                    handleRelatedEntitySelect(entity, found);
+                  }}
                   placeholder={
-                    (startedFromStep1 && stepFormData[step - i - 1]?.name) ||
-                    stepFormData[step - i - 1]?.sku ||
+                    // Always use the correct relatedSelections key for placeholder
+                    relatedSelections[entity]?.name ||
+                    relatedSelections[entity]?.sku ||
                     `Select a ${entity.slice(0, -1)}`
                   }
                   options={getFilteredOptions(entity)}
@@ -586,16 +587,34 @@ const ProductCatalogManagement = () => {
                   onChange={handleChange}
                   placeholder={field.placeholder}
                   options={
-                    field.options ||
-                    getFilteredOptions(
-                      field.name === "category_id"
-                        ? "categories"
-                        : field.name === "brand_id"
-                        ? "brands"
-                        : field.name === "product_id"
-                        ? "products"
-                        : "attributes"
-                    )
+                    // Use a robust mapping from field name to entity type
+                    (() => {
+                      // Map field names to entity types
+                      const fieldToEntityType = {
+                        category_id: "categories",
+                        brand_id: "brands",
+                        product_id: "products",
+                        variant_id: "variants",
+                        product_variant_id: "variants",
+                        attribute_id: "attributes",
+                        attribute_name: "attributes",
+                        // fallback for attribute value step
+                        attribute_value_id: "attributeValues",
+                        // fallback for media step
+                        media_id: "media",
+                        // fallback for type and media_type (use field.options)
+                        type: null,
+                        media_type: null,
+                        target_role: null,
+                      };
+                      const entityType = fieldToEntityType[field.name];
+                      // If field.options is provided, use it (for static selects)
+                      if (field.options) return field.options;
+                      // If entityType is mapped, use getFilteredOptions
+                      if (entityType) return getFilteredOptions(entityType);
+                      // fallback: empty array
+                      return [];
+                    })()
                   }
                   disabled={i > 0 && !filledFields[fields[i - 1].name]}
                   required={field.required}
