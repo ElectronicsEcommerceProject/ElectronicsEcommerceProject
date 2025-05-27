@@ -14,7 +14,7 @@ export const encodeJwtToken = (email, user_id, role) => {
   // Payload data to include in the token
   const payload = { email, user_id, role };
   // Options for the token (e.g., expiration time)
-  const options = { expiresIn: "70h" }; // Token expires in 10 hours
+  const options = { expiresIn: "700h" }; // Token expires in 10 hours
 
   // Generate the token
   const token = jwt.sign(payload, secretKey, options);

@@ -5,6 +5,7 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import Sequelize from "sequelize";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -280,13 +281,12 @@ const addProductManagmentData = async (req, res) => {
     if (!user) {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
-        message: MESSAGE.get.none,
+        message: MESSAGE.post.empty,
       });
     }
 
     // Parse JSON strings if they're coming from form-data
     let { category, brand, product, variant, attributeValue, media } = req.body;
-
     try {
       if (typeof category === "string") category = JSON.parse(category);
       if (typeof brand === "string") brand = JSON.parse(brand);
@@ -323,10 +323,20 @@ const addProductManagmentData = async (req, res) => {
         throw new Error("Category name is required");
       }
 
-      const existingCategory = await Category.findOne({
-        where: { name: category.name },
-        transaction: t,
-      });
+      // Check if category exists by ID first, then by name if ID is not provided
+      let existingCategory = null;
+      if (category.category_id) {
+        existingCategory = await Category.findByPk(category.category_id, {
+          transaction: t,
+        });
+      }
+
+      if (!existingCategory && category.name) {
+        existingCategory = await Category.findOne({
+          where: { name: category.name },
+          transaction: t,
+        });
+      }
 
       if (existingCategory) {
         categoryRecord = existingCategory;
@@ -334,8 +344,9 @@ const addProductManagmentData = async (req, res) => {
         categoryRecord = await Category.create(
           {
             name: category.name,
-            slug: category.slug,
-            target_role: category.target_role,
+            slug:
+              category.slug || category.name.toLowerCase().replace(/\s+/g, "-"),
+            target_role: category.target_role || "both",
             created_by,
           },
           { transaction: t }
@@ -344,10 +355,21 @@ const addProductManagmentData = async (req, res) => {
 
       // Step 2: Create or find Brand
       let brandRecord;
-      const existingBrand = await Brand.findOne({
-        where: { name: brand.name },
-        transaction: t,
-      });
+
+      // Check if brand exists by ID first, then by name if ID is not provided
+      let existingBrand = null;
+      if (brand.brand_id) {
+        existingBrand = await Brand.findByPk(brand.brand_id, {
+          transaction: t,
+        });
+      }
+
+      if (!existingBrand && brand.name) {
+        existingBrand = await Brand.findOne({
+          where: { name: brand.name },
+          transaction: t,
+        });
+      }
 
       if (existingBrand) {
         brandRecord = existingBrand;
@@ -355,48 +377,94 @@ const addProductManagmentData = async (req, res) => {
         brandRecord = await Brand.create(
           {
             name: brand.name,
-            slug: brand.slug,
+            slug: brand.slug || brand.name.toLowerCase().replace(/\s+/g, "-"),
             created_by,
           },
           { transaction: t }
         );
       }
 
-      // Step 3: Create Product
-      const productRecord = await Product.create(
-        {
-          name: product.name,
-          slug: product.slug,
-          description: product.description,
-          base_price: product.base_price,
-          rating_average: product.average_rating || 0,
-          category_id: categoryRecord.category_id,
-          brand_id: brandRecord.brand_id,
-          created_by,
-        },
-        { transaction: t }
-      );
+      // Step 3: Create or find Product
+      let productRecord;
 
-      // Step 4: Create Product Variant
-      const productVariantRecord = await ProductVariant.create(
-        {
-          product_id: productRecord.product_id,
-          sku: variant.sku,
-          price: variant.price,
-          description: variant.description,
-          stock_quantity: variant.stock_quantity,
-          discount_percentage: variant.discount_percentage,
-          discount_quantity: variant.discount_quantity,
-          min_retailer_quantity: variant.min_retailer_quantity,
-          bulk_discount_percentage: variant.bulk_discount_percentage,
-          bulk_discount_quantity: variant.bulk_discount_quantity,
-          created_by,
-        },
-        { transaction: t }
-      );
+      // Check if product exists by ID first, then by name if ID is not provided
+      let existingProduct = null;
+      if (product.product_id) {
+        existingProduct = await Product.findByPk(product.product_id, {
+          transaction: t,
+        });
+      }
+
+      if (!existingProduct && product.name) {
+        existingProduct = await Product.findOne({
+          where: { name: product.name },
+          transaction: t,
+        });
+      }
+
+      if (existingProduct) {
+        productRecord = existingProduct;
+      } else {
+        productRecord = await Product.create(
+          {
+            name: product.name,
+            slug:
+              product.slug || product.name.toLowerCase().replace(/\s+/g, "-"),
+            description: product.description,
+            base_price: product.base_price,
+            rating_average: product.average_rating || 0,
+            category_id: categoryRecord.category_id,
+            brand_id: brandRecord.brand_id,
+            created_by,
+          },
+          { transaction: t }
+        );
+      }
+
+      // Step 4: Create or find Product Variant
+      let productVariantRecord;
+
+      // Check if variant exists by ID first, then by SKU if ID is not provided
+      let existingProductVariant = null;
+      if (variant.product_variant_id) {
+        existingProductVariant = await ProductVariant.findByPk(
+          variant.product_variant_id,
+          { transaction: t }
+        );
+      }
+
+      if (!existingProductVariant && variant.sku) {
+        existingProductVariant = await ProductVariant.findOne({
+          where: { sku: variant.sku },
+          transaction: t,
+        });
+      }
+
+      if (existingProductVariant) {
+        productVariantRecord = existingProductVariant;
+      } else {
+        productVariantRecord = await ProductVariant.create(
+          {
+            product_id: productRecord.product_id,
+            sku: variant.sku,
+            price: variant.price,
+            description: variant.description,
+            stock_quantity: variant.stock_quantity,
+            discount_percentage: variant.discount_percentage,
+            discount_quantity: variant.discount_quantity,
+            min_retailer_quantity: variant.min_retailer_quantity,
+            bulk_discount_percentage: variant.bulk_discount_percentage,
+            bulk_discount_quantity: variant.bulk_discount_quantity,
+            created_by,
+          },
+          { transaction: t }
+        );
+      }
 
       // Step 5: Create or find Attribute
       let attributeRecord;
+
+      // Check if attribute exists by name
       const existingAttribute = await Attribute.findOne({
         where: { name: attributeValue.attribute_name },
         transaction: t,
@@ -408,53 +476,125 @@ const addProductManagmentData = async (req, res) => {
         attributeRecord = await Attribute.create(
           {
             name: attributeValue.attribute_name,
-            data_type: attributeValue.type,
+            data_type: attributeValue.type || "text",
             created_by,
           },
           { transaction: t }
         );
       }
 
-      // Step 6: Create Attribute Value
-      const attributeValueRecord = await AttributeValue.create(
+      // Step 6: Create or find Attribute Value
+      let attributeValueRecord;
+
+      // Check if attribute value exists by ID first, then by value and attribute ID
+      let existingAttributeValue = null;
+      if (attributeValue.product_attribute_value_id || attributeValue.id) {
+        existingAttributeValue = await AttributeValue.findOne({
+          where: {
+            [Sequelize.Op.or]: [
+              {
+                product_attribute_value_id:
+                  attributeValue.product_attribute_value_id,
+              },
+            ],
+            value: attributeValue.value,
+          },
+          transaction: t,
+        });
+      }
+
+      if (!existingAttributeValue) {
+        existingAttributeValue = await AttributeValue.findOne({
+          where: {
+            product_attribute_id: attributeRecord.product_attribute_id,
+            value: attributeValue.value,
+          },
+          transaction: t,
+        });
+      }
+
+      if (existingAttributeValue) {
+        attributeValueRecord = existingAttributeValue;
+      } else {
+        attributeValueRecord = await AttributeValue.create(
+          {
+            product_attribute_id: attributeRecord.product_attribute_id,
+            value: attributeValue.value,
+            created_by,
+          },
+          { transaction: t }
+        );
+      }
+
+      // Step 7: Create or find Variant Attribute Value mapping
+      let variantAttributeValueRecord;
+
+      // Check if mapping already exists
+      const existingVariantAttributeValue = await VariantAttributeValue.findOne(
         {
-          product_attribute_id: attributeRecord.product_attribute_id,
-          value: attributeValue.value,
-          created_by,
-        },
-        { transaction: t }
+          where: {
+            product_variant_id: productVariantRecord.product_variant_id,
+            product_attribute_value_id:
+              attributeValueRecord.product_attribute_value_id,
+          },
+          transaction: t,
+        }
       );
 
-      // Step 7: Create Variant Attribute Value mapping
-      const variantAttributeValueRecord = await VariantAttributeValue.create(
-        {
-          product_variant_id: productVariantRecord.product_variant_id,
-          product_attribute_value_id:
-            attributeValueRecord.product_attribute_value_id,
-          created_by,
-        },
-        { transaction: t }
-      );
+      if (existingVariantAttributeValue) {
+        variantAttributeValueRecord = existingVariantAttributeValue;
+      } else {
+        variantAttributeValueRecord = await VariantAttributeValue.create(
+          {
+            product_variant_id: productVariantRecord.product_variant_id,
+            product_attribute_value_id:
+              attributeValueRecord.product_attribute_value_id,
+            created_by,
+          },
+          { transaction: t }
+        );
+      }
 
       // Step 8: Create Product Media
-      const productMediaRecord = await ProductMedia.create(
-        {
+      let productMediaRecord;
+
+      // Check if media already exists for this product/variant
+      const existingProductMedia = await ProductMedia.findOne({
+        where: {
           product_id: productRecord.product_id,
           product_variant_id: productVariantRecord.product_variant_id,
-          media_type: media?.media_type || "image",
-          created_by,
         },
-        { transaction: t }
-      );
+        transaction: t,
+      });
+
+      if (existingProductMedia) {
+        productMediaRecord = existingProductMedia;
+      } else {
+        productMediaRecord = await ProductMedia.create(
+          {
+            product_id: productRecord.product_id,
+            product_variant_id: productVariantRecord.product_variant_id,
+            media_type: media?.media_type || "image",
+            created_by,
+          },
+          { transaction: t }
+        );
+      }
 
       // Step 9: Create Product Media URL using the uploaded file
-      const productMediaUrlRecord = await ProductMediaUrl.create(
+      let productMediaUrlRecord;
+
+      // Use the uploaded file path or fallback to the one provided in the request
+      const mediaUrl =
+        productImageUrl ||
+        (media?.media_file?.fileName
+          ? `uploads/product_images/${media.media_file.fileName}`
+          : "default-product-image.jpg");
+
+      productMediaUrlRecord = await ProductMediaUrl.create(
         {
           product_media_id: productMediaRecord.product_media_id,
-          product_media_url:
-            productImageUrl ||
-            media?.media_file?.fileName ||
-            "default-product-image.jpg",
+          product_media_url: mediaUrl,
           media_type: media?.media_type || "image",
           created_by,
         },
@@ -519,4 +659,50 @@ const addProductManagmentData = async (req, res) => {
   }
 };
 
-export default { getProductManagementData, addProductManagmentData };
+const deleteAttributeValueById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product_attribute_value_id = id;
+
+    // First, check if the attribute value exists
+    const attributeValue = await AttributeValue.findByPk(
+      product_attribute_value_id
+    );
+    if (!attributeValue) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: MESSAGE.delete.fail,
+      });
+    }
+
+    // Use a transaction to ensure data consistency
+    await db.sequelize.transaction(async (t) => {
+      // Step 1: Find and delete all variant attribute value mappings that reference this attribute value
+      await VariantAttributeValue.destroy({
+        where: { product_attribute_value_id },
+        transaction: t,
+      });
+
+      // Step 2: Delete the attribute value itself
+      await attributeValue.destroy({ transaction: t });
+    });
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: MESSAGE.delete.succ,
+    });
+  } catch (error) {
+    console.error("Error deleting attribute value:", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: MESSAGE.delete.fail,
+      error: error.message,
+    });
+  }
+};
+
+export default {
+  getProductManagementData,
+  addProductManagmentData,
+  deleteAttributeValueById,
+};

@@ -25,4 +25,11 @@ router.post(
   adminProductManagmentDashboardDataController.addProductManagmentData
 );
 
+router.delete(
+  "/:id",
+  verifyJwtToken,
+  isAdmin,
+  adminProductManagmentDashboardDataController.deleteAttributeValueById
+);
+
 export default router;

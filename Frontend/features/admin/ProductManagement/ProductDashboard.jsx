@@ -835,6 +835,9 @@ const ProductDashboard = () => {
 
   // Handler for editing entities
   const handleEdit = (entityType, id, item) => {
+    // Show alert when edit is clicked
+    alert(`Edit action triggered for ${entityType} with ID: ${id}`);
+
     // For direct editing in modal
     setEditModal({
       isOpen: true,
@@ -933,6 +936,9 @@ const ProductDashboard = () => {
 
   // Handler for deleting entities
   const handleDelete = async (entityType, id) => {
+    // Show alert when delete is clicked
+    alert(`Delete action triggered for ${entityType} with ID: ${id}`);
+
     // Confirm deletion
     if (
       !window.confirm(`Are you sure you want to delete this ${entityType}?`)
@@ -942,6 +948,13 @@ const ProductDashboard = () => {
 
     try {
       setIsLoading(true);
+
+      // Call the delete API
+      const deleteResponse = await deleteApiById(
+        adminProductManagementDashboardDataRoute,
+        id
+      );
+      console.log("Delete API Response:", deleteResponse);
 
       // Map the entityType to the correct property name in the data object and API endpoint
       let entityKey, idField;
