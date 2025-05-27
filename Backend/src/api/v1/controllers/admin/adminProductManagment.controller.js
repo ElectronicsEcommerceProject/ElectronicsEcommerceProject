@@ -427,10 +427,10 @@ const addProductManagmentData = async (req, res) => {
       // Check if variant exists by ID first, then by SKU if ID is not provided
       let existingProductVariant = null;
       if (variant.product_variant_id) {
-        existingProductVariant = await ProductVariant.findByPk(
-          variant.product_variant_id,
-          { transaction: t }
-        );
+        existingProductVariant = await ProductVariant.findOne({
+          where: { sku: variant.sku },
+          transaction: t,
+        });
       }
 
       if (!existingProductVariant && variant.sku) {
