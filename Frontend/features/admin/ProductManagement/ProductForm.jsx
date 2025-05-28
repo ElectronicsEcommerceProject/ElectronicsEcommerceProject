@@ -198,25 +198,23 @@ const ProductCatalogManagement = () => {
 
     setStepFormData((prev) => ({ ...prev, [step]: data }));
 
-    // If started from step 1, update relatedSelections with the current step's data
-    if (startedFromStep1) {
-      // Map step to entity type for relatedSelections
-      const stepToEntityMap = {
-        1: "categories",
-        2: "brands",
-        3: "products",
-        4: "variants",
-        5: "attributeValues",
-        6: "media",
-      };
+    // Always update relatedSelections with the current step's data
+    // Map step to entity type for relatedSelections
+    const stepToEntityMap = {
+      1: "categories",
+      2: "brands",
+      3: "products",
+      4: "variants",
+      5: "attributeValues",
+      6: "media",
+    };
 
-      const currentEntityType = stepToEntityMap[step];
-      if (currentEntityType) {
-        setRelatedSelections((prev) => ({
-          ...prev,
-          [currentEntityType]: responseData,
-        }));
-      }
+    const currentEntityType = stepToEntityMap[step];
+    if (currentEntityType) {
+      setRelatedSelections((prev) => ({
+        ...prev,
+        [currentEntityType]: responseData,
+      }));
     }
 
     setTimeout(() => setStep(nextStep), 500);
@@ -524,14 +522,17 @@ const ProductCatalogManagement = () => {
     const handleFormSubmit = async (e) => {
       e.preventDefault();
       const dataToSubmit = { ...localData };
+
+      // Ensure we have the proper ID fields for related entities
       relatedEntities.forEach((e) => {
         if (relatedSelections[e]) {
-          dataToSubmit[`${e.slice(0, -1)}_id`] =
-            relatedSelections[e].id ||
-            relatedSelections[e][`${e.slice(0, -1)}_id`];
+          const entityIdField = `${e.slice(0, -1)}_id`;
+          dataToSubmit[entityIdField] =
+            relatedSelections[e].id || relatedSelections[e][entityIdField];
           dataToSubmit[`${e.slice(0, -1)}_name`] = relatedSelections[e].name;
         }
       });
+
       await handleSubmit(e, endpoint, dataToSubmit, nextStep);
     };
 
