@@ -34,16 +34,36 @@ console.log("Database config:", {
   port: dbConfig.port,
 });
 
-// Initialize Sequelize
+// Initialize Sequelize for local database...
+// const sequelize = new Sequelize(
+//   dbConfig.database,
+//   dbConfig.username,
+//   dbConfig.password,
+//   {
+//     host: dbConfig.host,
+//     dialect: dbConfig.dialect,
+//     port: dbConfig.port,
+//     logging: false,
+//   }
+// );
+
+//for TidB cloud database connection
+
+// ...existing code...
 const sequelize = new Sequelize(
-  dbConfig.database,
-  dbConfig.username,
-  dbConfig.password,
+  process.env.DB_DATABASE,
+  process.env.DB_USERNAME,
+  process.env.DB_PASSWORD,
   {
-    host: dbConfig.host,
-    dialect: dbConfig.dialect,
-    port: dbConfig.port,
-    logging: false,
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    dialect: "mysql",
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false, // For self-signed or AWS certs
+      },
+    },
   }
 );
 

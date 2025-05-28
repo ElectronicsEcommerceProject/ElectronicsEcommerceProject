@@ -69,8 +69,13 @@ export default (sequelize) => {
         { fields: ["created_by"] },
         { fields: ["slug"] },
         {
-          fields: ["name", "description", "short_description"],
-          type: "FULLTEXT",
+          // Specify key length for TEXT columns
+          fields: [
+            "name",
+            { attribute: "description", length: 255 },
+            { attribute: "short_description", length: 255 },
+          ],
+          // type: "FULLTEXT",
         },
       ],
     }
