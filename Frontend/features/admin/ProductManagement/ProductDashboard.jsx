@@ -801,13 +801,22 @@ const ProductDashboard = () => {
 
   // Handler for adding new entities
   const handleAdd = (entityType) => {
-    // Check if any filters are applied by checking if any value in selectedItems is not null
-    const hasAnySelection = Object.values(selectedItems).some(
-      (item) => item !== null
+    // Define the hierarchy and allowed entity types based on active filters
+    const allowedEntityTypes = {
+      categories: ["category", "brand"],
+      brands: ["brand", "product"],
+      products: ["product", "variant"],
+      variants: ["variant", "attribute-value"],
+      attributeValues: ["attribute-value"],
+    };
+
+    // Check which filters are currently applied
+    const appliedFilters = Object.keys(activeFilters).filter(
+      (key) => activeFilters[key] !== null
     );
 
-    if (!hasAnySelection) {
-      // No filters applied, show alert to user
+    // If no filters are applied, show a general message
+    if (appliedFilters.length === 0) {
       alert(
         `Please select at least one ${
           entityType === "variant"
@@ -817,16 +826,54 @@ const ProductDashboard = () => {
             : "category, brand, or product"
         } before adding a new ${entityType}.`
       );
-      return; // Stop the navigation
+      return;
     }
 
-    // If we reach here, at least one filter is applied
-    // Pass the current data and selected items to ProductForm via state
-    // console.log("testing", data);
+    // Check if the requested entity type is allowed based on applied filters
+    let isAllowed = false;
+    let requiredFilter = "";
+
+    for (const filter of appliedFilters) {
+      if (
+        allowedEntityTypes[filter] &&
+        allowedEntityTypes[filter].includes(entityType)
+      ) {
+        isAllowed = true;
+        break;
+      } else {
+        // Determine which filter is required for this entity type
+        if (entityType === "category") {
+          requiredFilter = "category";
+        } else if (entityType === "brand") {
+          requiredFilter = "category or brand";
+        } else if (entityType === "product") {
+          requiredFilter = "brand";
+        } else if (entityType === "variant") {
+          requiredFilter = "product";
+        } else if (entityType === "attribute-value") {
+          requiredFilter = "product or variant";
+        }
+      }
+    }
+
+    // If not allowed, show specific message about which filter is needed
+    if (!isAllowed) {
+      alert(
+        `To add a new ${entityType}, you need to select a ${requiredFilter} first.`
+      );
+      return;
+    }
+
+    // Map the entity type to the correct form entity type
+    const formEntityType =
+      entityType === "attribute-value" ? "attributevalue" : entityType;
+
+    // If we reach here, the entity type is allowed based on applied filters
     navigate(`/admin/product-form`, {
       state: {
         dashboardData: data,
-        entityType: entityType,
+        // Pass the actual entity type instead of always "category"
+        entityType: formEntityType,
         // Pass the currently selected items to pre-populate dropdowns
         selectedItems: selectedItems,
       },
