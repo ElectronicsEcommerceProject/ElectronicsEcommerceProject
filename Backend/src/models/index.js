@@ -48,8 +48,6 @@ console.log("Database config:", {
 // );
 
 //for TidB cloud database connection
-
-// ...existing code...
 const sequelize = new Sequelize(
   process.env.DB_DATABASE,
   process.env.DB_USERNAME,
@@ -60,8 +58,7 @@ const sequelize = new Sequelize(
     dialect: "mysql",
     dialectOptions: {
       ssl: {
-        require: true,
-        rejectUnauthorized: false, // For self-signed or AWS certs
+        rejectUnauthorized: false, // Accept self-signed/unknown CA certs for dev
       },
     },
   }
