@@ -12,6 +12,7 @@ const ProductCatalogManagement = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dashboardData = location.state?.dashboardData;
+
   const initialEntityType = location.state?.entityType;
   const [formData, setFormData] = useState({
     categories: [],
@@ -310,6 +311,10 @@ const ProductCatalogManagement = () => {
       );
       formData.append("media", JSON.stringify(allFormData.media));
 
+      // Check if this is a new form submission by verifying dashboardData is undefined
+      if (dashboardData === undefined) {
+        formData.append("newFormData", JSON.stringify(true));
+      }
       // Make the API call with FormData using createApi
       const response = await createApi(
         adminProductManagementDashboardDataRoute,

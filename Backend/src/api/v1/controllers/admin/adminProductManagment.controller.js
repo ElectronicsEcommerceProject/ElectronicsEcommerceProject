@@ -267,15 +267,6 @@ const addProductManagmentData = async (req, res) => {
   let productImageUrl = null;
 
   try {
-    // console.log("Headers:", req.headers);
-    // console.log("Request body keys:", Object.keys(req.body));
-    // console.log("File:", req.file);
-
-    // Check if we have media data in the request body
-    if (req.body.media) {
-      console.log("Media data from body:");
-    }
-
     // Get the user from the token
     const user = await User.findOne({ where: { email: req.user.email } });
     if (!user) {
@@ -286,7 +277,15 @@ const addProductManagmentData = async (req, res) => {
     }
 
     // Parse JSON strings if they're coming from form-data
-    let { category, brand, product, variant, attributeValue, media } = req.body;
+    let {
+      category,
+      brand,
+      product,
+      variant,
+      attributeValue,
+      media,
+      newFormData,
+    } = req.body;
     try {
       if (typeof category === "string") category = JSON.parse(category);
       if (typeof brand === "string") brand = JSON.parse(brand);
@@ -295,12 +294,29 @@ const addProductManagmentData = async (req, res) => {
       if (typeof attributeValue === "string")
         attributeValue = JSON.parse(attributeValue);
       if (typeof media === "string") media = JSON.parse(media);
+      if (typeof newFormData === "string")
+        newFormData = JSON.parse(newFormData);
     } catch (parseError) {
       console.error("Error parsing form data:", parseError);
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
         message: "Invalid JSON in form data",
         error: parseError.message,
+      });
+    }
+
+    // Validate required fields
+    if (
+      !category ||
+      !brand ||
+      !product ||
+      !variant ||
+      !attributeValue ||
+      !media
+    ) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "All fields are required",
       });
     }
 
@@ -318,25 +334,11 @@ const addProductManagmentData = async (req, res) => {
       // Step 1: Create or find Category
       let categoryRecord;
 
-      // Make sure category.name exists before using it in the query
-      if (!category || !category.name) {
-        throw new Error("Category name is required");
-      }
-
-      // Check if category exists by ID first, then by name if ID is not provided
-      let existingCategory = null;
-      if (category.category_id) {
-        existingCategory = await Category.findByPk(category.category_id, {
-          transaction: t,
-        });
-      }
-
-      if (!existingCategory && category.name) {
-        existingCategory = await Category.findOne({
-          where: { name: category.name },
-          transaction: t,
-        });
-      }
+      // Check if category exists by name
+      let existingCategory = await Category.findOne({
+        where: { name: category.name },
+        transaction: t,
+      });
 
       if (existingCategory) {
         categoryRecord = existingCategory;
@@ -356,20 +358,11 @@ const addProductManagmentData = async (req, res) => {
       // Step 2: Create or find Brand
       let brandRecord;
 
-      // Check if brand exists by ID first, then by name if ID is not provided
-      let existingBrand = null;
-      if (brand.brand_id) {
-        existingBrand = await Brand.findByPk(brand.brand_id, {
-          transaction: t,
-        });
-      }
-
-      if (!existingBrand && brand.name) {
-        existingBrand = await Brand.findOne({
-          where: { name: brand.name },
-          transaction: t,
-        });
-      }
+      // Check if brand exists by name
+      let existingBrand = await Brand.findOne({
+        where: { name: brand.name },
+        transaction: t,
+      });
 
       if (existingBrand) {
         brandRecord = existingBrand;
@@ -387,20 +380,11 @@ const addProductManagmentData = async (req, res) => {
       // Step 3: Create or find Product
       let productRecord;
 
-      // Check if product exists by ID first, then by name if ID is not provided
-      let existingProduct = null;
-      if (product.product_id) {
-        existingProduct = await Product.findByPk(product.product_id, {
-          transaction: t,
-        });
-      }
-
-      if (!existingProduct && product.name) {
-        existingProduct = await Product.findOne({
-          where: { name: product.name },
-          transaction: t,
-        });
-      }
+      // Check if product exists by name
+      let existingProduct = await Product.findOne({
+        where: { name: product.name },
+        transaction: t,
+      });
 
       if (existingProduct) {
         productRecord = existingProduct;
@@ -424,21 +408,11 @@ const addProductManagmentData = async (req, res) => {
       // Step 4: Create or find Product Variant
       let productVariantRecord;
 
-      // Check if variant exists by ID first, then by SKU if ID is not provided
-      let existingProductVariant = null;
-      if (variant.product_variant_id) {
-        existingProductVariant = await ProductVariant.findOne({
-          where: { sku: variant.sku },
-          transaction: t,
-        });
-      }
-
-      if (!existingProductVariant && variant.sku) {
-        existingProductVariant = await ProductVariant.findOne({
-          where: { sku: variant.sku },
-          transaction: t,
-        });
-      }
+      // Check if variant exists by SKU
+      let existingProductVariant = await ProductVariant.findOne({
+        where: { sku: variant.sku },
+        transaction: t,
+      });
 
       if (existingProductVariant) {
         productVariantRecord = existingProductVariant;
@@ -446,7 +420,7 @@ const addProductManagmentData = async (req, res) => {
         productVariantRecord = await ProductVariant.create(
           {
             product_id: productRecord.product_id,
-            sku: variant.sku,
+            sku: variant.sku.toLowerCase(),
             price: variant.price,
             description: variant.description,
             stock_quantity: variant.stock_quantity,
@@ -465,7 +439,7 @@ const addProductManagmentData = async (req, res) => {
       let attributeRecord;
 
       // Check if attribute exists by name
-      const existingAttribute = await Attribute.findOne({
+      let existingAttribute = await Attribute.findOne({
         where: { name: attributeValue.attribute_name },
         transaction: t,
       });
@@ -486,32 +460,14 @@ const addProductManagmentData = async (req, res) => {
       // Step 6: Create or find Attribute Value
       let attributeValueRecord;
 
-      // Check if attribute value exists by ID first, then by value and attribute ID
-      let existingAttributeValue = null;
-      if (attributeValue.product_attribute_value_id || attributeValue.id) {
-        existingAttributeValue = await AttributeValue.findOne({
-          where: {
-            [Sequelize.Op.or]: [
-              {
-                product_attribute_value_id:
-                  attributeValue.product_attribute_value_id,
-              },
-            ],
-            value: attributeValue.value,
-          },
-          transaction: t,
-        });
-      }
-
-      if (!existingAttributeValue) {
-        existingAttributeValue = await AttributeValue.findOne({
-          where: {
-            product_attribute_id: attributeRecord.product_attribute_id,
-            value: attributeValue.value,
-          },
-          transaction: t,
-        });
-      }
+      // Check if attribute value exists by value and attribute ID
+      let existingAttributeValue = await AttributeValue.findOne({
+        where: {
+          product_attribute_id: attributeRecord.product_attribute_id,
+          value: attributeValue.value,
+        },
+        transaction: t,
+      });
 
       if (existingAttributeValue) {
         attributeValueRecord = existingAttributeValue;
@@ -530,16 +486,14 @@ const addProductManagmentData = async (req, res) => {
       let variantAttributeValueRecord;
 
       // Check if mapping already exists
-      const existingVariantAttributeValue = await VariantAttributeValue.findOne(
-        {
-          where: {
-            product_variant_id: productVariantRecord.product_variant_id,
-            product_attribute_value_id:
-              attributeValueRecord.product_attribute_value_id,
-          },
-          transaction: t,
-        }
-      );
+      let existingVariantAttributeValue = await VariantAttributeValue.findOne({
+        where: {
+          product_variant_id: productVariantRecord.product_variant_id,
+          product_attribute_value_id:
+            attributeValueRecord.product_attribute_value_id,
+        },
+        transaction: t,
+      });
 
       if (existingVariantAttributeValue) {
         variantAttributeValueRecord = existingVariantAttributeValue;
@@ -555,11 +509,11 @@ const addProductManagmentData = async (req, res) => {
         );
       }
 
-      // Step 8: Create Product Media
+      // Step 8: Create or find Product Media
       let productMediaRecord;
 
       // Check if media already exists for this product/variant
-      const existingProductMedia = await ProductMedia.findOne({
+      let existingProductMedia = await ProductMedia.findOne({
         where: {
           product_id: productRecord.product_id,
           product_variant_id: productVariantRecord.product_variant_id,
@@ -582,16 +536,13 @@ const addProductManagmentData = async (req, res) => {
       }
 
       // Step 9: Create Product Media URL using the uploaded file
-      let productMediaUrlRecord;
-
-      // Use the uploaded file path or fallback to the one provided in the request
       const mediaUrl =
         productImageUrl ||
         (media?.media_file?.fileName
           ? `uploads/product_images/${media.media_file.fileName}`
           : "default-product-image.jpg");
 
-      productMediaUrlRecord = await ProductMediaUrl.create(
+      const productMediaUrlRecord = await ProductMediaUrl.create(
         {
           product_media_id: productMediaRecord.product_media_id,
           product_media_url: mediaUrl,
@@ -601,7 +552,7 @@ const addProductManagmentData = async (req, res) => {
         { transaction: t }
       );
 
-      // Return all created records
+      // Return all created/found records
       return {
         category: categoryRecord,
         brand: brandRecord,
