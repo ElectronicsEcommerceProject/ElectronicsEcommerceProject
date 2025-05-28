@@ -35,34 +35,34 @@ console.log("Database config:", {
 });
 
 // Initialize Sequelize for local database...
-// const sequelize = new Sequelize(
-//   dbConfig.database,
-//   dbConfig.username,
-//   dbConfig.password,
-//   {
-//     host: dbConfig.host,
-//     dialect: dbConfig.dialect,
-//     port: dbConfig.port,
-//     logging: false,
-//   }
-// );
-
-//for TidB cloud database connection
 const sequelize = new Sequelize(
-  process.env.DB_DATABASE,
-  process.env.DB_USERNAME,
-  process.env.DB_PASSWORD,
+  dbConfig.database,
+  dbConfig.username,
+  dbConfig.password,
   {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    dialect: "mysql",
-    dialectOptions: {
-      ssl: {
-        rejectUnauthorized: false, // Accept self-signed/unknown CA certs for dev
-      },
-    },
+    host: dbConfig.host,
+    dialect: dbConfig.dialect,
+    port: dbConfig.port,
+    logging: false,
   }
 );
+
+//for TidB cloud database connection
+// const sequelize = new Sequelize(
+//   process.env.DB_DATABASE,
+//   process.env.DB_USERNAME,
+//   process.env.DB_PASSWORD,
+//   {
+//     host: process.env.DB_HOST,
+//     port: process.env.DB_PORT,
+//     dialect: "mysql",
+//     dialectOptions: {
+//       ssl: {
+//         rejectUnauthorized: false, // Accept self-signed/unknown CA certs for dev
+//       },
+//     },
+//   }
+// );
 
 const db = {};
 

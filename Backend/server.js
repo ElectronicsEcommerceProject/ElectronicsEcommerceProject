@@ -12,8 +12,8 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ✅ Create uploads folder if not exists
-const uploadsDir = path.join(__dirname, "uploads/profile_images");
+// ✅ Create uploads/profile_images folder if not exists
+const uploadsDir = path.join(__dirname, "src/uploads/profile_images");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
@@ -24,7 +24,9 @@ dotenv.config({ path: "./.env" });
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use("/uploads", express.static("uploads"));
+
+// ✅ Serve static files from src/uploads
+app.use("/uploads", express.static(path.join(__dirname, "src/uploads")));
 
 // ✅ Routes
 app.use("/api/v1", mainRoutes);
@@ -35,16 +37,13 @@ app.get("/", (req, res) => {
 });
 
 // ✅ Sync DB and Start Server
-const { sequelize } = db; // ✅ Access sequelize from db object
-// const PORT = process.env.PORT || 3000;
+const { sequelize } = db;
 const PORT = 3000;
 
 (async () => {
   try {
     await sequelize.authenticate();
     await sequelize.sync();
-    // await sequelize.sync({ alter: true });
-    // await sequelize.sync({ force: true });
     console.log("✅ Database connection established successfully.");
     console.log("✅ Database synced successfully.");
 
@@ -56,4 +55,5 @@ const PORT = 3000;
     process.exit(1);
   }
 })();
+
 export default app;
