@@ -21,6 +21,13 @@ const {
   ProductMedia,
   ProductMediaUrl,
   User,
+  CartItem,
+  WishlistItem,
+  OrderItem,
+  StockAlert,
+  ProductReview,
+  DiscountRule,
+  Coupon,
 } = db;
 
 /**
@@ -613,37 +620,200 @@ const addProductManagmentData = async (req, res) => {
 const deleteAttributeValueById = async (req, res) => {
   try {
     const { id } = req.params;
-    const product_attribute_value_id = id;
+    const { data } = req.body;
+    let formattedData = data.toLowerCase().replace(/\s+/g, "-");
 
-    // First, check if the attribute value exists
-    const attributeValue = await AttributeValue.findByPk(
-      product_attribute_value_id
-    );
-    if (!attributeValue) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        success: false,
-        message: MESSAGE.delete.fail,
+    console.log("Formatted data:", formattedData);
+
+    if (formattedData == "attribute-values") {
+      const product_attribute_value_id = id;
+      // First, check if the attribute value exists
+      const attributeValue = await AttributeValue.findByPk(
+        product_attribute_value_id
+      );
+      if (!attributeValue) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          message: MESSAGE.delete.fail,
+        });
+      }
+      // Use a transaction to ensure data consistency
+      await db.sequelize.transaction(async (t) => {
+        // Step 1: Find and delete all variant attribute value mappings that reference this attribute value
+        await VariantAttributeValue.destroy({
+          where: { product_attribute_value_id },
+          transaction: t,
+        });
+        // Step 2: Delete the attribute value itself
+        await attributeValue.destroy({ transaction: t });
+      });
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: MESSAGE.delete.succ,
+      });
+    } else if (formattedData == "product-variants") {
+      const product_variant_id = id;
+
+      // First, check if the product variant exists
+      const productVariant = await ProductVariant.findByPk(product_variant_id);
+      if (!productVariant) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          message: "Product variant not found",
+        });
+      }
+
+      // Use a transaction to ensure data consistency
+      await db.sequelize.transaction(async (t) => {
+        // MANDATORY DELETIONS - These must succeed
+
+        // Step 1: Find all product_attribute_value_ids associated with this product_variant_id
+        const variantAttributeValues = await VariantAttributeValue.findAll({
+          where: { product_variant_id },
+          attributes: ["product_attribute_value_id"],
+          transaction: t,
+        });
+
+        // Extract all product_attribute_value_ids
+        const productAttributeValueIds = variantAttributeValues.map(
+          (vav) => vav.product_attribute_value_id
+        );
+
+        // Step 2: Delete the associated AttributeValues from the AttributeValue table
+        if (productAttributeValueIds.length > 0) {
+          await AttributeValue.destroy({
+            where: {
+              product_attribute_value_id: {
+                [Sequelize.Op.in]: productAttributeValueIds,
+              },
+            },
+            transaction: t,
+          });
+        }
+
+        // Step 3: Delete related VariantAttributeValues
+        await VariantAttributeValue.destroy({
+          where: { product_variant_id },
+          transaction: t,
+        });
+
+        // Step 4: Find ProductMedia related to this variant
+        const productMediaRecords = await ProductMedia.findAll({
+          where: { product_variant_id },
+          transaction: t,
+        });
+
+        // Get all product_media_ids to delete related URLs
+        const productMediaIds = productMediaRecords.map(
+          (media) => media.product_media_id
+        );
+
+        // Step 5: Delete related ProductMediaUrls
+        if (productMediaIds.length > 0) {
+          await ProductMediaUrl.destroy({
+            where: {
+              product_media_id: {
+                [Sequelize.Op.in]: productMediaIds,
+              },
+            },
+            transaction: t,
+          });
+        }
+
+        // Step 6: Delete ProductMedia records
+        await ProductMedia.destroy({
+          where: { product_variant_id },
+          transaction: t,
+        });
+
+        // OPTIONAL DELETIONS - Continue if these fail
+        try {
+          // Try to delete related CartItems
+          await CartItem.destroy({
+            where: { product_variant_id },
+            transaction: t,
+          });
+        } catch (error) {
+          console.log("CartItem deletion skipped:", error.message);
+        }
+
+        try {
+          // Try to delete related WishlistItems
+          await WishlistItem.destroy({
+            where: { product_variant_id },
+            transaction: t,
+          });
+        } catch (error) {
+          console.log("WishlistItem deletion skipped:", error.message);
+        }
+
+        try {
+          // Try to delete related OrderItems
+          await OrderItem.destroy({
+            where: { product_variant_id },
+            transaction: t,
+          });
+        } catch (error) {
+          console.log("OrderItem deletion skipped:", error.message);
+        }
+
+        try {
+          // Try to delete related StockAlerts
+          await StockAlert.destroy({
+            where: { product_variant_id },
+            transaction: t,
+          });
+        } catch (error) {
+          console.log("StockAlert deletion skipped:", error.message);
+        }
+
+        try {
+          // Try to delete related ProductReviews
+          await ProductReview.destroy({
+            where: { product_variant_id },
+            transaction: t,
+          });
+        } catch (error) {
+          console.log("ProductReview deletion skipped:", error.message);
+        }
+
+        try {
+          // Try to delete related DiscountRules
+          await DiscountRule.destroy({
+            where: { product_variant_id },
+            transaction: t,
+          });
+        } catch (error) {
+          console.log("DiscountRule deletion skipped:", error.message);
+        }
+
+        try {
+          // Try to delete related Coupons
+          await Coupon.destroy({
+            where: { product_variant_id },
+            transaction: t,
+          });
+        } catch (error) {
+          console.log("Coupon deletion skipped:", error.message);
+        }
+
+        // Step 7: Finally, delete the ProductVariant itself (mandatory)
+        await productVariant.destroy({ transaction: t });
+      });
+
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: MESSAGE.delete.succ,
       });
     }
 
-    // Use a transaction to ensure data consistency
-    await db.sequelize.transaction(async (t) => {
-      // Step 1: Find and delete all variant attribute value mappings that reference this attribute value
-      await VariantAttributeValue.destroy({
-        where: { product_attribute_value_id },
-        transaction: t,
-      });
-
-      // Step 2: Delete the attribute value itself
-      await attributeValue.destroy({ transaction: t });
-    });
-
-    return res.status(StatusCodes.OK).json({
-      success: true,
-      message: MESSAGE.delete.succ,
+    // If we reach here, the data type wasn't recognized
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      success: false,
+      message: "Invalid data type specified",
     });
   } catch (error) {
-    console.error("Error deleting attribute value:", error);
+    console.error("Error deleting item:", error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: MESSAGE.delete.fail,

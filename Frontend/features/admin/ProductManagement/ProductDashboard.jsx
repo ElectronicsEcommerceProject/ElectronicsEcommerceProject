@@ -16,6 +16,7 @@ import {
   MESSAGE,
   adminProductManagementDashboardDataRoute,
 } from "../../../src/index.js";
+import { deleteApiByCondition } from "../../../src/api/api.js";
 
 // Initial data - will be replaced with API data
 const initialData = {
@@ -997,9 +998,10 @@ const ProductDashboard = () => {
       setIsLoading(true);
 
       // Call the delete API
-      const deleteResponse = await deleteApiById(
+      const deleteResponse = await deleteApiByCondition(
         adminProductManagementDashboardDataRoute,
-        id
+        id,
+        entityType
       );
       console.log("Delete API Response:", deleteResponse);
 
