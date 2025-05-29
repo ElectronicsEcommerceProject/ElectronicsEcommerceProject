@@ -805,6 +805,195 @@ const deleteAttributeValueById = async (req, res) => {
         success: true,
         message: MESSAGE.delete.succ,
       });
+    } else if (formattedData == "products") {
+      const product_id = id;
+
+      // First, check if the product exists
+      const product = await Product.findByPk(product_id);
+      if (!product) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          message: "Product not found",
+        });
+      }
+
+      // Use a transaction to ensure data consistency
+      await db.sequelize.transaction(async (t) => {
+        // MANDATORY DELETIONS - These must succeed
+
+        // Step 1: Find all ProductVariants associated with this product
+        const productVariants = await ProductVariant.findAll({
+          where: { product_id },
+          attributes: ["product_variant_id"],
+          transaction: t,
+        });
+
+        const productVariantIds = productVariants.map(
+          (variant) => variant.product_variant_id
+        );
+
+        // Step 2: Delete all related records for each ProductVariant
+        if (productVariantIds.length > 0) {
+          // Step 2.1: Find all product_attribute_value_ids for these product variants
+          const variantAttributeValues = await VariantAttributeValue.findAll({
+            where: {
+              product_variant_id: {
+                [Sequelize.Op.in]: productVariantIds,
+              },
+            },
+            attributes: ["product_attribute_value_id"],
+            transaction: t,
+          });
+
+          const productAttributeValueIds = variantAttributeValues.map(
+            (vav) => vav.product_attribute_value_id
+          );
+
+          // Step 2.2: Delete the associated AttributeValues
+          if (productAttributeValueIds.length > 0) {
+            await AttributeValue.destroy({
+              where: {
+                product_attribute_value_id: {
+                  [Sequelize.Op.in]: productAttributeValueIds,
+                },
+              },
+              transaction: t,
+            });
+          }
+
+          // Step 2.3: Delete related VariantAttributeValues
+          await VariantAttributeValue.destroy({
+            where: {
+              product_variant_id: {
+                [Sequelize.Op.in]: productVariantIds,
+              },
+            },
+            transaction: t,
+          });
+
+          // Step 2.4: Find ProductMedia related to these variants
+          const productMediaRecords = await ProductMedia.findAll({
+            where: {
+              product_variant_id: {
+                [Sequelize.Op.in]: productVariantIds,
+              },
+            },
+            transaction: t,
+          });
+
+          const productMediaIds = productMediaRecords.map(
+            (media) => media.product_media_id
+          );
+
+          // Step 2.5: Delete related ProductMediaUrls
+          if (productMediaIds.length > 0) {
+            await ProductMediaUrl.destroy({
+              where: {
+                product_media_id: {
+                  [Sequelize.Op.in]: productMediaIds,
+                },
+              },
+              transaction: t,
+            });
+          }
+
+          // Step 2.6: Delete ProductMedia records
+          await ProductMedia.destroy({
+            where: {
+              product_variant_id: {
+                [Sequelize.Op.in]: productVariantIds,
+              },
+            },
+            transaction: t,
+          });
+        }
+
+        // Step 4: Delete ProductVariants
+        await ProductVariant.destroy({
+          where: { product_id },
+          transaction: t,
+        });
+
+        // Step 5: Delete the Product itself
+        await product.destroy({ transaction: t });
+
+        // OPTIONAL DELETIONS - Continue if these fail
+
+        try {
+          // Step 3: Delete ProductReviews directly associated with the product
+          await ProductReview.destroy({
+            where: { product_id },
+            transaction: t,
+          });
+        } catch (error) {
+          console.log("ProductReview deletion skipped:", error.message);
+        }
+
+        try {
+          // Try to delete related CartItems (if product_id exists)
+          await CartItem.destroy({
+            where: { product_id },
+            transaction: t,
+          });
+        } catch (error) {
+          console.log("CartItem deletion skipped:", error.message);
+        }
+
+        try {
+          // Try to delete related Coupons (if product_id exists)
+          await Coupon.destroy({
+            where: { product_id },
+            transaction: t,
+          });
+        } catch (error) {
+          console.log("Coupon deletion skipped:", error.message);
+        }
+
+        try {
+          // Try to delete related DiscountRules (if product_id exists)
+          await DiscountRule.destroy({
+            where: { product_id },
+            transaction: t,
+          });
+        } catch (error) {
+          console.log("DiscountRule deletion skipped:", error.message);
+        }
+
+        try {
+          // Try to delete related OrderItems (if product_id exists)
+          await OrderItem.destroy({
+            where: { product_id },
+            transaction: t,
+          });
+        } catch (error) {
+          console.log("OrderItem deletion skipped:", error.message);
+        }
+
+        try {
+          // Try to delete related StockAlerts (if product_id exists)
+          await StockAlert.destroy({
+            where: { product_id },
+            transaction: t,
+          });
+        } catch (error) {
+          console.log("StockAlert deletion skipped:", error.message);
+        }
+
+        try {
+          // Try to delete related WishlistItems (if product_id exists)
+          await WishlistItem.destroy({
+            where: { product_id },
+            transaction: t,
+          });
+        } catch (error) {
+          console.log("WishlistItem deletion skipped:", error.message);
+        }
+      });
+
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: MESSAGE.delete.succ,
+      });
     }
 
     // If we reach here, the data type wasn't recognized
