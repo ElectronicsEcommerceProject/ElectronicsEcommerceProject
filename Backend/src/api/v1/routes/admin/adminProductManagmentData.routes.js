@@ -29,7 +29,7 @@ router.delete(
   "/:id",
   verifyJwtToken,
   isAdmin,
-  adminProductManagmentDashboardDataController.deleteAttributeValueById
+  adminProductManagmentDashboardDataController.deleteProductManagementData
 );
 
 export default router;

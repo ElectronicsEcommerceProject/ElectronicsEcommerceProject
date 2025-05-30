@@ -617,7 +617,7 @@ const addProductManagmentData = async (req, res) => {
   }
 };
 
-const deleteAttributeValueById = async (req, res) => {
+const deleteProductManagementData = async (req, res) => {
   try {
     const { id } = req.params;
     const { data } = req.body;
@@ -1786,5 +1786,5 @@ const deleteAttributeValueById = async (req, res) => {
 export default {
   getProductManagementData,
   addProductManagmentData,
-  deleteAttributeValueById,
+  deleteProductManagementData,
 };
