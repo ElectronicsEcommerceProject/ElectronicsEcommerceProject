@@ -41,6 +41,7 @@ import {
   updateApiById,
   deleteApi,
   deleteApiById,
+  deleteApiByCondition,
 } from "../src/api/api.js";
 import MESSAGE from "./api/message.js";
 
@@ -114,6 +115,7 @@ export {
   updateApiById,
   deleteApi,
   deleteApiById,
+  deleteApiByCondition,
   MESSAGE,
   adminDashboardDataRoute,
   adminProductManagementDashboardDataRoute,

@@ -15,8 +15,8 @@ import {
   deleteApiById,
   MESSAGE,
   adminProductManagementDashboardDataRoute,
+  deleteApiByCondition,
 } from "../../../src/index.js";
-import { deleteApiByCondition } from "../../../src/api/api.js";
 
 // Initial data - will be replaced with API data
 const initialData = {
@@ -1004,6 +1004,9 @@ const ProductDashboard = () => {
         entityType
       );
       console.log("Delete API Response:", deleteResponse);
+      if (deleteResponse.success) {
+        alert(deleteResponse.message);
+      }
 
       // Map the entityType to the correct property name in the data object and API endpoint
       let entityKey, idField;
@@ -1057,13 +1060,6 @@ const ProductDashboard = () => {
       }
 
       // Get the API endpoint for this entity type
-      const endpoint = apiEndpoints[entityType.toLowerCase()];
-      if (!endpoint) {
-        console.error(`API endpoint for "${entityType}" not found`);
-        toast.error(`Failed to delete ${entityType}. Invalid entity type.`);
-        setIsLoading(false);
-        return;
-      }
 
       // In a real implementation, you would call the API to delete the item
       // const response = await deleteApiById(endpoint, id);
