@@ -31,5 +31,11 @@ router.delete(
   isAdmin,
   adminProductManagmentDashboardDataController.deleteProductManagementData
 );
+router.patch(
+  "/:id",
+  verifyJwtToken,
+  isAdmin,
+  adminProductManagmentDashboardDataController.updateProductManagementData
+);
 
 export default router;

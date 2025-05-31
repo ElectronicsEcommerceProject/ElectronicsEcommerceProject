@@ -1783,8 +1783,11 @@ const deleteProductManagementData = async (req, res) => {
   }
 };
 
+const updateProductManagementData = async (req, res) => {};
+
 export default {
   getProductManagementData,
   addProductManagmentData,
   deleteProductManagementData,
+  updateProductManagementData,
 };
