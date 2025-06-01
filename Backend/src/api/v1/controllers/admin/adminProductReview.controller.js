@@ -75,7 +75,6 @@ export const getAllProductReviews = async (req, res) => {
 
             if (productMedia) {
               mediaId = productMedia.product_media_id;
-              // console.log("mediaId", mediaId);
 
               // Then, find the media URL
               const mediaUrl = await ProductMediaUrl.findOne({
@@ -83,7 +82,17 @@ export const getAllProductReviews = async (req, res) => {
               });
 
               if (mediaUrl) {
-                imageUrl = mediaUrl.product_media_url;
+                // Convert relative path to full URL
+                if (
+                  mediaUrl.product_media_url &&
+                  !mediaUrl.product_media_url.startsWith("http")
+                ) {
+                  imageUrl = `${req.protocol}://${req.get(
+                    "host"
+                  )}/${mediaUrl.product_media_url.replace(/\\/g, "/")}`;
+                } else {
+                  imageUrl = mediaUrl.product_media_url;
+                }
               }
             }
           } catch (error) {
