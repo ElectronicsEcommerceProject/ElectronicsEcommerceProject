@@ -1783,7 +1783,278 @@ const deleteProductManagementData = async (req, res) => {
   }
 };
 
-const updateProductManagementData = async (req, res) => {};
+const updateProductManagementData = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formattedData = id.replace(/\s+/g, "").toLowerCase();
+
+    if (formattedData == "categories") {
+      const { category_id, name, description, slug, target_role } = req.body;
+
+      // Validate required fields
+      if (!category_id || !name || !slug || !target_role) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          success: false,
+          message: "Category ID, name, slug, and target_role are required",
+        });
+      }
+
+      // Check if the category exists
+      const category = await Category.findByPk(category_id);
+      if (!category) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          message: "Category not found",
+        });
+      }
+
+      // Update the category
+      await category.update({ name, description, slug, target_role });
+
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Category updated successfully",
+        data: category,
+      });
+    } else if (formattedData == "brands") {
+      const { brand_id, name, slug } = req.body;
+
+      // Validate required fields
+      if (!brand_id || !name || !slug) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          success: false,
+          message: "Brand ID, name, and slug are required",
+        });
+      }
+
+      // Check if the brand exists
+      const brand = await Brand.findByPk(brand_id);
+      if (!brand) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          message: "Brand not found",
+        });
+      }
+
+      // Update the brand (removed target_role which isn't in Brand model)
+      await brand.update({ name, slug });
+
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Brand updated successfully",
+        data: brand,
+      });
+    } else if (formattedData == "products") {
+      const {
+        product_id,
+        name,
+        description,
+        rating_average,
+        slug,
+        base_price,
+        category_id,
+        brand_id,
+      } = req.body;
+
+      // Validate required fields
+      if (
+        !product_id ||
+        !name ||
+        !slug ||
+        !description ||
+        !rating_average ||
+        !base_price ||
+        !brand_id ||
+        !category_id
+      ) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          success: false,
+          message:
+            "Product ID, name, slug, description, base price, brand ID and category ID are required",
+        });
+      }
+
+      //check if category_id, brand_id, and product_id exists
+      const category = await Category.findByPk(category_id);
+      if (!category) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          message: "Category not found",
+        });
+      }
+
+      const brand = await Brand.findByPk(brand_id);
+      if (!brand) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          message: "Brand not found",
+        });
+      }
+
+      const product = await Product.findByPk(product_id);
+      if (!product) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          message: "Product not found",
+        });
+      }
+
+      // Validate that the slug is unique
+      const existingProduct = await Product.findOne({
+        where: {
+          slug: slug.toLowerCase(),
+          product_id: { [Sequelize.Op.ne]: product_id },
+        },
+      });
+      if (existingProduct) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          success: false,
+          message: "Slug already exists",
+        });
+      }
+
+      // Update the product
+      await product.update({
+        name,
+        slug: slug.toLowerCase(),
+        description,
+        base_price,
+        rating_average,
+        category_id,
+        brand_id,
+      });
+
+      // Add missing return statement
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Product updated successfully",
+        data: product,
+      });
+    } else if (formattedData == "productvariants") {
+      const {
+        sku,
+        price,
+        description,
+        stock_quantity,
+        discount_percentage,
+        discount_quantity,
+        min_retailer_quantity,
+        bulk_discount_percentage,
+        bulk_discount_quantity,
+        product_variant_id,
+      } = req.body;
+
+      // Validate required fields
+      if (
+        !product_variant_id ||
+        !sku ||
+        !price ||
+        !description ||
+        !stock_quantity
+      ) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          success: false,
+          message:
+            "Product variant ID, SKU, price, description and stock quantity are required",
+        });
+      }
+
+      // Check if the product variant exists
+      const productVariant = await ProductVariant.findByPk(product_variant_id);
+      if (!productVariant) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          message: "Product variant not found",
+        });
+      }
+
+      // Update the product variant
+      await productVariant.update({
+        sku: sku.toLowerCase(),
+        price,
+        description,
+        stock_quantity,
+        discount_percentage,
+        discount_quantity,
+        min_retailer_quantity,
+        bulk_discount_percentage,
+        bulk_discount_quantity,
+      });
+
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Product variant updated successfully",
+        data: productVariant,
+      });
+    } else if (formattedData == "attributevalues") {
+      const { attribute_id, attribute, value, product_attribute_value_id } =
+        req.body;
+
+      // Validate required fields
+      if (
+        !product_attribute_value_id ||
+        !attribute_id ||
+        !attribute ||
+        !value
+      ) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          success: false,
+          message:
+            "Product attribute value ID, attribute ID, attribute, and value are required",
+        });
+      }
+
+      // Check if attribute_id and product_attribute_value_id exists
+      const attributeModel = await Attribute.findByPk(attribute_id);
+      if (!attributeModel) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          message: "Attribute not found",
+        });
+      }
+
+      const attributeValue = await AttributeValue.findByPk(
+        product_attribute_value_id
+      );
+      if (!attributeValue) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          message: "Attribute value not found",
+        });
+      }
+
+      // Update attribute name
+      await attributeModel.update({
+        name: attribute.toLowerCase(),
+      });
+
+      // Update attribute value
+      await attributeValue.update({
+        value: value.toLowerCase(),
+      });
+
+      // Add missing return statement
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Attribute value updated successfully",
+        data: { attribute: attributeModel, attributeValue },
+      });
+    } else {
+      // Add default case for unrecognized data type
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "Invalid data type specified",
+      });
+    }
+  } catch (error) {
+    console.error("Error updating product management data:", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Failed to update product management data",
+      error: error.message,
+    });
+  }
+};
 
 export default {
   getProductManagementData,

@@ -980,8 +980,7 @@ const ProductDashboard = () => {
 
   // Handler for editing entities
   const handleEdit = (entityType, id, item) => {
-    // Show alert when edit is clicked
-    alert(`Edit action triggered for ${entityType} with ID: ${id}`);
+    // console.log(`Edit action triggered for ${entityType} with ID: ${id}`, item);
 
     // For direct editing in modal
     setEditModal({
@@ -1047,30 +1046,36 @@ const ProductDashboard = () => {
         return;
       }
 
-      // Get the API endpoint for this entity type
-      const endpoint = apiEndpoints[entityType.toLowerCase()];
-      if (!endpoint) {
-        console.error(`API endpoint for "${entityType}" not found`);
-        toast.error(`Failed to update ${entityType}. Invalid entity type.`);
-        setIsLoading(false);
-        return;
+      console.log("testing", updatedItem);
+
+      // Make the API call to update the item
+      const response = await updateApiById(
+        adminProductManagementDashboardDataRoute,
+        entityType,
+        updatedItem
+      );
+
+      if (response && response.success) {
+        // Update the local state
+        setData((prevData) => ({
+          ...prevData,
+          [entityKey]: prevData[entityKey].map(
+            (item) =>
+              item.id === updatedItem.id ? { ...item, ...updatedItem } : item // Ensure all fields are updated
+          ),
+        }));
+
+        // Close the edit modal
+        setEditModal({ isOpen: false, entityType: "", item: null });
+        toast.success(
+          response.message || `${entityType} updated successfully!`
+        );
+      } else {
+        toast.error(
+          response.message ||
+            `Failed to update ${entityType}. Please try again.`
+        );
       }
-
-      // In a real implementation, you would call the API to update the item
-      // const response = await updateApiById(endpoint, updatedItem[idField], updatedItem);
-
-      // Update the local state
-      setData((prevData) => ({
-        ...prevData,
-        [entityKey]: prevData[entityKey].map((item) =>
-          item.id === updatedItem.id ? updatedItem : item
-        ),
-      }));
-
-      // Close the edit modal
-      setEditModal({ isOpen: false, entityType: "", item: null });
-
-      toast.success(`${entityType} updated successfully!`);
     } catch (error) {
       console.error(`Error updating ${entityType}:`, error);
       toast.error(`Failed to update ${entityType}. Please try again.`);
@@ -1081,16 +1086,13 @@ const ProductDashboard = () => {
 
   // Handler for deleting entities
   const handleDelete = async (entityType, id) => {
-    // Show alert when delete is clicked
-    alert(`Delete action triggered for ${entityType} with ID: ${id}`);
-
     // Confirm deletion
     if (
       !window.confirm(`Are you sure you want to delete this ${entityType}?`)
     ) {
       return;
     }
-
+    setIsLoading(true);
     try {
       setIsLoading(true);
 
@@ -1102,7 +1104,9 @@ const ProductDashboard = () => {
       );
       console.log("Delete API Response:", deleteResponse);
       if (deleteResponse.success) {
-        alert(deleteResponse.message);
+        toast.success(
+          deleteResponse.message || `${entityType} deleted successfully!`
+        );
       }
 
       // Map the entityType to the correct property name in the data object and API endpoint
