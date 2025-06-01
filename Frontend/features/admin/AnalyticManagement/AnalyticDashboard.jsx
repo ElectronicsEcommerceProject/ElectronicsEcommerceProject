@@ -1,5 +1,43 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Chart from 'chart.js/auto';
+import React, { useState, useEffect, useRef } from "react";
+import Chart from "chart.js/auto";
+
+// Add global styles to prevent horizontal scrolling
+const globalStyles = `
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  canvas {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  .chart-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+`;
+
+// Inject styles
+if (typeof document !== "undefined") {
+  const styleSheet = document.createElement("style");
+  styleSheet.innerText = globalStyles;
+  document.head.appendChild(styleSheet);
+}
 
 const AnalyticDashboard = () => {
   // Data
@@ -27,28 +65,77 @@ const AnalyticDashboard = () => {
     totalRetailers: 150,
     lowStockAlerts: 10,
     topSellingProducts: [
-      { name: "Product A", sales: 300, details: "Category: Electronics, Price: $100" },
-      { name: "Product B", sales: 250, details: "Category: Clothing, Price: $50" },
+      {
+        name: "Product A",
+        sales: 300,
+        details: "Category: Electronics, Price: $100",
+      },
+      {
+        name: "Product B",
+        sales: 250,
+        details: "Category: Clothing, Price: $50",
+      },
       { name: "Product C", sales: 200, details: "Category: Home, Price: $80" },
-      { name: "Product D", sales: 150, details: "Category: Electronics, Price: $120" },
-      { name: "Product E", sales: 100, details: "Category: Clothing, Price: $40" },
+      {
+        name: "Product D",
+        sales: 150,
+        details: "Category: Electronics, Price: $120",
+      },
+      {
+        name: "Product E",
+        sales: 100,
+        details: "Category: Clothing, Price: $40",
+      },
     ],
-    thisMonthVsLast: { thisMonthRevenue: 150000, lastMonthRevenue: 140000, thisMonthOrders: 570, lastMonthOrders: 550 },
+    thisMonthVsLast: {
+      thisMonthRevenue: 150000,
+      lastMonthRevenue: 140000,
+      thisMonthOrders: 570,
+      lastMonthOrders: 550,
+    },
     customerSatisfaction: 71,
   };
 
   const productsData = {
     topSelling: [
-      { name: "Product A", sales: 300, details: "Category: Electronics, Price: $100" },
-      { name: "Product B", sales: 250, details: "Category: Clothing, Price: $50" },
+      {
+        name: "Product A",
+        sales: 300,
+        details: "Category: Electronics, Price: $100",
+      },
+      {
+        name: "Product B",
+        sales: 250,
+        details: "Category: Clothing, Price: $50",
+      },
       { name: "Product C", sales: 200, details: "Category: Home, Price: $80" },
-      { name: "Product D", sales: 150, details: "Category: Electronics, Price: $120" },
-      { name: "Product E", sales: 100, details: "Category: Clothing, Price: $40" },
+      {
+        name: "Product D",
+        sales: 150,
+        details: "Category: Electronics, Price: $120",
+      },
+      {
+        name: "Product E",
+        sales: 100,
+        details: "Category: Clothing, Price: $40",
+      },
       { name: "Product F", sales: 90, details: "Category: Home, Price: $60" },
-      { name: "Product G", sales: 80, details: "Category: Electronics, Price: $110" },
-      { name: "Product H", sales: 70, details: "Category: Clothing, Price: $45" },
+      {
+        name: "Product G",
+        sales: 80,
+        details: "Category: Electronics, Price: $110",
+      },
+      {
+        name: "Product H",
+        sales: 70,
+        details: "Category: Clothing, Price: $45",
+      },
       { name: "Product I", sales: 60, details: "Category: Home, Price: $70" },
-      { name: "Product J", sales: 50, details: "Category: Electronics, Price: $130" },
+      {
+        name: "Product J",
+        sales: 50,
+        details: "Category: Electronics, Price: $130",
+      },
     ],
     stockSummary: [
       { name: "Product A", stock: 5, status: "Low" },
@@ -82,8 +169,16 @@ const AnalyticDashboard = () => {
     customers: {
       activeVsInactive: { active: 800, inactive: 400 },
       topCustomers: [
-        { name: "John Doe", purchaseValue: 5000, details: "Orders: 15, Last Purchase: 2025-05-01" },
-        { name: "Jane Smith", purchaseValue: 4500, details: "Orders: 12, Last Purchase: 2025-04-30" },
+        {
+          name: "John Doe",
+          purchaseValue: 5000,
+          details: "Orders: 15, Last Purchase: 2025-05-01",
+        },
+        {
+          name: "Jane Smith",
+          purchaseValue: 4500,
+          details: "Orders: 12, Last Purchase: 2025-04-30",
+        },
       ],
       purchaseFrequency: [
         { name: "John Doe", frequency: 5 },
@@ -92,8 +187,16 @@ const AnalyticDashboard = () => {
     },
     retailers: {
       salesVolume: [
-        { name: "Retailer A", sales: 2000, details: "Products: 50, Active Listings: 45" },
-        { name: "Retailer B", sales: 1800, details: "Products: 40, Active Listings: 38" },
+        {
+          name: "Retailer A",
+          sales: 2000,
+          details: "Products: 50, Active Listings: 45",
+        },
+        {
+          name: "Retailer B",
+          sales: 1800,
+          details: "Products: 40, Active Listings: 38",
+        },
       ],
       activeListings: [
         { name: "Retailer A", listings: 45 },
@@ -160,23 +263,32 @@ const AnalyticDashboard = () => {
 
   // Top Navigation Component
   const TopNav = ({ setActiveSection, activeSection }) => (
-    <nav className="bg-white shadow sticky top-0 z-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex space-x-8">
-            {["dashboard", "products", "orders", "users", "reviews", "coupons"].map((section) => (
-              <button
-                key={section}
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  activeSection === section
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                }`}
-                onClick={() => setActiveSection(section)}
-              >
-                {section.charAt(0).toUpperCase() + section.slice(1)}
-              </button>
-            ))}
+    <nav className="bg-white shadow sticky top-0 z-10 w-full overflow-x-hidden">
+      <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+        <div className="flex h-14 sm:h-16 w-full">
+          <div className="flex overflow-x-auto scrollbar-hide w-full">
+            <div className="flex space-x-1 sm:space-x-4 lg:space-x-8 min-w-max px-1">
+              {[
+                "dashboard",
+                "products",
+                "orders",
+                "users",
+                "reviews",
+                "coupons",
+              ].map((section) => (
+                <button
+                  key={section}
+                  className={`inline-flex items-center px-1 sm:px-2 pt-1 border-b-2 text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0 ${
+                    activeSection === section
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                  }`}
+                  onClick={() => setActiveSection(section)}
+                >
+                  {section.charAt(0).toUpperCase() + section.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -203,54 +315,56 @@ const AnalyticDashboard = () => {
     };
 
     return (
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex space-x-4">
-          <select
-            className="p-2 border rounded-md"
-            value={range}
-            onChange={(e) => handleRangeChange(e.target.value)}
-          >
-            <option value="Today">Today</option>
-            <option value="Week">Week</option>
-            <option value="Month">Month</option>
-            <option value="Custom">Custom</option>
-          </select>
-          {range === "Custom" && (
-            <div className="flex space-x-2">
-              <input
-                type="date"
-                className="p-2 border rounded-md"
-                value={customStart}
-                onChange={(e) => setCustomStart(e.target.value)}
-              />
-              <input
-                type="date"
-                className="p-2 border rounded-md"
-                value={customEnd}
-                onChange={(e) => setCustomEnd(e.target.value)}
-              />
-              <button
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-                onClick={handleCustomApply}
-              >
-                Apply
-              </button>
-            </div>
-          )}
-        </div>
-        <div className="flex space-x-2">
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-            onClick={() => alert("Exporting as CSV")}
-          >
-            Export CSV
-          </button>
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-            onClick={() => alert("Exporting as PDF")}
-          >
-            Export PDF
-          </button>
+      <div className="w-full overflow-x-hidden">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4 space-y-4 lg:space-y-0 w-full">
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full lg:w-auto">
+            <select
+              className="p-2 border rounded-md text-sm w-full sm:w-auto min-w-0 flex-shrink"
+              value={range}
+              onChange={(e) => handleRangeChange(e.target.value)}
+            >
+              <option value="Today">Today</option>
+              <option value="Week">Week</option>
+              <option value="Month">Month</option>
+              <option value="Custom">Custom</option>
+            </select>
+            {range === "Custom" && (
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+                <input
+                  type="date"
+                  className="p-2 border rounded-md text-sm w-full sm:w-auto min-w-0 flex-shrink"
+                  value={customStart}
+                  onChange={(e) => setCustomStart(e.target.value)}
+                />
+                <input
+                  type="date"
+                  className="p-2 border rounded-md text-sm w-full sm:w-auto min-w-0 flex-shrink"
+                  value={customEnd}
+                  onChange={(e) => setCustomEnd(e.target.value)}
+                />
+                <button
+                  className="bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 transition text-sm whitespace-nowrap flex-shrink-0"
+                  onClick={handleCustomApply}
+                >
+                  Apply
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full lg:w-auto">
+            <button
+              className="bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 transition text-sm whitespace-nowrap"
+              onClick={() => alert("Exporting as CSV")}
+            >
+              Export CSV
+            </button>
+            <button
+              className="bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 transition text-sm whitespace-nowrap"
+              onClick={() => alert("Exporting as PDF")}
+            >
+              Export PDF
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -275,61 +389,101 @@ const AnalyticDashboard = () => {
 
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
+    const paginatedData = filteredData.slice(
+      startIndex,
+      startIndex + itemsPerPage
+    );
 
     return (
-      <div>
+      <div className="w-full overflow-x-hidden">
         <input
           type="text"
           placeholder="Search..."
-          className="w-full p-2 border rounded-md mb-4"
+          className="w-full p-2 border rounded-md mb-4 text-sm max-w-full"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <div className="max-h-72 overflow-y-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-100">
-                {headers.map((header, index) => (
-                  <th key={index} className="p-4 text-left">
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedData.map((item, index) => (
-                <tr
-                  key={index}
-                  className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => onRowClick(item)}
-                >
-                  {Object.values(item)
-                    .slice(0, headers.length)
-                    .map((val, i) => (
-                      <td key={i} className="p-4">
-                        {val}
-                      </td>
-                    ))}
+
+        {/* Desktop Table View */}
+        <div className="hidden md:block max-h-72 overflow-y-auto overflow-x-hidden">
+          <div className="w-full overflow-x-auto">
+            <table className="w-full min-w-full">
+              <thead>
+                <tr className="bg-gray-100">
+                  {headers.map((header, index) => (
+                    <th
+                      key={index}
+                      className="p-2 sm:p-3 text-left text-xs sm:text-sm font-medium whitespace-nowrap"
+                    >
+                      {header}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {paginatedData.map((item, index) => (
+                  <tr
+                    key={index}
+                    className="hover:bg-gray-50 cursor-pointer border-b"
+                    onClick={() => onRowClick(item)}
+                  >
+                    {Object.values(item)
+                      .slice(0, headers.length)
+                      .map((val, i) => (
+                        <td
+                          key={i}
+                          className="p-2 sm:p-3 text-xs sm:text-sm break-words max-w-0"
+                        >
+                          <div className="truncate">{val}</div>
+                        </td>
+                      ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div className="flex justify-between mt-4">
+
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-3 max-h-72 overflow-y-auto w-full">
+          {paginatedData.map((item, index) => (
+            <div
+              key={index}
+              className="bg-white border rounded-lg p-3 cursor-pointer hover:bg-gray-50 w-full min-w-0"
+              onClick={() => onRowClick(item)}
+            >
+              {Object.values(item)
+                .slice(0, headers.length)
+                .map((val, i) => (
+                  <div key={i} className="flex justify-between py-1 min-w-0">
+                    <span className="font-medium text-gray-600 text-xs flex-shrink-0">
+                      {headers[i]}:
+                    </span>
+                    <span className="text-xs break-words text-right ml-2 min-w-0">
+                      {val}
+                    </span>
+                  </div>
+                ))}
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col sm:flex-row justify-between items-center mt-4 space-y-2 sm:space-y-0 w-full">
           <button
-            className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
+            className="px-3 py-2 bg-gray-200 rounded-md disabled:opacity-50 text-xs sm:text-sm w-full sm:w-auto"
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
           >
             Previous
           </button>
-          <span>
+          <span className="text-xs sm:text-sm whitespace-nowrap">
             Page {currentPage} of {totalPages}
           </span>
           <button
-            className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            className="px-3 py-2 bg-gray-200 rounded-md disabled:opacity-50 text-xs sm:text-sm w-full sm:w-auto"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
             disabled={currentPage === totalPages}
           >
             Next
@@ -352,7 +506,9 @@ const AnalyticDashboard = () => {
       const filteredData = filterDataByDateRange(timelineData, dateRange);
 
       if (salesTrendChartRef.current) salesTrendChartRef.current.destroy();
-      const ctxSalesTrend = document.getElementById("dashboardSalesTrendChart")?.getContext("2d");
+      const ctxSalesTrend = document
+        .getElementById("dashboardSalesTrendChart")
+        ?.getContext("2d");
       if (ctxSalesTrend) {
         salesTrendChartRef.current = new Chart(ctxSalesTrend, {
           type: "line",
@@ -401,7 +557,9 @@ const AnalyticDashboard = () => {
       }
 
       if (ordersChartRef.current) ordersChartRef.current.destroy();
-      const ctxOrders = document.getElementById("dashboardOrdersByStatusChart")?.getContext("2d");
+      const ctxOrders = document
+        .getElementById("dashboardOrdersByStatusChart")
+        ?.getContext("2d");
       if (ctxOrders) {
         ordersChartRef.current = new Chart(ctxOrders, {
           type: "doughnut",
@@ -418,7 +576,9 @@ const AnalyticDashboard = () => {
       }
 
       if (comparisonChartRef.current) comparisonChartRef.current.destroy();
-      const ctxComparison = document.getElementById("dashboardComparisonChart")?.getContext("2d");
+      const ctxComparison = document
+        .getElementById("dashboardComparisonChart")
+        ?.getContext("2d");
       if (ctxComparison) {
         comparisonChartRef.current = new Chart(ctxComparison, {
           type: "bar",
@@ -465,7 +625,14 @@ const AnalyticDashboard = () => {
         const target = 75;
 
         ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, startAngle, startAngle + Math.PI / 2, false);
+        ctx.arc(
+          centerX,
+          centerY,
+          radius,
+          startAngle,
+          startAngle + Math.PI / 2,
+          false
+        );
         ctx.lineWidth = 20;
         ctx.strokeStyle = "#FF6B6B";
         ctx.stroke();
@@ -483,7 +650,14 @@ const AnalyticDashboard = () => {
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, startAngle + (3 * Math.PI) / 4, endAngle, false);
+        ctx.arc(
+          centerX,
+          centerY,
+          radius,
+          startAngle + (3 * Math.PI) / 4,
+          endAngle,
+          false
+        );
         ctx.strokeStyle = "#90EE90";
         ctx.stroke();
 
@@ -537,68 +711,114 @@ const AnalyticDashboard = () => {
     }, [dateRange]);
 
     return (
-      <div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Total Revenue</h3>
-            <p>Daily: ${dashboardData.totalRevenue.daily}</p>
-            <p>Weekly: ${dashboardData.totalRevenue.weekly}</p>
-            <p>Monthly: ${dashboardData.totalRevenue.monthly}</p>
+      <div className="w-full overflow-x-hidden">
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 overflow-x-hidden">
+          <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow min-w-0">
+            <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 break-words">
+              Total Revenue
+            </h3>
+            <p className="text-xs sm:text-sm lg:text-base break-words">
+              Daily: ${dashboardData.totalRevenue.daily}
+            </p>
+            <p className="text-xs sm:text-sm lg:text-base break-words">
+              Weekly: ${dashboardData.totalRevenue.weekly}
+            </p>
+            <p className="text-xs sm:text-sm lg:text-base break-words">
+              Monthly: ${dashboardData.totalRevenue.monthly}
+            </p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Total Customers / Retailers</h3>
-            <p>Customers: {dashboardData.totalCustomers}</p>
-            <p>Retailers: {dashboardData.totalRetailers}</p>
+          <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow min-w-0">
+            <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 break-words">
+              Total Customers / Retailers
+            </h3>
+            <p className="text-xs sm:text-sm lg:text-base break-words">
+              Customers: {dashboardData.totalCustomers}
+            </p>
+            <p className="text-xs sm:text-sm lg:text-base break-words">
+              Retailers: {dashboardData.totalRetailers}
+            </p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Low Stock Alerts</h3>
-            <p>{dashboardData.lowStockAlerts} items</p>
-          </div>
-        </div>
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Sales Trend</h3>
-            <div className="h-72">
-              <canvas id="dashboardSalesTrendChart"></canvas>
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Orders by Status</h3>
-            <div className="h-72">
-              <canvas id="dashboardOrdersByStatusChart"></canvas>
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">This Month vs Last Month</h3>
-            <div className="h-72">
-              <canvas id="dashboardComparisonChart"></canvas>
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Customer Satisfaction Score</h3>
-            <div className="h-48">
-              <canvas ref={gaugeRef} width="400" height="200"></canvas>
-            </div>
+          <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow sm:col-span-2 lg:col-span-1 min-w-0">
+            <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 break-words">
+              Low Stock Alerts
+            </h3>
+            <p className="text-xs sm:text-sm lg:text-base break-words">
+              {dashboardData.lowStockAlerts} items
+            </p>
           </div>
         </div>
-        <div className="mt-6 bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-2">Top 5 Selling Products</h3>
-          <PaginatedTable
-            data={dashboardData.topSellingProducts}
-            headers={["Name", "Sales"]}
-            itemsPerPage={3}
-            onRowClick={(item) => setSelectedItem(item)}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-          />
+        <div className="mt-3 sm:mt-4 lg:mt-6 w-full grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 overflow-x-hidden">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h3 className="text-base sm:text-lg font-semibold mb-2">
+              Sales Trend
+            </h3>
+            <div className="chart-container h-48 sm:h-64 lg:h-72">
+              <canvas
+                id="dashboardSalesTrendChart"
+                className="w-full h-full max-w-full"
+              ></canvas>
+            </div>
+          </div>
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow min-w-0">
+            <h3 className="text-base sm:text-lg font-semibold mb-2 break-words">
+              Orders by Status
+            </h3>
+            <div className="chart-container h-48 sm:h-64 lg:h-72">
+              <canvas
+                id="dashboardOrdersByStatusChart"
+                className="w-full h-full max-w-full"
+              ></canvas>
+            </div>
+          </div>
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow min-w-0">
+            <h3 className="text-base sm:text-lg font-semibold mb-2 break-words">
+              This Month vs Last Month
+            </h3>
+            <div className="chart-container h-48 sm:h-64 lg:h-72">
+              <canvas
+                id="dashboardComparisonChart"
+                className="w-full h-full max-w-full"
+              ></canvas>
+            </div>
+          </div>
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow min-w-0">
+            <h3 className="text-base sm:text-lg font-semibold mb-2 break-words">
+              Customer Satisfaction Score
+            </h3>
+            <div className="chart-container h-32 sm:h-40 lg:h-48">
+              <canvas
+                ref={gaugeRef}
+                width="400"
+                height="200"
+                className="w-full h-full max-w-full"
+              ></canvas>
+            </div>
+          </div>
+        </div>
+        <div className="mt-3 sm:mt-4 lg:mt-6 bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow w-full overflow-x-hidden">
+          <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 break-words">
+            Top 5 Selling Products
+          </h3>
+          <div className="w-full overflow-x-hidden">
+            <PaginatedTable
+              data={dashboardData.topSellingProducts}
+              headers={["Name", "Sales"]}
+              itemsPerPage={3}
+              onRowClick={(item) => setSelectedItem(item)}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+            />
+          </div>
         </div>
         {selectedItem && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg max-w-lg w-full">
-              <h2 className="text-xl font-bold mb-4">{selectedItem.name} Details</h2>
-              <p>{selectedItem.details}</p>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white p-4 sm:p-6 rounded-lg max-w-lg w-full">
+              <h2 className="text-lg sm:text-xl font-bold mb-4">
+                {selectedItem.name} Details
+              </h2>
+              <p className="text-sm sm:text-base">{selectedItem.details}</p>
               <button
-                className="mt-4 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
+                className="mt-4 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition text-sm sm:text-base w-full sm:w-auto"
                 onClick={() => setSelectedItem(null)}
               >
                 Close
@@ -622,7 +842,9 @@ const AnalyticDashboard = () => {
       const filteredData = filterDataByDateRange(timelineData, dateRange);
 
       if (salesTrendChartRef.current) salesTrendChartRef.current.destroy();
-      const ctxSalesTrend = document.getElementById("productsSalesTrendChart")?.getContext("2d");
+      const ctxSalesTrend = document
+        .getElementById("productsSalesTrendChart")
+        ?.getContext("2d");
       if (ctxSalesTrend) {
         salesTrendChartRef.current = new Chart(ctxSalesTrend, {
           type: "line",
@@ -671,7 +893,9 @@ const AnalyticDashboard = () => {
       }
 
       if (topSellingChartRef.current) topSellingChartRef.current.destroy();
-      const ctxTopSelling = document.getElementById("productsTopSellingChart")?.getContext("2d");
+      const ctxTopSelling = document
+        .getElementById("productsTopSellingChart")
+        ?.getContext("2d");
       if (ctxTopSelling) {
         topSellingChartRef.current = new Chart(ctxTopSelling, {
           type: "bar",
@@ -692,7 +916,9 @@ const AnalyticDashboard = () => {
       }
 
       if (ratingTrendsChartRef.current) ratingTrendsChartRef.current.destroy();
-      const ctxRatingTrends = document.getElementById("productsRatingTrendsChart")?.getContext("2d");
+      const ctxRatingTrends = document
+        .getElementById("productsRatingTrendsChart")
+        ?.getContext("2d");
       if (ctxRatingTrends) {
         ratingTrendsChartRef.current = new Chart(ctxRatingTrends, {
           type: "line",
@@ -714,34 +940,43 @@ const AnalyticDashboard = () => {
       return () => {
         if (salesTrendChartRef.current) salesTrendChartRef.current.destroy();
         if (topSellingChartRef.current) topSellingChartRef.current.destroy();
-        if (ratingTrendsChartRef.current) ratingTrendsChartRef.current.destroy();
+        if (ratingTrendsChartRef.current)
+          ratingTrendsChartRef.current.destroy();
       };
     }, [dateRange]);
 
     return (
       <div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Sales Trend</h3>
-            <div className="h-72">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h3 className="text-base sm:text-lg font-semibold mb-2">
+              Sales Trend
+            </h3>
+            <div className="h-48 sm:h-64 lg:h-72">
               <canvas id="productsSalesTrendChart"></canvas>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Top 10 Selling Products</h3>
-            <div className="h-72">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h3 className="text-base sm:text-lg font-semibold mb-2">
+              Top 10 Selling Products
+            </h3>
+            <div className="h-48 sm:h-64 lg:h-72">
               <canvas id="productsTopSellingChart"></canvas>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Product Rating Trends</h3>
-            <div className="h-72">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h3 className="text-base sm:text-lg font-semibold mb-2">
+              Product Rating Trends
+            </h3>
+            <div className="h-48 sm:h-64 lg:h-72">
               <canvas id="productsRatingTrendsChart"></canvas>
             </div>
           </div>
         </div>
-        <div className="mt-6 bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-2">Stock Summary</h3>
+        <div className="mt-4 sm:mt-6 bg-white p-4 sm:p-6 rounded-lg shadow">
+          <h3 className="text-base sm:text-lg font-semibold mb-2">
+            Stock Summary
+          </h3>
           <PaginatedTable
             data={productsData.stockSummary}
             headers={["Name", "Stock", "Status"]}
@@ -752,14 +987,16 @@ const AnalyticDashboard = () => {
           />
         </div>
         {selectedItem && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg max-w-lg w-full">
-              <h2 className="text-xl font-bold mb-4">{selectedItem.name} Details</h2>
-              <p>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white p-4 sm:p-6 rounded-lg max-w-lg w-full">
+              <h2 className="text-lg sm:text-xl font-bold mb-4">
+                {selectedItem.name} Details
+              </h2>
+              <p className="text-sm sm:text-base">
                 Stock: {selectedItem.stock}, Status: {selectedItem.status}
               </p>
               <button
-                className="mt-4 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
+                className="mt-4 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition text-sm sm:text-base w-full sm:w-auto"
                 onClick={() => setSelectedItem(null)}
               >
                 Close
@@ -778,7 +1015,9 @@ const AnalyticDashboard = () => {
     const orderTimeTrendsChartRef = useRef(null);
 
     useEffect(() => {
-      const ctxOrdersByStatus = document.getElementById("ordersByStatusChartOrders")?.getContext("2d");
+      const ctxOrdersByStatus = document
+        .getElementById("ordersByStatusChartOrders")
+        ?.getContext("2d");
       if (ctxOrdersByStatus) {
         ordersByStatusChartRef.current = new Chart(ctxOrdersByStatus, {
           type: "bar",
@@ -816,7 +1055,9 @@ const AnalyticDashboard = () => {
         });
       }
 
-      const ctxPaymentMethods = document.getElementById("ordersPaymentMethodsChart")?.getContext("2d");
+      const ctxPaymentMethods = document
+        .getElementById("ordersPaymentMethodsChart")
+        ?.getContext("2d");
       if (ctxPaymentMethods) {
         paymentMethodsChartRef.current = new Chart(ctxPaymentMethods, {
           type: "pie",
@@ -832,7 +1073,9 @@ const AnalyticDashboard = () => {
         });
       }
 
-      const ctxOrderTimeTrends = document.getElementById("ordersOrderTimeTrendsChart")?.getContext("2d");
+      const ctxOrderTimeTrends = document
+        .getElementById("ordersOrderTimeTrendsChart")
+        ?.getContext("2d");
       if (ctxOrderTimeTrends) {
         orderTimeTrendsChartRef.current = new Chart(ctxOrderTimeTrends, {
           type: "line",
@@ -852,31 +1095,40 @@ const AnalyticDashboard = () => {
       }
 
       return () => {
-        if (ordersByStatusChartRef.current) ordersByStatusChartRef.current.destroy();
-        if (paymentMethodsChartRef.current) paymentMethodsChartRef.current.destroy();
-        if (orderTimeTrendsChartRef.current) orderTimeTrendsChartRef.current.destroy();
+        if (ordersByStatusChartRef.current)
+          ordersByStatusChartRef.current.destroy();
+        if (paymentMethodsChartRef.current)
+          paymentMethodsChartRef.current.destroy();
+        if (orderTimeTrendsChartRef.current)
+          orderTimeTrendsChartRef.current.destroy();
       };
     }, []);
 
     return (
       <div>
         <Filters onDateChange={() => {}} />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Orders by Status</h3>
-            <div className="h-72">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h3 className="text-base sm:text-lg font-semibold mb-2">
+              Orders by Status
+            </h3>
+            <div className="h-48 sm:h-64 lg:h-72">
               <canvas id="ordersByStatusChartOrders"></canvas>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Payment Method Usage</h3>
-            <div className="h-72">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h3 className="text-base sm:text-lg font-semibold mb-2">
+              Payment Method Usage
+            </h3>
+            <div className="h-48 sm:h-64 lg:h-72">
               <canvas id="ordersPaymentMethodsChart"></canvas>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Order Time Trends</h3>
-            <div className="h-72">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h3 className="text-base sm:text-lg font-semibold mb-2">
+              Order Time Trends
+            </h3>
+            <div className="h-48 sm:h-64 lg:h-72">
               <canvas id="ordersOrderTimeTrendsChart"></canvas>
             </div>
           </div>
@@ -895,13 +1147,17 @@ const AnalyticDashboard = () => {
     const activityChartRef = useRef(null);
 
     useEffect(() => {
-      if (activeInactiveChartRef.current) activeInactiveChartRef.current.destroy();
+      if (activeInactiveChartRef.current)
+        activeInactiveChartRef.current.destroy();
       if (topCustomersChartRef.current) topCustomersChartRef.current.destroy();
-      if (retailerSalesChartRef.current) retailerSalesChartRef.current.destroy();
+      if (retailerSalesChartRef.current)
+        retailerSalesChartRef.current.destroy();
       if (activityChartRef.current) activityChartRef.current.destroy();
 
       if (tab === "customers") {
-        const ctxActiveInactive = document.getElementById("usersActiveInactiveChart")?.getContext("2d");
+        const ctxActiveInactive = document
+          .getElementById("usersActiveInactiveChart")
+          ?.getContext("2d");
         if (ctxActiveInactive) {
           activeInactiveChartRef.current = new Chart(ctxActiveInactive, {
             type: "doughnut",
@@ -917,7 +1173,9 @@ const AnalyticDashboard = () => {
           });
         }
 
-        const ctxTopCustomers = document.getElementById("usersTopCustomersChart")?.getContext("2d");
+        const ctxTopCustomers = document
+          .getElementById("usersTopCustomersChart")
+          ?.getContext("2d");
         if (ctxTopCustomers) {
           topCustomersChartRef.current = new Chart(ctxTopCustomers, {
             type: "bar",
@@ -926,7 +1184,9 @@ const AnalyticDashboard = () => {
               datasets: [
                 {
                   label: "Purchase Value",
-                  data: usersData.customers.topCustomers.map((c) => c.purchaseValue),
+                  data: usersData.customers.topCustomers.map(
+                    (c) => c.purchaseValue
+                  ),
                   backgroundColor: "rgba(153, 102, 255, 0.5)",
                   borderColor: "rgba(153, 102, 255, 1)",
                   borderWidth: 1,
@@ -937,7 +1197,9 @@ const AnalyticDashboard = () => {
           });
         }
 
-        const ctxActivity = document.getElementById("usersActivityChart")?.getContext("2d");
+        const ctxActivity = document
+          .getElementById("usersActivityChart")
+          ?.getContext("2d");
         if (ctxActivity) {
           activityChartRef.current = new Chart(ctxActivity, {
             type: "bar",
@@ -946,7 +1208,9 @@ const AnalyticDashboard = () => {
               datasets: [
                 {
                   label: "Purchase Frequency",
-                  data: usersData.customers.purchaseFrequency.map((c) => c.frequency),
+                  data: usersData.customers.purchaseFrequency.map(
+                    (c) => c.frequency
+                  ),
                   backgroundColor: "rgba(34, 197, 94, 0.5)",
                   borderColor: "rgba(34, 197, 94, 1)",
                   borderWidth: 1,
@@ -963,7 +1227,9 @@ const AnalyticDashboard = () => {
           });
         }
       } else {
-        const ctxRetailerSales = document.getElementById("usersRetailerSalesChart")?.getContext("2d");
+        const ctxRetailerSales = document
+          .getElementById("usersRetailerSalesChart")
+          ?.getContext("2d");
         if (ctxRetailerSales) {
           retailerSalesChartRef.current = new Chart(ctxRetailerSales, {
             type: "line",
@@ -982,7 +1248,9 @@ const AnalyticDashboard = () => {
           });
         }
 
-        const ctxActivity = document.getElementById("usersActivityChart")?.getContext("2d");
+        const ctxActivity = document
+          .getElementById("usersActivityChart")
+          ?.getContext("2d");
         if (ctxActivity) {
           activityChartRef.current = new Chart(ctxActivity, {
             type: "bar",
@@ -991,7 +1259,9 @@ const AnalyticDashboard = () => {
               datasets: [
                 {
                   label: "Active Listings",
-                  data: usersData.retailers.activeListings.map((r) => r.listings),
+                  data: usersData.retailers.activeListings.map(
+                    (r) => r.listings
+                  ),
                   backgroundColor: "rgba(255, 99, 132, 0.5)",
                   borderColor: "rgba(255, 99, 132, 1)",
                   borderWidth: 1,
@@ -1013,9 +1283,9 @@ const AnalyticDashboard = () => {
     return (
       <div>
         <Filters onDateChange={() => {}} />
-        <div className="flex space-x-4 mb-4">
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mb-4">
           <button
-            className={`px-4 py-2 rounded-md ${
+            className={`px-4 py-2 rounded-md text-sm ${
               tab === "customers" ? "bg-blue-600 text-white" : "bg-gray-200"
             }`}
             onClick={() => setTab("customers")}
@@ -1023,7 +1293,7 @@ const AnalyticDashboard = () => {
             Customers
           </button>
           <button
-            className={`px-4 py-2 rounded-md ${
+            className={`px-4 py-2 rounded-md text-sm ${
               tab === "retailers" ? "bg-blue-600 text-white" : "bg-gray-200"
             }`}
             onClick={() => setTab("retailers")}
@@ -1032,50 +1302,62 @@ const AnalyticDashboard = () => {
           </button>
         </div>
         {tab === "customers" && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-2">Active vs Inactive Users</h3>
-              <div className="h-72">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+              <h3 className="text-base sm:text-lg font-semibold mb-2">
+                Active vs Inactive Users
+              </h3>
+              <div className="h-48 sm:h-64 lg:h-72">
                 <canvas id="usersActiveInactiveChart"></canvas>
               </div>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-2">Top Customers by Purchase Value</h3>
-              <div className="h-72">
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+              <h3 className="text-base sm:text-lg font-semibold mb-2">
+                Top Customers by Purchase Value
+              </h3>
+              <div className="h-48 sm:h-64 lg:h-72">
                 <canvas id="usersTopCustomersChart"></canvas>
               </div>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-2">Purchase Frequency</h3>
-              <div className="h-72">
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+              <h3 className="text-base sm:text-lg font-semibold mb-2">
+                Purchase Frequency
+              </h3>
+              <div className="h-48 sm:h-64 lg:h-72">
                 <canvas id="usersActivityChart"></canvas>
               </div>
             </div>
           </div>
         )}
         {tab === "retailers" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-2">Retailer Sales Volume</h3>
-              <div className="h-72">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+              <h3 className="text-base sm:text-lg font-semibold mb-2">
+                Retailer Sales Volume
+              </h3>
+              <div className="h-48 sm:h-64 lg:h-72">
                 <canvas id="usersRetailerSalesChart"></canvas>
               </div>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-2">Active Listings</h3>
-              <div className="h-72">
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+              <h3 className="text-base sm:text-lg font-semibold mb-2">
+                Active Listings
+              </h3>
+              <div className="h-48 sm:h-64 lg:h-72">
                 <canvas id="usersActivityChart"></canvas>
               </div>
             </div>
           </div>
         )}
         {selectedItem && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg max-w-lg w-full">
-              <h2 className="text-xl font-bold mb-4">{selectedItem.name} Details</h2>
-              <p>{selectedItem.details}</p>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white p-4 sm:p-6 rounded-lg max-w-lg w-full">
+              <h2 className="text-lg sm:text-xl font-bold mb-4">
+                {selectedItem.name} Details
+              </h2>
+              <p className="text-sm sm:text-base">{selectedItem.details}</p>
               <button
-                className="mt-4 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
+                className="mt-4 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition text-sm sm:text-base w-full sm:w-auto"
                 onClick={() => setSelectedItem(null)}
               >
                 Close
@@ -1094,7 +1376,9 @@ const AnalyticDashboard = () => {
     const sentimentChartRef = useRef(null);
 
     useEffect(() => {
-      const ctxRatingDistribution = document.getElementById("reviewsRatingDistributionChart")?.getContext("2d");
+      const ctxRatingDistribution = document
+        .getElementById("reviewsRatingDistributionChart")
+        ?.getContext("2d");
       if (ctxRatingDistribution) {
         ratingDistributionChartRef.current = new Chart(ctxRatingDistribution, {
           type: "bar",
@@ -1114,7 +1398,9 @@ const AnalyticDashboard = () => {
         });
       }
 
-      const ctxReviewVolume = document.getElementById("reviewsReviewVolumeChart")?.getContext("2d");
+      const ctxReviewVolume = document
+        .getElementById("reviewsReviewVolumeChart")
+        ?.getContext("2d");
       if (ctxReviewVolume) {
         reviewVolumeChartRef.current = new Chart(ctxReviewVolume, {
           type: "line",
@@ -1133,7 +1419,9 @@ const AnalyticDashboard = () => {
         });
       }
 
-      const ctxSentiment = document.getElementById("reviewsSentimentChart")?.getContext("2d");
+      const ctxSentiment = document
+        .getElementById("reviewsSentimentChart")
+        ?.getContext("2d");
       if (ctxSentiment) {
         sentimentChartRef.current = new Chart(ctxSentiment, {
           type: "pie",
@@ -1150,8 +1438,10 @@ const AnalyticDashboard = () => {
       }
 
       return () => {
-        if (ratingDistributionChartRef.current) ratingDistributionChartRef.current.destroy();
-        if (reviewVolumeChartRef.current) reviewVolumeChartRef.current.destroy();
+        if (ratingDistributionChartRef.current)
+          ratingDistributionChartRef.current.destroy();
+        if (reviewVolumeChartRef.current)
+          reviewVolumeChartRef.current.destroy();
         if (sentimentChartRef.current) sentimentChartRef.current.destroy();
       };
     }, []);
@@ -1159,22 +1449,28 @@ const AnalyticDashboard = () => {
     return (
       <div>
         <Filters onDateChange={() => {}} />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Rating Distribution</h3>
-            <div className="h-72">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h3 className="text-base sm:text-lg font-semibold mb-2">
+              Rating Distribution
+            </h3>
+            <div className="h-48 sm:h-64 lg:h-72">
               <canvas id="reviewsRatingDistributionChart"></canvas>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Review Volume</h3>
-            <div className="h-72">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h3 className="text-base sm:text-lg font-semibold mb-2">
+              Review Volume
+            </h3>
+            <div className="h-48 sm:h-64 lg:h-72">
               <canvas id="reviewsReviewVolumeChart"></canvas>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Review Sentiment</h3>
-            <div className="h-72">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h3 className="text-base sm:text-lg font-semibold mb-2">
+              Review Sentiment
+            </h3>
+            <div className="h-48 sm:h-64 lg:h-72">
               <canvas id="reviewsSentimentChart"></canvas>
             </div>
           </div>
@@ -1191,7 +1487,9 @@ const AnalyticDashboard = () => {
     const couponTypeChartRef = useRef(null);
 
     useEffect(() => {
-      const ctxUsageRate = document.getElementById("couponsUsageRateChart")?.getContext("2d");
+      const ctxUsageRate = document
+        .getElementById("couponsUsageRateChart")
+        ?.getContext("2d");
       if (ctxUsageRate) {
         usageRateChartRef.current = new Chart(ctxUsageRate, {
           type: "bar",
@@ -1214,7 +1512,9 @@ const AnalyticDashboard = () => {
         });
       }
 
-      const ctxCouponType = document.getElementById("couponsCouponTypeChart")?.getContext("2d");
+      const ctxCouponType = document
+        .getElementById("couponsCouponTypeChart")
+        ?.getContext("2d");
       if (ctxCouponType) {
         couponTypeChartRef.current = new Chart(ctxCouponType, {
           type: "doughnut",
@@ -1239,22 +1539,28 @@ const AnalyticDashboard = () => {
     return (
       <div>
         <Filters onDateChange={() => {}} />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Coupon Usage Rate</h3>
-            <div className="h-72">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h3 className="text-base sm:text-lg font-semibold mb-2">
+              Coupon Usage Rate
+            </h3>
+            <div className="h-48 sm:h-64 lg:h-72">
               <canvas id="couponsUsageRateChart"></canvas>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Coupon Type Effectiveness</h3>
-            <div className="h-72">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h3 className="text-base sm:text-lg font-semibold mb-2">
+              Coupon Type Effectiveness
+            </h3>
+            <div className="h-48 sm:h-64 lg:h-72">
               <canvas id="couponsCouponTypeChart"></canvas>
             </div>
           </div>
         </div>
-        <div className="mt-6 bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-2">Expired/Unused Coupons</h3>
+        <div className="mt-4 sm:mt-6 bg-white p-4 sm:p-6 rounded-lg shadow">
+          <h3 className="text-base sm:text-lg font-semibold mb-2">
+            Expired/Unused Coupons
+          </h3>
           <PaginatedTable
             data={couponsData.expiredUnused}
             headers={["Coupon Code", "Count"]}
@@ -1265,12 +1571,16 @@ const AnalyticDashboard = () => {
           />
         </div>
         {selectedItem && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg max-w-lg w-full">
-              <h2 className="text-xl font-bold mb-4">{selectedItem.code} Details</h2>
-              <p>Count: {selectedItem.count}</p>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white p-4 sm:p-6 rounded-lg max-w-lg w-full">
+              <h2 className="text-lg sm:text-xl font-bold mb-4">
+                {selectedItem.code} Details
+              </h2>
+              <p className="text-sm sm:text-base">
+                Count: {selectedItem.count}
+              </p>
               <button
-                className="mt-4 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
+                className="mt-4 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition text-sm sm:text-base w-full sm:w-auto"
                 onClick={() => setSelectedItem(null)}
               >
                 Close
@@ -1283,29 +1593,32 @@ const AnalyticDashboard = () => {
   };
 
   // Main App State
-  const [activeSection, setActiveSection] = useState('dashboard');
-  const [dateRange, setDateRange] = useState('Month');
+  const [activeSection, setActiveSection] = useState("dashboard");
+  const [dateRange, setDateRange] = useState("Month");
 
   return (
-    <div className="bg-gray-100 min-h-screen">
-      <TopNav setActiveSection={setActiveSection} activeSection={activeSection} />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeSection === 'dashboard' && (
+    <div className="bg-gray-100 min-h-screen overflow-x-hidden">
+      <TopNav
+        setActiveSection={setActiveSection}
+        activeSection={activeSection}
+      />
+      <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8 overflow-x-hidden">
+        {activeSection === "dashboard" && (
           <>
             <Filters onDateChange={setDateRange} />
             <Dashboard dateRange={dateRange} />
           </>
         )}
-        {activeSection === 'products' && (
+        {activeSection === "products" && (
           <>
             <Filters onDateChange={setDateRange} />
             <Products dateRange={dateRange} />
           </>
         )}
-        {activeSection === 'orders' && <Orders />}
-        {activeSection === 'users' && <Users />}
-        {activeSection === 'reviews' && <Reviews />}
-        {activeSection === 'coupons' && <Coupons />}
+        {activeSection === "orders" && <Orders />}
+        {activeSection === "users" && <Users />}
+        {activeSection === "reviews" && <Reviews />}
+        {activeSection === "coupons" && <Coupons />}
       </div>
     </div>
   );
