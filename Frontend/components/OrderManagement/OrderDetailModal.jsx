@@ -6,14 +6,12 @@ const OrderDetailModal = ({
   selectedOrder,
   setSelectedOrder,
   updateOrderStatus,
-  addTracking,
   handleRefund,
-  downloadInvoice,
 }) =>
   showModal &&
   selectedOrder && (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-4 rounded-lg shadow-lg max-w-md w-[90%] max-h-[70vh] overflow-y-auto">
+      <div className="bg-white p-4 rounded-lg shadow-lg w-[95%] max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-2">
           <h2 className="text-lg font-bold text-gray-900">
             Order Details - {selectedOrder.id}
@@ -22,7 +20,7 @@ const OrderDetailModal = ({
             className="text-gray-500 hover:text-gray-700"
             onClick={() => setShowModal(false)}
           >
-            <i className="fas fa-times"></i>
+            <span className="text-xl">&times;</span>
           </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -79,19 +77,6 @@ const OrderDetailModal = ({
             </select>
           </div>
         </div>
-        {selectedOrder.tracking && (
-          <div className="mt-3">
-            <h3 className="text-sm font-semibold text-gray-700 mb-1">
-              Tracking Information
-            </h3>
-            <p className="text-sm">
-              <strong>Carrier:</strong> {selectedOrder.tracking.carrier}
-            </p>
-            <p className="text-sm">
-              <strong>Number:</strong> {selectedOrder.tracking.number}
-            </p>
-          </div>
-        )}
         {selectedOrder.refundStatus && (
           <div className="mt-3">
             <h3 className="text-sm font-semibold text-gray-700 mb-1">
@@ -118,15 +103,6 @@ const OrderDetailModal = ({
             )}
           </div>
         )}
-        <div className="mt-3">
-          <h3 className="text-sm font-semibold text-gray-700 mb-1">Actions</h3>
-          <button
-            className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition text-sm"
-            onClick={() => downloadInvoice(selectedOrder)}
-          >
-            Download Invoice
-          </button>
-        </div>
         <div className="mt-3 flex justify-end space-x-2">
           <button
             className="bg-gray-300 text-gray-700 px-2 py-1 rounded hover:bg-gray-400 transition text-sm"

@@ -1,5 +1,4 @@
 import React from "react";
-import { Search } from "lucide-react"; // search icon ke liye
 
 const FiltersSection = ({
   searchQuery,
@@ -30,14 +29,13 @@ const FiltersSection = ({
 
   return (
     <div className="bg-white p-4 rounded-md shadow-sm mb-6">
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-col md:flex-row flex-wrap items-center gap-3">
         {/* Search Input with Icon */}
-        <div className="relative flex items-center w-[300px]">
-          {/* <Search className="absolute left-5 text-gray-400" size={18} /> */}
+        <div className="relative flex items-center w-full md:w-[300px]">
           <input
             type="text"
             placeholder="Search orders..."
-            className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            className="w-full pl-4 pr-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -45,7 +43,7 @@ const FiltersSection = ({
 
         {/* Status Dropdown */}
         <select
-          className="w-[150px] px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          className="w-full md:w-[150px] px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
@@ -60,7 +58,7 @@ const FiltersSection = ({
         {/* Date Range Start */}
         <input
           type="date"
-          className="w-[150px] px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          className="w-full md:w-[150px] px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           value={dateRange.start}
           onChange={handleStartDateChange}
         />
@@ -68,7 +66,7 @@ const FiltersSection = ({
         {/* Date Range End */}
         <input
           type="date"
-          className="w-[150px] px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          className="w-full md:w-[150px] px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           value={dateRange.end}
           onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
           min={dateRange.start || ""} // Set minimum date to start date if it exists
@@ -77,7 +75,7 @@ const FiltersSection = ({
 
         {/* User Type Dropdown */}
         <select
-          className="w-[150px] px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          className="w-full md:w-[150px] px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           value={userType}
           onChange={(e) => setUserType(e.target.value)}
         >
@@ -87,7 +85,7 @@ const FiltersSection = ({
         </select>
 
         {/* Export Buttons */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full md:w-auto justify-center md:justify-start mt-3 md:mt-0">
           <button
             onClick={() => exportOrders("CSV")}
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-2 rounded-md text-sm"

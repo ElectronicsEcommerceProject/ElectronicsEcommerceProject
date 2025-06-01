@@ -447,7 +447,7 @@ const OrderDashboard = () => {
         );
       });
       doc.text(
-        `Total: $${order.amount || 0}`,
+        `Total: ₹${order.amount || 0}`,
         10,
         60 + order.items.length * 10
       );
