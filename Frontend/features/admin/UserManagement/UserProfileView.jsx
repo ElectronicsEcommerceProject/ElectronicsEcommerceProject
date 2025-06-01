@@ -26,15 +26,10 @@ import {
   userManagmentDashboardUsersOrdersDataRoute,
 } from "../../../src/index.js";
 
-const UserProfileView = () => {
+const UserProfileView = ({ filters, onFilterChange }) => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [filters, setFilters] = useState({
-    role: "All",
-    status: "All",
-    search: "",
-    sortBy: "Date Joined",
-  });
+
   const [activeTab, setActiveTab] = useState("general");
 
   useEffect(() => {
@@ -448,9 +443,11 @@ const UserProfileView = () => {
             <select
               className="border border-gray-200 p-3 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-teal-500"
               value={filters.role}
-              onChange={(e) => setFilters({ ...filters, role: e.target.value })}
+              onChange={(e) =>
+                onFilterChange({ ...filters, role: e.target.value })
+              }
             >
-              <option>All</option>
+              <option>Filter By Role</option>
               <option>Customer</option>
               <option>Retailer</option>
               <option>Admin</option>
@@ -459,10 +456,10 @@ const UserProfileView = () => {
               className="border border-gray-200 p-3 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-teal-500"
               value={filters.status}
               onChange={(e) =>
-                setFilters({ ...filters, status: e.target.value })
+                onFilterChange({ ...filters, status: e.target.value })
               }
             >
-              <option>All</option>
+              <option>Filter By Status</option>
               <option>Active</option>
               <option>Inactive</option>
               <option>Banned</option>
@@ -474,14 +471,14 @@ const UserProfileView = () => {
               className="border border-gray-200 p-3 rounded-lg w-64 shadow-sm focus:ring-2 focus:ring-teal-500"
               value={filters.search}
               onChange={(e) =>
-                setFilters({ ...filters, search: e.target.value })
+                onFilterChange({ ...filters, search: e.target.value })
               }
             />
             <select
               className="border border-gray-200 p-3 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-teal-500"
               value={filters.sortBy}
               onChange={(e) =>
-                setFilters({ ...filters, sortBy: e.target.value })
+                onFilterChange({ ...filters, sortBy: e.target.value })
               }
             >
               <option>Date Joined</option>

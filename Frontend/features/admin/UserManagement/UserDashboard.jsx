@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { UserProfileView } from "../../../features/admin/index.js";
+import { jsPDF } from "jspdf";
 import {
   FiDownload,
   FiFileText,
-  FiPlus,
   FiUser,
   FiShoppingBag,
   FiCheckCircle,
@@ -18,6 +18,7 @@ import { FaStore } from "react-icons/fa";
 import {
   getApi,
   userManagmentDashboardDataRoute,
+  userManagmentDashboardUsersOrdersDataRoute,
   MESSAGE,
 } from "../../../src/index.js";
 
@@ -39,6 +40,14 @@ const UserDashboard = () => {
     });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [filters, setFilters] = useState({
+    role: "All",
+    status: "All",
+    search: "",
+    sortBy: "Date Joined",
+  });
 
   useEffect(() => {
     const fetchUserManagementDashboardData = async () => {
@@ -62,6 +71,183 @@ const UserDashboard = () => {
 
     fetchUserManagementDashboardData();
   }, []);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await getApi(
+          userManagmentDashboardUsersOrdersDataRoute
+        );
+        if (
+          response &&
+          response.success === true &&
+          Array.isArray(response.data)
+        ) {
+          const transformedUsers = response.data.map((user) => ({
+            id: user.user_id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone_number || "",
+            role: user.role.charAt(0).toUpperCase() + user.role.slice(1),
+            status: user.status.charAt(0).toUpperCase() + user.status.slice(1),
+            orders: user.orderCount || 0,
+            revenue: user.totalSpent || 0,
+            createdDate: new Date(user.createdAt).toISOString().split("T")[0],
+            lastLogin: new Date(user.updatedAt).toISOString().split("T")[0],
+            totalSpent: user.totalSpent || 0,
+          }));
+          setUsers(transformedUsers);
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // Function to filter users based on current filters
+  const filterUsers = () => {
+    const filtered = users
+      .filter((user) => {
+        const matchesRole =
+          filters.role === "All" || user.role === filters.role;
+        const matchesStatus =
+          filters.status === "All" || user.status === filters.status;
+        const matchesSearch =
+          filters.search === "" ||
+          user.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+          user.email.toLowerCase().includes(filters.search.toLowerCase()) ||
+          (user.phone && user.phone.includes(filters.search));
+
+        return matchesRole && matchesStatus && matchesSearch;
+      })
+      .sort((a, b) => {
+        if (filters.sortBy === "Date Joined")
+          return new Date(b.createdDate) - new Date(a.createdDate);
+        if (filters.sortBy === "Order Count") return b.orders - a.orders;
+        if (filters.sortBy === "Revenue") return b.revenue - a.revenue;
+        return 0;
+      });
+
+    setFilteredUsers(filtered);
+  };
+
+  // Update filtered users when filters or users change
+  useEffect(() => {
+    filterUsers();
+  }, [users, filters]);
+
+  const exportUsersToCsv = () => {
+    // Create CSV content
+    let csvContent = "data:text/csv;charset=utf-8,";
+
+    // Add headers
+    csvContent +=
+      "Name,Email,Phone,Role,Status,Orders,Revenue,Date Joined,Last Login\n";
+
+    // Add user data
+    filteredUsers.forEach((user) => {
+      const row = [
+        user.name,
+        user.email,
+        user.phone || "N/A",
+        user.role,
+        user.status,
+        user.orders,
+        `₹${user.revenue.toFixed(2)}`,
+        user.createdDate,
+        user.lastLogin,
+      ].join(",");
+
+      csvContent += row + "\n";
+    });
+
+    // Create download link
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute(
+      "download",
+      `users_export_${new Date().toISOString().split("T")[0]}.csv`
+    );
+    document.body.appendChild(link);
+
+    // Trigger download
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportUsersToPdf = () => {
+    const doc = new jsPDF();
+
+    // Add title
+    doc.setFontSize(18);
+    doc.text("User Management Export", 14, 22);
+
+    // Add filter information
+    doc.setFontSize(11);
+    doc.text(
+      `Applied Filters: Role: ${filters.role}, Status: ${filters.status}${
+        filters.search ? `, Search: "${filters.search}"` : ""
+      }`,
+      14,
+      30
+    );
+
+    // Add timestamp and count
+    doc.setFontSize(10);
+    doc.text(`Export Date: ${new Date().toLocaleDateString()}`, 14, 38);
+    doc.text(`Total Users: ${filteredUsers.length}`, 14, 44);
+
+    // Table headers
+    const headers = ["Name", "Email", "Role", "Status", "Orders", "Revenue"];
+    let y = 55;
+
+    // Draw header row
+    doc.setFillColor(240, 240, 240);
+    doc.rect(14, y - 5, 180, 8, "F");
+    doc.setFont("helvetica", "bold");
+
+    headers.forEach((header, i) => {
+      const x = 14 + i * 30;
+      doc.text(header, x, y);
+    });
+
+    // Draw data rows
+    doc.setFont("helvetica", "normal");
+
+    // Limit the number of rows to prevent oversized PDFs
+    const maxUsersPerPage = 25;
+    const usersToPrint = filteredUsers.slice(0, maxUsersPerPage);
+
+    usersToPrint.forEach((user, index) => {
+      y += 8;
+      doc.text(user.name.substring(0, 15), 14, y);
+      doc.text(user.email.substring(0, 15), 44, y);
+      doc.text(user.role, 74, y);
+      doc.text(user.status, 104, y);
+      doc.text(user.orders.toString(), 134, y);
+      doc.text(`₹${user.revenue.toFixed(2)}`, 164, y);
+    });
+
+    // Add note if more users exist
+    if (filteredUsers.length > maxUsersPerPage) {
+      y += 10;
+      doc.text(
+        `... and ${filteredUsers.length - maxUsersPerPage} more users`,
+        14,
+        y
+      );
+    }
+
+    // Save the PDF
+    doc.save(`users_export_${new Date().toISOString().split("T")[0]}.pdf`);
+  };
+
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -90,8 +276,8 @@ const UserDashboard = () => {
           z-index: 0;
         }
       `}</style>
-      <nav className="bg-white shadow-md p-4 flex justify-between items-center">
-        <div className="flex gap-4">
+      <nav className="bg-white shadow-md p-4 flex flex-col sm:flex-row justify-between items-center">
+        <div className="flex gap-4 mb-3 sm:mb-0">
           <button
             onClick={() => setActivePage("dashboard")}
             className={`px-4 py-2 rounded-lg font-semibold transition-all ${
@@ -114,14 +300,17 @@ const UserDashboard = () => {
           </button>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+          <button
+            className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+            onClick={exportUsersToCsv}
+          >
             <FiDownload className="mr-2" /> Export CSV
           </button>
-          <button className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+          <button
+            className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+            onClick={exportUsersToPdf}
+          >
             <FiFileText className="mr-2" /> Export PDF
-          </button>
-          <button className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-            <FiPlus className="mr-2" /> Add User
           </button>
         </div>
       </nav>
@@ -143,7 +332,12 @@ const UserDashboard = () => {
           ) : (
             <DashboardContent data={userManagementDashboardData} />
           ))}
-        {activePage === "users" && <UserProfileView />}
+        {activePage === "users" && (
+          <UserProfileView
+            onFilterChange={handleFilterChange}
+            filters={filters}
+          />
+        )}
       </main>
     </div>
   );
