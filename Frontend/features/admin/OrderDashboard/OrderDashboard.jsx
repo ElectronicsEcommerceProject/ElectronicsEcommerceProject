@@ -514,7 +514,7 @@ const OrderDashboard = () => {
       <Header />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto py-4 px-4 sm:py-6 sm:px-6 lg:px-8">
         {/* Call FiltersSection Component */}
         <FiltersSection
           searchQuery={searchQuery}

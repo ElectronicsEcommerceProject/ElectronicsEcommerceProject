@@ -28,10 +28,10 @@ const FiltersSection = ({
   };
 
   return (
-    <div className="bg-white p-4 rounded-md shadow-sm mb-6">
-      <div className="flex flex-col md:flex-row flex-wrap items-center gap-3">
+    <div className="bg-white p-3 sm:p-4 rounded-md shadow-sm mb-4 sm:mb-6">
+      <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 sm:gap-3">
         {/* Search Input with Icon */}
-        <div className="relative flex items-center w-full md:w-[300px]">
+        <div className="relative flex items-center w-full sm:w-auto sm:flex-1 sm:max-w-xs">
           <input
             type="text"
             placeholder="Search orders..."
@@ -43,7 +43,7 @@ const FiltersSection = ({
 
         {/* Status Dropdown */}
         <select
-          className="w-full md:w-[150px] px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          className="w-full sm:w-auto sm:min-w-[120px] px-3 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
@@ -58,7 +58,7 @@ const FiltersSection = ({
         {/* Date Range Start */}
         <input
           type="date"
-          className="w-full md:w-[150px] px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          className="w-full sm:w-auto sm:min-w-[130px] px-3 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           value={dateRange.start}
           onChange={handleStartDateChange}
         />
@@ -66,7 +66,7 @@ const FiltersSection = ({
         {/* Date Range End */}
         <input
           type="date"
-          className="w-full md:w-[150px] px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          className="w-full sm:w-auto sm:min-w-[130px] px-3 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           value={dateRange.end}
           onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
           min={dateRange.start || ""} // Set minimum date to start date if it exists
@@ -75,7 +75,7 @@ const FiltersSection = ({
 
         {/* User Type Dropdown */}
         <select
-          className="w-full md:w-[150px] px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          className="w-full sm:w-auto sm:min-w-[120px] px-3 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           value={userType}
           onChange={(e) => setUserType(e.target.value)}
         >
@@ -85,17 +85,17 @@ const FiltersSection = ({
         </select>
 
         {/* Export Buttons */}
-        <div className="flex gap-2 w-full md:w-auto justify-center md:justify-start mt-3 md:mt-0">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:ml-auto">
           <button
             onClick={() => exportOrders("CSV")}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-2 rounded-md text-sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-2 rounded-md text-sm transition-colors"
           >
             Export CSV
           </button>
 
           <button
             onClick={() => exportOrders("PDF")}
-            className="bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-2 rounded-md text-sm"
+            className="bg-green-600 hover:bg-green-700 text-white font-medium px-3 py-2 rounded-md text-sm transition-colors"
           >
             Export PDF
           </button>

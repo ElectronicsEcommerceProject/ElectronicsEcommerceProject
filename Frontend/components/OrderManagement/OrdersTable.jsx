@@ -12,7 +12,8 @@ const OrdersTable = ({
   paginate,
 }) => (
   <div className="overflow-hidden">
-    <div className="bg-white rounded-lg shadow overflow-x-auto">
+    {/* Desktop Table View */}
+    <div className="hidden md:block bg-white rounded-lg shadow overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
@@ -129,6 +130,97 @@ const OrdersTable = ({
         </tbody>
       </table>
     </div>
+
+    {/* Mobile Card View */}
+    <div className="md:hidden space-y-3">
+      {currentOrders.length > 0 ? (
+        currentOrders.map((order) => (
+          <div
+            key={order.id}
+            className="bg-white rounded-lg shadow p-4 border border-gray-200"
+          >
+            <div className="flex justify-between items-start mb-3">
+              <button
+                className="text-blue-600 hover:underline font-medium text-sm"
+                onClick={() => {
+                  setSelectedOrder(order);
+                  setShowModal(true);
+                }}
+              >
+                {order.id}
+              </button>
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  order.status === "Pending" || order.status === "pending"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : order.status === "Shipped" || order.status === "shipped"
+                    ? "bg-blue-100 text-blue-800"
+                    : order.status === "Delivered" ||
+                      order.status === "delivered"
+                    ? "bg-green-100 text-green-800"
+                    : order.status === "Cancelled" ||
+                      order.status === "cancelled"
+                    ? "bg-red-100 text-red-800"
+                    : "bg-gray-100 text-gray-800"
+                }`}
+              >
+                {order.status || "Unknown"}
+              </span>
+            </div>
+
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Customer:</span>
+                <span className="font-medium">{order.customer}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Total:</span>
+                <span className="font-medium">
+                  ₹
+                  {typeof order.amount === "number"
+                    ? order.amount.toFixed(2)
+                    : parseFloat(order.amount || 0).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Date:</span>
+                <span>{order.date || "N/A"}</span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
+              <button
+                className="text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1 rounded text-xs font-medium"
+                onClick={() => {
+                  setSelectedOrder(order);
+                  setShowModal(true);
+                }}
+              >
+                View Details
+              </button>
+              <select
+                className="text-xs border rounded px-2 py-1 bg-white"
+                value={order.status ? order.status.toLowerCase() : ""}
+                onChange={(e) =>
+                  updateOrderStatus(order.orderId, e.target.value)
+                }
+              >
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+          No orders found
+        </div>
+      )}
+    </div>
+
     <div className="mt-4 flex flex-col sm:flex-row justify-between items-center">
       <div className="flex items-center space-x-2 mb-2 sm:mb-0">
         <label className="text-sm text-gray-700">Show</label>
