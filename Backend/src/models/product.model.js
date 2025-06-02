@@ -58,6 +58,10 @@ export default (sequelize) => {
         type: DataTypes.UUID,
         allowNull: false,
       },
+      updated_by: {
+        type: DataTypes.UUID,
+        allowNull: true,
+      },
     },
     {
       timestamps: true,
@@ -112,6 +116,9 @@ export default (sequelize) => {
     Product.hasMany(models.WishListItem, {
       foreignKey: "product_id",
       as: "wishlistItems",
+    });
+    Product.hasMany(models.Coupon, {
+      foreignKey: "product_id",
     });
   };
 

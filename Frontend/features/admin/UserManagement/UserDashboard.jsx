@@ -463,7 +463,6 @@ const DashboardContent = ({ data }) => (
       <div className="gradient-border bg-white p-6 rounded-xl shadow-md">
         <div className="relative z-10">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-            <FiDollarSign className="w-5 h-5 mr-2 text-green-400" />
             Avg Revenue/User
           </h2>
           <p className="text-3xl font-bold text-gray-900 mt-2">

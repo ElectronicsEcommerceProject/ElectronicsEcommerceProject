@@ -20,6 +20,8 @@ export default (sequelize) => {
         type: DataTypes.ENUM("cart", "product"),
         defaultValue: "cart",
       },
+      category_id: { type: DataTypes.UUID, allowNull: true },
+      brand_id: { type: DataTypes.UUID, allowNull: true },
       product_id: { type: DataTypes.UUID, allowNull: true },
       product_variant_id: { type: DataTypes.UUID, allowNull: true },
       target_role: {
@@ -53,6 +55,8 @@ export default (sequelize) => {
   );
 
   Coupon.associate = (models) => {
+    Coupon.belongsTo(models.Category, { foreignKey: "category_id" });
+    Coupon.belongsTo(models.Brand, { foreignKey: "brand_id" });
     Coupon.belongsTo(models.Product, { foreignKey: "product_id" });
     Coupon.belongsTo(models.ProductVariant, {
       foreignKey: "product_variant_id",

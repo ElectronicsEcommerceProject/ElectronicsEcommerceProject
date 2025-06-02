@@ -35,7 +35,7 @@ const CouponManagement = () => {
             discount:
               coupon.type === "percentage"
                 ? `${coupon.discount_value}%`
-                : `$${coupon.discount_value}`,
+                : `${coupon.discount_value}`,
             validity: coupon.valid_to
               ? new Date(coupon.valid_to).toISOString().split("T")[0]
               : "",
@@ -439,7 +439,7 @@ const CouponManagement = () => {
                 <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
                   {formData.discountType === "percentage"
                     ? "DISCOUNT % *"
-                    : "DISCOUNT AMOUNT ($) *"}
+                    : "DISCOUNT AMOUNT (₹) *"}
                 </label>
                 <input
                   type="number"
@@ -576,7 +576,7 @@ const CouponManagement = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
-                  MINIMUM CART VALUE ($)
+                  MINIMUM CART VALUE (₹)
                 </label>
                 <input
                   type="number"
@@ -592,7 +592,7 @@ const CouponManagement = () => {
               {formData.discountType === "percentage" && (
                 <div>
                   <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
-                    MAX DISCOUNT VALUE ($)
+                    MAX DISCOUNT VALUE (₹)
                   </label>
                   <input
                     type="number"
@@ -726,7 +726,7 @@ const CouponManagement = () => {
                 <td className="py-4 px-6 font-bold">{coupon.discount}</td>
                 <td className="py-4 px-6 font-bold">{coupon.validity}</td>
                 <td className="py-4 px-6 text-center font-bold">
-                  ${coupon.minOrder}
+                  ₹{coupon.minOrder}
                 </td>
                 <td className="py-4 px-6 text-center">
                   <label className="relative inline-flex items-center cursor-pointer">

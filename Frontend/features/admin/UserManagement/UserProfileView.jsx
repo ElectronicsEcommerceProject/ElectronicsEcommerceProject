@@ -255,14 +255,14 @@ const UserProfileView = ({ filters, onFilterChange }) => {
                     </span>
                   </div>
                   <div className="flex items-center mb-4">
-                    <FiDollarSign className="text-gray-500 mr-2" />
+                    {/* <FiDollarSign className="text-gray-500 mr-2" /> */}
                     <span>
                       <strong>
                         Total{" "}
                         {selectedUser.role === "Customer" ? "Spent" : "Revenue"}
                         :
                       </strong>{" "}
-                      ${selectedUser.totalSpent.toFixed(2)}
+                      ₹{selectedUser.totalSpent.toFixed(2)}
                     </span>
                   </div>
 
@@ -545,7 +545,7 @@ const UserProfileView = ({ filters, onFilterChange }) => {
                       </td>
                       <td className="border-b p-4">{user.orders}</td>
                       <td className="border-b p-4">
-                        ${user.revenue.toFixed(2)}
+                        ₹{user.revenue.toFixed(2)}
                       </td>
                       <td className="border-b p-4">
                         <button
@@ -607,7 +607,7 @@ const UserProfileView = ({ filters, onFilterChange }) => {
                       {user.orders}
                     </div>
                     <div className="text-sm text-gray-600">
-                      <FiDollarSign className="inline mr-1" /> $
+                      {/* <FiDollarSign className="inline mr-1" /> $ */}
                       {user.revenue.toFixed(2)}
                     </div>
                   </div>
