@@ -17,7 +17,7 @@ export default (sequelize) => {
       },
       discount_value: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
       target_type: {
-        type: DataTypes.ENUM("cart", "product", "product_variant", "category", "brand"),
+        type: DataTypes.ENUM("cart", "product"),
         defaultValue: "cart",
       },
       category_id: { type: DataTypes.UUID, allowNull: true },
