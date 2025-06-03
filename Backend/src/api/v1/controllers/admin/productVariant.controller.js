@@ -140,10 +140,10 @@ const getProductVariantById = async (req, res) => {
 // Get variants by product ID
 const getVariantsByProductId = async (req, res) => {
   try {
-    const { productId } = req.params;
+    const { product_id } = req.params;
 
     // Check if product exists
-    const product = await Product.findByPk(productId);
+    const product = await Product.findByPk(product_id);
     if (!product) {
       return res.status(StatusCodes.NOT_FOUND).json({
         message: "Product not found",
@@ -151,14 +151,7 @@ const getVariantsByProductId = async (req, res) => {
     }
 
     const variants = await ProductVariant.findAll({
-      where: { product_id: productId },
-      include: [
-        {
-          model: User,
-          as: "creator",
-          attributes: ["user_id", "name", "email"],
-        },
-      ],
+      where: { product_id },
     });
 
     res.status(StatusCodes.OK).json({

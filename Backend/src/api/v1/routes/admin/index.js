@@ -23,9 +23,9 @@ import adminProductManagmentDataRoutes from "./adminProductManagmentData.routes.
 
 const app = express();
 
-app.use("/categories", categoryRoutes);
+app.use("/category", categoryRoutes);
 
-app.use("/brands", brandsRoutes);
+app.use("/brand", brandsRoutes);
 
 app.use("/product", productRoutes);
 

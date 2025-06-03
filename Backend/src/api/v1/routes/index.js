@@ -23,9 +23,9 @@ app.use("/user/profile", profileRoutes);
 
 app.use("/user/addresses", addressesRoutes);
 
-app.use("/user/product-catalog", adminRoutes);
+app.use("/user/product-Catalog", adminRoutes);
 
-app.use("/user/product-variant", adminRoutes);
+// app.use("/user/product-variant", adminRoutes);
 
 app.use("/user/cart", cartRoutes);
 

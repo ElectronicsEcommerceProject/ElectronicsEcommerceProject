@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import {
   getApi,
@@ -9,6 +9,10 @@ import {
   couponAndOffersDashboardDataRoute,
   couponAndOffersDashboardChangeStatusRoute,
   couponAndOffersDashboardAnalyticsDataRoute,
+  getAllCategoryRoute,
+  getAllProductsRoute,
+  getAllBrandsRoute,
+  productVariantByProductIdRoute,
 } from "../../../src/index.js";
 
 const CouponManagement = () => {
@@ -112,9 +116,17 @@ const CouponManagement = () => {
       discountValue: coupon?.discount
         ? parseFloat(coupon.discount.replace(/%|\$/g, "")) || 0
         : 20,
-      targetType: coupon?.productId ? "product" : "cart",
+      // Initialize targetType: if variantId exists, it's product_variant. If productId, it's product. Else, cart.
+      // This assumes coupon object from props doesn't yet have distinct categoryId/brandId or a specific target_type field.
+      targetType: coupon?.productVariantId
+        ? "product_variant"
+        : coupon?.productId
+        ? "product"
+        : "cart",
       productId: coupon?.productId || null,
       productVariantId: coupon?.productVariantId || null,
+      categoryId: null, // Will be populated if editing a coupon that was category-specific (requires API support)
+      brandId: null, // Will be populated if editing a coupon that was brand-specific (requires API support)
       role: coupon?.role?.toLowerCase() || "customer",
       minCartValue: coupon?.minOrder || 1000,
       maxDiscountValue: coupon?.maxDiscountValue || 500,
@@ -134,7 +146,29 @@ const CouponManagement = () => {
 
     const [errors, setErrors] = useState({});
     const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [brands, setBrands] = useState([]);
+    const [productVariants, setProductVariants] = useState([]);
     const [loading, setLoading] = useState(false);
+    const prevTargetTypeRef = useRef();
+
+    useEffect(() => {
+      // This effect runs after formData is updated.
+      // We check if targetType *changed* to 'product_variant' and if no product is selected.
+      // The prevTargetTypeRef.current !== undefined condition prevents the alert on the very first render
+      // if the initial state happens to meet the criteria, ensuring it only triggers on a user-driven change.
+      if (
+        formData.targetType === "product_variant" &&
+        prevTargetTypeRef.current !== "product_variant" &&
+        prevTargetTypeRef.current !== undefined && // Ensures it's not the initial render causing this
+        !formData.productId // productId would be null if targetType just changed to product_variant
+      ) {
+        alert(
+          "You've selected 'Specific Product Variant'. Please select a Product first."
+        );
+      }
+      prevTargetTypeRef.current = formData.targetType;
+    }, [formData.targetType, formData.productId]);
 
     useEffect(() => {
       // Log initial form data when component mounts
@@ -145,24 +179,77 @@ const CouponManagement = () => {
       });
     }, []);
 
-    // Fetch products for dropdown
+    // Fetch data for dropdowns based on targetType
     useEffect(() => {
-      const fetchProducts = async () => {
-        try {
-          // Replace with your actual product API endpoint
-          const response = await getApi("/products");
-          if (response.message === MESSAGE.get.succ) {
-            setProducts(response.data || []);
+      const loadDropdownData = async () => {
+        setProducts([]); // Reset related data states
+        setCategories([]);
+        setBrands([]);
+
+        if (
+          formData.targetType === "product" ||
+          formData.targetType === "product_variant"
+        ) {
+          try {
+            const response = await getApi(getAllProductsRoute);
+            if (response.message === MESSAGE.get.succ) {
+              console.log("fetched all products", response.data);
+              setProducts(response.data || []);
+            }
+          } catch (error) {
+            console.error("Error fetching products:", error);
           }
-        } catch (error) {
-          console.error("Error fetching products:", error);
+        } else if (formData.targetType === "category") {
+          try {
+            const response = await getApi(getAllCategoryRoute);
+            if (response.message === MESSAGE.get.succ) {
+              setCategories(response.data || []);
+            }
+          } catch (error) {
+            console.error("Error fetching categories:", error);
+          }
+        } else if (formData.targetType === "brand") {
+          try {
+            const response = await getApi(getAllBrandsRoute);
+            if (response.message === MESSAGE.get.succ) {
+              setBrands(response.data || []);
+            }
+          } catch (error) {
+            console.error("Error fetching brands:", error);
+          }
         }
       };
 
-      if (formData.targetType === "product") {
-        fetchProducts();
-      }
+      // Actually call the async function
+      loadDropdownData();
     }, [formData.targetType]);
+
+    // Fetch product variants when a product is selected and target type is product_variant
+    useEffect(() => {
+      const fetchProductVariants = async () => {
+        if (formData.targetType === "product_variant" && formData.productId) {
+          try {
+            // Replace :product_id parameter with actual product ID
+            const apiUrl = productVariantByProductIdRoute.replace(
+              ":product_id",
+              formData.productId
+            );
+            const response = await getApi(apiUrl);
+            if (response.message === MESSAGE.get.succ) {
+              setProductVariants(response.data || []);
+            } else {
+              setProductVariants([]);
+            }
+          } catch (error) {
+            console.error("Error fetching product variants:", error);
+            setProductVariants([]);
+          }
+        } else {
+          setProductVariants([]);
+        }
+      };
+      fetchProductVariants();
+    }, [formData.targetType, formData.productId]);
 
     const handleChange = (e) => {
       const { name, value, type, checked } = e.target;
@@ -173,6 +260,14 @@ const CouponManagement = () => {
           ...prev,
           [name]: newValue,
         };
+
+        // Reset dependent fields when targetType changes
+        if (name === "targetType") {
+          updatedFormData.productId = null;
+          updatedFormData.productVariantId = null;
+          updatedFormData.categoryId = null;
+          updatedFormData.brandId = null;
+        }
 
         // Log the updated form data after each change
         console.log("Form data updated:", {
@@ -214,6 +309,20 @@ const CouponManagement = () => {
 
       if (formData.targetType === "product" && !formData.productId) {
         newErrors.productId = "Product is required when target type is product";
+      }
+      if (formData.targetType === "category" && !formData.categoryId) {
+        newErrors.categoryId =
+          "Category is required when target type is category";
+      }
+      if (formData.targetType === "brand" && !formData.brandId) {
+        newErrors.brandId = "Brand is required when target type is brand";
+      }
+      if (formData.targetType === "product_variant") {
+        if (!formData.productId)
+          newErrors.productId = "Product is required for product variant";
+        if (!formData.productVariantId) {
+          newErrors.productVariantId = "Product variant is required";
+        }
       }
 
       if (
@@ -265,8 +374,17 @@ const CouponManagement = () => {
           discount_value: parseFloat(formData.discountValue),
           target_type: formData.targetType,
           product_id:
-            formData.targetType === "product" ? formData.productId : null,
-          product_variant_id: formData.productVariantId,
+            formData.targetType === "product" ||
+            formData.targetType === "product_variant"
+              ? formData.productId
+              : null,
+          category_id:
+            formData.targetType === "category" ? formData.categoryId : null,
+          brand_id: formData.targetType === "brand" ? formData.brandId : null,
+          product_variant_id:
+            formData.targetType === "product_variant"
+              ? formData.productVariantId
+              : null,
           target_role: formData.role,
           min_cart_value: parseFloat(formData.minCartValue) || 0,
           max_discount_value: formData.maxDiscountValue
@@ -305,15 +423,31 @@ const CouponManagement = () => {
           minOrder: parseFloat(formData.minCartValue) || 0,
           status: formData.isActive ? "Active" : "Inactive",
           product:
-            formData.targetType === "product"
-              ? products.find((p) => p.id === formData.productId)?.name ||
-                "Selected Product"
-              : "All",
+            formData.targetType === "cart"
+              ? "All"
+              : formData.targetType === "product"
+              ? products.find(
+                  (p) => String(p.id) === String(formData.productId)
+                )?.name || "Selected Product"
+              : formData.targetType === "category"
+              ? categories.find(
+                  (c) => String(c.id) === String(formData.categoryId)
+                )?.name || "Selected Category"
+              : formData.targetType === "brand"
+              ? brands.find((b) => String(b.id) === String(formData.brandId))
+                  ?.name || "Selected Brand"
+              : formData.targetType === "product_variant"
+              ? productVariants.find(
+                  (v) => String(v.id) === String(formData.productVariantId)
+                )?.name || "Selected Variant"
+              : "N/A",
           role: formData.role.charAt(0).toUpperCase() + formData.role.slice(1),
           usageLimit: formData.usageLimit,
           description: formData.description,
           productId: formData.productId,
           productVariantId: formData.productVariantId,
+          categoryId: formData.categoryId,
+          brandId: formData.brandId,
           maxDiscountValue: formData.maxDiscountValue,
           usagePerUser: formData.usagePerUser,
           validFrom: formData.validFrom,
@@ -431,8 +565,12 @@ const CouponManagement = () => {
                   onChange={handleChange}
                   className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm"
                 >
-                  <option value="percentage">Percentage</option>
-                  <option value="fixed">Fixed Amount</option>
+                  <option key="percentage" value="percentage">
+                    Percentage
+                  </option>
+                  <option key="fixed" value="fixed">
+                    Fixed Amount
+                  </option>
                 </select>
               </div>
               <div>
@@ -503,12 +641,27 @@ const CouponManagement = () => {
                   onChange={handleChange}
                   className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm"
                 >
-                  <option value="cart">Cart (All Products)</option>
-                  <option value="product">Specific Product</option>
+                  <option key="cart" value="cart">
+                    Cart (All Products)
+                  </option>
+                  <option key="category" value="category">
+                    Specific Category
+                  </option>
+                  <option key="brand" value="brand">
+                    Specific Brand
+                  </option>
+                  <option key="product" value="product">
+                    Specific Product
+                  </option>
+                  <option key="product_variant" value="product_variant">
+                    Specific Product Variant
+                  </option>
                 </select>
               </div>
 
-              {formData.targetType === "product" && (
+              {/* Product Dropdown - shown for "product" and "product_variant" target types */}
+              {(formData.targetType === "product" ||
+                formData.targetType === "product_variant") && (
                 <div>
                   <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
                     PRODUCT *
@@ -521,9 +674,14 @@ const CouponManagement = () => {
                       errors.productId ? "border-red-500" : ""
                     }`}
                   >
-                    <option value="">Select a product</option>
+                    <option key="select-product" value="">
+                      Select a product
+                    </option>
                     {products.map((product) => (
-                      <option key={product.id} value={product.id}>
+                      <option
+                        key={product.product_id || product.id}
+                        value={product.product_id || product.id}
+                      >
                         {product.name}
                       </option>
                     ))}
@@ -535,7 +693,121 @@ const CouponManagement = () => {
                   )}
                 </div>
               )}
+
+              {/* Category Dropdown */}
+              {formData.targetType === "category" && (
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
+                    CATEGORY *
+                  </label>
+                  <select
+                    name="categoryId"
+                    value={formData.categoryId || ""}
+                    onChange={handleChange}
+                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm ${
+                      errors.categoryId ? "border-red-500" : ""
+                    }`}
+                  >
+                    <option key="select-category" value="">
+                      Select a category
+                    </option>
+                    {categories.map((category) => (
+                      <option
+                        key={category.category_id}
+                        value={category.category_id}
+                      >
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.categoryId && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.categoryId}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Brand Dropdown */}
+              {formData.targetType === "brand" && (
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
+                    BRAND *
+                  </label>
+                  <select
+                    name="brandId"
+                    value={formData.brandId || ""}
+                    onChange={handleChange}
+                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm ${
+                      errors.brandId ? "border-red-500" : ""
+                    }`}
+                  >
+                    <option key="select-brand" value="">
+                      Select a brand
+                    </option>
+                    {brands.map((brand) => (
+                      <option
+                        key={brand.brand_id || brand.id}
+                        value={brand.brand_id || brand.id}
+                      >
+                        {brand.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.brandId && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.brandId}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
+
+            {/* Product Variant Dropdown - shown if targetType is "product_variant" and a product is selected */}
+            {formData.targetType === "product_variant" &&
+              formData.productId && (
+                <div className="mt-4">
+                  {" "}
+                  {/* Ensure it's part of the grid or styled appropriately */}
+                  <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
+                    PRODUCT VARIANT *
+                  </label>
+                  <select
+                    name="productVariantId"
+                    value={formData.productVariantId || ""}
+                    onChange={handleChange}
+                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm ${
+                      errors.productVariantId ? "border-red-500" : ""
+                    }`}
+                  >
+                    <option key="select-variant" value="">
+                      Select a variant
+                    </option>
+                    {productVariants.map((variant, index) => (
+                      <option
+                        key={
+                          variant.variant_id ||
+                          variant.id ||
+                          variant.product_variant_id ||
+                          `variant-${index}`
+                        }
+                        value={
+                          variant.variant_id ||
+                          variant.id ||
+                          variant.product_variant_id
+                        }
+                      >
+                        {variant.name} (SKU: {variant.sku || "N/A"})
+                      </option>
+                    ))}
+                  </select>
+                  {errors.productVariantId && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.productVariantId}
+                    </p>
+                  )}
+                </div>
+              )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -548,9 +820,15 @@ const CouponManagement = () => {
                   onChange={handleChange}
                   className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm"
                 >
-                  <option value="customer">Customer</option>
-                  <option value="retailer">Retailer</option>
-                  <option value="both">Both</option>
+                  <option key="customer" value="customer">
+                    Customer
+                  </option>
+                  <option key="retailer" value="retailer">
+                    Retailer
+                  </option>
+                  <option key="both" value="both">
+                    Both
+                  </option>
                 </select>
               </div>
 
@@ -1046,7 +1324,7 @@ const CouponManagement = () => {
 
                 return (
                   <div
-                    key={index}
+                    key={item.id || item.code || index}
                     className="flex items-center p-3 bg-gray-50 rounded-lg"
                   >
                     <span
