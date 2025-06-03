@@ -27,11 +27,11 @@ export const couponValidator = Joi.object({
       "any.required": MESSAGE.custom("Discount value is required"),
     }),
   target_type: Joi.string()
-    .valid("cart", "product")
+    .valid("cart", "product", "product_variant", "category", "brand")
     .default("cart")
     .messages({
       "any.only": MESSAGE.custom(
-        "Target type must be either 'cart' or 'product'"
+        "Target type must be one of: cart, product, product_variant, category, or brand"
       ),
     }),
   product_id: Joi.string()
@@ -40,6 +40,20 @@ export const couponValidator = Joi.object({
     .optional()
     .messages({
       "string.guid": MESSAGE.custom("Product ID must be a valid UUID"),
+    }),
+  category_id: Joi.string()
+    .uuid()
+    .allow(null)
+    .optional()
+    .messages({
+      "string.guid": MESSAGE.custom("Category ID must be a valid UUID"),
+    }),
+  brand_id: Joi.string()
+    .uuid()
+    .allow(null)
+    .optional()
+    .messages({
+      "string.guid": MESSAGE.custom("Brand ID must be a valid UUID"),
     }),
   product_variant_id: Joi.string()
     .uuid()
@@ -137,11 +151,11 @@ export const couponUpdateValidator = Joi.object({
       "number.positive": MESSAGE.custom("Discount value must be positive"),
     }),
   target_type: Joi.string()
-    .valid("cart", "product")
+    .valid("cart", "product", "product_variant", "category", "brand")
     .optional()
     .messages({
       "any.only": MESSAGE.custom(
-        "Target type must be either 'cart' or 'product'"
+        "Target type must be one of: cart, product, product_variant, category, or brand"
       ),
     }),
   product_id: Joi.string()
@@ -150,6 +164,20 @@ export const couponUpdateValidator = Joi.object({
     .optional()
     .messages({
       "string.guid": MESSAGE.custom("Product ID must be a valid UUID"),
+    }),
+  category_id: Joi.string()
+    .uuid()
+    .allow(null)
+    .optional()
+    .messages({
+      "string.guid": MESSAGE.custom("Category ID must be a valid UUID"),
+    }),
+  brand_id: Joi.string()
+    .uuid()
+    .allow(null)
+    .optional()
+    .messages({
+      "string.guid": MESSAGE.custom("Brand ID must be a valid UUID"),
     }),
   product_variant_id: Joi.string()
     .uuid()

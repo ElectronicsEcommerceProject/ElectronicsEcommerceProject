@@ -1097,7 +1097,7 @@ const CouponManagement = () => {
               </div>
               <div>
                 <span className="text-gray-500">Min Order:</span>
-                <p className="font-bold">${coupon.minOrder}</p>
+                <p className="font-bold">₹{coupon.minOrder}</p>
               </div>
             </div>
 
