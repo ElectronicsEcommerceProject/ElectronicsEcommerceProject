@@ -1,125 +1,336 @@
 import React, { useState, useEffect, useRef } from "react";
 import Chart from "chart.js/auto";
 import PaginatedTable from "./shared/PaginatedTable.jsx";
-import {
-  filterDataByDateRange,
-  getChartTitle,
-  getYAxisTitle,
-} from "./shared/analyticsUtils.js";
-import { generateTimelineData, dashboardData } from "./shared/analyticsData.js";
+import { dashboardData } from "./shared/analyticsData.js";
 
 // Dashboard Component
 const Dashboard = ({ dateRange }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchTermWorst, setSearchTermWorst] = useState("");
+  const [searchTermWishlist, setSearchTermWishlist] = useState("");
+
+  const [searchTermOutOfStock, setSearchTermOutOfStock] = useState("");
+
+  // Chart refs
   const gaugeRef = useRef(null);
   const ordersChartRef = useRef(null);
   const comparisonChartRef = useRef(null);
-  const salesTrendChartRef = useRef(null);
+  const revenueChartRef = useRef(null);
+  const brandDistributionChartRef = useRef(null);
+  const userGrowthChartRef = useRef(null);
+  const salesByCategoryChartRef = useRef(null);
 
-  const timelineData = generateTimelineData();
+  // Helper function to get data based on dropdown selection
+  const getDataByPeriod = (dataObj, period) => {
+    // For total revenue, always return the full object
+    if (dataObj === dashboardData.totalRevenue) {
+      return dataObj;
+    }
+    
+    if (typeof period === "string") {
+      const key = period.toLowerCase();
+      return dataObj[key] || dataObj.month || dataObj;
+    }
+    // For custom range, use month data
+    return dataObj.month || dataObj;
+  };
+
+  // Helper function to get period label
+  const getPeriodLabel = (period) => {
+    if (typeof period === "string") {
+      return `(${period})`;
+    }
+    return "(Custom Range)";
+  };
 
   useEffect(() => {
-    const filteredData = filterDataByDateRange(timelineData, dateRange);
+    // Destroy existing charts if they exist
+    if (revenueChartRef.current) revenueChartRef.current.destroy();
+    if (ordersChartRef.current) ordersChartRef.current.destroy();
+    if (comparisonChartRef.current) comparisonChartRef.current.destroy();
+    if (brandDistributionChartRef.current)
+      brandDistributionChartRef.current.destroy();
+    if (userGrowthChartRef.current) userGrowthChartRef.current.destroy();
+    if (salesByCategoryChartRef.current)
+      salesByCategoryChartRef.current.destroy();
 
-    if (salesTrendChartRef.current) salesTrendChartRef.current.destroy();
-    const ctxSalesTrend = document
-      .getElementById("dashboardSalesTrendChart")
+    // 1. Revenue Over Time Chart (Line Chart)
+    const ctxRevenue = document
+      .getElementById("dashboardRevenueChart")
       ?.getContext("2d");
-    if (ctxSalesTrend) {
-      // Determine chart title based on filter
-      const chartTitle = getChartTitle("Timeline", dateRange);
-      const yAxisTitle = getYAxisTitle("Sales ($)", dateRange);
-
-      salesTrendChartRef.current = new Chart(ctxSalesTrend, {
+    if (ctxRevenue) {
+      revenueChartRef.current = new Chart(ctxRevenue, {
         type: "line",
         data: {
-          labels: filteredData.map((d) => d.label || d.month),
+          labels: getDataByPeriod(dashboardData.revenueOverTime, dateRange).map(
+            (d) => d.period
+          ),
           datasets: [
             {
-              label: "Total Sales",
-              data: filteredData.map((d) => d.totalSales),
-              backgroundColor: "rgba(30, 58, 138, 0.5)",
-              borderColor: "#1E3A8A",
+              label: "Revenue",
+              data: getDataByPeriod(
+                dashboardData.revenueOverTime,
+                dateRange
+              ).map((d) => d.revenue),
+              borderColor: "#3B82F6",
+              backgroundColor: "rgba(59, 130, 246, 0.1)",
+              tension: 0.4,
               fill: true,
-              tension: 0.1,
-            },
-            {
-              label: "Product A Sales",
-              data: filteredData.map((d) => d.productA),
-              backgroundColor: "rgba(249, 115, 22, 0.5)",
-              borderColor: "#F97316",
-              fill: true,
-              tension: 0.1,
-            },
-            {
-              label: "Product B Sales",
-              data: filteredData.map((d) => d.productB),
-              backgroundColor: "rgba(20, 184, 166, 0.5)",
-              borderColor: "#14B8A6",
-              fill: true,
-              tension: 0.1,
+              pointBackgroundColor: "#3B82F6",
+              pointBorderColor: "#ffffff",
+              pointBorderWidth: 2,
+              pointRadius: 5,
             },
           ],
         },
         options: {
+          responsive: true,
+          maintainAspectRatio: false,
           scales: {
             y: {
               beginAtZero: true,
-              title: { display: true, text: yAxisTitle },
-              stacked: true,
+              title: { display: true, text: "Revenue ($)" },
             },
-            x: { title: { display: true, text: chartTitle } },
+            x: {
+              title: { display: true, text: "Time Period" },
+            },
           },
-          plugins: { legend: { position: "top" } },
+          plugins: {
+            legend: { position: "top" },
+            title: {
+              display: true,
+              text: `Revenue Over Time ${getPeriodLabel(dateRange)}`,
+            },
+          },
         },
       });
     }
 
-    if (ordersChartRef.current) ordersChartRef.current.destroy();
+    // 2. Sales by Category Chart
+    const ctxSalesByCategory = document
+      .getElementById("dashboardSalesByCategoryChart")
+      ?.getContext("2d");
+    if (ctxSalesByCategory) {
+      const categoryData = getDataByPeriod(
+        dashboardData.salesByCategory,
+        dateRange
+      );
+      salesByCategoryChartRef.current = new Chart(ctxSalesByCategory, {
+        type: "bar",
+        data: {
+          labels: Object.keys(categoryData),
+          datasets: [
+            {
+              label: "Sales by Brand",
+              data: Object.values(categoryData),
+              backgroundColor: [
+                "#3B82F6",
+                "#10B981",
+                "#F59E0B",
+                "#EF4444",
+                "#8B5CF6",
+              ],
+              borderWidth: 0,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: "Sales ($)" },
+            },
+          },
+          plugins: {
+            legend: { display: false },
+            title: {
+              display: true,
+              text: `Sales by Brand ${getPeriodLabel(dateRange)}`,
+            },
+          },
+        },
+      });
+    }
+
+    // 3. Brand Distribution Chart
+    const ctxBrandDistribution = document
+      .getElementById("dashboardBrandDistributionChart")
+      ?.getContext("2d");
+    if (ctxBrandDistribution) {
+      const brandData = getDataByPeriod(
+        dashboardData.brandDistribution,
+        dateRange
+      );
+      brandDistributionChartRef.current = new Chart(ctxBrandDistribution, {
+        type: "pie",
+        data: {
+          labels: Object.keys(brandData),
+          datasets: [
+            {
+              label: "Brand Distribution",
+              data: Object.values(brandData),
+              backgroundColor: [
+                "#3B82F6",
+                "#10B981",
+                "#F59E0B",
+                "#EF4444",
+                "#8B5CF6",
+              ],
+              borderWidth: 0,
+            },
+          ],
+        },
+        options: {
+          plugins: {
+            legend: { position: "right" },
+            title: {
+              display: true,
+              text: `Brand Distribution ${getPeriodLabel(dateRange)}`,
+            },
+          },
+          responsive: true,
+          maintainAspectRatio: false,
+        },
+      });
+    }
+
+    // 4. User Growth Chart
+    const ctxUserGrowth = document
+      .getElementById("dashboardUserGrowthChart")
+      ?.getContext("2d");
+    if (ctxUserGrowth) {
+      const userGrowthData = getDataByPeriod(
+        dashboardData.userGrowth,
+        dateRange
+      );
+      userGrowthChartRef.current = new Chart(ctxUserGrowth, {
+        type: "line",
+        data: {
+          labels: userGrowthData.map((d) => d.period),
+          datasets: [
+            {
+              label: "New Users",
+              data: userGrowthData.map((d) => d.newUsers),
+              borderColor: "#10B981",
+              backgroundColor: "rgba(16, 185, 129, 0.1)",
+              tension: 0.2,
+              fill: true,
+            },
+            {
+              label: "Active Users",
+              data: userGrowthData.map((d) => d.activeUsers),
+              borderColor: "#3B82F6",
+              backgroundColor: "rgba(59, 130, 246, 0.1)",
+              tension: 0.2,
+              fill: true,
+            },
+          ],
+        },
+        options: {
+          plugins: {
+            legend: { position: "top" },
+            title: {
+              display: true,
+              text: `User Growth Trend ${getPeriodLabel(dateRange)}`,
+            },
+          },
+          scales: {
+            y: { beginAtZero: true },
+          },
+          responsive: true,
+          maintainAspectRatio: false,
+        },
+      });
+    }
+
+    // Orders by Status Chart - Existing implementation
     const ctxOrders = document
       .getElementById("dashboardOrdersByStatusChart")
       ?.getContext("2d");
     if (ctxOrders) {
+      const ordersData = getDataByPeriod(
+        dashboardData.ordersByStatus,
+        dateRange
+      );
       ordersChartRef.current = new Chart(ctxOrders, {
         type: "doughnut",
         data: {
-          labels: Object.keys(dashboardData.totalOrders),
+          labels: Object.keys(ordersData),
           datasets: [
             {
-              data: Object.values(dashboardData.totalOrders),
+              data: Object.values(ordersData),
               backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#FF9F40"],
             },
           ],
         },
+        options: {
+          plugins: {
+            legend: { position: "bottom" },
+            title: {
+              display: true,
+              text: `Orders by Status ${getPeriodLabel(dateRange)}`,
+            },
+          },
+          responsive: true,
+          maintainAspectRatio: false,
+        },
       });
     }
 
-    if (comparisonChartRef.current) comparisonChartRef.current.destroy();
+    // This Month vs Last Month Chart - Existing implementation
     const ctxComparison = document
       .getElementById("dashboardComparisonChart")
       ?.getContext("2d");
     if (ctxComparison) {
+      let comparisonData;
+      let chartTitle = "Performance Comparison";
+
+      if (typeof dateRange === "string") {
+        if (dateRange === "Today") {
+          comparisonData = dashboardData.thisDayVsYesterday;
+          chartTitle = "Today vs Yesterday";
+        } else if (dateRange === "Week") {
+          comparisonData = dashboardData.thisWeekVsLast;
+          chartTitle = "This Week vs Last Week";
+        } else if (dateRange === "Month") {
+          comparisonData = dashboardData.thisMonthVsLast;
+          chartTitle = "This Month vs Last Month";
+        } else {
+          comparisonData = dashboardData.thisMonthVsLast;
+          chartTitle = "This Month vs Last Month";
+        }
+      } else {
+        comparisonData = dashboardData.thisMonthVsLast;
+        chartTitle = "Custom Range Comparison";
+      }
+
       comparisonChartRef.current = new Chart(ctxComparison, {
         type: "bar",
         data: {
           labels: ["Revenue", "Orders"],
           datasets: [
             {
-              label: "This Month",
+              label: "Current Period",
               data: [
-                dashboardData.thisMonthVsLast.thisMonthRevenue,
-                dashboardData.thisMonthVsLast.thisMonthOrders,
+                comparisonData.thisPeriodRevenue ||
+                  comparisonData.thisMonthRevenue,
+                comparisonData.thisPeriodOrders ||
+                  comparisonData.thisMonthOrders,
               ],
               backgroundColor: "rgba(54, 162, 235, 0.5)",
               borderColor: "rgba(54, 162, 235, 1)",
               borderWidth: 1,
             },
             {
-              label: "Last Month",
+              label: "Previous Period",
               data: [
-                dashboardData.thisMonthVsLast.lastMonthRevenue,
-                dashboardData.thisMonthVsLast.lastMonthOrders,
+                comparisonData.lastPeriodRevenue ||
+                  comparisonData.lastMonthRevenue,
+                comparisonData.lastPeriodOrders ||
+                  comparisonData.lastMonthOrders,
               ],
               backgroundColor: "rgba(255, 99, 132, 0.5)",
               borderColor: "rgba(255, 99, 132, 1)",
@@ -127,7 +338,18 @@ const Dashboard = ({ dateRange }) => {
             },
           ],
         },
-        options: { scales: { y: { beginAtZero: true } } },
+        options: {
+          scales: { y: { beginAtZero: true } },
+          plugins: {
+            legend: { position: "top" },
+            title: {
+              display: true,
+              text: chartTitle,
+            },
+          },
+          responsive: true,
+          maintainAspectRatio: false,
+        },
       });
     }
 
@@ -142,7 +364,10 @@ const Dashboard = ({ dateRange }) => {
       const radius = width / 2 - 10;
       const startAngle = Math.PI;
       const endAngle = 2 * Math.PI;
-      const value = dashboardData.customerSatisfaction;
+      const value = getDataByPeriod(
+        dashboardData.customerSatisfaction,
+        dateRange
+      );
       const target = 75;
 
       ctx.clearRect(0, 0, width, height);
@@ -227,45 +452,59 @@ const Dashboard = ({ dateRange }) => {
     }
 
     return () => {
-      if (salesTrendChartRef.current) salesTrendChartRef.current.destroy();
+      // Cleanup all charts
+      if (revenueChartRef.current) revenueChartRef.current.destroy();
       if (ordersChartRef.current) ordersChartRef.current.destroy();
       if (comparisonChartRef.current) comparisonChartRef.current.destroy();
+      if (brandDistributionChartRef.current)
+        brandDistributionChartRef.current.destroy();
+      if (userGrowthChartRef.current) userGrowthChartRef.current.destroy();
+      if (salesByCategoryChartRef.current)
+        salesByCategoryChartRef.current.destroy();
     };
   }, [dateRange]);
 
   return (
     <div className="w-full overflow-x-hidden">
-      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 overflow-x-hidden">
+      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 overflow-x-hidden">
         <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow min-w-0">
           <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 break-words">
-            Total Revenue
+            Total Revenue {getPeriodLabel(dateRange)}
           </h3>
           <p className="text-xs sm:text-sm lg:text-base break-words">
-            Daily: ${dashboardData.totalRevenue.daily}
+            Daily: ${dashboardData.totalRevenue.daily.toLocaleString()}
           </p>
           <p className="text-xs sm:text-sm lg:text-base break-words">
-            Weekly: ${dashboardData.totalRevenue.weekly}
+            Weekly: ${dashboardData.totalRevenue.weekly.toLocaleString()}
           </p>
           <p className="text-xs sm:text-sm lg:text-base break-words">
-            Monthly: ${dashboardData.totalRevenue.monthly}
+            Monthly: ${dashboardData.totalRevenue.monthly.toLocaleString()}
           </p>
         </div>
         <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow min-w-0">
           <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 break-words">
-            Total Customers / Retailers
+            Total Customers / Retailers {getPeriodLabel(dateRange)}
           </h3>
           <p className="text-xs sm:text-sm lg:text-base break-words">
-            Customers: {dashboardData.totalCustomers}
+            Customers: {dashboardData.totalCustomers.toLocaleString()}
           </p>
           <p className="text-xs sm:text-sm lg:text-base break-words">
-            Retailers: {dashboardData.totalRetailers}
+            Retailers: {dashboardData.totalRetailers.toLocaleString()}
           </p>
         </div>
-        <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow sm:col-span-2 lg:col-span-1 min-w-0">
+        <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow min-w-0">
+          <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 break-words">
+            Average Order Value {getPeriodLabel(dateRange)}
+          </h3>
+          <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600">
+            ${getDataByPeriod(dashboardData.averageOrderValue, dateRange)}
+          </p>
+        </div>
+        <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow min-w-0">
           <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 break-words">
             Low Stock Alerts
           </h3>
-          <p className="text-xs sm:text-sm lg:text-base break-words">
+          <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-600">
             {dashboardData.lowStockAlerts} items
           </p>
         </div>
@@ -273,21 +512,18 @@ const Dashboard = ({ dateRange }) => {
       <div className="mt-3 sm:mt-4 lg:mt-6 w-full grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 overflow-x-hidden">
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
           <h3 className="text-base sm:text-lg font-semibold mb-2">
-            Sales Trend{" "}
-            {typeof dateRange === "string"
-              ? `(${dateRange})`
-              : "(Custom Range)"}
+            Revenue Over Time {getPeriodLabel(dateRange)}
           </h3>
           <div className="chart-container h-48 sm:h-64 lg:h-72">
             <canvas
-              id="dashboardSalesTrendChart"
+              id="dashboardRevenueChart"
               className="w-full h-full max-w-full"
             ></canvas>
           </div>
         </div>
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow min-w-0">
           <h3 className="text-base sm:text-lg font-semibold mb-2 break-words">
-            Orders by Status
+            Orders by Status {getPeriodLabel(dateRange)}
           </h3>
           <div className="chart-container h-48 sm:h-64 lg:h-72">
             <canvas
@@ -298,7 +534,29 @@ const Dashboard = ({ dateRange }) => {
         </div>
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow min-w-0">
           <h3 className="text-base sm:text-lg font-semibold mb-2 break-words">
-            This Month vs Last Month
+            Brand Distribution {getPeriodLabel(dateRange)}
+          </h3>
+          <div className="chart-container h-48 sm:h-64 lg:h-72">
+            <canvas
+              id="dashboardBrandDistributionChart"
+              className="w-full h-full max-w-full"
+            ></canvas>
+          </div>
+        </div>
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow min-w-0">
+          <h3 className="text-base sm:text-lg font-semibold mb-2 break-words">
+            User Growth Trend {getPeriodLabel(dateRange)}
+          </h3>
+          <div className="chart-container h-48 sm:h-64 lg:h-72">
+            <canvas
+              id="dashboardUserGrowthChart"
+              className="w-full h-full max-w-full"
+            ></canvas>
+          </div>
+        </div>
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow min-w-0">
+          <h3 className="text-base sm:text-lg font-semibold mb-2 break-words">
+            Performance Comparison {getPeriodLabel(dateRange)}
           </h3>
           <div className="chart-container h-48 sm:h-64 lg:h-72">
             <canvas
@@ -309,7 +567,7 @@ const Dashboard = ({ dateRange }) => {
         </div>
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow min-w-0">
           <h3 className="text-base sm:text-lg font-semibold mb-2 break-words">
-            Customer Satisfaction Score
+            Customer Satisfaction Score {getPeriodLabel(dateRange)}
           </h3>
           <div className="chart-container h-32 sm:h-40 lg:h-48">
             <canvas
@@ -321,21 +579,93 @@ const Dashboard = ({ dateRange }) => {
           </div>
         </div>
       </div>
+
+      {/* Sales by Brand Chart */}
+      <div className="mt-3 sm:mt-4 lg:mt-6 bg-white p-4 sm:p-6 rounded-lg shadow w-full overflow-x-hidden">
+        <h3 className="text-base sm:text-lg font-semibold mb-2 break-words">
+          Sales by Brand {getPeriodLabel(dateRange)}
+        </h3>
+        <div className="chart-container h-48 sm:h-64 lg:h-72">
+          <canvas
+            id="dashboardSalesByCategoryChart"
+            className="w-full h-full max-w-full"
+          ></canvas>
+        </div>
+      </div>
+
+      {/* Product Performance Section */}
+      <div className="mt-3 sm:mt-4 lg:mt-6 grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 overflow-x-hidden">
+        <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow w-full overflow-x-hidden">
+          <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 break-words">
+            Top 5 Selling Products {getPeriodLabel(dateRange)}
+          </h3>
+          <div className="w-full overflow-x-hidden">
+            <PaginatedTable
+              data={getDataByPeriod(dashboardData.topSellingProducts, dateRange)}
+              headers={["Name", "Sales"]}
+              itemsPerPage={3}
+              onRowClick={(item) => setSelectedItem(item)}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+            />
+          </div>
+        </div>
+
+        <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow w-full overflow-x-hidden">
+          <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 break-words">
+            Worst-Selling Products (Bottom 5) {getPeriodLabel(dateRange)}
+          </h3>
+          <div className="w-full overflow-x-hidden">
+            <PaginatedTable
+              data={getDataByPeriod(dashboardData.worstSellingProducts, dateRange)}
+              headers={["Name", "Sales"]}
+              itemsPerPage={3}
+              onRowClick={(item) => setSelectedItem(item)}
+              searchTerm={searchTermWorst}
+              setSearchTerm={setSearchTermWorst}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Product Ratings and Wishlist Section */}
+      <div className="mt-3 sm:mt-4 lg:mt-6 grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 overflow-x-hidden">
+
+
+        <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow w-full overflow-x-hidden">
+          <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 break-words">
+            Top Wishlisted Products {getPeriodLabel(dateRange)}
+          </h3>
+          <div className="w-full overflow-x-hidden">
+            <PaginatedTable
+              data={getDataByPeriod(dashboardData.topWishlistedProducts, dateRange)}
+              headers={["Product Name", "Wishlist Count"]}
+              itemsPerPage={3}
+              onRowClick={(item) => setSelectedItem(item)}
+              searchTerm={searchTermWishlist}
+              setSearchTerm={setSearchTermWishlist}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Out of Stock Products */}
       <div className="mt-3 sm:mt-4 lg:mt-6 bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow w-full overflow-x-hidden">
         <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 break-words">
-          Top 5 Selling Products
+          Out-of-Stock Products
         </h3>
         <div className="w-full overflow-x-hidden">
           <PaginatedTable
-            data={dashboardData.topSellingProducts}
-            headers={["Name", "Sales"]}
+            data={dashboardData.outOfStockProducts}
+            headers={["Name", "Stock", "Category"]}
             itemsPerPage={3}
             onRowClick={(item) => setSelectedItem(item)}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
+            searchTerm={searchTermOutOfStock}
+            setSearchTerm={setSearchTermOutOfStock}
           />
         </div>
       </div>
+
       {selectedItem && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white p-4 sm:p-6 rounded-lg max-w-lg w-full">

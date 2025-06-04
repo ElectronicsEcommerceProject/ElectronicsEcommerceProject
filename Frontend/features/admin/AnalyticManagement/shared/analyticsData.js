@@ -75,36 +75,204 @@ export const dashboardData = {
   totalCustomers: 1200,
   totalRetailers: 150,
   lowStockAlerts: 10,
+
+  // Enhanced product data
   topSellingProducts: [
     {
-      name: "Product A",
+      name: "iPhone 14",
       sales: 300,
-      details: "Category: Electronics, Price: $100",
+      details: "Category: Electronics, Price: $999",
     },
     {
-      name: "Product B",
+      name: "Samsung Galaxy S23",
       sales: 250,
-      details: "Category: Clothing, Price: $50",
+      details: "Category: Electronics, Price: $899",
     },
-    { name: "Product C", sales: 200, details: "Category: Home, Price: $80" },
     {
-      name: "Product D",
+      name: "MacBook Pro",
+      sales: 200,
+      details: "Category: Electronics, Price: $1299",
+    },
+    {
+      name: "AirPods Pro",
       sales: 150,
-      details: "Category: Electronics, Price: $120",
+      details: "Category: Electronics, Price: $249",
     },
     {
-      name: "Product E",
+      name: "iPad Air",
       sales: 100,
-      details: "Category: Clothing, Price: $40",
+      details: "Category: Electronics, Price: $599",
     },
   ],
-  thisMonthVsLast: {
-    thisMonthRevenue: 150000,
-    lastMonthRevenue: 140000,
-    thisMonthOrders: 570,
-    lastMonthOrders: 550,
+
+  // Worst selling products
+  worstSellingProducts: [
+    {
+      name: "Old Phone Case",
+      sales: 5,
+      details: "Category: Accessories, Price: $15",
+    },
+    {
+      name: "Outdated Charger",
+      sales: 8,
+      details: "Category: Accessories, Price: $20",
+    },
+    {
+      name: "Legacy Headphones",
+      sales: 12,
+      details: "Category: Audio, Price: $50",
+    },
+    {
+      name: "Basic Mouse",
+      sales: 15,
+      details: "Category: Computer, Price: $25",
+    },
+    {
+      name: "Simple Keyboard",
+      sales: 18,
+      details: "Category: Computer, Price: $40",
+    },
+  ],
+
+  // Out of stock products
+  outOfStockProducts: [
+    { name: "iPhone 15 Pro", stock: 0, category: "Electronics" },
+    { name: "PlayStation 5", stock: 0, category: "Gaming" },
+    { name: "RTX 4090", stock: 0, category: "Computer" },
+    { name: "MacBook Air M3", stock: 0, category: "Electronics" },
+  ],
+
+  // Top wishlisted products
+  topWishlistedProducts: [
+    { name: "iPhone 15 Pro Max", wishlistCount: 450 },
+    { name: "MacBook Pro M3", wishlistCount: 380 },
+    { name: "PlayStation 5", wishlistCount: 320 },
+    { name: "AirPods Max", wishlistCount: 280 },
+    { name: "iPad Pro", wishlistCount: 250 },
+  ],
+
+  // Product ratings removed as requested
+
+  // Orders by status for different time periods
+  ordersByStatus: {
+    today: { pending: 5, shipped: 15, delivered: 25, cancelled: 2 },
+    week: { pending: 35, shipped: 105, delivered: 175, cancelled: 14 },
+    month: { pending: 50, shipped: 200, delivered: 300, cancelled: 20 },
   },
-  customerSatisfaction: 71,
+
+  // Brand distribution data
+  brandDistribution: {
+    today: { Apple: 45, Samsung: 25, Sony: 15, Microsoft: 10, Others: 5 },
+    week: { Apple: 40, Samsung: 30, Sony: 12, Microsoft: 8, Others: 10 },
+    month: { Apple: 35, Samsung: 25, Sony: 15, Microsoft: 10, Others: 15 },
+  },
+
+  // User growth data for different periods
+  userGrowth: {
+    today: [
+      { period: "Morning", newUsers: 15, activeUsers: 120 },
+      { period: "Afternoon", newUsers: 25, activeUsers: 180 },
+      { period: "Evening", newUsers: 20, activeUsers: 150 },
+    ],
+    week: [
+      { period: "Mon", newUsers: 45, activeUsers: 320 },
+      { period: "Tue", newUsers: 52, activeUsers: 380 },
+      { period: "Wed", newUsers: 48, activeUsers: 350 },
+      { period: "Thu", newUsers: 55, activeUsers: 420 },
+      { period: "Fri", newUsers: 62, activeUsers: 480 },
+      { period: "Sat", newUsers: 38, activeUsers: 280 },
+      { period: "Sun", newUsers: 35, activeUsers: 250 },
+    ],
+    month: [
+      { period: "Week 1", newUsers: 280, activeUsers: 1800 },
+      { period: "Week 2", newUsers: 320, activeUsers: 2100 },
+      { period: "Week 3", newUsers: 295, activeUsers: 1950 },
+      { period: "Week 4", newUsers: 340, activeUsers: 2200 },
+    ],
+  },
+
+  // Comparison data for different time periods
+  thisDayVsYesterday: {
+    thisPeriodRevenue: 5000,
+    lastPeriodRevenue: 4800,
+    thisPeriodOrders: 47,
+    lastPeriodOrders: 45,
+  },
+  thisWeekVsLast: {
+    thisPeriodRevenue: 35000,
+    lastPeriodRevenue: 33000,
+    thisPeriodOrders: 329,
+    lastPeriodOrders: 315,
+  },
+  thisMonthVsLast: {
+    thisPeriodRevenue: 150000,
+    lastPeriodRevenue: 140000,
+    thisPeriodOrders: 570,
+    lastPeriodOrders: 550,
+  },
+
+  // Customer satisfaction for different periods
+  customerSatisfaction: {
+    today: 75,
+    week: 73,
+    month: 71,
+  },
+
+  // Average Order Value
+  averageOrderValue: {
+    today: 85.5,
+    week: 92.3,
+    month: 88.75,
+  },
+
+  // Sales by brand
+  salesByCategory: {
+    today: {
+      Electronics: 3500,
+      Fashion: 800,
+      Home: 400,
+      Beauty: 200,
+      Sports: 100,
+    },
+    week: {
+      Electronics: 24500,
+      Fashion: 5600,
+      Home: 2800,
+      Beauty: 1400,
+      Sports: 700,
+    },
+    month: {
+      Electronics: 105000,
+      Fashion: 24000,
+      Home: 12000,
+      Beauty: 6000,
+      Sports: 3000,
+    },
+  },
+
+  // Revenue over time data
+  revenueOverTime: {
+    today: [
+      { period: "Morning", revenue: 1200 },
+      { period: "Afternoon", revenue: 2100 },
+      { period: "Evening", revenue: 1700 },
+    ],
+    week: [
+      { period: "Mon", revenue: 4500 },
+      { period: "Tue", revenue: 5200 },
+      { period: "Wed", revenue: 4800 },
+      { period: "Thu", revenue: 5500 },
+      { period: "Fri", revenue: 6200 },
+      { period: "Sat", revenue: 3800 },
+      { period: "Sun", revenue: 3500 },
+    ],
+    month: [
+      { period: "Week 1", revenue: 28000 },
+      { period: "Week 2", revenue: 32000 },
+      { period: "Week 3", revenue: 29500 },
+      { period: "Week 4", revenue: 34000 },
+    ],
+  },
 };
 
 export const productsData = {
