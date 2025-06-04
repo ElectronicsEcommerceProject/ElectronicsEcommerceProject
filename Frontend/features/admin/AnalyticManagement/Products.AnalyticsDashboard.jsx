@@ -8,7 +8,6 @@ const Products = ({ dateRange }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchTermWorst, setSearchTermWorst] = useState("");
   const [searchTermWishlist, setSearchTermWishlist] = useState("");
-  const [searchTermRatings, setSearchTermRatings] = useState("");
   const [searchTermOutOfStock, setSearchTermOutOfStock] = useState("");
 
   // Chart refs
@@ -450,25 +449,10 @@ const Products = ({ dateRange }) => {
         </div>
       </div>
 
-      {/* Product Ratings Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow w-full overflow-x-hidden">
-          <h3 className="text-base sm:text-lg font-semibold mb-2 break-words">
-            Product Ratings
-          </h3>
-          <div className="w-full overflow-x-hidden">
-            <PaginatedTable
-              data={dashboardData?.productRatings || []}
-              headers={["Name", "Rating", "Reviews"]}
-              itemsPerPage={3}
-              onRowClick={(item) => setSelectedItem(item)}
-              searchTerm={searchTermRatings}
-              setSearchTerm={setSearchTermRatings}
-            />
-          </div>
-        </div>
-
-        {/* Out of Stock Products moved here for better layout */}
+      {/* Out of Stock Products Section - now occupies the full width or half if another table is added back */}
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 mb-6">
+        {" "}
+        {/* Adjusted grid to single column for this item or make it lg:grid-cols-2 if you plan to add another table here */}
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow w-full overflow-x-hidden">
           <h3 className="text-base sm:text-lg font-semibold mb-2 break-words">
             Out-of-Stock Products
