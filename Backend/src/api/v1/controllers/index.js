@@ -35,6 +35,7 @@ export { default as adminAttributeValueController } from "./admin/productAttribu
 export { default as adminProductReviewController } from "./admin/adminProductReview.controller.js";
 export { default as adminDashboardController } from "./admin/adminDashboard.controller.js";
 export { default as adminProductManagmentDashboardDataController } from "./admin/adminProductManagment.controller.js";
+export { default as adminAnalyticsDashboardDataController } from "./admin/adminReportsAndAnalyticsData.controller.js";
 
 //     customer controller
 export { default as customerOrderController } from "./customer/order.controller.js";
