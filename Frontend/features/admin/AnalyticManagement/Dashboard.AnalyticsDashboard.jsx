@@ -1,16 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import Chart from "chart.js/auto";
-import PaginatedTable from "./shared/PaginatedTable.jsx";
+
 import { dashboardData } from "./shared/analyticsData.js";
 
 // Dashboard Component
 const Dashboard = ({ dateRange }) => {
   const [selectedItem, setSelectedItem] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchTermWorst, setSearchTermWorst] = useState("");
-  const [searchTermWishlist, setSearchTermWishlist] = useState("");
-
-  const [searchTermOutOfStock, setSearchTermOutOfStock] = useState("");
 
   // Chart refs
   const gaugeRef = useRef(null);
@@ -27,7 +22,7 @@ const Dashboard = ({ dateRange }) => {
     if (dataObj === dashboardData.totalRevenue) {
       return dataObj;
     }
-    
+
     if (typeof period === "string") {
       const key = period.toLowerCase();
       return dataObj[key] || dataObj.month || dataObj;
@@ -590,79 +585,6 @@ const Dashboard = ({ dateRange }) => {
             id="dashboardSalesByCategoryChart"
             className="w-full h-full max-w-full"
           ></canvas>
-        </div>
-      </div>
-
-      {/* Product Performance Section */}
-      <div className="mt-3 sm:mt-4 lg:mt-6 grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 overflow-x-hidden">
-        <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow w-full overflow-x-hidden">
-          <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 break-words">
-            Top 5 Selling Products {getPeriodLabel(dateRange)}
-          </h3>
-          <div className="w-full overflow-x-hidden">
-            <PaginatedTable
-              data={getDataByPeriod(dashboardData.topSellingProducts, dateRange)}
-              headers={["Name", "Sales"]}
-              itemsPerPage={3}
-              onRowClick={(item) => setSelectedItem(item)}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-            />
-          </div>
-        </div>
-
-        <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow w-full overflow-x-hidden">
-          <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 break-words">
-            Worst-Selling Products (Bottom 5) {getPeriodLabel(dateRange)}
-          </h3>
-          <div className="w-full overflow-x-hidden">
-            <PaginatedTable
-              data={getDataByPeriod(dashboardData.worstSellingProducts, dateRange)}
-              headers={["Name", "Sales"]}
-              itemsPerPage={3}
-              onRowClick={(item) => setSelectedItem(item)}
-              searchTerm={searchTermWorst}
-              setSearchTerm={setSearchTermWorst}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Product Ratings and Wishlist Section */}
-      <div className="mt-3 sm:mt-4 lg:mt-6 grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 overflow-x-hidden">
-
-
-        <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow w-full overflow-x-hidden">
-          <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 break-words">
-            Top Wishlisted Products {getPeriodLabel(dateRange)}
-          </h3>
-          <div className="w-full overflow-x-hidden">
-            <PaginatedTable
-              data={getDataByPeriod(dashboardData.topWishlistedProducts, dateRange)}
-              headers={["Product Name", "Wishlist Count"]}
-              itemsPerPage={3}
-              onRowClick={(item) => setSelectedItem(item)}
-              searchTerm={searchTermWishlist}
-              setSearchTerm={setSearchTermWishlist}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Out of Stock Products */}
-      <div className="mt-3 sm:mt-4 lg:mt-6 bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow w-full overflow-x-hidden">
-        <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 break-words">
-          Out-of-Stock Products
-        </h3>
-        <div className="w-full overflow-x-hidden">
-          <PaginatedTable
-            data={dashboardData.outOfStockProducts}
-            headers={["Name", "Stock", "Category"]}
-            itemsPerPage={3}
-            onRowClick={(item) => setSelectedItem(item)}
-            searchTerm={searchTermOutOfStock}
-            setSearchTerm={setSearchTermOutOfStock}
-          />
         </div>
       </div>
 

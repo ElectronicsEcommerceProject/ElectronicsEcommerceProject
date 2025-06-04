@@ -151,7 +151,38 @@ export const dashboardData = {
     { name: "iPad Pro", wishlistCount: 250 },
   ],
 
-  // Product ratings removed as requested
+  // Product ratings data
+  productRatings: [
+    { name: "iPhone 14", rating: 4.8, reviews: 1250 },
+    { name: "Samsung Galaxy S23", rating: 4.6, reviews: 980 },
+    { name: "MacBook Pro", rating: 4.9, reviews: 750 },
+    { name: "AirPods Pro", rating: 4.7, reviews: 1100 },
+    { name: "iPad Air", rating: 4.5, reviews: 650 },
+  ],
+
+  // Product rating trends over time for different periods
+  productRatingTrends: {
+    today: [
+      { period: "Morning", rating: 4.2, reviewCount: 45 },
+      { period: "Afternoon", rating: 4.5, reviewCount: 78 },
+      { period: "Evening", rating: 4.3, reviewCount: 62 },
+    ],
+    week: [
+      { period: "Mon", rating: 4.2, reviewCount: 120 },
+      { period: "Tue", rating: 4.3, reviewCount: 135 },
+      { period: "Wed", rating: 4.1, reviewCount: 98 },
+      { period: "Thu", rating: 4.4, reviewCount: 156 },
+      { period: "Fri", rating: 4.5, reviewCount: 189 },
+      { period: "Sat", rating: 4.3, reviewCount: 145 },
+      { period: "Sun", rating: 4.2, reviewCount: 112 },
+    ],
+    month: [
+      { period: "Week 1", rating: 4.2, reviewCount: 580 },
+      { period: "Week 2", rating: 4.3, reviewCount: 645 },
+      { period: "Week 3", rating: 4.1, reviewCount: 520 },
+      { period: "Week 4", rating: 4.4, reviewCount: 710 },
+    ],
+  },
 
   // Orders by status for different time periods
   ordersByStatus: {
