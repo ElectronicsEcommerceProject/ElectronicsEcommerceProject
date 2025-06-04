@@ -10,9 +10,9 @@ const TopNav = ({ setActiveSection, activeSection }) => (
             {[
               "dashboard",
               "products",
-              "orders",
-              "users",
-              "reviews",
+              // "orders",
+              // "users",
+              // "reviews",
               "coupons",
             ].map((section) => (
               <button
