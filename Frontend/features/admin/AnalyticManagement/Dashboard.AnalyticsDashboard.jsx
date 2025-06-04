@@ -85,7 +85,7 @@ const Dashboard = ({ dateRange }) => {
           scales: {
             y: {
               beginAtZero: true,
-              title: { display: true, text: "Revenue ($)" },
+              title: { display: true, text: "Revenue (₹)" },
             },
             x: {
               title: { display: true, text: "Time Period" },
@@ -136,7 +136,7 @@ const Dashboard = ({ dateRange }) => {
           scales: {
             y: {
               beginAtZero: true,
-              title: { display: true, text: "Sales ($)" },
+              title: { display: true, text: "Sales (₹)" },
             },
           },
           plugins: {
@@ -467,13 +467,13 @@ const Dashboard = ({ dateRange }) => {
             Total Revenue {getPeriodLabel(dateRange)}
           </h3>
           <p className="text-xs sm:text-sm lg:text-base break-words">
-            Daily: ${dashboardData.totalRevenue.daily.toLocaleString()}
+            Daily: ₹{dashboardData.totalRevenue.daily.toLocaleString()}
           </p>
           <p className="text-xs sm:text-sm lg:text-base break-words">
-            Weekly: ${dashboardData.totalRevenue.weekly.toLocaleString()}
+            Weekly: ₹{dashboardData.totalRevenue.weekly.toLocaleString()}
           </p>
           <p className="text-xs sm:text-sm lg:text-base break-words">
-            Monthly: ${dashboardData.totalRevenue.monthly.toLocaleString()}
+            Monthly: ₹{dashboardData.totalRevenue.monthly.toLocaleString()}
           </p>
         </div>
         <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow min-w-0">
@@ -492,7 +492,7 @@ const Dashboard = ({ dateRange }) => {
             Average Order Value {getPeriodLabel(dateRange)}
           </h3>
           <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600">
-            ${getDataByPeriod(dashboardData.averageOrderValue, dateRange)}
+            ₹{getDataByPeriod(dashboardData.averageOrderValue, dateRange)}
           </p>
         </div>
         <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow min-w-0">

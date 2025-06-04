@@ -95,20 +95,6 @@ const Filters = ({ onDateChange }) => {
             </div>
           )}
         </div>
-        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full lg:w-auto">
-          <button
-            className="bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 transition text-sm whitespace-nowrap"
-            onClick={() => alert("Exporting as CSV")}
-          >
-            Export CSV
-          </button>
-          <button
-            className="bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 transition text-sm whitespace-nowrap"
-            onClick={() => alert("Exporting as PDF")}
-          >
-            Export PDF
-          </button>
-        </div>
       </div>
     </div>
   );
