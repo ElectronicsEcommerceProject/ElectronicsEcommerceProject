@@ -1,0 +1,1627 @@
+//address model code--
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const Address = sequelize.define(
+    "Address",
+    {
+      address_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      user_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      address_line1: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      address_line2: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      city: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      state: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      postal_code: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      country: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "India",
+      },
+      is_default: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      is_active: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
+    },
+    {
+      timestamps: true,
+      tableName: "Addresses",
+      paranoid: true, // keep deleted addresses for history
+    }
+  );
+
+  Address.associate = (models) => {
+    // Define associations
+    Address.belongsTo(models.User, { foreignKey: "user_id", as: "user" });
+    Address.hasMany(models.Order, { foreignKey: "address_id", as: "orders" });
+  };
+
+  return Address;
+};
+===============================
+===============================
+//cart model
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const Cart = sequelize.define(
+    "Cart",
+    {
+      cart_id: {
+        type: DataTypes.UUID, // UUID for primary key
+        defaultValue: DataTypes.UUIDV4, // Automatically generate UUID
+        primaryKey: true,
+      },
+      user_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+    },
+    {
+      timestamps: true, // Enable timestamps for createdAt and updatedAt
+      tableName: "Carts",
+    }
+  );
+
+  Cart.associate = (models) => {
+    // Define associations
+    Cart.belongsTo(models.User, { foreignKey: "user_id", as: "user" }); // Links cart to a user
+    Cart.hasMany(models.CartItem, {
+      foreignKey: "cart_id",
+      onDelete: "CASCADE",
+      as: "cartItems",
+    }); // Cart has many items
+  };
+
+  return Cart;
+};
+===============================
+===============================
+//cartItem.model
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const CartItem = sequelize.define(
+    "CartItem",
+    {
+      cart_item_id: {
+        type: DataTypes.UUID, // UUID for primary key
+        defaultValue: DataTypes.UUIDV4, // Automatically generate UUID
+        primaryKey: true,
+      },
+      cart_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      product_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      product_variant_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+      },
+      total_quantity: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      discount_quantity: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      price_at_time: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+      },
+      discount_applied: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+      },
+      final_price: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+      },
+    },
+    {
+      timestamps: true,
+      tableName: "CartItems",
+    }
+  );
+
+  CartItem.associate = (models) => {
+    // Define associations
+    CartItem.belongsTo(models.Cart, {
+      foreignKey: "cart_id",
+      onDelete: "CASCADE",
+      as: "cart",
+    }); // Links cart item to a cart
+    CartItem.belongsTo(models.Product, {
+      foreignKey: "product_id",
+      as: "product",
+    }); // Links cart item to a product
+    CartItem.belongsTo(models.ProductVariant, {
+      foreignKey: "product_variant_id",
+      as: "variant",
+    }); // Links cart item to a product variant
+  };
+
+  return CartItem;
+};
+===============================
+===============================
+//category model code
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const Category = sequelize.define(
+    "Category",
+    {
+      category_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      name: { type: DataTypes.STRING, allowNull: false },
+      slug: { type: DataTypes.STRING, unique: true },
+      parent_id: { type: DataTypes.UUID, allowNull: true },
+      created_by: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
+      updated_by: { type: DataTypes.UUID, allowNull: true }, // Changed to UUID
+      target_role: {
+        type: DataTypes.ENUM("customer", "retailer", "both"),
+        allowNull: false,
+      },
+    },
+    {
+      tableName: "Categories",
+      timestamps: true,
+      // paranoid: true, // keep categories for reporting
+      indexes: [
+        { fields: ["name"] },
+        { fields: ["slug"] },
+        { fields: ["parent_id"] },
+        { fields: ["created_by"] },
+        { fields: ["updated_by"] },
+      ],
+    }
+  );
+
+  Category.associate = (models) => {
+    Category.belongsTo(models.Category, {
+      foreignKey: "parent_id",
+      as: "parentCategory",
+    });
+    Category.belongsTo(models.User, {
+      foreignKey: "created_by",
+      as: "creator",
+    });
+    Category.belongsTo(models.User, {
+      foreignKey: "updated_by",
+      as: "updater",
+    });
+    Category.hasMany(models.Product, { foreignKey: "category_id" });
+    Category.hasMany(models.Coupon, { foreignKey: "category_id" });
+  };
+
+  return Category;
+};
+===============================
+===============================
+\hrule
+
+//coupon model 
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const Coupon = sequelize.define(
+    "Coupon",
+    {
+      coupon_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      code: { type: DataTypes.STRING, allowNull: false, unique: true },
+      description: { type: DataTypes.STRING },
+      type: {
+        type: DataTypes.ENUM("fixed", "percentage"),
+        allowNull: false,
+      },
+      discount_value: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
+      target_type: {
+        type: DataTypes.ENUM(
+          "cart",
+          "product",
+          "product_variant",
+          "category",
+          "brand"
+        ),
+        defaultValue: "cart",
+      },
+      category_id: { type: DataTypes.UUID, allowNull: true },
+      brand_id: { type: DataTypes.UUID, allowNull: true },
+      product_id: { type: DataTypes.UUID, allowNull: true },
+      product_variant_id: { type: DataTypes.UUID, allowNull: true },
+      target_role: {
+        type: DataTypes.ENUM("customer", "retailer", "both"),
+        defaultValue: "both",
+      },
+      min_cart_value: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
+      max_discount_value: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
+      usage_limit: { type: DataTypes.INTEGER, allowNull: true },
+      usage_per_user: { type: DataTypes.INTEGER, allowNull: true },
+      valid_from: { type: DataTypes.DATE, allowNull: false },
+      valid_to: { type: DataTypes.DATE, allowNull: false },
+      is_active: { type: DataTypes.BOOLEAN, defaultValue: true },
+      is_user_new: { type: DataTypes.BOOLEAN, defaultValue: false },
+      created_by: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
+      updated_by: { type: DataTypes.UUID, allowNull: true }, // Changed to UUID
+    },
+    {
+      tableName: "Coupons",
+      timestamps: true,
+      paranoid: true, // preserve redemption history
+
+      indexes: [
+        { fields: ["code"], unique: true },
+        { fields: ["product_id"] },
+        { fields: ["target_role"] },
+        { fields: ["valid_from", "valid_to"] },
+        { fields: ["is_active"] },
+      ],
+    }
+  );
+
+  Coupon.associate = (models) => {
+    Coupon.belongsTo(models.Category, { foreignKey: "category_id" });
+    Coupon.belongsTo(models.Brand, { foreignKey: "brand_id" });
+    Coupon.belongsTo(models.Product, { foreignKey: "product_id" });
+    Coupon.belongsTo(models.ProductVariant, {
+      foreignKey: "product_variant_id",
+    });
+    Coupon.belongsTo(models.User, { foreignKey: "created_by", as: "creator" });
+    Coupon.belongsTo(models.User, { foreignKey: "updated_by", as: "updater" });
+    Coupon.belongsToMany(models.User, {
+      through: models.CouponUser,
+      foreignKey: "coupon_id",
+    });
+    Coupon.hasMany(models.Order, { foreignKey: "coupon_id" });
+  };
+
+  return Coupon;
+};
+===============================
+===============================
+
+//couponRedemption model 
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const CouponRedemption = sequelize.define(
+    "CouponRedemption",
+    {
+      coupon_redemption_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      user_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      coupon_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      order_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      redeemed_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+      },
+      discount_amount: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+      },
+    },
+    {
+      tableName: "CouponRedemptions",
+      timestamps: true,
+    }
+  );
+
+  CouponRedemption.associate = (models) => {
+    CouponRedemption.belongsTo(models.Coupon, {
+      foreignKey: "coupon_id",
+      as: "coupon",
+    });
+    CouponRedemption.belongsTo(models.User, {
+      foreignKey: "user_id",
+      as: "user",
+    });
+    CouponRedemption.belongsTo(models.Order, {
+      foreignKey: "order_id",
+      as: "order",
+    });
+  };
+
+  return CouponRedemption;
+};
+
+
+===============================
+===============================
+
+//couponUser model
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const CouponUser = sequelize.define(
+    "CouponUser",
+    {
+      coupon_user_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      coupon_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      user_id: {
+        type: DataTypes.UUID, // Changed to UUID
+        allowNull: false,
+      },
+    },
+    {
+      tableName: "CouponUsers",
+      timestamps: true,
+      indexes: [
+        { fields: ["coupon_id"] },
+        { fields: ["user_id"] },
+        { unique: true, fields: ["coupon_id", "user_id"] }, // Prevent duplicate entries
+      ],
+    }
+  );
+
+  CouponUser.associate = (models) => {
+    CouponUser.belongsTo(models.Coupon, { foreignKey: "coupon_id" });
+    CouponUser.belongsTo(models.User, { foreignKey: "user_id" });
+  };
+
+  return CouponUser;
+};
+
+===============================
+===============================
+\hrule
+
+//discountRule model
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const DiscountRule = sequelize.define(
+    "DiscountRule",
+    {
+      discount_rule_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      rule_type: {
+        type: DataTypes.ENUM("bulk", "percentage", "quantity", "retailer"),
+        allowNull: false,
+      },
+      product_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+      },
+      category_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+      },
+      brand_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+      },
+      product_variant_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+      },
+      min_retailer_quantity: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      bulk_discount_quantity: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      bulk_discount_percentage: {
+        type: DataTypes.DECIMAL(5, 2),
+        allowNull: true,
+      },
+      discount_quantity: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      discount_percentage: {
+        type: DataTypes.DECIMAL(5, 2),
+        allowNull: true,
+      },
+      is_active: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
+      created_by: {
+        type: DataTypes.UUID, // Changed to UUID
+        allowNull: false,
+      },
+      updated_by: {
+        type: DataTypes.UUID, // Changed to UUID
+        allowNull: true,
+      },
+    },
+    {
+      timestamps: true,
+      paranoid: true, // history of past promotions
+
+      tableName: "DiscountRules",
+      indexes: [
+        { fields: ["product_id"] },
+        { fields: ["category_id"] },
+        { fields: ["brand_id"] },
+        { fields: ["product_variant_id"] },
+        { fields: ["rule_type"] },
+        { fields: ["created_by"] },
+        { fields: ["updated_by"] },
+      ],
+    }
+  );
+
+  DiscountRule.associate = (models) => {
+    DiscountRule.belongsTo(models.Product, { foreignKey: "product_id" });
+    DiscountRule.belongsTo(models.Category, { foreignKey: "category_id" });
+    DiscountRule.belongsTo(models.Brand, { foreignKey: "brand_id" });
+    DiscountRule.belongsTo(models.ProductVariant, {
+      foreignKey: "product_variant_id",
+    });
+    DiscountRule.belongsTo(models.User, {
+      foreignKey: "created_by",
+      as: "creator",
+    });
+    DiscountRule.belongsTo(models.User, {
+      foreignKey: "updated_by",
+      as: "updater",
+    });
+  };
+
+  return DiscountRule;
+};
+
+===============================
+===============================
+\hrule
+
+
+//order model
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const Order = sequelize.define(
+    "Order",
+    {
+      order_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      user_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      address_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      payment_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+      },
+      order_number: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
+      },
+      order_date: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+      },
+      order_status: {
+        type: DataTypes.ENUM(
+          "pending",
+          "processing",
+          "shipped",
+          "delivered",
+          "cancelled",
+          "returned"
+        ),
+        defaultValue: "pending",
+      },
+      payment_status: {
+        type: DataTypes.ENUM("pending", "paid", "failed", "refunded"),
+        defaultValue: "pending",
+      },
+      payment_method: {
+        type: DataTypes.ENUM(
+          "credit_card",
+          "debit_card",
+          "upi",
+          "cod",
+          "net_banking"
+        ),
+        allowNull: false,
+      },
+      subtotal: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+      },
+      shipping_cost: {
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0.0,
+      },
+      tax_amount: {
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0.0,
+      },
+      discount_amount: {
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0.0,
+      },
+      total_amount: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+      },
+      notes: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      tracking_number: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+    },
+    {
+      timestamps: true,
+      tableName: "Orders",
+      indexes: [
+        { fields: ["user_id"] }, // User order history
+        { fields: ["order_status"] }, // Filtering by status (e.g., "pending")
+        { fields: ["order_date"] }, // Sorting by date
+      ],
+    }
+  );
+
+  indexes: [
+    { fields: ["user_id"] }, // User order history
+    { fields: ["order_status"] }, // Filtering by status (e.g., "pending")
+    { fields: ["order_date"] }, // Sorting by date
+  ];
+
+  Order.associate = (models) => {
+    // Define associations
+    Order.belongsTo(models.User, { foreignKey: "user_id", as: "user" });
+    Order.belongsTo(models.Address, {
+      foreignKey: "address_id",
+      as: "address",
+    });
+    Order.hasMany(models.OrderItem, {
+      foreignKey: "order_id",
+      as: "orderItems",
+    });
+    Order.hasMany(models.CouponRedemption, {
+      foreignKey: "order_id",
+      as: "couponRedemptions",
+    });
+    Order.belongsTo(models.Payment, {
+      foreignKey: "payment_id",
+      as: "payment",
+    });
+  };
+
+  return Order;
+};
+
+===============================
+===============================
+\hrule
+
+//orderItem model
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const OrderItem = sequelize.define(
+    "OrderItem",
+    {
+      order_item_id: {
+        type: DataTypes.UUID, // UUID for primary key
+        defaultValue: DataTypes.UUIDV4, // Automatically generate UUID
+        primaryKey: true,
+      },
+      order_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      product_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      product_variant_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+      },
+
+      total_quantity: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      discount_quantity: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      price_at_time: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+      },
+      discount_applied: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+      },
+      final_price: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+      },
+    },
+    {
+      timestamps: true,
+      tableName: "OrderItems",
+    }
+  );
+
+  OrderItem.associate = (models) => {
+    // Define associations
+    OrderItem.belongsTo(models.Order, { foreignKey: "order_id", as: "order" }); // Links order item to an order
+    OrderItem.belongsTo(models.Product, {
+      foreignKey: "product_id",
+      as: "product",
+    }); // Links order item to a product
+    OrderItem.belongsTo(models.ProductVariant, {
+      foreignKey: "product_variant_id",
+      as: "productVariant",
+    }); // Links order item to a product variant
+  };
+
+  return OrderItem;
+};
+
+===============================
+===============================
+
+//product model.js
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const Product = sequelize.define(
+    "Product",
+    {
+      product_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      slug: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      short_description: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
+      },
+      base_price: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+      },
+      rating_average: {
+        type: DataTypes.DECIMAL(3, 1),
+        defaultValue: 0.0,
+      },
+      rating_count: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
+      is_active: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
+      is_featured: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      category_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      brand_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+      },
+      created_by: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      updated_by: {
+        type: DataTypes.UUID,
+        allowNull: true,
+      },
+    },
+    {
+      timestamps: true,
+      // paranoid: true, // soft delete to preserve sales history
+      tableName: "Products",
+      indexes: [
+        { fields: ["category_id"] },
+        { fields: ["brand_id"] },
+        { fields: ["created_by"] },
+        { fields: ["slug"] },
+        {
+          // Specify key length for TEXT columns
+          fields: [
+            "name",
+            { attribute: "description", length: 255 },
+            { attribute: "short_description", length: 255 },
+          ],
+          // type: "FULLTEXT",
+        },
+      ],
+    }
+  );
+
+  Product.associate = (models) => {
+    // Define associations
+    Product.belongsTo(models.Category, {
+      foreignKey: "category_id",
+      as: "category",
+    });
+    Product.belongsTo(models.Brand, { foreignKey: "brand_id", as: "brand" });
+    Product.belongsTo(models.User, { foreignKey: "created_by", as: "creator" });
+    Product.hasMany(models.ProductVariant, {
+      foreignKey: "product_id",
+      as: "variants",
+    });
+    Product.hasMany(models.ProductMedia, {
+      foreignKey: "product_id",
+      as: "media",
+    });
+    Product.hasMany(models.ProductReview, {
+      foreignKey: "product_id",
+      as: "reviews",
+    });
+    Product.hasMany(models.OrderItem, {
+      foreignKey: "product_id",
+      as: "orderItems",
+    });
+    Product.hasMany(models.CartItem, {
+      foreignKey: "product_id",
+      as: "cartItems",
+    });
+    Product.hasMany(models.WishListItem, {
+      foreignKey: "product_id",
+      as: "wishlistItems",
+    });
+    Product.hasMany(models.Coupon, {
+      foreignKey: "product_id",
+    });
+  };
+
+  return Product;
+};
+
+===============================
+===============================
+\hrule
+
+//productAttributes model
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const Attribute = sequelize.define(
+    "Attribute",
+    {
+      product_attribute_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      name: { type: DataTypes.STRING, allowNull: false },
+      data_type: {
+        type: DataTypes.ENUM("string", "int", "float", "enum"),
+        allowNull: false,
+      },
+      is_variant_level: { type: DataTypes.BOOLEAN, defaultValue: false },
+      created_by: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
+      updated_by: { type: DataTypes.UUID, allowNull: true }, // Changed to UUID
+    },
+    {
+      timestamps: true,
+      tableName: "Attributes",
+      indexes: [{ fields: ["created_by"] }, { fields: ["updated_by"] }],
+    }
+  );
+
+  Attribute.associate = (models) => {
+    Attribute.belongsTo(models.User, {
+      foreignKey: "created_by",
+      as: "creator",
+    });
+    Attribute.belongsTo(models.User, {
+      foreignKey: "updated_by",
+      as: "updater",
+    });
+    Attribute.hasMany(models.AttributeValue, {
+      foreignKey: "product_attribute_id",
+    });
+  };
+
+  return Attribute;
+};
+
+
+===============================
+===============================
+\hrule
+
+//productAttributesValues model
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const AttributeValue = sequelize.define(
+    "AttributeValue",
+    {
+      // Define only ONE primary key
+      product_attribute_value_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      // Make sure none of these have primaryKey: true
+      product_attribute_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      value: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      created_by: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      updated_by: {
+        type: DataTypes.UUID,
+        allowNull: true,
+      },
+    },
+    {
+      tableName: "AttributeValues",
+      timestamps: true,
+      indexes: [
+        { fields: ["product_attribute_id"] },
+        { fields: ["value"] },
+        { fields: ["created_by"] },
+        { fields: ["updated_by"] },
+      ],
+    }
+  );
+
+  AttributeValue.associate = (models) => {
+    AttributeValue.belongsTo(models.User, {
+      foreignKey: "updated_by",
+      as: "updater",
+    });
+
+    // Many-to-many relationship with ProductVariant
+    AttributeValue.belongsToMany(models.ProductVariant, {
+      through: models.VariantAttributeValue,
+      foreignKey: "product_attribute_value_id",
+      otherKey: "product_variant_id",
+      uniqueKey: "var_attr_val",
+    });
+    AttributeValue.belongsTo(models.Attribute, {
+      foreignKey: "product_attribute_id",
+    });
+  };
+
+  return AttributeValue;
+};
+
+===============================
+===============================
+\hrule
+
+//productBrand model
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const Brand = sequelize.define(
+    "Brand",
+    {
+      brand_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      name: { type: DataTypes.STRING, allowNull: false, unique: true },
+      slug: { type: DataTypes.STRING, unique: true },
+      created_by: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
+      updated_by: { type: DataTypes.UUID, allowNull: true }, // Changed to UUID
+    },
+    {
+      tableName: "Brands",
+      timestamps: true,
+      // paranoid: true, // preserve brand history
+
+      indexes: [
+        { fields: ["name"] },
+        { fields: ["slug"] },
+        { fields: ["created_by"] },
+        { fields: ["updated_by"] },
+      ],
+    }
+  );
+
+  Brand.associate = (models) => {
+    Brand.belongsTo(models.User, { foreignKey: "created_by", as: "creator" });
+    Brand.belongsTo(models.User, { foreignKey: "updated_by", as: "updater" });
+    Brand.hasMany(models.Product, { foreignKey: "brand_id" });
+    Brand.hasMany(models.Coupon, { foreignKey: "brand_id" });
+  };
+
+  return Brand;
+};
+
+===============================
+===============================
+\hrule
+
+//productMedia model 
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const ProductMedia = sequelize.define(
+    "ProductMedia",
+    {
+      product_media_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      product_id: { type: DataTypes.UUID, allowNull: false },
+      product_variant_id: { type: DataTypes.UUID, allowNull: true },
+      media_type: {
+        type: DataTypes.ENUM("image", "video"),
+        defaultValue: "image",
+      },
+      created_by: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
+      updated_by: { type: DataTypes.UUID, allowNull: true }, // Changed to UUID
+    },
+    {
+      tableName: "ProductMedia",
+      timestamps: true,
+      indexes: [
+        { fields: ["product_id"] },
+        { fields: ["product_variant_id"] },
+        { fields: ["created_by"] },
+        { fields: ["updated_by"] },
+      ],
+    }
+  );
+
+  ProductMedia.associate = (models) => {
+    ProductMedia.hasMany(models.ProductMediaUrl, {
+      foreignKey: "product_media_id",
+    });
+
+    ProductMedia.belongsTo(models.Product, { foreignKey: "product_id" });
+
+    ProductMedia.belongsTo(models.ProductVariant, {
+      foreignKey: "product_variant_id",
+    });
+    ProductMedia.belongsTo(models.User, {
+      foreignKey: "created_by",
+      as: "creator",
+    });
+    ProductMedia.belongsTo(models.User, {
+      foreignKey: "updated_by",
+      as: "updater",
+    });
+  };
+
+  return ProductMedia;
+};
+
+===============================
+===============================
+\hrule
+
+//productMediaUrl model
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const ProductMediaURL = sequelize.define(
+    "ProductMediaURL",
+    {
+      product_media_url_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      product_media_id: { type: DataTypes.UUID, allowNull: false },
+      product_media_url: { type: DataTypes.STRING, allowNull: false },
+      media_type: {
+        type: DataTypes.ENUM("image", "video"),
+        defaultValue: "image",
+      },
+      created_by: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
+      updated_by: { type: DataTypes.UUID, allowNull: true }, // Changed to UUID
+    },
+    {
+      tableName: "ProductMediaURL",
+      timestamps: true,
+      indexes: [
+        { fields: ["product_media_url_id"] },
+        { fields: ["product_media_id"] },
+        { fields: ["created_by"] },
+        { fields: ["updated_by"] },
+      ],
+    }
+  );
+
+  ProductMediaURL.associate = (models) => {
+    ProductMediaURL.belongsTo(models.ProductMedia, {
+      foreignKey: "product_media_id",
+    });
+    ProductMediaURL.belongsTo(models.User, {
+      foreignKey: "created_by",
+      as: "creator",
+    });
+    ProductMediaURL.belongsTo(models.User, {
+      foreignKey: "updated_by",
+      as: "updater",
+    });
+  };
+
+  return ProductMediaURL;
+};
+
+===============================
+===============================
+\hrule
+
+
+//productReview model
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const ProductReview = sequelize.define(
+    "ProductReview",
+    {
+      product_review_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      product_id: { type: DataTypes.UUID, allowNull: false },
+      product_variant_id: { type: DataTypes.UUID, allowNull: true },
+      user_id: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
+      rating: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: {
+          min: 1,
+          max: 5,
+        },
+      },
+      title: { type: DataTypes.STRING, allowNull: true },
+      review: { type: DataTypes.TEXT, allowNull: true },
+      is_verified_purchase: { type: DataTypes.BOOLEAN, defaultValue: false },
+      review_action: {
+        type: DataTypes.ENUM("pending", "approve", "reject", "flag"),
+        defaultValue: "pending",
+      },
+      created_by: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
+      updated_by: { type: DataTypes.UUID, allowNull: true }, // Changed to UUID
+    },
+    {
+      tableName: "ProductReviews",
+      timestamps: true,
+      indexes: [
+        { fields: ["product_id"] },
+        { fields: ["product_variant_id"] },
+        { fields: ["user_id"] },
+        { fields: ["created_by"] },
+        { fields: ["updated_by"] },
+      ],
+    }
+  );
+
+  ProductReview.associate = (models) => {
+    ProductReview.belongsTo(models.Product, { foreignKey: "product_id" });
+    ProductReview.belongsTo(models.ProductVariant, {
+      foreignKey: "product_variant_id",
+    });
+    ProductReview.belongsTo(models.User, {
+      foreignKey: "user_id",
+      as: "reviewer",
+    });
+    ProductReview.belongsTo(models.User, {
+      foreignKey: "created_by",
+      as: "creator",
+    });
+    ProductReview.belongsTo(models.User, {
+      foreignKey: "updated_by",
+      as: "updater",
+    });
+  };
+
+  return ProductReview;
+};
+
+===============================
+===============================
+\hrule
+
+//productVariants model 
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const ProductVariant = sequelize.define(
+    "ProductVariant",
+    {
+      product_variant_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      description: { type: DataTypes.STRING, allowNull: true },
+      short_description: { type: DataTypes.STRING, allowNull: true },
+      product_id: { type: DataTypes.UUID, allowNull: false },
+      price: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
+      stock_quantity: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      sku: { type: DataTypes.STRING, allowNull: true },
+      base_variant_image_url: { type: DataTypes.STRING, allowNull: true },
+      discount_quantity: { type: DataTypes.INTEGER, allowNull: true },
+      discount_percentage: { type: DataTypes.DECIMAL(5, 2), allowNull: true },
+      min_retailer_quantity: { type: DataTypes.INTEGER, allowNull: true },
+      bulk_discount_quantity: { type: DataTypes.INTEGER, allowNull: true },
+      bulk_discount_percentage: {
+        type: DataTypes.DECIMAL(5, 2),
+        allowNull: true,
+      },
+      created_by: { type: DataTypes.UUID, allowNull: false },
+      updated_by: { type: DataTypes.UUID, allowNull: true },
+    },
+    {
+      timestamps: true,
+      tableName: "ProductVariants",
+      // paranoid: true, // preserve past variant sales
+      indexes: [
+        { fields: ["product_id"] },
+        { fields: ["sku"] },
+        { fields: ["created_by"] },
+        { fields: ["updated_by"] },
+      ],
+    }
+  );
+
+  ProductVariant.associate = (models) => {
+    // Relationship with Product
+    ProductVariant.belongsTo(models.Product, { foreignKey: "product_id" });
+
+    // Now we can add the correct association
+    // The model is called 'AttributeValue' (confirmed from the logs)
+    ProductVariant.belongsToMany(models.AttributeValue, {
+      through: models.VariantAttributeValue,
+      foreignKey: "product_variant_id",
+      otherKey: "product_attribute_value_id",
+      uniqueKey: "var_attr_val", // Match the same uniqueKey name
+    });
+
+    // Relationship with ProductMedia
+    ProductVariant.hasMany(models.ProductMedia, {
+      foreignKey: "product_variant_id",
+    });
+
+    // Relationships with User for created_by and updated_by
+    ProductVariant.belongsTo(models.User, {
+      foreignKey: "created_by",
+      as: "creator",
+    });
+    ProductVariant.belongsTo(models.User, {
+      foreignKey: "updated_by",
+      as: "updater",
+    });
+
+    // Add other relationships
+    ProductVariant.hasMany(models.CartItem, {
+      foreignKey: "product_variant_id",
+    });
+
+    ProductVariant.hasMany(models.ProductReview, {
+      foreignKey: "product_variant_id",
+    });
+    ProductVariant.hasMany(models.Coupon, {
+      foreignKey: "product_variant_id",
+    });
+  };
+
+  return ProductVariant;
+};
+
+===============================
+===============================
+\hrule
+
+//stockAlert model
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const StockAlert = sequelize.define(
+    "StockAlert",
+    {
+      stock_alert_id: {
+        type: DataTypes.UUID, // Changed to UUID
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      product_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      product_variant_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      stock_level: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      status: {
+        type: DataTypes.ENUM("pending", "sent"),
+        defaultValue: "pending",
+      },
+      created_by: {
+        type: DataTypes.UUID, // Changed to UUID
+        allowNull: false,
+      },
+      updated_by: {
+        type: DataTypes.UUID, // Changed to UUID
+        allowNull: true,
+      },
+    },
+    {
+      timestamps: true,
+      tableName: "StockAlerts",
+    }
+  );
+
+  StockAlert.associate = (models) => {
+    StockAlert.belongsTo(models.Product, { foreignKey: "product_id" });
+    StockAlert.belongsTo(models.ProductVariant, {
+      foreignKey: "product_variant_id",
+    });
+    StockAlert.belongsTo(models.User, {
+      foreignKey: "created_by",
+      as: "creator",
+    });
+    StockAlert.belongsTo(models.User, {
+      foreignKey: "updated_by",
+      as: "updater",
+    });
+  };
+
+  return StockAlert;
+};
+
+===============================
+===============================
+\hrule
+
+//user model
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const User = sequelize.define(
+    "User",
+    {
+      user_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      phone_number: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
+      },
+      profileImage_url: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      email: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
+        validate: {
+          isEmail: true,
+        },
+      },
+      password: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      current_address_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+      },
+      status: {
+        type: DataTypes.ENUM("active", "inactive", "banned"),
+        defaultValue: "active",
+      },
+      role: {
+        type: DataTypes.ENUM("retailer", "customer", "admin"),
+        allowNull: false,
+      },
+    },
+    {
+      paranoid: true, // enable soft delete
+      timestamps: true,
+      tableName: "Users",
+    }
+  );
+
+  User.associate = (models) => {
+    User.hasMany(models.Product, { foreignKey: "created_by", as: "products" });
+    User.hasMany(models.Order, { foreignKey: "user_id", as: "orders" });
+    User.hasMany(models.Cart, { foreignKey: "user_id", as: "carts" });
+    User.hasMany(models.Wishlist, { foreignKey: "user_id", as: "wishlists" });
+    User.hasMany(models.Address, { foreignKey: "user_id", as: "addresses" });
+    User.hasMany(models.ProductReview, {
+      foreignKey: "user_id",
+      as: "reviews",
+    });
+    User.hasMany(models.CouponRedemption, {
+      foreignKey: "user_id",
+      as: "couponRedemptions",
+    });
+  };
+
+  return User;
+};
+
+===============================
+===============================
+\hrule
+
+//variantAttributeValue model
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const VariantAttributeValue = sequelize.define(
+    "VariantAttributeValue",
+    {
+      variant_attribute_value_id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      product_variant_id: { type: DataTypes.UUID, allowNull: false },
+      product_attribute_value_id: { type: DataTypes.UUID, allowNull: false }, // Changed to UUID
+      created_by: { type: DataTypes.UUID, allowNull: false },
+      updated_by: { type: DataTypes.UUID, allowNull: true },
+    },
+    {
+      timestamps: true,
+      tableName: "VariantAttributeValues",
+      indexes: [
+        { fields: ["product_variant_id"] },
+        { fields: ["created_by"] },
+        { fields: ["updated_by"] },
+      ],
+    }
+  );
+
+  VariantAttributeValue.associate = (models) => {
+    VariantAttributeValue.belongsTo(models.ProductVariant, {
+      foreignKey: "product_variant_id",
+    });
+    VariantAttributeValue.belongsTo(models.AttributeValue, {
+      foreignKey: "product_attribute_value_id",
+    }); // Added
+    VariantAttributeValue.belongsTo(models.User, {
+      foreignKey: "created_by",
+      as: "creator",
+    });
+    VariantAttributeValue.belongsTo(models.User, {
+      foreignKey: "updated_by",
+      as: "updater",
+    });
+  };
+
+  return VariantAttributeValue;
+};
+
+
+
+===============================
+===============================
+\hrule
+
+
+//wishlist model
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const Wishlist = sequelize.define(
+    "Wishlist",
+    {
+      wishlist_id: {
+        type: DataTypes.UUID, // UUID for primary key
+        defaultValue: DataTypes.UUIDV4, // Automatically generate UUID
+        primaryKey: true,
+      },
+      user_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+    },
+    {
+      timestamps: true, // Enable timestamps for createdAt and updatedAt
+      tableName: "Wishlists",
+    }
+  );
+
+  Wishlist.associate = (models) => {
+    Wishlist.belongsTo(models.User, { foreignKey: "user_id" });
+    Wishlist.hasMany(models.WishListItem, {
+      foreignKey: "wishlist_id",
+      onDelete: "CASCADE",
+      as: "wishlistItems",
+    }); // Wishlist has many items
+  };
+
+  return Wishlist;
+};
+
+===============================
+===============================
+\hrule
+
+//wishListItem model
+
+import { DataTypes } from "sequelize";
+
+export default (sequelize) => {
+  const WishListItem = sequelize.define(
+    "WishListItem",
+    {
+      wish_list_item_id: {
+        type: DataTypes.UUID, // UUID for primary key
+        defaultValue: DataTypes.UUIDV4, // Automatically generate UUID
+        primaryKey: true,
+      },
+      wishlist_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      product_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      product_variant_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+      },
+    },
+    {
+      timestamps: true,
+      tableName: "WishListItems",
+    }
+  );
+
+  WishListItem.associate = (models) => {
+    WishListItem.belongsTo(models.Wishlist, {
+      foreignKey: "wishlist_id",
+      onDelete: "CASCADE",
+      as: "wishlist",
+    });
+    WishListItem.belongsTo(models.Product, {
+      foreignKey: "product_id",
+      as: "product",
+    });
+    WishListItem.belongsTo(models.ProductVariant, {
+      foreignKey: "product_variant_id",
+      as: "variant",
+    });
+  };
+
+  return WishListItem;
+};
+
+===============================
+===============================
+\hrule
+
