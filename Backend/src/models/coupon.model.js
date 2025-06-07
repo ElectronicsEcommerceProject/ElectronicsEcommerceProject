@@ -74,6 +74,7 @@ export default (sequelize) => {
       foreignKey: "coupon_id",
     });
     Coupon.hasMany(models.Order, { foreignKey: "coupon_id" });
+    Coupon.hasMany(models.CouponRedemption, { foreignKey: "coupon_id" });
   };
 
   return Coupon;

@@ -17,5 +17,11 @@ router.get(
   isAdmin,
   adminAnalyticsDashboardDataController.getProductsAnalyticsData
 );
+router.get(
+  "/coupons",
+  verifyJwtToken,
+  isAdmin,
+  adminAnalyticsDashboardDataController.getCouponsAnalyticsData
+);
 
 export default router;

@@ -792,4 +792,387 @@ const getProductsAnalyticsData = async (req, res) => {
   }
 };
 
-export default { getAnalyticsDashboardData, getProductsAnalyticsData };
+const getCouponsAnalyticsData = async (req, res) => {
+  try {
+    // Parse query parameters
+    const { period = "month", startDate, endDate } = req.query;
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    let dateRange = {};
+
+    // Determine date range
+    if (period === "day") {
+      const startOfDay = new Date(today);
+      startOfDay.setHours(0, 0, 0, 0);
+      dateRange = { [Op.between]: [startOfDay, today] };
+    } else if (period === "week") {
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - 6);
+      startOfWeek.setHours(0, 0, 0, 0);
+      dateRange = { [Op.between]: [startOfWeek, today] };
+    } else if (period === "month") {
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      dateRange = { [Op.between]: [startOfMonth, today] };
+    } else if (period === "custom") {
+      if (!startDate || !endDate) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          success: false,
+          message: "startDate and endDate are required for custom period",
+        });
+      }
+      const customStart = new Date(`${startDate}T00:00:00.000Z`);
+      const customEnd = new Date(`${endDate}T23:59:59.999Z`);
+      if (isNaN(customStart) || isNaN(customEnd) || customStart > customEnd) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          success: false,
+          message: "Invalid date range",
+        });
+      }
+      dateRange = { [Op.between]: [customStart, customEnd] };
+    } else {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "Invalid period specified",
+      });
+    }
+
+    // Coupon Usage Statistics
+    const couponUsageRaw = await Coupon.findAll({
+      where: {
+        [Op.or]: [
+          { createdAt: dateRange },
+          { valid_from: dateRange },
+          { valid_to: dateRange },
+        ],
+      },
+      attributes: [
+        "coupon_id",
+        "code",
+        "type",
+        "discount_value",
+        "usage_limit",
+        "valid_from",
+        "valid_to",
+        "is_active",
+      ],
+      include: [
+        {
+          model: CouponRedemption,
+          foreignKey: "coupon_id",
+          attributes: [
+            [
+              Sequelize.fn(
+                "COUNT",
+                Sequelize.col("CouponRedemptions.coupon_redemption_id")
+              ),
+              "redemptionCount",
+            ],
+            [
+              Sequelize.fn(
+                "SUM",
+                Sequelize.col("CouponRedemptions.discount_amount")
+              ),
+              "totalDiscountAmount",
+            ],
+          ],
+          include: [
+            {
+              model: Order,
+              as: "order",
+              where: { order_date: dateRange },
+              attributes: [],
+            },
+          ],
+          required: false,
+        },
+      ],
+      group: [
+        "Coupon.coupon_id",
+        "Coupon.code",
+        "Coupon.type",
+        "Coupon.discount_value",
+        "Coupon.usage_limit",
+        "Coupon.valid_from",
+        "Coupon.valid_to",
+        "Coupon.is_active",
+      ],
+      raw: true,
+    });
+
+    const couponUsageStats = couponUsageRaw.map((entry) => ({
+      couponId: entry.coupon_id,
+      code: entry.code,
+      type: entry.type,
+      discountValue: parseFloat(entry.discount_value) || 0,
+      usageLimit: parseInt(entry.usage_limit) || 0,
+      redemptionCount:
+        parseInt(entry["CouponRedemptions.redemptionCount"]) || 0,
+      totalDiscountAmount:
+        parseFloat(entry["CouponRedemptions.totalDiscountAmount"]) || 0,
+      validFrom: formatDateToString(entry.valid_from),
+      validTo: formatDateToString(entry.valid_to),
+      isActive: entry.is_active,
+      usageRate:
+        entry.usage_limit > 0
+          ? (
+              ((parseInt(entry["CouponRedemptions.redemptionCount"]) || 0) /
+                entry.usage_limit) *
+              100
+            ).toFixed(2)
+          : "N/A",
+    }));
+
+    // Coupon Type Effectiveness
+    const couponTypeRaw = await CouponRedemption.findAll({
+      include: [
+        {
+          model: Coupon,
+          as: "coupon",
+          attributes: ["type"],
+        },
+        {
+          model: Order,
+          as: "order",
+          where: { order_date: dateRange },
+          attributes: [],
+        },
+      ],
+      attributes: [
+        [Sequelize.col("coupon.type"), "type"],
+        [
+          Sequelize.fn(
+            "COUNT",
+            Sequelize.col("CouponRedemption.coupon_redemption_id")
+          ),
+          "redemptionCount",
+        ],
+        [
+          Sequelize.fn(
+            "SUM",
+            Sequelize.col("CouponRedemption.discount_amount")
+          ),
+          "totalDiscountAmount",
+        ],
+        [
+          Sequelize.fn(
+            "AVG",
+            Sequelize.col("CouponRedemption.discount_amount")
+          ),
+          "averageDiscountAmount",
+        ],
+      ],
+      group: ["coupon.type"],
+      raw: true,
+    });
+
+    const couponTypeEffectiveness = couponTypeRaw.reduce(
+      (acc, entry) => {
+        acc[entry.type] = {
+          redemptionCount: parseInt(entry.redemptionCount) || 0,
+          totalDiscountAmount: parseFloat(entry.totalDiscountAmount) || 0,
+          averageDiscountAmount: parseFloat(entry.averageDiscountAmount) || 0,
+        };
+        return acc;
+      },
+      {
+        percentage: {
+          redemptionCount: 0,
+          totalDiscountAmount: 0,
+          averageDiscountAmount: 0,
+        },
+        fixed: {
+          redemptionCount: 0,
+          totalDiscountAmount: 0,
+          averageDiscountAmount: 0,
+        },
+      }
+    );
+
+    // Expired/Unused Coupons
+    const expiredUnusedRaw = await Coupon.findAll({
+      where: {
+        [Op.and]: [{ valid_to: { [Op.lt]: today } }, { is_active: true }],
+      },
+      attributes: [
+        "coupon_id",
+        "code",
+        "type",
+        "discount_value",
+        "usage_limit",
+        "valid_to",
+      ],
+      include: [
+        {
+          model: CouponRedemption,
+          foreignKey: "coupon_id",
+          attributes: [
+            [
+              Sequelize.fn(
+                "COUNT",
+                Sequelize.col("CouponRedemptions.coupon_redemption_id")
+              ),
+              "redemptionCount",
+            ],
+          ],
+          required: false,
+        },
+      ],
+      group: [
+        "Coupon.coupon_id",
+        "Coupon.code",
+        "Coupon.type",
+        "Coupon.discount_value",
+        "Coupon.usage_limit",
+        "Coupon.valid_to",
+      ],
+      raw: true,
+    });
+
+    const expiredUnusedCoupons = expiredUnusedRaw
+      .filter(
+        (entry) => parseInt(entry["CouponRedemptions.redemptionCount"]) === 0
+      )
+      .map((entry) => ({
+        couponId: entry.coupon_id,
+        code: entry.code,
+        type: entry.type,
+        discountValue: parseFloat(entry.discount_value) || 0,
+        usageLimit: parseInt(entry.usage_limit) || 0,
+        expiryDate: formatDateToString(entry.valid_to),
+        details: `${
+          entry.type === "percentage"
+            ? `${entry.discount_value}% off`
+            : entry.type === "fixed"
+            ? `$${entry.discount_value} off`
+            : "Unknown discount type"
+        }`,
+      }));
+
+    // Redemption Trends Over Time
+    const redemptionTrendsRaw = await CouponRedemption.findAll({
+      include: [
+        {
+          model: Order,
+          as: "order",
+          where: { order_date: dateRange },
+          attributes: [],
+        },
+      ],
+      attributes: [
+        [Sequelize.fn("DATE", Sequelize.col("order.order_date")), "date"],
+        [
+          Sequelize.fn(
+            "COUNT",
+            Sequelize.col("CouponRedemption.coupon_redemption_id")
+          ),
+          "redemptionCount",
+        ],
+        [
+          Sequelize.fn(
+            "SUM",
+            Sequelize.col("CouponRedemption.discount_amount")
+          ),
+          "totalDiscountAmount",
+        ],
+      ],
+      group: [Sequelize.fn("DATE", Sequelize.col("order.order_date"))],
+      order: [[Sequelize.fn("DATE", Sequelize.col("order.order_date")), "ASC"]],
+      raw: true,
+    });
+
+    const redemptionTrends = redemptionTrendsRaw.map((entry) => ({
+      date: formatDateToString(entry.date),
+      redemptionCount: parseInt(entry.redemptionCount) || 0,
+      totalDiscountAmount: parseFloat(entry.totalDiscountAmount) || 0,
+    }));
+
+    // Top Performing Coupons
+    const topPerformingCouponsRaw = await CouponRedemption.findAll({
+      include: [
+        {
+          model: Coupon,
+          as: "coupon",
+          attributes: ["coupon_id", "code", "type", "discount_value"],
+        },
+        {
+          model: Order,
+          as: "order",
+          where: { order_date: dateRange },
+          attributes: [],
+        },
+      ],
+      attributes: [
+        [Sequelize.col("coupon.code"), "code"],
+        [Sequelize.col("coupon.type"), "type"],
+        [Sequelize.col("coupon.discount_value"), "discountValue"],
+        [
+          Sequelize.fn(
+            "COUNT",
+            Sequelize.col("CouponRedemption.coupon_redemption_id")
+          ),
+          "redemptionCount",
+        ],
+        [
+          Sequelize.fn(
+            "SUM",
+            Sequelize.col("CouponRedemption.discount_amount")
+          ),
+          "totalDiscountAmount",
+        ],
+      ],
+      group: [
+        "coupon.coupon_id",
+        "coupon.code",
+        "coupon.type",
+        "coupon.discount_value",
+      ],
+      order: [
+        [
+          Sequelize.fn(
+            "COUNT",
+            Sequelize.col("CouponRedemption.coupon_redemption_id")
+          ),
+          "DESC",
+        ],
+      ],
+      limit: 10,
+      raw: true,
+    });
+
+    const topPerformingCoupons = topPerformingCouponsRaw.map((entry) => ({
+      code: entry.code,
+      type: entry.type,
+      discountValue: parseFloat(entry.discountValue) || 0,
+      redemptionCount: parseInt(entry.redemptionCount) || 0,
+      totalDiscountAmount: parseFloat(entry.totalDiscountAmount) || 0,
+    }));
+
+    // Response
+    const responseData = {
+      couponUsageStats,
+      couponTypeEffectiveness,
+      expiredUnusedCoupons,
+      redemptionTrends,
+      topPerformingCoupons,
+    };
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      data: responseData,
+    });
+  } catch (error) {
+    console.error("Error fetching coupons analytics:", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: MESSAGE.get.fail,
+      error: error.message,
+    });
+  }
+};
+
+export default {
+  getAnalyticsDashboardData,
+  getProductsAnalyticsData,
+  getCouponsAnalyticsData,
+};
