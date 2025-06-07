@@ -36,7 +36,7 @@ const AdminDashboard = () => {
       setIsLoading(true);
       try {
         const response = await getApi(adminDashboardDataRoute);
-        console.log("Dashboard Response:", response);
+        // console.log("Dashboard Response:", response);
 
         if (response && response.success && response.data) {
           const data = response.data;

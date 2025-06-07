@@ -486,7 +486,7 @@ const ProductDashboard = () => {
       setIsLoading(true);
       try {
         const response = await getApi(adminProductManagementDashboardDataRoute);
-        console.log("API Response:", response); // Debug log
+        // console.log("API Response:", response); // Debug log
 
         if (response && response.success === true) {
           // Transform API response to match component's expected format
@@ -1102,7 +1102,7 @@ const ProductDashboard = () => {
         id,
         entityType
       );
-      console.log("Delete API Response:", deleteResponse);
+      // console.log("Delete API Response:", deleteResponse);
       if (deleteResponse.success) {
         toast.success(
           deleteResponse.message || `${entityType} deleted successfully!`

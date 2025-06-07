@@ -52,7 +52,7 @@ const Dashboard = ({ dateRange }) => {
         console.log("API URL with params:", apiUrl);
 
         const response = await getApi(apiUrl);
-        console.log("Dashboard API Response:", response);
+        // console.log("Dashboard API Response:", response);
 
         if (response.success) {
           setDashboardData(response.data);

@@ -472,7 +472,7 @@ const CouponManagement = () => {
             coupon.id,
             couponData
           );
-          console.log("Update API response:", response);
+          // console.log("Update API response:", response);
 
           if (response.message === MESSAGE.put.succ) {
             alert(`Coupon updated successfully! Coupon ID: ${coupon.id}`);
@@ -491,7 +491,7 @@ const CouponManagement = () => {
 
           if (response.success) {
             alert(`Coupon created successfully}`);
-            console.log("Create API response:", response);
+            // console.log("Create API response:", response);
             onSave({ ...uiCoupon, id: response.data.coupon_id });
           } else {
             setErrors({ form: response.message || "Failed to create coupon" });

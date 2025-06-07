@@ -54,7 +54,7 @@ const Coupons = ({ dateRange }) => {
         console.log("Coupons API URL with params:", apiUrl);
 
         const response = await getApi(apiUrl);
-        console.log("Coupons API Response:", response);
+        // console.log("Coupons API Response:", response);
 
         if (response.success) {
           setCouponsData(response.data);

@@ -56,7 +56,7 @@ const Products = ({ dateRange }) => {
         console.log("Products API URL with params:", apiUrl);
 
         const response = await getApi(apiUrl);
-        console.log("Products API Response:", response);
+        // console.log("Products API Response:", response);
 
         if (response.success) {
           setProductsData(response.data);
