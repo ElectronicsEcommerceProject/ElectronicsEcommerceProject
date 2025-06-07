@@ -98,6 +98,9 @@ const couponAndOffersDashboardAnalyticsDataRoute = import.meta.env
 const adminReportsAnalyticsDashboardDataRoute = import.meta.env
   .VITE_ADMIN_REPORT_ANALYTICS_DASHBOARD_DATA_ENDPOINT;
 
+const adminReportsAnalyticsProductsDataRoute = import.meta.env
+  .VITE_ADMIN_REPORT_ANALYTICS_PRODUCTS_DATA_ENDPOINT;
+
 export {
   FaEye,
   FaEyeSlash,
@@ -151,4 +154,5 @@ export {
   productVariantByProductIdRoute,
   couponAndOffersDashboardAnalyticsDataRoute,
   adminReportsAnalyticsDashboardDataRoute,
+  adminReportsAnalyticsProductsDataRoute,
 };

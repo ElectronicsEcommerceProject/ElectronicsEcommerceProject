@@ -11,5 +11,11 @@ router.get(
   isAdmin,
   adminAnalyticsDashboardDataController.getAnalyticsDashboardData
 );
+router.get(
+  "/products",
+  verifyJwtToken,
+  isAdmin,
+  adminAnalyticsDashboardDataController.getProductsAnalyticsData
+);
 
 export default router;

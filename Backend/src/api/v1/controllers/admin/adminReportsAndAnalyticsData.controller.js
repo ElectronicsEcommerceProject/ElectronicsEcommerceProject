@@ -15,21 +15,57 @@ const {
   ProductReview,
   Order,
   OrderItem,
+  Cart,
+  CartItem,
   StockAlert,
+  WishListItem,
+  Coupon,
+  CouponRedemption,
 } = db;
 
 /**
  * Helper function to safely format date to YYYY-MM-DD format
+ * Handles both Date objects and date strings
  * @param {Date|string} dateValue - The date value to format
  * @returns {string} Formatted date string in YYYY-MM-DD format
  */
 const formatDateToString = (dateValue) => {
   try {
-    if (!dateValue) return null;
-    const date =
-      typeof dateValue === "string" ? new Date(dateValue) : dateValue;
-    if (isNaN(date.getTime())) return null;
-    return date.toISOString().split("T")[0];
+    if (!dateValue) {
+      return null;
+    }
+
+    // If it's already a string in YYYY-MM-DD format, return as is
+    if (typeof dateValue === "string") {
+      // Check if it's already in YYYY-MM-DD format
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+        return dateValue;
+      }
+      // Try to parse the string as a date
+      const parsedDate = new Date(dateValue);
+      if (isNaN(parsedDate.getTime())) {
+        console.warn("Invalid date string:", dateValue);
+        return null;
+      }
+      return parsedDate.toISOString().split("T")[0];
+    }
+
+    // If it's a Date object
+    if (dateValue instanceof Date) {
+      if (isNaN(dateValue.getTime())) {
+        console.warn("Invalid Date object:", dateValue);
+        return null;
+      }
+      return dateValue.toISOString().split("T")[0];
+    }
+
+    // If it's neither string nor Date, try to convert
+    const convertedDate = new Date(dateValue);
+    if (isNaN(convertedDate.getTime())) {
+      console.warn("Unable to convert to date:", dateValue);
+      return null;
+    }
+    return convertedDate.toISOString().split("T")[0];
   } catch (error) {
     console.error("Error formatting date:", error, "Input:", dateValue);
     return null;
@@ -381,4 +417,379 @@ const getAnalyticsDashboardData = async (req, res) => {
   }
 };
 
-export default { getAnalyticsDashboardData };
+/**
+ * Helper function to safely format date to YYYY-MM-DD format
+ * @param {Date|string} dateValue - The date value to format
+ * @returns {string} Formatted date string in YYYY-MM-DD format
+ */
+
+const getProductsAnalyticsData = async (req, res) => {
+  try {
+    // Parse query parameters
+    const { period = "month", startDate, endDate } = req.query;
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    let dateRange = {};
+
+    // Determine date range
+    if (period === "day") {
+      const startOfDay = new Date(today);
+      startOfDay.setHours(0, 0, 0, 0);
+      dateRange = { [Op.between]: [startOfDay, today] };
+    } else if (period === "week") {
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - 6);
+      startOfWeek.setHours(0, 0, 0, 0);
+      dateRange = { [Op.between]: [startOfWeek, today] };
+    } else if (period === "month") {
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      dateRange = { [Op.between]: [startOfMonth, today] };
+    } else if (period === "custom") {
+      if (!startDate || !endDate) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          success: false,
+          message: "startDate and endDate are required for custom period",
+        });
+      }
+      const customStart = new Date(`${startDate}T00:00:00.000Z`);
+      const customEnd = new Date(`${endDate}T23:59:59.999Z`);
+      if (isNaN(customStart) || isNaN(customEnd) || customStart > customEnd) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          success: false,
+          message: "Invalid date range",
+        });
+      }
+      dateRange = { [Op.between]: [customStart, customEnd] };
+    } else {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "Invalid period specified",
+      });
+    }
+
+    // Revenue Over Time
+    const revenueData = await Order.findAll({
+      where: { order_date: dateRange },
+      attributes: [
+        [Sequelize.fn("DATE", Sequelize.col("order_date")), "period"],
+        [Sequelize.fn("SUM", Sequelize.col("total_amount")), "revenue"],
+      ],
+      group: [Sequelize.fn("DATE", Sequelize.col("order_date"))],
+      order: [[Sequelize.fn("DATE", Sequelize.col("order_date")), "ASC"]],
+      raw: true,
+    });
+
+    const revenueOverTime = revenueData.map((entry) => ({
+      period: formatDateToString(entry.period),
+      revenue: parseFloat(entry.revenue) || 0,
+    }));
+
+    // Top Selling Products (Top 5 by quantity sold)
+    const topSellingProductsRaw = await OrderItem.findAll({
+      include: [
+        {
+          model: Order,
+          as: "order",
+          where: { order_date: dateRange },
+          attributes: [],
+        },
+        {
+          model: Product,
+          as: "product",
+          attributes: ["product_id", "name"],
+          include: [
+            {
+              model: Category,
+              as: "category",
+              attributes: ["name"],
+            },
+          ],
+        },
+      ],
+      attributes: [
+        [Sequelize.col("product.product_id"), "productId"],
+        [Sequelize.col("product.name"), "name"],
+        [Sequelize.col("product.category.name"), "category"],
+        [Sequelize.fn("SUM", Sequelize.col("total_quantity")), "sales"],
+      ],
+      group: [
+        "OrderItem.product_id",
+        "product.product_id",
+        "product.name",
+        "product.category.name",
+      ],
+      order: [[Sequelize.fn("SUM", Sequelize.col("total_quantity")), "DESC"]],
+      limit: 5,
+      raw: true,
+    });
+
+    const topSellingProducts = topSellingProductsRaw.map((entry) => ({
+      productId: entry.productId,
+      name: entry.name,
+      sales: parseInt(entry.sales) || 0,
+      category: entry.category || "N/A",
+    }));
+
+    // Worst Selling Products (Bottom 5 by quantity sold)
+    const worstSellingProductsRaw = await OrderItem.findAll({
+      include: [
+        {
+          model: Order,
+          as: "order",
+          where: { order_date: dateRange },
+          attributes: [],
+        },
+        {
+          model: Product,
+          as: "product",
+          attributes: ["product_id", "name"],
+          include: [
+            {
+              model: Category,
+              as: "category",
+              attributes: ["name"],
+            },
+          ],
+        },
+      ],
+      attributes: [
+        [Sequelize.col("product.product_id"), "productId"],
+        [Sequelize.col("product.name"), "name"],
+        [Sequelize.col("product.category.name"), "category"],
+        [Sequelize.fn("SUM", Sequelize.col("total_quantity")), "sales"],
+      ],
+      group: [
+        "OrderItem.product_id",
+        "product.product_id",
+        "product.name",
+        "product.category.name",
+      ],
+      order: [[Sequelize.fn("SUM", Sequelize.col("total_quantity")), "ASC"]],
+      limit: 5,
+      raw: true,
+    });
+
+    const worstSellingProducts = worstSellingProductsRaw.map((entry) => ({
+      productId: entry.productId,
+      name: entry.name,
+      sales: parseInt(entry.sales) || 0,
+      category: entry.category || "N/A",
+    }));
+
+    // Product Rating Trends
+    const ratingTrendsRaw = await ProductReview.findAll({
+      where: { createdAt: dateRange },
+      attributes: [
+        [Sequelize.fn("DATE", Sequelize.col("createdAt")), "period"],
+        [Sequelize.fn("AVG", Sequelize.col("rating")), "rating"],
+        [
+          Sequelize.fn("COUNT", Sequelize.col("product_review_id")),
+          "reviewCount",
+        ],
+      ],
+      group: [Sequelize.fn("DATE", Sequelize.col("createdAt"))],
+      order: [[Sequelize.fn("DATE", Sequelize.col("createdAt")), "ASC"]],
+      raw: true,
+    });
+
+    const productRatingTrends = ratingTrendsRaw.map((entry) => ({
+      period: formatDateToString(entry.period),
+      rating: parseFloat(entry.rating || 0).toFixed(1),
+      reviewCount: parseInt(entry.reviewCount) || 0,
+    }));
+
+    // Sales by Category (Revenue)
+    const salesByCategoryRaw = await OrderItem.findAll({
+      where: { "$order.order_date$": dateRange },
+      include: [
+        {
+          model: Order,
+          as: "order",
+          attributes: [],
+        },
+        {
+          model: Product,
+          as: "product",
+          attributes: [],
+          include: [
+            {
+              model: Category,
+              as: "category",
+              attributes: ["name"],
+            },
+          ],
+        },
+      ],
+      attributes: [
+        [Sequelize.col("product.category.name"), "category"],
+        [
+          Sequelize.fn("SUM", Sequelize.col("OrderItem.final_price")),
+          "revenue",
+        ],
+      ],
+      group: ["product.category.category_id", "product.category.name"],
+      raw: true,
+    });
+
+    const salesByCategory = salesByCategoryRaw.reduce((acc, entry) => {
+      if (entry.category) {
+        acc[entry.category] = parseFloat(entry.revenue) || 0;
+      }
+      return acc;
+    }, {});
+
+    // Top Wishlisted Products
+    const topWishlistedProductsRaw = await WishListItem.findAll({
+      where: { createdAt: dateRange },
+      include: [
+        {
+          model: Product,
+          as: "product",
+          attributes: ["product_id", "name"],
+          include: [
+            {
+              model: Category,
+              as: "category",
+              attributes: ["name"],
+            },
+          ],
+        },
+      ],
+      attributes: [
+        [Sequelize.col("product.product_id"), "productId"],
+        [Sequelize.col("product.name"), "name"],
+        [Sequelize.col("product.category.name"), "category"],
+        [
+          Sequelize.fn("COUNT", Sequelize.col("WishListItem.product_id")),
+          "wishlistCount",
+        ],
+      ],
+      group: [
+        "WishListItem.product_id",
+        "product.product_id",
+        "product.name",
+        "product.category.name",
+      ],
+      order: [
+        [
+          Sequelize.fn("COUNT", Sequelize.col("WishListItem.product_id")),
+          "DESC",
+        ],
+      ],
+      limit: 5,
+      raw: true,
+    });
+
+    const topWishlistedProducts = topWishlistedProductsRaw.map((entry) => ({
+      productId: entry.productId,
+      name: entry.name,
+      wishlistCount: parseInt(entry.wishlistCount) || 0,
+      category: entry.category || "N/A",
+    }));
+
+    // Out of Stock Products
+    const outOfStockProductsRaw = await ProductVariant.findAll({
+      where: { stock_quantity: 0 },
+      include: [
+        {
+          model: Product,
+          foreignKey: "product_id",
+          attributes: ["product_id", "name"],
+          include: [
+            {
+              model: Category,
+              as: "category",
+              attributes: ["name"],
+            },
+          ],
+        },
+      ],
+      attributes: [
+        [Sequelize.col("Product.product_id"), "productId"],
+        [Sequelize.col("Product.name"), "name"],
+        [Sequelize.col("Product.category.name"), "category"],
+        "stock_quantity",
+        "sku",
+      ],
+      limit: 10, // Limit to top 10 out of stock products
+      raw: true,
+    });
+
+    const outOfStockProducts = outOfStockProductsRaw.map((entry) => ({
+      productId: entry.productId,
+      name: entry.name,
+      stock: parseInt(entry.stock_quantity) || 0,
+      category: entry.category || "N/A",
+      sku: entry.sku || "N/A",
+    }));
+
+    // Low Stock Products (stock < 10 but > 0)
+    const lowStockProductsRaw = await ProductVariant.findAll({
+      where: {
+        stock_quantity: {
+          [Op.gt]: 0,
+          [Op.lt]: 10,
+        },
+      },
+      include: [
+        {
+          model: Product,
+          foreignKey: "product_id",
+          attributes: ["product_id", "name"],
+          include: [
+            {
+              model: Category,
+              as: "category",
+              attributes: ["name"],
+            },
+          ],
+        },
+      ],
+      attributes: [
+        [Sequelize.col("Product.product_id"), "productId"],
+        [Sequelize.col("Product.name"), "name"],
+        [Sequelize.col("Product.category.name"), "category"],
+        "stock_quantity",
+        "sku",
+      ],
+      order: [["stock_quantity", "ASC"]],
+      limit: 10, // Limit to top 10 low stock products
+      raw: true,
+    });
+
+    const lowStockProducts = lowStockProductsRaw.map((entry) => ({
+      productId: entry.productId,
+      name: entry.name,
+      stock: parseInt(entry.stock_quantity) || 0,
+      category: entry.category || "N/A",
+      sku: entry.sku || "N/A",
+    }));
+
+    // Response
+    const responseData = {
+      revenueOverTime,
+      topSellingProducts,
+      productRatingTrends,
+      salesByCategory,
+      worstSellingProducts,
+      topWishlistedProducts,
+      outOfStockProducts,
+      lowStockProducts,
+    };
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      data: responseData,
+    });
+  } catch (error) {
+    console.error("Error fetching products analytics:", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: MESSAGE.get.fail,
+      error: error.message,
+    });
+  }
+};
+
+export default { getAnalyticsDashboardData, getProductsAnalyticsData };
