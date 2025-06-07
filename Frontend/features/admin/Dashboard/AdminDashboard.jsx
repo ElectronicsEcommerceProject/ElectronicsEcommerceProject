@@ -36,7 +36,7 @@ const AdminDashboard = () => {
       setIsLoading(true);
       try {
         const response = await getApi(adminDashboardDataRoute);
-        console.log("Dashboard Response:", response);
+        // console.log("Dashboard Response:", response);
 
         if (response && response.success && response.data) {
           const data = response.data;
@@ -410,13 +410,13 @@ const AdminDashboard = () => {
               <div>
                 <p className="text-gray-600 text-sm sm:text-base">Returned</p>
                 <p className="text-xl sm:text-2xl font-bold text-purple-600">
-                  25
+                  0
                 </p>
               </div>
               <div>
                 <p className="text-gray-600 text-sm sm:text-base">Processing</p>
                 <p className="text-xl sm:text-2xl font-bold text-orange-600">
-                  40
+                  0
                 </p>
               </div>
             </div>

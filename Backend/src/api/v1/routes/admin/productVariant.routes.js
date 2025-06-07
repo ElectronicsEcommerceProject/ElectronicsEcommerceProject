@@ -35,7 +35,7 @@ router.get(
 
 // Get variants by product ID
 router.get(
-  "/product/:productId",
+  "/product/:product_id",
   verifyJwtToken,
   adminProductVariantController.getVariantsByProductId
 );

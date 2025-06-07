@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import {
   getApi,
@@ -9,6 +9,10 @@ import {
   couponAndOffersDashboardDataRoute,
   couponAndOffersDashboardChangeStatusRoute,
   couponAndOffersDashboardAnalyticsDataRoute,
+  getAllCategoryRoute,
+  getAllProductsRoute,
+  getAllBrandsRoute,
+  productVariantByProductIdRoute,
 } from "../../../src/index.js";
 
 const CouponManagement = () => {
@@ -35,7 +39,7 @@ const CouponManagement = () => {
             discount:
               coupon.type === "percentage"
                 ? `${coupon.discount_value}%`
-                : `$${coupon.discount_value}`,
+                : `${coupon.discount_value}`,
             validity: coupon.valid_to
               ? new Date(coupon.valid_to).toISOString().split("T")[0]
               : "",
@@ -112,9 +116,17 @@ const CouponManagement = () => {
       discountValue: coupon?.discount
         ? parseFloat(coupon.discount.replace(/%|\$/g, "")) || 0
         : 20,
-      targetType: coupon?.productId ? "product" : "cart",
+      // Initialize targetType: if variantId exists, it's product_variant. If productId, it's product. Else, cart.
+      // This assumes coupon object from props doesn't yet have distinct categoryId/brandId or a specific target_type field.
+      targetType: coupon?.productVariantId
+        ? "product_variant"
+        : coupon?.productId
+        ? "product"
+        : "cart",
       productId: coupon?.productId || null,
       productVariantId: coupon?.productVariantId || null,
+      categoryId: null, // Will be populated if editing a coupon that was category-specific (requires API support)
+      brandId: null, // Will be populated if editing a coupon that was brand-specific (requires API support)
       role: coupon?.role?.toLowerCase() || "customer",
       minCartValue: coupon?.minOrder || 1000,
       maxDiscountValue: coupon?.maxDiscountValue || 500,
@@ -134,7 +146,29 @@ const CouponManagement = () => {
 
     const [errors, setErrors] = useState({});
     const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [brands, setBrands] = useState([]);
+    const [productVariants, setProductVariants] = useState([]);
     const [loading, setLoading] = useState(false);
+    const prevTargetTypeRef = useRef();
+
+    useEffect(() => {
+      // This effect runs after formData is updated.
+      // We check if targetType *changed* to 'product_variant' and if no product is selected.
+      // The prevTargetTypeRef.current !== undefined condition prevents the alert on the very first render
+      // if the initial state happens to meet the criteria, ensuring it only triggers on a user-driven change.
+      if (
+        formData.targetType === "product_variant" &&
+        prevTargetTypeRef.current !== "product_variant" &&
+        prevTargetTypeRef.current !== undefined && // Ensures it's not the initial render causing this
+        !formData.productId // productId would be null if targetType just changed to product_variant
+      ) {
+        alert(
+          "You've selected 'Specific Product Variant'. Please select a Product first."
+        );
+      }
+      prevTargetTypeRef.current = formData.targetType;
+    }, [formData.targetType, formData.productId]);
 
     useEffect(() => {
       // Log initial form data when component mounts
@@ -145,24 +179,77 @@ const CouponManagement = () => {
       });
     }, []);
 
-    // Fetch products for dropdown
+    // Fetch data for dropdowns based on targetType
     useEffect(() => {
-      const fetchProducts = async () => {
-        try {
-          // Replace with your actual product API endpoint
-          const response = await getApi("/products");
-          if (response.message === MESSAGE.get.succ) {
-            setProducts(response.data || []);
+      const loadDropdownData = async () => {
+        setProducts([]); // Reset related data states
+        setCategories([]);
+        setBrands([]);
+
+        if (
+          formData.targetType === "product" ||
+          formData.targetType === "product_variant"
+        ) {
+          try {
+            const response = await getApi(getAllProductsRoute);
+            if (response.message === MESSAGE.get.succ) {
+              console.log("fetched all products", response.data);
+              setProducts(response.data || []);
+            }
+          } catch (error) {
+            console.error("Error fetching products:", error);
           }
-        } catch (error) {
-          console.error("Error fetching products:", error);
+        } else if (formData.targetType === "category") {
+          try {
+            const response = await getApi(getAllCategoryRoute);
+            if (response.message === MESSAGE.get.succ) {
+              setCategories(response.data || []);
+            }
+          } catch (error) {
+            console.error("Error fetching categories:", error);
+          }
+        } else if (formData.targetType === "brand") {
+          try {
+            const response = await getApi(getAllBrandsRoute);
+            if (response.message === MESSAGE.get.succ) {
+              setBrands(response.data || []);
+            }
+          } catch (error) {
+            console.error("Error fetching brands:", error);
+          }
         }
       };
 
-      if (formData.targetType === "product") {
-        fetchProducts();
-      }
+      // Actually call the async function
+      loadDropdownData();
     }, [formData.targetType]);
+
+    // Fetch product variants when a product is selected and target type is product_variant
+    useEffect(() => {
+      const fetchProductVariants = async () => {
+        if (formData.targetType === "product_variant" && formData.productId) {
+          try {
+            // Replace :product_id parameter with actual product ID
+            const apiUrl = productVariantByProductIdRoute.replace(
+              ":product_id",
+              formData.productId
+            );
+            const response = await getApi(apiUrl);
+            if (response.message === MESSAGE.get.succ) {
+              setProductVariants(response.data || []);
+            } else {
+              setProductVariants([]);
+            }
+          } catch (error) {
+            console.error("Error fetching product variants:", error);
+            setProductVariants([]);
+          }
+        } else {
+          setProductVariants([]);
+        }
+      };
+      fetchProductVariants();
+    }, [formData.targetType, formData.productId]);
 
     const handleChange = (e) => {
       const { name, value, type, checked } = e.target;
@@ -173,6 +260,14 @@ const CouponManagement = () => {
           ...prev,
           [name]: newValue,
         };
+
+        // Reset dependent fields when targetType changes
+        if (name === "targetType") {
+          updatedFormData.productId = null;
+          updatedFormData.productVariantId = null;
+          updatedFormData.categoryId = null;
+          updatedFormData.brandId = null;
+        }
 
         // Log the updated form data after each change
         console.log("Form data updated:", {
@@ -214,6 +309,20 @@ const CouponManagement = () => {
 
       if (formData.targetType === "product" && !formData.productId) {
         newErrors.productId = "Product is required when target type is product";
+      }
+      if (formData.targetType === "category" && !formData.categoryId) {
+        newErrors.categoryId =
+          "Category is required when target type is category";
+      }
+      if (formData.targetType === "brand" && !formData.brandId) {
+        newErrors.brandId = "Brand is required when target type is brand";
+      }
+      if (formData.targetType === "product_variant") {
+        if (!formData.productId)
+          newErrors.productId = "Product is required for product variant";
+        if (!formData.productVariantId) {
+          newErrors.productVariantId = "Product variant is required";
+        }
       }
 
       if (
@@ -265,8 +374,17 @@ const CouponManagement = () => {
           discount_value: parseFloat(formData.discountValue),
           target_type: formData.targetType,
           product_id:
-            formData.targetType === "product" ? formData.productId : null,
-          product_variant_id: formData.productVariantId,
+            formData.targetType === "product" ||
+            formData.targetType === "product_variant"
+              ? formData.productId
+              : null,
+          category_id:
+            formData.targetType === "category" ? formData.categoryId : null,
+          brand_id: formData.targetType === "brand" ? formData.brandId : null,
+          product_variant_id:
+            formData.targetType === "product_variant"
+              ? formData.productVariantId
+              : null,
           target_role: formData.role,
           min_cart_value: parseFloat(formData.minCartValue) || 0,
           max_discount_value: formData.maxDiscountValue
@@ -305,15 +423,31 @@ const CouponManagement = () => {
           minOrder: parseFloat(formData.minCartValue) || 0,
           status: formData.isActive ? "Active" : "Inactive",
           product:
-            formData.targetType === "product"
-              ? products.find((p) => p.id === formData.productId)?.name ||
-                "Selected Product"
-              : "All",
+            formData.targetType === "cart"
+              ? "All"
+              : formData.targetType === "product"
+              ? products.find(
+                  (p) => String(p.id) === String(formData.productId)
+                )?.name || "Selected Product"
+              : formData.targetType === "category"
+              ? categories.find(
+                  (c) => String(c.id) === String(formData.categoryId)
+                )?.name || "Selected Category"
+              : formData.targetType === "brand"
+              ? brands.find((b) => String(b.id) === String(formData.brandId))
+                  ?.name || "Selected Brand"
+              : formData.targetType === "product_variant"
+              ? productVariants.find(
+                  (v) => String(v.id) === String(formData.productVariantId)
+                )?.name || "Selected Variant"
+              : "N/A",
           role: formData.role.charAt(0).toUpperCase() + formData.role.slice(1),
           usageLimit: formData.usageLimit,
           description: formData.description,
           productId: formData.productId,
           productVariantId: formData.productVariantId,
+          categoryId: formData.categoryId,
+          brandId: formData.brandId,
           maxDiscountValue: formData.maxDiscountValue,
           usagePerUser: formData.usagePerUser,
           validFrom: formData.validFrom,
@@ -338,7 +472,7 @@ const CouponManagement = () => {
             coupon.id,
             couponData
           );
-          console.log("Update API response:", response);
+          // console.log("Update API response:", response);
 
           if (response.message === MESSAGE.put.succ) {
             alert(`Coupon updated successfully! Coupon ID: ${coupon.id}`);
@@ -357,7 +491,7 @@ const CouponManagement = () => {
 
           if (response.success) {
             alert(`Coupon created successfully}`);
-            console.log("Create API response:", response);
+            // console.log("Create API response:", response);
             onSave({ ...uiCoupon, id: response.data.coupon_id });
           } else {
             setErrors({ form: response.message || "Failed to create coupon" });
@@ -372,9 +506,9 @@ const CouponManagement = () => {
     };
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-slide-in">
-          <h3 className="text-xl font-bold text-gray-800 mb-4">
+      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-slide-in">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">
             {coupon ? "EDIT COUPON" : "CREATE COUPON"}
           </h3>
 
@@ -385,9 +519,9 @@ const CouponManagement = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
                   COUPON CODE *
                 </label>
                 <input
@@ -395,7 +529,7 @@ const CouponManagement = () => {
                   name="code"
                   value={formData.code}
                   onChange={handleChange}
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold ${
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm ${
                     errors.code ? "border-red-500" : ""
                   }`}
                   placeholder="e.g., SAVE10"
@@ -406,7 +540,7 @@ const CouponManagement = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
                   DESCRIPTION
                 </label>
                 <input
@@ -414,39 +548,43 @@ const CouponManagement = () => {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm"
                   placeholder="Brief description"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
                   DISCOUNT TYPE *
                 </label>
                 <select
                   name="discountType"
                   value={formData.discountType}
                   onChange={handleChange}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm"
                 >
-                  <option value="percentage">Percentage</option>
-                  <option value="fixed">Fixed Amount</option>
+                  <option key="percentage" value="percentage">
+                    Percentage
+                  </option>
+                  <option key="fixed" value="fixed">
+                    Fixed Amount
+                  </option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
                   {formData.discountType === "percentage"
                     ? "DISCOUNT % *"
-                    : "DISCOUNT AMOUNT ($) *"}
+                    : "DISCOUNT AMOUNT (₹) *"}
                 </label>
                 <input
                   type="number"
                   name="discountValue"
                   value={formData.discountValue}
                   onChange={handleChange}
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold ${
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm ${
                     errors.discountValue ? "border-red-500" : ""
                   }`}
                   min="0"
@@ -460,9 +598,9 @@ const CouponManagement = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
                   VALID FROM *
                 </label>
                 <input
@@ -470,11 +608,11 @@ const CouponManagement = () => {
                   name="validFrom"
                   value={formData.validFrom}
                   onChange={handleChange}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
                   VALID TO *
                 </label>
                 <input
@@ -482,7 +620,7 @@ const CouponManagement = () => {
                   name="validTo"
                   value={formData.validTo}
                   onChange={handleChange}
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold ${
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm ${
                     errors.validTo ? "border-red-500" : ""
                   }`}
                 />
@@ -492,38 +630,58 @@ const CouponManagement = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
                   TARGET TYPE *
                 </label>
                 <select
                   name="targetType"
                   value={formData.targetType}
                   onChange={handleChange}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm"
                 >
-                  <option value="cart">Cart (All Products)</option>
-                  <option value="product">Specific Product</option>
+                  <option key="cart" value="cart">
+                    Cart (All Products)
+                  </option>
+                  <option key="category" value="category">
+                    Specific Category
+                  </option>
+                  <option key="brand" value="brand">
+                    Specific Brand
+                  </option>
+                  <option key="product" value="product">
+                    Specific Product
+                  </option>
+                  <option key="product_variant" value="product_variant">
+                    Specific Product Variant
+                  </option>
                 </select>
               </div>
 
-              {formData.targetType === "product" && (
+              {/* Product Dropdown - shown for "product" and "product_variant" target types */}
+              {(formData.targetType === "product" ||
+                formData.targetType === "product_variant") && (
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
                     PRODUCT *
                   </label>
                   <select
                     name="productId"
                     value={formData.productId || ""}
                     onChange={handleChange}
-                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold ${
+                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm ${
                       errors.productId ? "border-red-500" : ""
                     }`}
                   >
-                    <option value="">Select a product</option>
+                    <option key="select-product" value="">
+                      Select a product
+                    </option>
                     {products.map((product) => (
-                      <option key={product.id} value={product.id}>
+                      <option
+                        key={product.product_id || product.id}
+                        value={product.product_id || product.id}
+                      >
                         {product.name}
                       </option>
                     ))}
@@ -535,27 +693,147 @@ const CouponManagement = () => {
                   )}
                 </div>
               )}
+
+              {/* Category Dropdown */}
+              {formData.targetType === "category" && (
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
+                    CATEGORY *
+                  </label>
+                  <select
+                    name="categoryId"
+                    value={formData.categoryId || ""}
+                    onChange={handleChange}
+                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm ${
+                      errors.categoryId ? "border-red-500" : ""
+                    }`}
+                  >
+                    <option key="select-category" value="">
+                      Select a category
+                    </option>
+                    {categories.map((category) => (
+                      <option
+                        key={category.category_id}
+                        value={category.category_id}
+                      >
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.categoryId && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.categoryId}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Brand Dropdown */}
+              {formData.targetType === "brand" && (
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
+                    BRAND *
+                  </label>
+                  <select
+                    name="brandId"
+                    value={formData.brandId || ""}
+                    onChange={handleChange}
+                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm ${
+                      errors.brandId ? "border-red-500" : ""
+                    }`}
+                  >
+                    <option key="select-brand" value="">
+                      Select a brand
+                    </option>
+                    {brands.map((brand) => (
+                      <option
+                        key={brand.brand_id || brand.id}
+                        value={brand.brand_id || brand.id}
+                      >
+                        {brand.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.brandId && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.brandId}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            {/* Product Variant Dropdown - shown if targetType is "product_variant" and a product is selected */}
+            {formData.targetType === "product_variant" &&
+              formData.productId && (
+                <div className="mt-4">
+                  {" "}
+                  {/* Ensure it's part of the grid or styled appropriately */}
+                  <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
+                    PRODUCT VARIANT *
+                  </label>
+                  <select
+                    name="productVariantId"
+                    value={formData.productVariantId || ""}
+                    onChange={handleChange}
+                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm ${
+                      errors.productVariantId ? "border-red-500" : ""
+                    }`}
+                  >
+                    <option key="select-variant" value="">
+                      Select a variant
+                    </option>
+                    {productVariants.map((variant, index) => (
+                      <option
+                        key={
+                          variant.variant_id ||
+                          variant.id ||
+                          variant.product_variant_id ||
+                          `variant-${index}`
+                        }
+                        value={
+                          variant.variant_id ||
+                          variant.id ||
+                          variant.product_variant_id
+                        }
+                      >
+                        {variant.name} (SKU: {variant.sku || "N/A"})
+                      </option>
+                    ))}
+                  </select>
+                  {errors.productVariantId && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.productVariantId}
+                    </p>
+                  )}
+                </div>
+              )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
                   USER ROLE *
                 </label>
                 <select
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm"
                 >
-                  <option value="customer">Customer</option>
-                  <option value="retailer">Retailer</option>
-                  <option value="both">Both</option>
+                  <option key="customer" value="customer">
+                    Customer
+                  </option>
+                  <option key="retailer" value="retailer">
+                    Retailer
+                  </option>
+                  <option key="both" value="both">
+                    Both
+                  </option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
                   FOR NEW USERS ONLY
                 </label>
                 <div className="flex items-center mt-2">
@@ -566,24 +844,24 @@ const CouponManagement = () => {
                     onChange={handleChange}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <span className="ml-2 text-sm text-gray-700">
+                  <span className="ml-2 text-xs sm:text-sm text-gray-700">
                     Limit to new users only
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
-                  MINIMUM CART VALUE ($)
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
+                  MINIMUM CART VALUE (₹)
                 </label>
                 <input
                   type="number"
                   name="minCartValue"
                   value={formData.minCartValue}
                   onChange={handleChange}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm"
                   min="0"
                   step="0.01"
                 />
@@ -591,15 +869,15 @@ const CouponManagement = () => {
 
               {formData.discountType === "percentage" && (
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">
-                    MAX DISCOUNT VALUE ($)
+                  <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
+                    MAX DISCOUNT VALUE (₹)
                   </label>
                   <input
                     type="number"
                     name="maxDiscountValue"
                     value={formData.maxDiscountValue || ""}
                     onChange={handleChange}
-                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold"
+                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm"
                     min="0"
                     step="0.01"
                     placeholder="No maximum"
@@ -608,9 +886,9 @@ const CouponManagement = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
                   TOTAL USAGE LIMIT
                 </label>
                 <input
@@ -618,7 +896,7 @@ const CouponManagement = () => {
                   name="usageLimit"
                   value={formData.usageLimit || ""}
                   onChange={handleChange}
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold ${
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm ${
                     errors.usageLimit ? "border-red-500" : ""
                   }`}
                   min="1"
@@ -632,7 +910,7 @@ const CouponManagement = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
                   USAGE PER USER
                 </label>
                 <input
@@ -640,7 +918,7 @@ const CouponManagement = () => {
                   name="usagePerUser"
                   value={formData.usagePerUser || ""}
                   onChange={handleChange}
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold ${
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm ${
                     errors.usagePerUser ? "border-red-500" : ""
                   }`}
                   min="1"
@@ -663,24 +941,24 @@ const CouponManagement = () => {
                   onChange={handleChange}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <span className="ml-2 text-sm font-bold text-gray-700">
+                <span className="ml-2 text-xs sm:text-sm font-bold text-gray-700">
                   ACTIVE
                 </span>
               </label>
             </div>
 
-            <div className="flex justify-end space-x-3 pt-4">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition font-bold"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition font-bold text-sm sm:text-base"
                 disabled={loading}
               >
                 CANCEL
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-bold flex items-center"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-bold flex items-center justify-center text-sm sm:text-base"
                 disabled={loading}
               >
                 {loading ? (
@@ -702,31 +980,92 @@ const CouponManagement = () => {
   };
 
   const CouponTable = ({ coupons, onAction, onEdit }) => (
-    <div className="overflow-x-auto bg-white rounded-lg shadow">
-      <table className="min-w-full">
-        <thead>
-          <tr className="bg-gray-50 text-gray-700 text-sm uppercase">
-            <th className="py-4 px-6 text-left font-bold">CODE</th>
-            <th className="py-4 px-6 text-left font-bold">DISCOUNT</th>
-            <th className="py-4 px-6 text-left font-bold">VALIDITY</th>
-            <th className="py-4 px-6 text-center font-bold">MIN ORDER</th>
-            <th className="py-4 px-6 text-center font-bold">STATUS</th>
-            <th className="py-4 px-6 text-center font-bold">ACTIONS</th>
-          </tr>
-        </thead>
-        <tbody className="text-gray-600 text-sm">
-          {coupons.map((coupon) => (
-            <tr
-              key={coupon.id}
-              className="border-b hover:bg-gray-50 transition-colors"
-            >
-              <td className="py-4 px-6 font-bold">{coupon.code}</td>
-              <td className="py-4 px-6 font-bold">{coupon.discount}</td>
-              <td className="py-4 px-6 font-bold">{coupon.validity}</td>
-              <td className="py-4 px-6 text-center font-bold">
-                ${coupon.minOrder}
-              </td>
-              <td className="py-4 px-6 text-center">
+    <>
+      {/* Desktop Table View */}
+      <div className="hidden lg:block overflow-x-auto bg-white rounded-lg shadow">
+        <table className="min-w-full">
+          <thead>
+            <tr className="bg-gray-50 text-gray-700 text-sm uppercase">
+              <th className="py-4 px-6 text-left font-bold">CODE</th>
+              <th className="py-4 px-6 text-left font-bold">DISCOUNT</th>
+              <th className="py-4 px-6 text-left font-bold">VALIDITY</th>
+              <th className="py-4 px-6 text-center font-bold">MIN ORDER</th>
+              <th className="py-4 px-6 text-center font-bold">STATUS</th>
+              <th className="py-4 px-6 text-center font-bold">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody className="text-gray-600 text-sm">
+            {coupons.map((coupon) => (
+              <tr
+                key={coupon.id}
+                className="border-b hover:bg-gray-50 transition-colors"
+              >
+                <td className="py-4 px-6 font-bold">{coupon.code}</td>
+                <td className="py-4 px-6 font-bold">{coupon.discount}</td>
+                <td className="py-4 px-6 font-bold">{coupon.validity}</td>
+                <td className="py-4 px-6 text-center font-bold">
+                  ₹{coupon.minOrder}
+                </td>
+                <td className="py-4 px-6 text-center">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={coupon.status === "Active"}
+                      onChange={() =>
+                        onAction(
+                          coupon.id,
+                          coupon.status === "Active" ? "Deactivate" : "Activate"
+                        )
+                      }
+                      className="sr-only peer"
+                    />
+                    <div
+                      className={`w-11 h-6 rounded-full peer ${
+                        coupon.status === "Active"
+                          ? "bg-green-600"
+                          : "bg-gray-200"
+                      }`}
+                    ></div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                  </label>
+                </td>
+                <td className="py-4 px-6 text-center flex justify-center space-x-2">
+                  <button
+                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition font-bold"
+                    onClick={() => onEdit(coupon)}
+                  >
+                    EDIT
+                  </button>
+                  <button
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition font-bold"
+                    onClick={() => onAction(coupon.id, "Delete")}
+                  >
+                    DELETE
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="lg:hidden space-y-4">
+        {coupons.map((coupon) => (
+          <div
+            key={coupon.id}
+            className="bg-white rounded-lg shadow p-4 border"
+          >
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <h3 className="font-bold text-lg text-gray-800">
+                  {coupon.code}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Discount: <span className="font-bold">{coupon.discount}</span>
+                </p>
+              </div>
+              <div className="flex items-center">
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
@@ -748,37 +1087,51 @@ const CouponManagement = () => {
                   ></div>
                   <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
                 </label>
-              </td>
-              <td className="py-4 px-6 text-center flex justify-center space-x-2">
-                <button
-                  className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition font-bold"
-                  onClick={() => onEdit(coupon)}
-                >
-                  EDIT
-                </button>
-                <button
-                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition font-bold"
-                  onClick={() => onAction(coupon.id, "Delete")}
-                >
-                  DELETE
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+              <div>
+                <span className="text-gray-500">Valid Until:</span>
+                <p className="font-bold">{coupon.validity}</p>
+              </div>
+              <div>
+                <span className="text-gray-500">Min Order:</span>
+                <p className="font-bold">₹{coupon.minOrder}</p>
+              </div>
+            </div>
+
+            <div className="flex space-x-2">
+              <button
+                className="flex-1 bg-blue-500 text-white py-2 px-3 rounded hover:bg-blue-600 transition font-bold text-sm"
+                onClick={() => onEdit(coupon)}
+              >
+                EDIT
+              </button>
+              <button
+                className="flex-1 bg-red-500 text-white py-2 px-3 rounded hover:bg-red-600 transition font-bold text-sm"
+                onClick={() => onAction(coupon.id, "Delete")}
+              >
+                DELETE
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   );
 
   const AnalyticsDashboard = ({ analyticsData }) => (
-    <div className="p-6 animate-slide-in">
-      <h3 className="text-2xl font-bold text-gray-800 mb-6">
+    <div className="p-3 sm:p-6 animate-slide-in">
+      <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
         COUPON ANALYTICS
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h4 className="font-bold text-gray-700 mb-4">USAGE STATISTICS</h4>
-          <svg className="w-full h-48" viewBox="0 0 400 200">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+          <h4 className="font-bold text-gray-700 mb-4 text-sm sm:text-base">
+            USAGE STATISTICS
+          </h4>
+          <svg className="w-full h-32 sm:h-48" viewBox="0 0 400 200">
             {/* Calculate bar heights based on data */}
             <rect
               x="50"
@@ -891,9 +1244,11 @@ const CouponManagement = () => {
           </svg>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h4 className="font-bold text-gray-700 mb-4">REDEMPTION RATE</h4>
-          <svg className="w-full h-48" viewBox="0 0 200 200">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+          <h4 className="font-bold text-gray-700 mb-4 text-sm sm:text-base">
+            REDEMPTION RATE
+          </h4>
+          <svg className="w-full h-32 sm:h-48" viewBox="0 0 200 200">
             {/* Calculate redemption rate percentage */}
             {(() => {
               const redemptionRate =
@@ -950,8 +1305,8 @@ const CouponManagement = () => {
           </svg>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h4 className="font-bold text-gray-700 mb-4">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow lg:col-span-2">
+          <h4 className="font-bold text-gray-700 mb-4 text-sm sm:text-base">
             TOP-PERFORMING COUPONS
           </h4>
           <div className="space-y-4">
@@ -969,7 +1324,7 @@ const CouponManagement = () => {
 
                 return (
                   <div
-                    key={index}
+                    key={item.id || item.code || index}
                     className="flex items-center p-3 bg-gray-50 rounded-lg"
                   >
                     <span
@@ -1085,34 +1440,38 @@ const CouponManagement = () => {
   });
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">COUPON MANAGEMENT</h2>
+    <div className="p-3 sm:p-6 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 space-y-4 sm:space-y-0">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
+          COUPON MANAGEMENT
+        </h2>
         <button
           onClick={() => {
             setEditingCoupon(null);
             setIsFormOpen(true);
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-bold"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-bold w-full sm:w-auto"
         >
           + CREATE COUPON
         </button>
       </div>
 
-      <div className="flex border-b border-gray-200 mb-6">
-        {["All Coupons", "Analytics"].map((tab) => (
-          <button
-            key={tab}
-            className={`px-4 py-2 text-sm font-bold ${
-              activeTab === tab
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-600 hover:text-blue-600"
-            } transition-colors`}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab.toUpperCase()}
-          </button>
-        ))}
+      <div className="flex overflow-x-auto border-b border-gray-200 mb-6 scrollbar-hide">
+        <div className="flex space-x-1 min-w-max">
+          {["All Coupons", "Analytics"].map((tab) => (
+            <button
+              key={tab}
+              className={`px-4 py-2 text-sm font-bold whitespace-nowrap ${
+                activeTab === tab
+                  ? "border-b-2 border-blue-600 text-blue-600"
+                  : "text-gray-600 hover:text-blue-600"
+              } transition-colors`}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab.toUpperCase()}
+            </button>
+          ))}
+        </div>
       </div>
 
       {error && (
@@ -1123,11 +1482,11 @@ const CouponManagement = () => {
 
       {activeTab === "All Coupons" && (
         <>
-          <div className="mb-6">
+          <div className="mb-4 sm:mb-6">
             <input
               type="text"
               placeholder="SEARCH COUPONS..."
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold"
+              className="w-full p-2 sm:p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm sm:text-base"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />

@@ -69,19 +69,10 @@ const createProduct = async (req, res) => {
 };
 
 // ✅ Get all products
-const getProducts = async (req, res) => {
+const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.findAll({
-      include: [
-        { model: Category, attributes: ["category_id", "name"] },
-        { model: Brand, attributes: ["brand_id", "name"] },
-        {
-          model: User,
-          as: "creator",
-          attributes: ["user_id", "name", "email"],
-        },
-      ],
-    });
+    //i want to get all products from product table..
+    const products = await Product.findAll({});
 
     res.status(StatusCodes.OK).json({
       message: MESSAGE.get.succ,
@@ -319,7 +310,7 @@ const deleteProduct = async (req, res) => {
 
 export default {
   createProduct,
-  getProducts,
+  getAllProducts,
   getProductById,
   getProductsByCategoryId,
   getProductsByCategoryAndBrand,

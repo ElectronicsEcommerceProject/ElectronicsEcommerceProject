@@ -47,6 +47,7 @@ export default (sequelize) => {
       as: "updater",
     });
     Category.hasMany(models.Product, { foreignKey: "category_id" });
+    Category.hasMany(models.Coupon, { foreignKey: "category_id" });
   };
 
   return Category;

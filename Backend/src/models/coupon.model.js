@@ -17,9 +17,17 @@ export default (sequelize) => {
       },
       discount_value: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
       target_type: {
-        type: DataTypes.ENUM("cart", "product"),
+        type: DataTypes.ENUM(
+          "cart",
+          "product",
+          "product_variant",
+          "category",
+          "brand"
+        ),
         defaultValue: "cart",
       },
+      category_id: { type: DataTypes.UUID, allowNull: true },
+      brand_id: { type: DataTypes.UUID, allowNull: true },
       product_id: { type: DataTypes.UUID, allowNull: true },
       product_variant_id: { type: DataTypes.UUID, allowNull: true },
       target_role: {
@@ -53,6 +61,8 @@ export default (sequelize) => {
   );
 
   Coupon.associate = (models) => {
+    Coupon.belongsTo(models.Category, { foreignKey: "category_id" });
+    Coupon.belongsTo(models.Brand, { foreignKey: "brand_id" });
     Coupon.belongsTo(models.Product, { foreignKey: "product_id" });
     Coupon.belongsTo(models.ProductVariant, {
       foreignKey: "product_variant_id",
@@ -64,6 +74,7 @@ export default (sequelize) => {
       foreignKey: "coupon_id",
     });
     Coupon.hasMany(models.Order, { foreignKey: "coupon_id" });
+    Coupon.hasMany(models.CouponRedemption, { foreignKey: "coupon_id" });
   };
 
   return Coupon;

@@ -320,7 +320,7 @@ const ProductCatalogManagement = () => {
       );
 
       const data = response; // Since createApi already returns parsed JSON
-      console.log("API Response of ProductForm:", data);
+      // console.log("API Response of ProductForm:", data);
       if (data && data.success) {
         alert("Product data successfully submitted!");
         // Navigate to dashboard after successful submission

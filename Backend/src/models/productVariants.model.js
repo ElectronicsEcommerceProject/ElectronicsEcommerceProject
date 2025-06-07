@@ -76,7 +76,11 @@ export default (sequelize) => {
     ProductVariant.hasMany(models.CartItem, {
       foreignKey: "product_variant_id",
     });
+
     ProductVariant.hasMany(models.ProductReview, {
+      foreignKey: "product_variant_id",
+    });
+    ProductVariant.hasMany(models.Coupon, {
       foreignKey: "product_variant_id",
     });
   };

@@ -26,6 +26,9 @@ export const createCoupon = async (req, res) => {
       valid_to,
       is_active,
       is_user_new,
+      // Add category_id and brand_id from frontend
+      category_id,
+      brand_id,
     } = req.body;
 
     // Verify admin user
@@ -84,13 +87,43 @@ export const createCoupon = async (req, res) => {
       valid_to,
       is_active,
       is_user_new,
+      // Include new fields from frontend
+      category_id,
+      brand_id,
       created_by: admin.user_id,
     });
 
+    // Return response in format expected by frontend
     return res.status(StatusCodes.CREATED).json({
       success: true,
       message: MESSAGE.post.succ,
-      data: newCoupon,
+      data: {
+        coupon_id: newCoupon.coupon_id,
+        code: newCoupon.code,
+        discount:
+          newCoupon.type === "percentage"
+            ? `${newCoupon.discount_value}%`
+            : `$${newCoupon.discount_value}`,
+        validity: newCoupon.valid_to
+          ? new Date(newCoupon.valid_to).toISOString().split("T")[0]
+          : "",
+        minOrder: parseFloat(newCoupon.min_cart_value) || 0,
+        status: newCoupon.is_active ? "Active" : "Inactive",
+        type: newCoupon.type === "percentage" ? "Percentage" : "Flat",
+        product:
+          newCoupon.Product?.name || "All",
+        role: newCoupon.target_role || "Customer",
+        usageLimit: newCoupon.usage_limit,
+        description: newCoupon.description,
+        productId: newCoupon.product_id,
+        productVariantId: newCoupon.product_variant_id,
+        categoryId: newCoupon.category_id,
+        brandId: newCoupon.brand_id,
+        maxDiscountValue: newCoupon.max_discount_value,
+        usagePerUser: newCoupon.usage_per_user,
+        validFrom: newCoupon.valid_from,
+        isUserNew: newCoupon.is_user_new,
+      },
     });
   } catch (err) {
     console.error("❌ Error in createCoupon:", err);

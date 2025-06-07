@@ -18,7 +18,7 @@ router.post(
 );
 
 // Get all products
-router.get("/", verifyJwtToken, adminProductController.getProducts);
+router.get("/", verifyJwtToken, adminProductController.getAllProducts);
 
 // Get products by category_id and brand_id
 // Get products by category_id and brand_id

@@ -139,25 +139,6 @@ const deleteApiById = async (routeEndpoint, id) => {
   }
 };
 
-// const deleteApiByCondition = async (routeEndpoint, id, data) => {
-//   console.log("data", data);
-//   try {
-//     const API_ENDPOINT = constructApiUrl(
-//       BASE_URL,
-//       `${ROUTE_ENDPOINT}${routeEndpoint}`
-//     ); // Construct the API URL
-//     const response = await axios({
-//       method: "delete",
-//       url: `${API_ENDPOINT}/${id}`,
-//       headers: { Authorization: `Bearer ${token}` },
-//       data: data, // Pass data directly in request body
-//     });
-//     return response.data;
-//   } catch (error) {
-//     throw error.response?.data || { message: "Delete API by ID failed" };
-//   }
-// };
-
 const deleteApiByCondition = async (routeEndpoint, id, data) => {
   try {
     console.log("Data being sent:", data);

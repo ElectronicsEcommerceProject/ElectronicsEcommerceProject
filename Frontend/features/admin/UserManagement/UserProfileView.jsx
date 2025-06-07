@@ -26,15 +26,10 @@ import {
   userManagmentDashboardUsersOrdersDataRoute,
 } from "../../../src/index.js";
 
-const UserProfileView = () => {
+const UserProfileView = ({ filters, onFilterChange }) => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [filters, setFilters] = useState({
-    role: "All",
-    status: "All",
-    search: "",
-    sortBy: "Date Joined",
-  });
+
   const [activeTab, setActiveTab] = useState("general");
 
   useEffect(() => {
@@ -43,6 +38,7 @@ const UserProfileView = () => {
         const response = await getApi(
           userManagmentDashboardUsersOrdersDataRoute
         );
+        // console.log("testing in userManagment Profile", response)
         if (
           response &&
           response.success === true &&
@@ -88,14 +84,25 @@ const UserProfileView = () => {
 
   const filteredUsers = users
     .filter((user) => {
-      const matchesRole = filters.role === "All" || user.role === filters.role;
+      // Handle role filtering - show all users when default option is selected
+      const matchesRole =
+        filters.role === "All" ||
+        filters.role === "Filter By Role" ||
+        user.role === filters.role;
+
+      // Handle status filtering - show all users when default option is selected
       const matchesStatus =
-        filters.status === "All" || user.status === filters.status;
+        filters.status === "All" ||
+        filters.status === "Filter By Status" ||
+        user.status === filters.status;
+
+      // Handle search filtering
       const matchesSearch =
         filters.search === "" ||
         user.name.toLowerCase().includes(filters.search.toLowerCase()) ||
         user.email.toLowerCase().includes(filters.search.toLowerCase()) ||
         (user.phone && user.phone.includes(filters.search));
+
       return matchesRole && matchesStatus && matchesSearch;
     })
     .sort((a, b) => {
@@ -260,14 +267,14 @@ const UserProfileView = () => {
                     </span>
                   </div>
                   <div className="flex items-center mb-4">
-                    <FiDollarSign className="text-gray-500 mr-2" />
+                    {/* <FiDollarSign className="text-gray-500 mr-2" /> */}
                     <span>
                       <strong>
                         Total{" "}
                         {selectedUser.role === "Customer" ? "Spent" : "Revenue"}
                         :
                       </strong>{" "}
-                      ${selectedUser.totalSpent.toFixed(2)}
+                      ₹{selectedUser.totalSpent.toFixed(2)}
                     </span>
                   </div>
 
@@ -448,25 +455,27 @@ const UserProfileView = () => {
             <select
               className="border border-gray-200 p-3 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-teal-500"
               value={filters.role}
-              onChange={(e) => setFilters({ ...filters, role: e.target.value })}
+              onChange={(e) =>
+                onFilterChange({ ...filters, role: e.target.value })
+              }
             >
-              <option>All</option>
-              <option>Customer</option>
-              <option>Retailer</option>
-              <option>Admin</option>
+              <option value="Filter By Role">Filter By Role</option>
+              <option value="Customer">Customer</option>
+              <option value="Retailer">Retailer</option>
+              <option value="Admin">Admin</option>
             </select>
             <select
               className="border border-gray-200 p-3 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-teal-500"
               value={filters.status}
               onChange={(e) =>
-                setFilters({ ...filters, status: e.target.value })
+                onFilterChange({ ...filters, status: e.target.value })
               }
             >
-              <option>All</option>
-              <option>Active</option>
-              <option>Inactive</option>
-              <option>Banned</option>
-              <option>Pending</option>
+              <option value="Filter By Status">Filter By Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Banned">Banned</option>
+              <option value="Pending">Pending</option>
             </select>
             <input
               type="text"
@@ -474,14 +483,14 @@ const UserProfileView = () => {
               className="border border-gray-200 p-3 rounded-lg w-64 shadow-sm focus:ring-2 focus:ring-teal-500"
               value={filters.search}
               onChange={(e) =>
-                setFilters({ ...filters, search: e.target.value })
+                onFilterChange({ ...filters, search: e.target.value })
               }
             />
             <select
               className="border border-gray-200 p-3 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-teal-500"
               value={filters.sortBy}
               onChange={(e) =>
-                setFilters({ ...filters, sortBy: e.target.value })
+                onFilterChange({ ...filters, sortBy: e.target.value })
               }
             >
               <option>Date Joined</option>
@@ -548,7 +557,7 @@ const UserProfileView = () => {
                       </td>
                       <td className="border-b p-4">{user.orders}</td>
                       <td className="border-b p-4">
-                        ${user.revenue.toFixed(2)}
+                        ₹{user.revenue.toFixed(2)}
                       </td>
                       <td className="border-b p-4">
                         <button
@@ -610,7 +619,7 @@ const UserProfileView = () => {
                       {user.orders}
                     </div>
                     <div className="text-sm text-gray-600">
-                      <FiDollarSign className="inline mr-1" /> $
+                      {/* <FiDollarSign className="inline mr-1" /> $ */}
                       {user.revenue.toFixed(2)}
                     </div>
                   </div>

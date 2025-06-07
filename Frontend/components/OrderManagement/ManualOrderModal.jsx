@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-const ManualOrderModal = ({ showCreateOrderModal, setShowCreateOrderModal, createOrder }) => {
+const ManualOrderModal = ({
+  showCreateOrderModal,
+  setShowCreateOrderModal,
+  createOrder,
+}) => {
   const [formData, setFormData] = useState({
-    customer: '',
-    email: '',
-    phone: '',
-    address: '',
-    itemName: '',
-    itemQty: '1',
-    itemPrice: '1',
+    customer: "",
+    email: "",
+    phone: "",
+    address: "",
+    itemName: "",
+    itemQty: "1",
+    itemPrice: "1",
   });
   const [errors, setErrors] = useState({});
 
@@ -16,61 +20,61 @@ const ManualOrderModal = ({ showCreateOrderModal, setShowCreateOrderModal, creat
     const newErrors = { ...errors };
 
     switch (name) {
-      case 'customer':
+      case "customer":
         if (!value.trim()) {
-          newErrors.customer = 'Customer name is required';
+          newErrors.customer = "Customer name is required";
         } else if (!/^[A-Za-z\s]+$/.test(value)) {
-          newErrors.customer = 'Name should only contain letters and spaces';
+          newErrors.customer = "Name should only contain letters and spaces";
         } else {
           delete newErrors.customer;
         }
         break;
-      case 'email':
+      case "email":
         if (!value.trim()) {
-          newErrors.email = 'Email is required';
+          newErrors.email = "Email is required";
         } else if (!/^[^@]+@[^@]+\.com$/.test(value)) {
-          newErrors.email = 'Email must contain @ and end with .com';
+          newErrors.email = "Email must contain @ and end with .com";
         } else {
           delete newErrors.email;
         }
         break;
-      case 'phone':
+      case "phone":
         if (!value.trim()) {
-          newErrors.phone = 'Phone number is required';
+          newErrors.phone = "Phone number is required";
         } else if (!/^\d{10}$/.test(value)) {
-          newErrors.phone = 'Phone number must be exactly 10 digits';
+          newErrors.phone = "Phone number must be exactly 10 digits";
         } else {
           delete newErrors.phone;
         }
         break;
-      case 'address':
+      case "address":
         if (!value.trim()) {
-          newErrors.address = 'Address is required';
+          newErrors.address = "Address is required";
         } else {
           delete newErrors.address;
         }
         break;
-      case 'itemName':
+      case "itemName":
         if (!value.trim()) {
-          newErrors.itemName = 'Item name is required';
+          newErrors.itemName = "Item name is required";
         } else {
           delete newErrors.itemName;
         }
         break;
-      case 'itemQty':
+      case "itemQty":
         if (!value) {
-          newErrors.itemQty = 'Quantity is required';
+          newErrors.itemQty = "Quantity is required";
         } else if (!/^\d+$/.test(value) || Number(value) < 1) {
-          newErrors.itemQty = 'Quantity must be a positive integer';
+          newErrors.itemQty = "Quantity must be a positive integer";
         } else {
           delete newErrors.itemQty;
         }
         break;
-      case 'itemPrice':
+      case "itemPrice":
         if (!value) {
-          newErrors.itemPrice = 'Price is required';
+          newErrors.itemPrice = "Price is required";
         } else if (isNaN(value) || Number(value) <= 0) {
-          newErrors.itemPrice = 'Price must be a positive number';
+          newErrors.itemPrice = "Price must be a positive number";
         } else {
           delete newErrors.itemPrice;
         }
@@ -87,12 +91,12 @@ const ManualOrderModal = ({ showCreateOrderModal, setShowCreateOrderModal, creat
     const { name, value } = e.target;
 
     // Prevent numbers in customer name input
-    if (name === 'customer' && /\d/.test(value)) {
+    if (name === "customer" && /\d/.test(value)) {
       return;
     }
 
     // Restrict phone to digits only
-    if (name === 'phone' && value && !/^\d*$/.test(value)) {
+    if (name === "phone" && value && !/^\d*$/.test(value)) {
       return;
     }
 
@@ -102,7 +106,9 @@ const ManualOrderModal = ({ showCreateOrderModal, setShowCreateOrderModal, creat
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const isValid = Object.keys(formData).every((key) => validateField(key, formData[key]));
+    const isValid = Object.keys(formData).every((key) =>
+      validateField(key, formData[key])
+    );
 
     if (!isValid) return;
 
@@ -121,13 +127,13 @@ const ManualOrderModal = ({ showCreateOrderModal, setShowCreateOrderModal, creat
     });
     setErrors({});
     setFormData({
-      customer: '',
-      email: '',
-      phone: '',
-      address: '',
-      itemName: '',
-      itemQty: '1',
-      itemPrice: '1',
+      customer: "",
+      email: "",
+      phone: "",
+      address: "",
+      itemName: "",
+      itemQty: "1",
+      itemPrice: "1",
     });
     setShowCreateOrderModal(false);
   };
@@ -136,11 +142,13 @@ const ManualOrderModal = ({ showCreateOrderModal, setShowCreateOrderModal, creat
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Create Manual Order</h2>
+      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+            Create Manual Order
+          </h2>
           <button
-            className="text-gray-500 hover:text-gray-700 text-xl"
+            className="text-gray-500 hover:text-gray-700 text-xl p-1"
             onClick={() => {
               setErrors({});
               setShowCreateOrderModal(false);
@@ -163,11 +171,15 @@ const ManualOrderModal = ({ showCreateOrderModal, setShowCreateOrderModal, creat
                 onChange={handleInputChange}
                 placeholder="Customer Name"
                 className={`w-full p-2 border rounded focus:outline-none focus:ring-2 ${
-                  errors.customer ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'
+                  errors.customer
+                    ? "border-red-500 focus:ring-red-500"
+                    : "focus:ring-blue-500"
                 }`}
                 required
               />
-              {errors.customer && <p className="text-red-500 text-sm mt-1">{errors.customer}</p>}
+              {errors.customer && (
+                <p className="text-red-500 text-sm mt-1">{errors.customer}</p>
+              )}
             </div>
 
             <div>
@@ -181,11 +193,15 @@ const ManualOrderModal = ({ showCreateOrderModal, setShowCreateOrderModal, creat
                 onChange={handleInputChange}
                 placeholder="Customer Email"
                 className={`w-full p-2 border rounded focus:outline-none focus:ring-2 ${
-                  errors.email ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'
+                  errors.email
+                    ? "border-red-500 focus:ring-red-500"
+                    : "focus:ring-blue-500"
                 }`}
                 required
               />
-              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              )}
             </div>
 
             <div>
@@ -200,11 +216,15 @@ const ManualOrderModal = ({ showCreateOrderModal, setShowCreateOrderModal, creat
                 placeholder="Customer Phone"
                 maxLength="10"
                 className={`w-full p-2 border rounded focus:outline-none focus:ring-2 ${
-                  errors.phone ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'
+                  errors.phone
+                    ? "border-red-500 focus:ring-red-500"
+                    : "focus:ring-blue-500"
                 }`}
                 required
               />
-              {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+              {errors.phone && (
+                <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+              )}
             </div>
 
             <div>
@@ -218,14 +238,18 @@ const ManualOrderModal = ({ showCreateOrderModal, setShowCreateOrderModal, creat
                 onChange={handleInputChange}
                 placeholder="Customer Address"
                 className={`w-full p-2 border rounded focus:outline-none focus:ring-2 ${
-                  errors.address ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'
+                  errors.address
+                    ? "border-red-500 focus:ring-red-500"
+                    : "focus:ring-blue-500"
                 }`}
                 required
               />
-              {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
+              {errors.address && (
+                <p className="text-red-500 text-sm mt-1">{errors.address}</p>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Item Name <span className="text-red-500">*</span>
@@ -237,11 +261,15 @@ const ManualOrderModal = ({ showCreateOrderModal, setShowCreateOrderModal, creat
                   onChange={handleInputChange}
                   placeholder="Item Name"
                   className={`w-full p-2 border rounded focus:outline-none focus:ring-2 ${
-                    errors.itemName ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'
+                    errors.itemName
+                      ? "border-red-500 focus:ring-red-500"
+                      : "focus:ring-blue-500"
                   }`}
                   required
                 />
-                {errors.itemName && <p className="text-red-500 text-sm mt-1">{errors.itemName}</p>}
+                {errors.itemName && (
+                  <p className="text-red-500 text-sm mt-1">{errors.itemName}</p>
+                )}
               </div>
 
               <div>
@@ -257,11 +285,15 @@ const ManualOrderModal = ({ showCreateOrderModal, setShowCreateOrderModal, creat
                   min="1"
                   step="1"
                   className={`w-full p-2 border rounded focus:outline-none focus:ring-2 ${
-                    errors.itemQty ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'
+                    errors.itemQty
+                      ? "border-red-500 focus:ring-red-500"
+                      : "focus:ring-blue-500"
                   }`}
                   required
                 />
-                {errors.itemQty && <p className="text-red-500 text-sm mt-1">{errors.itemQty}</p>}
+                {errors.itemQty && (
+                  <p className="text-red-500 text-sm mt-1">{errors.itemQty}</p>
+                )}
               </div>
 
               <div>
@@ -277,19 +309,25 @@ const ManualOrderModal = ({ showCreateOrderModal, setShowCreateOrderModal, creat
                   min="0.01"
                   step="0.01"
                   className={`w-full p-2 border rounded focus:outline-none focus:ring-2 ${
-                    errors.itemPrice ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'
+                    errors.itemPrice
+                      ? "border-red-500 focus:ring-red-500"
+                      : "focus:ring-blue-500"
                   }`}
                   required
                 />
-                {errors.itemPrice && <p className="text-red-500 text-sm mt-1">{errors.itemPrice}</p>}
+                {errors.itemPrice && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.itemPrice}
+                  </p>
+                )}
               </div>
             </div>
           </div>
 
-          <div className="mt-6 flex justify-end space-x-3">
+          <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
             <button
               type="button"
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 font-medium order-2 sm:order-1"
               onClick={() => {
                 setErrors({});
                 setShowCreateOrderModal(false);
@@ -299,7 +337,7 @@ const ManualOrderModal = ({ showCreateOrderModal, setShowCreateOrderModal, creat
             </button>
             <button
               type="submit"
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 font-medium order-1 sm:order-2"
             >
               Create Order
             </button>

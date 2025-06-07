@@ -82,8 +82,27 @@ const couponAndOffersDashboardDataRoute = import.meta.env
 const couponAndOffersDashboardChangeStatusRoute = import.meta.env
   .VITE_COUPON_AND_OFFERS_DASHBOARD_CHANGE_COUPON_STATUS_ENDPOINT;
 
+const getAllProductsRoute = import.meta.env.VITE_PRODUCT_ENDPOINT;
+const getAllCategoryRoute = import.meta.env.VITE_CATEGORIES_ENDPOINT;
+const getAllBrandsRoute = import.meta.env.VITE_BRANDS_ENDPOINT;
+
+const adminProductCatalogByCategoryAndBrandIdRoute = import.meta.env
+  .VITE_ADMIN_PRODUCT_CATALOG_BY_CATEGORY_AND_BRAND_ID_ENDPOINT;
+
+const productVariantByProductIdRoute = import.meta.env
+  .VITE_PRODUCT_VARIANT_BY_PRODUCT_ID_ENDPOINT;
+
 const couponAndOffersDashboardAnalyticsDataRoute = import.meta.env
   .VITE_COUPON_AND_OFFERS_DASHBOARD_ANALYTICS_DATA_ENDPOINT;
+
+const adminReportsAnalyticsDashboardDataRoute = import.meta.env
+  .VITE_ADMIN_REPORT_ANALYTICS_DASHBOARD_DATA_ENDPOINT;
+
+const adminReportsAnalyticsProductsDataRoute = import.meta.env
+  .VITE_ADMIN_REPORT_ANALYTICS_PRODUCTS_DATA_ENDPOINT;
+
+const adminReportsAnalyticsCouponsDataRoute = import.meta.env
+.VITE_ADMIN_REPORT_ANALYTICS_COUPONS_DATA_ENDPOINT
 
 export {
   FaEye,
@@ -131,5 +150,13 @@ export {
   reviewManagmentAnalyticsDataRoute,
   couponAndOffersDashboardDataRoute,
   couponAndOffersDashboardChangeStatusRoute,
+  getAllCategoryRoute,
+  getAllProductsRoute,
+  getAllBrandsRoute,
+  adminProductCatalogByCategoryAndBrandIdRoute,
+  productVariantByProductIdRoute,
   couponAndOffersDashboardAnalyticsDataRoute,
+  adminReportsAnalyticsDashboardDataRoute,
+  adminReportsAnalyticsProductsDataRoute,
+  adminReportsAnalyticsCouponsDataRoute,
 };

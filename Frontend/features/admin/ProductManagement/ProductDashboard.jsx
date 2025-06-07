@@ -220,8 +220,37 @@ const EditModal = ({ isOpen, onClose, entityType, item, onSave }) => {
   }, [item, entityType]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const { name, value, type } = e.target; // Destructure type
+    setFormData((prevFormData) => {
+      const lowerCaseEntityType = entityType.toLowerCase();
+      let processedValue = value;
+
+      // Prevent negative values for any numeric fields when editing variants
+      if (
+        (lowerCaseEntityType === "variants" ||
+          lowerCaseEntityType === "product variants") &&
+        type === "number" // Check the HTML input type
+      ) {
+        if (parseFloat(value) < 0) {
+          processedValue = "0"; // Reset to 0 if negative
+        }
+      }
+
+      const newFormData = { ...prevFormData, [name]: processedValue };
+
+      // Auto-generate slug for categories, brands, products
+      if (
+        (lowerCaseEntityType === "categories" ||
+          lowerCaseEntityType === "brands" ||
+          lowerCaseEntityType === "products") &&
+        name === "name"
+      ) {
+        newFormData.slug = String(processedValue)
+          .toLowerCase()
+          .replace(/\s+/g, "-"); // Use processedValue
+      }
+      return newFormData;
+    });
   };
 
   const handleSubmit = (e) => {
@@ -245,28 +274,96 @@ const EditModal = ({ isOpen, onClose, entityType, item, onSave }) => {
           className="flex-grow overflow-y-auto pr-2"
         >
           <div className="space-y-4">
-            {Object.keys(formData).map((key) => {
-              // Skip rendering ID fields in the form, but keep them in formData
-              if (key === "id" || key.includes("_id")) return null;
+            {Object.keys(formData)
+              .filter((key) => {
+                // Define fields to always skip in the form
+                const fieldsToSkipInForm = [
+                  "image",
+                  "category_name",
+                  "brand_name",
+                  "product_name", // e.g., for variants, product_name is derived (parent product name)
+                  "category", // If 'category' is a simple string name field
+                  "brand", // If 'brand' is a simple string name field
+                  "brand_slug", // e.g., product.brand_slug which is derived
+                ];
+                // Skip ID fields and other specified fields
+                return !(
+                  key === "id" ||
+                  key.includes("_id") ||
+                  fieldsToSkipInForm.includes(key)
+                );
+              })
+              .map((key) => {
+                const lowerCaseEntityType = entityType.toLowerCase();
+                const isVariantContext =
+                  lowerCaseEntityType === "variants" ||
+                  lowerCaseEntityType === "product variants";
 
-              // Skip image fields
-              if (key === "image") return null;
+                let labelText = key.replace(/_/g, " ");
+                let inputType =
+                  typeof formData[key] === "number" ? "number" : "text";
+                let isReadOnly = false;
 
-              return (
-                <div key={key} className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
-                    {key.replace(/_/g, " ")}
-                  </label>
-                  <input
-                    type={typeof formData[key] === "number" ? "number" : "text"}
-                    name={key}
-                    value={formData[key] || ""}
-                    onChange={handleChange}
-                    className="w-full p-2 border rounded"
-                  />
-                </div>
-              );
-            })}
+                if (isVariantContext && key === "sku") {
+                  labelText = "Product Variant Name";
+                  inputType = "text"; // SKU is typically text
+                }
+
+                // Slug read-only logic
+                if (
+                  (lowerCaseEntityType === "categories" ||
+                    lowerCaseEntityType === "brands" ||
+                    lowerCaseEntityType === "products") &&
+                  key === "slug"
+                ) {
+                  isReadOnly = true;
+                }
+
+                // Special handling for category target_role dropdown
+                if (
+                  lowerCaseEntityType === "categories" &&
+                  key === "target_role"
+                ) {
+                  return (
+                    <div key={key} className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
+                        {labelText}
+                      </label>
+                      <select
+                        name={key}
+                        value={formData[key] || ""}
+                        onChange={handleChange}
+                        className="w-full p-2 border rounded"
+                      >
+                        <option value="Customer">Customer</option>
+                        <option value="Retailer">Retailer</option>
+                        <option value="Both">Both</option>
+                      </select>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={key} className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
+                      {labelText}
+                    </label>
+                    <input
+                      type={inputType}
+                      name={key}
+                      value={formData[key] || ""}
+                      onChange={handleChange}
+                      className="w-full p-2 border rounded"
+                      min={
+                        isVariantContext && inputType === "number"
+                          ? "0"
+                          : undefined
+                      }
+                      readOnly={isReadOnly}
+                    />
+                  </div>
+                );
+              })}
           </div>
 
           <div className="flex justify-end space-x-3 mt-6 sticky bottom-0 bg-white pt-3 border-t">
@@ -389,7 +486,7 @@ const ProductDashboard = () => {
       setIsLoading(true);
       try {
         const response = await getApi(adminProductManagementDashboardDataRoute);
-        console.log("API Response:", response); // Debug log
+        // console.log("API Response:", response); // Debug log
 
         if (response && response.success === true) {
           // Transform API response to match component's expected format
@@ -883,8 +980,7 @@ const ProductDashboard = () => {
 
   // Handler for editing entities
   const handleEdit = (entityType, id, item) => {
-    // Show alert when edit is clicked
-    alert(`Edit action triggered for ${entityType} with ID: ${id}`);
+    // console.log(`Edit action triggered for ${entityType} with ID: ${id}`, item);
 
     // For direct editing in modal
     setEditModal({
@@ -950,30 +1046,36 @@ const ProductDashboard = () => {
         return;
       }
 
-      // Get the API endpoint for this entity type
-      const endpoint = apiEndpoints[entityType.toLowerCase()];
-      if (!endpoint) {
-        console.error(`API endpoint for "${entityType}" not found`);
-        toast.error(`Failed to update ${entityType}. Invalid entity type.`);
-        setIsLoading(false);
-        return;
+      console.log("testing", updatedItem);
+
+      // Make the API call to update the item
+      const response = await updateApiById(
+        adminProductManagementDashboardDataRoute,
+        entityType,
+        updatedItem
+      );
+
+      if (response && response.success) {
+        // Update the local state
+        setData((prevData) => ({
+          ...prevData,
+          [entityKey]: prevData[entityKey].map(
+            (item) =>
+              item.id === updatedItem.id ? { ...item, ...updatedItem } : item // Ensure all fields are updated
+          ),
+        }));
+
+        // Close the edit modal
+        setEditModal({ isOpen: false, entityType: "", item: null });
+        toast.success(
+          response.message || `${entityType} updated successfully!`
+        );
+      } else {
+        toast.error(
+          response.message ||
+            `Failed to update ${entityType}. Please try again.`
+        );
       }
-
-      // In a real implementation, you would call the API to update the item
-      // const response = await updateApiById(endpoint, updatedItem[idField], updatedItem);
-
-      // Update the local state
-      setData((prevData) => ({
-        ...prevData,
-        [entityKey]: prevData[entityKey].map((item) =>
-          item.id === updatedItem.id ? updatedItem : item
-        ),
-      }));
-
-      // Close the edit modal
-      setEditModal({ isOpen: false, entityType: "", item: null });
-
-      toast.success(`${entityType} updated successfully!`);
     } catch (error) {
       console.error(`Error updating ${entityType}:`, error);
       toast.error(`Failed to update ${entityType}. Please try again.`);
@@ -984,16 +1086,13 @@ const ProductDashboard = () => {
 
   // Handler for deleting entities
   const handleDelete = async (entityType, id) => {
-    // Show alert when delete is clicked
-    alert(`Delete action triggered for ${entityType} with ID: ${id}`);
-
     // Confirm deletion
     if (
       !window.confirm(`Are you sure you want to delete this ${entityType}?`)
     ) {
       return;
     }
-
+    setIsLoading(true);
     try {
       setIsLoading(true);
 
@@ -1003,9 +1102,11 @@ const ProductDashboard = () => {
         id,
         entityType
       );
-      console.log("Delete API Response:", deleteResponse);
+      // console.log("Delete API Response:", deleteResponse);
       if (deleteResponse.success) {
-        alert(deleteResponse.message);
+        toast.success(
+          deleteResponse.message || `${entityType} deleted successfully!`
+        );
       }
 
       // Map the entityType to the correct property name in the data object and API endpoint

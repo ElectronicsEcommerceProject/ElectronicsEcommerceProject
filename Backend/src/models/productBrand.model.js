@@ -32,6 +32,7 @@ export default (sequelize) => {
     Brand.belongsTo(models.User, { foreignKey: "created_by", as: "creator" });
     Brand.belongsTo(models.User, { foreignKey: "updated_by", as: "updater" });
     Brand.hasMany(models.Product, { foreignKey: "brand_id" });
+    Brand.hasMany(models.Coupon, { foreignKey: "brand_id" });
   };
 
   return Brand;

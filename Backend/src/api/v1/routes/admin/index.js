@@ -20,12 +20,13 @@ import usersManagmentDashboardDataRoutes from "./userManagmentDashboardData.rout
 import adminProductReviewRoutes from "./adminProductReview.routes.js";
 import adminDashboardDataRoutes from "./adminDashboardData.routes.js";
 import adminProductManagmentDataRoutes from "./adminProductManagmentData.routes.js";
+import adminAnalyticsDashboardDataRoutes from "./adminReportsAndAnalyticsData.routes.js";
 
 const app = express();
 
-app.use("/categories", categoryRoutes);
+app.use("/category", categoryRoutes);
 
-app.use("/brands", brandsRoutes);
+app.use("/brand", brandsRoutes);
 
 app.use("/product", productRoutes);
 
@@ -53,6 +54,8 @@ app.use("/users", userRoutes);
 app.use("/admin-Dashboard-Data", adminDashboardDataRoutes);
 
 app.use("/product-Management-Dashboard-Data", adminProductManagmentDataRoutes);
+
+app.use("/reports-Analytics-Dashboard-Data", adminAnalyticsDashboardDataRoutes);
 
 app.use("/users-Management-Dashboard-Data", usersManagmentDashboardDataRoutes);
 
