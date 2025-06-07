@@ -634,11 +634,11 @@ const ReviewDashboard = () => {
                 .map((review) => {
                   if (review.product_review_id === id) {
                     if (action === "Approve")
-                      return { ...review, status: "approved" };
+                      return { ...review, status: "approve" };
                     if (action === "Reject")
-                      return { ...review, status: "rejected" };
+                      return { ...review, status: "reject" };
                     if (action === "Flag")
-                      return { ...review, status: "flagged" };
+                      return { ...review, status: "flag" };
                     if (action === "Mark Safe")
                       return { ...review, status: "pending" };
                     if (action === "Ban User")
@@ -688,9 +688,9 @@ const ReviewDashboard = () => {
     .filter((review) => {
       if (!review.status) return activeTab === "All Reviews";
       const status = review.status.toLowerCase();
-      if (activeTab === "Flagged Reviews") return status === "flagged";
-      if (activeTab === "Approved Reviews") return status === "approved";
-      if (activeTab === "Rejected Reviews") return status === "rejected";
+      if (activeTab === "Flagged Reviews") return status === "flag";
+      if (activeTab === "Approved Reviews") return status === "approve";
+      if (activeTab === "Rejected Reviews") return status === "reject";
       return true;
     })
     .filter(

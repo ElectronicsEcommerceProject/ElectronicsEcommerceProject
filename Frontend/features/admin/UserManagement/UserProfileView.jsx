@@ -38,6 +38,7 @@ const UserProfileView = ({ filters, onFilterChange }) => {
         const response = await getApi(
           userManagmentDashboardUsersOrdersDataRoute
         );
+        // console.log("testing in userManagment Profile", response)
         if (
           response &&
           response.success === true &&
@@ -83,14 +84,25 @@ const UserProfileView = ({ filters, onFilterChange }) => {
 
   const filteredUsers = users
     .filter((user) => {
-      const matchesRole = filters.role === "All" || user.role === filters.role;
+      // Handle role filtering - show all users when default option is selected
+      const matchesRole =
+        filters.role === "All" ||
+        filters.role === "Filter By Role" ||
+        user.role === filters.role;
+
+      // Handle status filtering - show all users when default option is selected
       const matchesStatus =
-        filters.status === "All" || user.status === filters.status;
+        filters.status === "All" ||
+        filters.status === "Filter By Status" ||
+        user.status === filters.status;
+
+      // Handle search filtering
       const matchesSearch =
         filters.search === "" ||
         user.name.toLowerCase().includes(filters.search.toLowerCase()) ||
         user.email.toLowerCase().includes(filters.search.toLowerCase()) ||
         (user.phone && user.phone.includes(filters.search));
+
       return matchesRole && matchesStatus && matchesSearch;
     })
     .sort((a, b) => {
@@ -447,10 +459,10 @@ const UserProfileView = ({ filters, onFilterChange }) => {
                 onFilterChange({ ...filters, role: e.target.value })
               }
             >
-              <option>Filter By Role</option>
-              <option>Customer</option>
-              <option>Retailer</option>
-              <option>Admin</option>
+              <option value="Filter By Role">Filter By Role</option>
+              <option value="Customer">Customer</option>
+              <option value="Retailer">Retailer</option>
+              <option value="Admin">Admin</option>
             </select>
             <select
               className="border border-gray-200 p-3 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-teal-500"
@@ -459,11 +471,11 @@ const UserProfileView = ({ filters, onFilterChange }) => {
                 onFilterChange({ ...filters, status: e.target.value })
               }
             >
-              <option>Filter By Status</option>
-              <option>Active</option>
-              <option>Inactive</option>
-              <option>Banned</option>
-              <option>Pending</option>
+              <option value="Filter By Status">Filter By Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Banned">Banned</option>
+              <option value="Pending">Pending</option>
             </select>
             <input
               type="text"

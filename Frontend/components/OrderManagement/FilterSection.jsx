@@ -48,11 +48,11 @@ const FiltersSection = ({
           onChange={(e) => setStatusFilter(e.target.value)}
         >
           <option value="">Status</option>
-          <option value="Pending">Pending</option>
-          <option value="Shipped">Shipped</option>
-          <option value="Delivered">Delivered</option>
-          <option value="Cancelled">Cancelled</option>
-          <option value="Returned">Returned</option>
+          <option value="pending">Pending</option>
+          <option value="shipped">Shipped</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="returned">Returned</option>
         </select>
 
         {/* Date Range Start */}

@@ -43,8 +43,8 @@ const UserDashboard = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [filters, setFilters] = useState({
-    role: "All",
-    status: "All",
+    role: "Filter By Role",
+    status: "Filter By Status",
     search: "",
     sortBy: "Date Joined",
   });
@@ -110,10 +110,19 @@ const UserDashboard = () => {
   const filterUsers = () => {
     const filtered = users
       .filter((user) => {
+        // Handle role filtering - show all users when default option is selected
         const matchesRole =
-          filters.role === "All" || user.role === filters.role;
+          filters.role === "All" ||
+          filters.role === "Filter By Role" ||
+          user.role === filters.role;
+
+        // Handle status filtering - show all users when default option is selected
         const matchesStatus =
-          filters.status === "All" || user.status === filters.status;
+          filters.status === "All" ||
+          filters.status === "Filter By Status" ||
+          user.status === filters.status;
+
+        // Handle search filtering
         const matchesSearch =
           filters.search === "" ||
           user.name.toLowerCase().includes(filters.search.toLowerCase()) ||
