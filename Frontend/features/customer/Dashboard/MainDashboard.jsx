@@ -1,41 +1,37 @@
 import React, { useState, useEffect } from "react";
 import {
-  FiSearch,
-  FiUser,
-  FiShoppingCart,
-  FiSmartphone,
-  FiMonitor,
-  FiHeadphones,
-  FiCamera,
-  FiBriefcase,
-  FiNavigation,
-  FiMenu,
-} from "react-icons/fi";
-import {
+  FaSearch,
+  FaUser,
+  FaShoppingCart,
+  FaMobileAlt,
+  FaDesktop,
+  FaHeadphones,
+  FaCamera,
+  FaBriefcase,
+  FaMapMarkerAlt,
+  FaBars,
   FaFacebookF,
   FaTwitter,
   FaInstagram,
   FaLinkedinIn,
+  FaEnvelope,
 } from "react-icons/fa";
-import { FiMail } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
 import HoverMenu from "../../common/HoverMenu";
 import { useDispatch } from "react-redux";
-import { setSearchTerm } from "../../../components/Redux/filterSlice"; // adjust path as needed
+import { setSearchTerm } from "../../../components/Redux/filterSlice";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Footer from "../../../components/Footer/Footer";
 
 const MainDashboard = () => {
-  // Mobile menu state
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // Hover menu state
   const [isHoveringLogin, setIsHoveringLogin] = useState(false);
-
-  // Auto-scrolling banner state
   const [activeBanner, setActiveBanner] = useState(0);
-
   const [searchInput, setSearchInput] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const cartCount = 3; // 🔧 Hardcoded for now (replace with dynamic count later)
 
   const banners = [
     {
@@ -64,17 +60,15 @@ const MainDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Navigation items
   const navItems = [
-    { icon: FiSmartphone, label: "Mobiles" },
-    { icon: FiMonitor, label: "Electronics" },
-    { icon: FiHeadphones, label: "Audio" },
-    { icon: FiCamera, label: "Cameras" },
-    { icon: FiBriefcase, label: "Travel" },
-    { icon: FiNavigation, label: "Navigation" },
+    { icon: FaMobileAlt, label: "Mobiles" },
+    { icon: FaDesktop, label: "Electronics" },
+    { icon: FaHeadphones, label: "Audio" },
+    { icon: FaCamera, label: "Cameras" },
+    { icon: FaBriefcase, label: "Travel" },
+    { icon: FaMapMarkerAlt, label: "Navigation" },
   ];
 
-  // Dummy data for products
   const mobiles = [
     {
       image:
@@ -186,16 +180,15 @@ const MainDashboard = () => {
   ];
 
   const handleSearch = () => {
-    dispatch(setSearchTerm(searchInput)); // Set global filter
-    navigate("/mainzone"); // Navigate to main page to show results
+    dispatch(setSearchTerm(searchInput));
+    navigate("/mainzone");
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      {/* Header - Responsive */}
+      {/* Header */}
       <header className="bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600 text-white py-2 md:py-3 px-4 md:px-6 sticky top-0 z-50 shadow-lg">
         <div className="flex items-center justify-between md:justify-start">
-          {/* Logo (Always Left) */}
           <div className="text-xl md:text-2xl font-bold flex items-center md:mr-8">
             <span className="w-6 h-6 bg-white mr-2 rounded-sm"></span>
             ShopEase
@@ -203,9 +196,9 @@ const MainDashboard = () => {
 
           <div className="hidden md:flex flex-1 justify-center">
             <div className="relative w-full max-w-2xl">
-              <FiSearch
+              <FaSearch
                 onClick={handleSearch}
-                className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-500 text-lg cursor-pointer hover:text-indigo-600 hover:scale-110 transition duration-200"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-lg cursor-pointer hover:text-indigo-600 hover:scale-110 transition duration-200"
               />
               <input
                 type="text"
@@ -213,60 +206,69 @@ const MainDashboard = () => {
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 placeholder="Search for products..."
-                className="w-full px-10 py-2 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-40 shadow-sm text-sm"
+                className="w-full pl-10 pr-4 py-2 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-40 shadow-sm text-sm"
               />
             </div>
           </div>
 
-          {/* Desktop: Login + Cart on Right */}
           <div className="hidden md:flex items-center space-x-6 ml-auto">
             <div
-              className="relative"
+              className="relative group"
               onMouseEnter={() => setIsHoveringLogin(true)}
               onMouseLeave={() => setIsHoveringLogin(false)}
             >
-              <div className="flex items-center cursor-pointer">
-                <FiUser className="w-5 h-5 mr-1" />
+              <div className="flex items-center cursor-pointer px-3 py-2">
+                <FaUser className="w-5 h-5 mr-1" />
                 <span className="text-sm">Sign In</span>
               </div>
-              {isHoveringLogin && (
-                <div className="absolute top-10 right-0">
-                  <HoverMenu />
-                </div>
-              )}
+              <AnimatePresence>
+                {isHoveringLogin && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full mt-2 left-0 z-50"
+                  >
+                    <div className="w-3 h-3 bg-white rotate-45 absolute -top-1 left-5 shadow-sm" />
+                    <HoverMenu />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-
-            <a href="#" className="flex items-center relative">
-              <FiShoppingCart className="w-5 h-5 mr-1" />
-              <span>Cart</span>
-              <span className="absolute -top-2 -right-3 bg-amber-500 text-white text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full">
-                3
-              </span>
-            </a>
+            <Link
+              to="/cart"
+              className="relative flex items-center px-3 py-2 rounded-md hover:bg-indigo-800 transition-colors"
+            >
+              <FaShoppingCart className="w-6 h-6 text-white" />
+              <span className="ml-1 text-white hidden md:inline">Cart</span>
+              {cartCount > 0 && (
+                <span className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-amber-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full shadow-md">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
           </div>
 
-          {/* Mobile: Search Icon + Menu */}
-          <div className="flex md:hidden items-center space-x-4 ml-auto">
-            <FiSearch className="text-xl cursor-pointer" />
+          <div className="flex md:hidden items-center ml-auto">
             <button
               className="text-white text-2xl"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              <FiMenu />
+              <FaBars />
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden mt-2 bg-indigo-700 px-4 pb-4 rounded-b shadow-lg">
             <div className="flex flex-col space-y-4 pt-2">
               <div className="flex items-center cursor-pointer">
-                <FiUser className="w-5 h-5 mr-2" />
+                <FaUser className="w-5 h-5 mr-2" />
                 <span>Login</span>
               </div>
               <a href="#" className="flex items-center relative">
-                <FiShoppingCart className="w-5 h-5 mr-2" />
+                <FaShoppingCart className="w-5 h-5 mr-2" />
                 <span>Cart</span>
                 <span className="ml-auto bg-amber-500 text-white text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full">
                   3
@@ -276,23 +278,21 @@ const MainDashboard = () => {
           </div>
         )}
 
-        {/* Mobile Search Bar (Now moved outside of menu, placed below ShopEase logo) */}
         <div className="md:hidden w-full flex justify-center mt-4">
           <div className="relative w-10/12 max-w-sm">
-            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-base" />
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-base" />
             <input
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               placeholder="Search for products, brands and more..."
-              className="w-full pr-12 pl-4 py-2 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-40 shadow-sm text-base"
+              className="w-full pl-10 pr-4 py-2 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-40 shadow-sm text-base"
             />
           </div>
         </div>
       </header>
 
-      {/* Navigation - Responsive */}
       <nav className="bg-white shadow-sm py-2 md:py-3 sticky top-16 md:top-12 z-40">
         <div className="flex justify-center overflow-x-auto scrollbar-hide px-2">
           <div className="flex space-x-4 md:space-x-8">
@@ -310,14 +310,11 @@ const MainDashboard = () => {
         </div>
       </nav>
 
-      {/* Auto-scrolling Banner - Responsive */}
       <div className="relative h-64 sm:h-80 md:h-96 overflow-hidden">
         {banners.map((banner, index) => (
           <div
             key={index}
-            className={`absolute inset-0 ${
-              banner.bgClass
-            } text-white transition-opacity duration-1000 flex items-center px-4 md:px-8 lg:px-16 ${
+            className={`absolute inset-0 ${banner.bgClass} text-white transition-opacity duration-1000 flex items-center px-4 md:px-8 lg:px-16 ${
               activeBanner === index ? "opacity-100 z-10" : "opacity-0 z-0"
             }`}
           >
@@ -348,14 +345,11 @@ const MainDashboard = () => {
         ))}
       </div>
 
-      {/* Divider */}
       <div className="h-4 bg-gray-100 flex items-center justify-center">
         <div className="w-full border-t border-gray-200 mx-4 md:mx-6"></div>
       </div>
 
-      {/* Main Product Container */}
       <div className="w-full bg-white px-2 md:px-4">
-        {/* Featured Mobiles Section */}
         <div className="w-full py-4">
           <h2 className="text-lg md:text-xl font-bold mb-3 px-2 text-gray-800">
             Featured Mobiles
@@ -390,12 +384,10 @@ const MainDashboard = () => {
           </div>
         </div>
 
-        {/* Divider */}
         <div className="h-4 bg-gray-100 flex items-center justify-center">
           <div className="w-full border-t border-gray-200 mx-4 md:mx-6"></div>
         </div>
 
-        {/* Top Laptops Section */}
         <div className="w-full py-4">
           <h2 className="text-lg md:text-xl font-bold mb-3 px-2 text-gray-800">
             Top Laptops
