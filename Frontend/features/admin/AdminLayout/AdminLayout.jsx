@@ -23,6 +23,7 @@ import {
   ReportsAnalytics,
   AdminHeader,
   NotificationPage,
+  StockManagement,
 } from "../../../features/admin/index.js";
 
 const AdminLayout = () => {
@@ -60,6 +61,13 @@ const AdminLayout = () => {
       section: "orders",
       icon: (
         <ShoppingCartSimple size={24} weight="bold" className="text-red-500" />
+      ),
+    },
+    {
+      label: "Stock Management",
+      section: "stock",
+      icon: (
+        <Package size={24} weight="duotone" className="text-blue-500" />
       ),
     },
     {
@@ -225,6 +233,7 @@ const AdminLayout = () => {
           {activeSection === "dashboard" && <Dashboard />}
           {activeSection === "products" && <ProductManagement />}
           {activeSection === "orders" && <OrderManagement />}
+          {activeSection === "stock" && <StockManagement />}
           {activeSection === "users" && <UserManagement />}
           {activeSection === "reviews" && <ReviewManagement />}
           {activeSection === "coupans" && <CouponsOffers />}

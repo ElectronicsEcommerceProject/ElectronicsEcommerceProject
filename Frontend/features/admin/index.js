@@ -22,7 +22,7 @@ import ReviewManagement from "../../features/admin/ReviewManagement/ReviewDashbo
 import CouponsOffers from "../../features/admin/CouponManagement/CouponDashboard.jsx";
 import NotificationPage from "../../features/admin/NotificationManagement/NotificationPage.jsx";
 import ReportsAnalytics from "../../features/admin/AnalyticManagement/AnalyticDashboard.jsx";
-
+import StockManagement from "../../features/admin/StockManagement/StockManagement.jsx"; //import StockManagement from "../../features/admin/StockManagement/StockDashboard.jsx";
 // Layout Components
 import AdminHeader from "../../components/Header/AdminHeader.jsx";
 
@@ -48,4 +48,5 @@ export {
   NotificationPage,
   ReportsAnalytics,
   AdminHeader,
+  StockManagement,
 };
