@@ -124,6 +124,11 @@ import {
 
 import { addProductManagementValidator } from "./product/ProductManagment/addProductManagment.validators.js";
 
+import {
+  updateStockValidator,
+  variantIdValidator as stockVariantIdValidator,
+} from "./stockManagement.validator.js";
+
 export const validators = {
   auth: {
     register: registerValidator,
@@ -137,6 +142,7 @@ export const validators = {
   productVariant: {
     createVariant: productVariantValidator,
     updateVariant: productVariantUpdateValidator,
+    updateStockValidator: updateStockValidator,
     id: id,
   },
   profile: {

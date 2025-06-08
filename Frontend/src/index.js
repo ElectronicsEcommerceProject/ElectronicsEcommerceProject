@@ -29,6 +29,7 @@ import ForgotPassword from "../features/admin/AdminLayout/ForgotPassword.jsx";
 import ProductDashboard from "../features/admin/ProductManagement/ProductDashboard.jsx";
 import ProductForm from "../features/admin/ProductManagement/ProductForm.jsx";
 import AdminLayout from "../features/admin/AdminLayout/AdminLayout.jsx";
+import StockManagement from "../features/admin/StockManagement/StockManagement.jsx";
 
 // Components
 import AlertMessage from "../components/Alert/AlertMessage.jsx";
@@ -104,6 +105,11 @@ const adminReportsAnalyticsProductsDataRoute = import.meta.env
 const adminReportsAnalyticsCouponsDataRoute = import.meta.env
 .VITE_ADMIN_REPORT_ANALYTICS_COUPONS_DATA_ENDPOINT
 
+// Stock Management Routes
+const stockManagementVariantsRoute = import.meta.env.VITE_STOCK_MANAGEMENT_VARIANTS_ENDPOINT;
+const stockManagementVariantByIdRoute = import.meta.env.VITE_STOCK_MANAGEMENT_VARIANT_BY_ID_ENDPOINT;
+const stockManagementAnalyticsRoute = import.meta.env.VITE_STOCK_MANAGEMENT_ANALYTICS_ENDPOINT;
+
 export {
   FaEye,
   FaEyeSlash,
@@ -126,6 +132,7 @@ export {
   ProductDashboard,
   ProductForm,
   AdminLayout,
+  StockManagement,
   AlertMessage,
   createApi,
   getApi,
@@ -159,4 +166,7 @@ export {
   adminReportsAnalyticsDashboardDataRoute,
   adminReportsAnalyticsProductsDataRoute,
   adminReportsAnalyticsCouponsDataRoute,
+  stockManagementVariantsRoute,
+  stockManagementVariantByIdRoute,
+  stockManagementAnalyticsRoute,
 };

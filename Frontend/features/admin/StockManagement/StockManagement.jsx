@@ -1,21 +1,20 @@
 /**
- * ProductVariant Stock Management Component with Hardcoded Data
+ * ProductVariant Stock Management Component with API Integration
  *
- * ✅ CURRENT STATUS: Using hardcoded data for UI testing
+ * ✅ CURRENT STATUS: Integrated with backend API endpoints
  *
  * FEATURES:
  * - Multi-level filtering (Category, Brand, Product, Variant, Status)
  * - Global search across multiple fields
- * - Summary cards for stock overview (based on filtered data)
- * - Detailed stock table
- * - Stock update modal (Reason dropdown removed)
+ * - Summary cards for stock overview (based on API analytics)
+ * - Detailed stock table with real-time data
+ * - Stock update modal with API integration
  * - Pagination and sorting
  * - CSV export
  * - Filter chips and clear all filters
- * - Aligned with models: ProductVariant, Product, Category, Brand
- * - Replaced SKU with Product Variant Name for better user understanding
- * - Enhanced action icons with tooltips and modals for functionality
- * - Improved Update icon in stock update modal
+ * - Real-time stock calculations (reserved, sold, available)
+ * - Indian Rupee currency formatting
+ * - Error handling and loading states
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -25,73 +24,8 @@ import {
   FaBoxes, FaInfoCircle
 } from 'react-icons/fa';
 
-// Hardcoded Sample Data
-const sampleCategories = [
-  { category_id: 'cat1', name: 'Electronics' },
-  { category_id: 'cat2', name: 'Clothing' },
-  { category_id: 'cat3', name: 'Home Appliances' },
-];
-
-const sampleBrands = [
-  { brand_id: 'brand1', name: 'BrandA' },
-  { brand_id: 'brand2', name: 'BrandB' },
-  { brand_id: 'brand3', name: 'BrandC' },
-];
-
-const sampleProductVariants = [
-  {
-    product_variant_id: 'var1',
-    product_id: 'prod1',
-    variant_name: 'Laptop - 8GB RAM',
-    price: 999.99,
-    stock_quantity: 10,
-    in_carts_wishlists: 2,
-    sold: 5,
-    updatedAt: '2023-10-01T10:00:00Z',
-    product_name: 'Laptop',
-    category_name: 'Electronics',
-    brand_name: 'BrandA',
-  },
-  {
-    product_variant_id: 'var2',
-    product_id: 'prod1',
-    variant_name: 'Laptop - 16GB RAM',
-    price: 1099.99,
-    stock_quantity: 5,
-    in_carts_wishlists: 1,
-    sold: 3,
-    updatedAt: '2023-10-02T11:00:00Z',
-    product_name: 'Laptop',
-    category_name: 'Electronics',
-    brand_name: 'BrandA',
-  },
-  {
-    product_variant_id: 'var3',
-    product_id: 'prod2',
-    variant_name: 'T-shirt - Blue Medium',
-    price: 19.99,
-    stock_quantity: 50,
-    in_carts_wishlists: 10,
-    sold: 20,
-    updatedAt: '2023-10-03T12:00:00Z',
-    product_name: 'T-shirt',
-    category_name: 'Clothing',
-    brand_name: 'BrandB',
-  },
-  {
-    product_variant_id: 'var4',
-    product_id: 'prod3',
-    variant_name: 'Microwave - 30L',
-    price: 299.99,
-    stock_quantity: 0,
-    in_carts_wishlists: 0,
-    sold: 10,
-    updatedAt: '2023-10-04T13:00:00Z',
-    product_name: 'Microwave',
-    category_name: 'Home Appliances',
-    brand_name: 'BrandC',
-  },
-];
+// API imports
+import { getApi, updateApi } from '../../../src/api/api.js';
 
 // SearchableDropdown Component
 const SearchableDropdown = ({
@@ -190,6 +124,7 @@ const StockManagement = () => {
   const [productVariants, setProductVariants] = useState([]);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [analyticsData, setAnalyticsData] = useState(null);
   const [globalSearch, setGlobalSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [brandFilter, setBrandFilter] = useState('');
@@ -205,32 +140,53 @@ const StockManagement = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [currentVariant, setCurrentVariant] = useState(null);
-  const [addStock, setAddStock] = useState(0);
-  const [reduceStock, setReduceStock] = useState(0);
+  const [newStockQuantity, setNewStockQuantity] = useState(0);
   const [editVariantName, setEditVariantName] = useState('');
   const [editPrice, setEditPrice] = useState(0);
   const itemsPerPage = 10;
   const debouncedGlobalSearch = useDebounce(globalSearch, 300);
 
+  // Environment variables for API endpoints
+  const STOCK_VARIANTS_ENDPOINT = import.meta.env.VITE_STOCK_MANAGEMENT_VARIANTS_ENDPOINT;
+  const STOCK_ANALYTICS_ENDPOINT = import.meta.env.VITE_STOCK_MANAGEMENT_ANALYTICS_ENDPOINT;
+  const CATEGORIES_ENDPOINT = import.meta.env.VITE_CATEGORIES_ENDPOINT;
+  const BRANDS_ENDPOINT = import.meta.env.VITE_BRANDS_ENDPOINT;
+
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    setProductVariants(sampleProductVariants);
-    setCategories(sampleCategories);
-    setBrands(sampleBrands);
-    setLoading(false);
-  };
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  const getStatus = (stock_quantity) => {
-    if (stock_quantity <= 0) return 'Out of Stock';
-    if (stock_quantity < 5) return 'Low';
-    return 'In Stock';
-  };
+      console.log('🔄 Loading stock management data...');
 
-  const getAvailableStock = (stock_quantity, in_carts_wishlists) => {
-    return Math.max(0, (stock_quantity || 0) - (in_carts_wishlists || 0));
+      // Load all data in parallel
+      const [variantsResponse, analyticsResponse, categoriesResponse, brandsResponse] = await Promise.all([
+        getApi(STOCK_VARIANTS_ENDPOINT),
+        getApi(STOCK_ANALYTICS_ENDPOINT),
+        getApi(CATEGORIES_ENDPOINT),
+        getApi(BRANDS_ENDPOINT)
+      ]);
+
+      console.log('✅ Stock variants loaded:', variantsResponse.data?.length || 0);
+      console.log('✅ Analytics loaded:', analyticsResponse.data);
+      console.log('✅ Categories loaded:', categoriesResponse.data?.length || 0);
+      console.log('✅ Brands loaded:', brandsResponse.data?.length || 0);
+
+      setProductVariants(variantsResponse.data || []);
+      setAnalyticsData(analyticsResponse.data || {});
+      setCategories(categoriesResponse.data || []);
+      setBrands(brandsResponse.data || []);
+
+    } catch (error) {
+      console.error('❌ Error loading stock management data:', error);
+      setError(error.message || 'Failed to load stock management data');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const uniqueProducts = useMemo(() => {
@@ -246,30 +202,55 @@ const StockManagement = () => {
   const uniqueVariants = useMemo(() => {
     let variants = productVariants;
     if (productFilter) variants = variants.filter(v => v.product_id === productFilter);
-    return variants.map(v => ({ id: v.product_variant_id, name: v.variant_name }));
+    return variants.map(v => ({
+      id: v.product_variant_id,
+      name: v.description || v.sku || `Variant ${v.product_variant_id.slice(-8)}`
+    }));
   }, [productVariants, productFilter]);
 
   const filteredVariants = useMemo(() => {
+    // Use the data as-is from API since it already includes calculated fields
     let filtered = productVariants.map(variant => ({
       ...variant,
-      status: getStatus(variant.stock_quantity),
-      availableStock: getAvailableStock(variant.stock_quantity, variant.in_carts_wishlists),
-      lastUpdated: variant.updatedAt || new Date().toISOString()
+      // Ensure we have the calculated fields from API
+      status: variant.status || 'Unknown',
+      availableStock: variant.availableStock || 0,
+      reserved: variant.reserved || 0,
+      sold: variant.sold || 0,
+      lastUpdated: variant.updatedAt || variant.createdAt || new Date().toISOString(),
+      // Map API field names to frontend expectations
+      variant_name: variant.description || variant.sku || `Variant ${variant.product_variant_id.slice(-8)}`,
+      in_carts_wishlists: variant.reserved || 0 // Use reserved as proxy for items in carts/wishlists
     }));
 
     if (debouncedGlobalSearch) {
       const searchLower = debouncedGlobalSearch.toLowerCase();
       filtered = filtered.filter(variant =>
-        variant.product_name.toLowerCase().includes(searchLower) ||
-        variant.variant_name.toLowerCase().includes(searchLower) ||
-        variant.brand_name.toLowerCase().includes(searchLower) ||
-        variant.category_name.toLowerCase().includes(searchLower) ||
-        variant.product_variant_id.toLowerCase().includes(searchLower)
+        (variant.product_name || '').toLowerCase().includes(searchLower) ||
+        (variant.variant_name || '').toLowerCase().includes(searchLower) ||
+        (variant.brand_name || '').toLowerCase().includes(searchLower) ||
+        (variant.category_name || '').toLowerCase().includes(searchLower) ||
+        (variant.product_variant_id || '').toLowerCase().includes(searchLower) ||
+        (variant.sku || '').toLowerCase().includes(searchLower)
       );
     }
 
-    if (categoryFilter) filtered = filtered.filter(v => v.category_name === sampleCategories.find(c => c.category_id === categoryFilter)?.name);
-    if (brandFilter) filtered = filtered.filter(v => v.brand_name === sampleBrands.find(b => b.brand_id === brandFilter)?.name);
+    // Filter by category
+    if (categoryFilter) {
+      const category = categories.find(c => c.category_id === categoryFilter);
+      if (category) {
+        filtered = filtered.filter(v => v.category_name === category.name);
+      }
+    }
+
+    // Filter by brand
+    if (brandFilter) {
+      const brand = brands.find(b => b.brand_id === brandFilter);
+      if (brand) {
+        filtered = filtered.filter(v => v.brand_name === brand.name);
+      }
+    }
+
     if (productFilter) filtered = filtered.filter(v => v.product_id === productFilter);
     if (variantFilter) filtered = filtered.filter(v => v.product_variant_id === variantFilter);
     if (statusFilter) filtered = filtered.filter(v => v.status === statusFilter);
@@ -278,8 +259,8 @@ const StockManagement = () => {
       case 'inStock': filtered = filtered.filter(v => v.status === 'In Stock'); break;
       case 'lowStock': filtered = filtered.filter(v => v.status === 'Low'); break;
       case 'outStock': filtered = filtered.filter(v => v.status === 'Out of Stock'); break;
-      case 'in_carts_wishlists': filtered = filtered.filter(v => v.in_carts_wishlists > 0); break;
-      case 'sold': filtered = filtered.filter(v => v.sold > 0); break;
+      case 'reserved': filtered = filtered.filter(v => (v.reserved || 0) > 0); break;
+      case 'sold': filtered = filtered.filter(v => (v.sold || 0) > 0); break;
       default: break;
     }
 
@@ -300,18 +281,36 @@ const StockManagement = () => {
     variantFilter,
     statusFilter,
     activeFilter,
-    sortConfig
+    sortConfig,
+    categories,
+    brands
   ]);
 
-  const summaryData = useMemo(() => ({
-    totalVariants: filteredVariants.length,
-    inStock: filteredVariants.filter(v => v.status === 'In Stock').length,
-    lowStock: filteredVariants.filter(v => v.status === 'Low').length,
-    outStock: filteredVariants.filter(v => v.status === 'Out of Stock').length,
-    itemsInCartsWishlists: filteredVariants.reduce((sum, v) => sum + (v.in_carts_wishlists || 0), 0),
-    soldItems: filteredVariants.reduce((sum, v) => sum + (v.sold || 0), 0),
-    totalStockValue: filteredVariants.reduce((sum, v) => sum + ((v.stock_quantity || 0) * (v.price || 0)), 0)
-  }), [filteredVariants]);
+  const summaryData = useMemo(() => {
+    // Use analytics data from API if available, otherwise calculate from filtered variants
+    if (analyticsData && Object.keys(analyticsData).length > 0) {
+      return {
+        totalVariants: analyticsData.totalVariants || 0,
+        inStock: analyticsData.inStock || 0,
+        lowStock: analyticsData.lowStock || 0,
+        outStock: analyticsData.outStock || 0,
+        itemsInCartsWishlists: analyticsData.reservedItems || 0,
+        soldItems: analyticsData.soldItems || 0,
+        totalStockValue: analyticsData.totalStockValue || 0
+      };
+    }
+
+    // Fallback to calculating from filtered variants
+    return {
+      totalVariants: filteredVariants.length,
+      inStock: filteredVariants.filter(v => v.status === 'In Stock').length,
+      lowStock: filteredVariants.filter(v => v.status === 'Low').length,
+      outStock: filteredVariants.filter(v => v.status === 'Out of Stock').length,
+      itemsInCartsWishlists: filteredVariants.reduce((sum, v) => sum + (v.reserved || 0), 0),
+      soldItems: filteredVariants.reduce((sum, v) => sum + (v.sold || 0), 0),
+      totalStockValue: filteredVariants.reduce((sum, v) => sum + ((v.stock_quantity || 0) * (v.price || 0)), 0)
+    };
+  }, [filteredVariants, analyticsData]);
 
   const totalPages = Math.ceil(filteredVariants.length / itemsPerPage);
   const paginatedVariants = filteredVariants.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -319,11 +318,11 @@ const StockManagement = () => {
   const getActiveFilters = useCallback(() => {
     const filters = [];
     if (categoryFilter) {
-      const category = sampleCategories.find(c => c.category_id === categoryFilter);
+      const category = categories.find(c => c.category_id === categoryFilter);
       filters.push({ key: 'category', label: `Category: ${category?.name || categoryFilter}`, onRemove: () => setCategoryFilter('') });
     }
     if (brandFilter) {
-      const brand = sampleBrands.find(b => b.brand_id === brandFilter);
+      const brand = brands.find(b => b.brand_id === brandFilter);
       filters.push({ key: 'brand', label: `Brand: ${brand?.name || brandFilter}`, onRemove: () => setBrandFilter('') });
     }
     if (productFilter) {
@@ -336,7 +335,7 @@ const StockManagement = () => {
     }
     if (statusFilter) filters.push({ key: 'status', label: `Status: ${statusFilter}`, onRemove: () => setStatusFilter('') });
     return filters;
-  }, [categoryFilter, brandFilter, productFilter, variantFilter, statusFilter, uniqueProducts, uniqueVariants]);
+  }, [categoryFilter, brandFilter, productFilter, variantFilter, statusFilter, uniqueProducts, uniqueVariants, categories, brands]);
 
   const clearAllFilters = useCallback(() => {
     setGlobalSearch('');
@@ -390,22 +389,47 @@ const StockManagement = () => {
     alert(`Exported ${filteredVariants.length} variants to CSV`);
   };
 
-  const handleStockUpdate = () => {
-    if (!currentVariant) return;
-    const newStockQuantity = (currentVariant.stock_quantity || 0) + addStock - reduceStock;
-    if (newStockQuantity < 0) {
-      alert('Stock cannot be negative.');
+  const handleStockUpdate = async () => {
+    if (!currentVariant || newStockQuantity < 0) {
+      alert('Stock quantity cannot be negative.');
       return;
     }
-    setProductVariants(prev => prev.map(v =>
-      v.product_variant_id === currentVariant.product_variant_id
-        ? { ...v, stock_quantity: newStockQuantity, updatedAt: new Date().toISOString() }
-        : v
-    ));
-    setShowStockModal(false);
-    setAddStock(0);
-    setReduceStock(0);
-    alert(`Stock updated successfully for ${currentVariant.variant_name}! New Stock: ${newStockQuantity}`);
+
+    try {
+      setLoading(true);
+      console.log(`🔄 Updating stock for variant ${currentVariant.product_variant_id} to ${newStockQuantity}`);
+
+      // Use the stock management API endpoint
+      const VARIANT_UPDATE_ENDPOINT = import.meta.env.VITE_STOCK_MANAGEMENT_VARIANT_BY_ID_ENDPOINT
+        .replace(':variant_id', currentVariant.product_variant_id);
+
+      const response = await updateApi(VARIANT_UPDATE_ENDPOINT, '', {
+        stock_quantity: parseInt(newStockQuantity)
+      });
+
+      console.log('✅ Stock updated successfully:', response);
+
+      // Update the local state with the response data
+      setProductVariants(prev => prev.map(v =>
+        v.product_variant_id === currentVariant.product_variant_id
+          ? { ...v, ...response.data, updatedAt: new Date().toISOString() }
+          : v
+      ));
+
+      // Refresh analytics data
+      const analyticsResponse = await getApi(STOCK_ANALYTICS_ENDPOINT);
+      setAnalyticsData(analyticsResponse.data || {});
+
+      setShowStockModal(false);
+      setNewStockQuantity(0);
+      alert(`Stock updated successfully for ${currentVariant.variant_name || currentVariant.sku}! New Stock: ${response.data.stock_quantity}`);
+
+    } catch (error) {
+      console.error('❌ Error updating stock:', error);
+      alert(`Failed to update stock: ${error.message || 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEditVariant = () => {
@@ -414,6 +438,8 @@ const StockManagement = () => {
       alert('Variant name and price must be valid.');
       return;
     }
+    // Note: This would need a separate API endpoint for updating variant details
+    // For now, just update locally
     setProductVariants(prev => prev.map(v =>
       v.product_variant_id === currentVariant.product_variant_id
         ? { ...v, variant_name: editVariantName, price: editPrice, updatedAt: new Date().toISOString() }
@@ -424,6 +450,8 @@ const StockManagement = () => {
     setEditPrice(0);
     alert(`Variant ${currentVariant.variant_name} updated successfully!`);
   };
+
+
 
   if (loading) return <div className="flex justify-center items-center min-h-screen"><div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div></div>;
   if (error) return <div className="text-center p-6"><h2 className="text-2xl font-bold text-red-600">Error</h2><p>{error}</p><button onClick={loadData} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Retry</button></div>;
@@ -485,7 +513,7 @@ const StockManagement = () => {
           { key: 'inStock', title: 'In Stock', value: summaryData.inStock, icon: FaCheckCircle, color: 'green' },
           { key: 'lowStock', title: 'Low Stock', value: summaryData.lowStock, icon: FaExclamationTriangle, color: 'yellow' },
           { key: 'outStock', title: 'Out of Stock', value: summaryData.outStock, icon: FaTimesCircle, color: 'red' },
-          { key: 'in_carts_wishlists', title: 'Items in Carts/Wishlists', value: summaryData.itemsInCartsWishlists, icon: FaTruck, color: 'gray' },
+          { key: 'reserved', title: 'Reserved Items', value: summaryData.itemsInCartsWishlists, icon: FaTruck, color: 'gray' },
           { key: 'sold', title: 'Sold Items', value: summaryData.soldItems, icon: FaShoppingCart, color: 'purple' },
         ].map(card => (
           <div
@@ -511,7 +539,7 @@ const StockManagement = () => {
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-100">
-                {['product_name', 'brand_name', 'category_name', 'variant_name', 'price', 'stock_quantity', 'in_carts_wishlists', 'availableStock', 'sold', 'status', 'lastUpdated', ''].map((key, idx) => (
+                {['product_name', 'brand_name', 'category_name', 'variant_name', 'price', 'stock_quantity', 'reserved', 'availableStock', 'sold', 'status', 'lastUpdated', ''].map((key, idx) => (
                   <th
                     key={idx}
                     className="p-2 text-left text-gray-600 font-semibold cursor-pointer"
@@ -531,16 +559,16 @@ const StockManagement = () => {
                   <td className="p-2">{variant.category_name}</td>
                   <td className="p-2">{variant.variant_name}</td>
                   <td className="p-2">₹{(variant.price || 0).toFixed(2)}</td>
-                  <td className="p-2 text-blue-600 cursor-pointer" onClick={() => { setCurrentVariant(variant); setShowStockModal(true); }}>{variant.stock_quantity || 0}</td>
-                  <td className="p-2 text-orange-600">{variant.in_carts_wishlists || 0}</td>
+                  <td className="p-2 text-blue-600 cursor-pointer" onClick={() => { setCurrentVariant(variant); setNewStockQuantity(variant.stock_quantity || 0); setShowStockModal(true); }}>{variant.stock_quantity || 0}</td>
+                  <td className="p-2 text-orange-600">{variant.reserved || 0}</td>
                   <td className="p-2 text-green-600">{variant.availableStock}</td>
                   <td className="p-2 text-purple-600">{variant.sold || 0}</td>
                   <td className={`p-2 ${variant.status === 'In Stock' ? 'text-green-600' : variant.status === 'Low' ? 'text-yellow-600' : 'text-red-600'}`}>{variant.status}</td>
                   <td className="p-2 text-gray-500 text-sm">{new Date(variant.lastUpdated).toLocaleDateString()}</td>
                   <td className="p-2">
                     <div className="flex space-x-1">
-                      <button title="Update Stock" className="bg-blue-600 text-white p-1 rounded hover:bg-blue-700" onClick={() => { setCurrentVariant(variant); setShowStockModal(true); }}><FaBoxes /></button>
-                      <button title="Edit Variant" className="bg-green-600 text-white p-1 rounded hover:bg-green-700" onClick={() => { setCurrentVariant(variant); setEditVariantName(variant.variant_name); setEditPrice(variant.price); setShowEditModal(true); }}><FaEdit /></button>
+                      <button title="Update Stock" className="bg-blue-600 text-white p-1 rounded hover:bg-blue-700" onClick={() => { setCurrentVariant(variant); setNewStockQuantity(variant.stock_quantity || 0); setShowStockModal(true); }}><FaBoxes /></button>
+                      <button title="Edit Variant" className="bg-green-600 text-white p-1 rounded hover:bg-green-700" onClick={() => { setCurrentVariant(variant); setEditVariantName(variant.variant_name || variant.description || variant.sku || ''); setEditPrice(variant.price || 0); setShowEditModal(true); }}><FaEdit /></button>
                       <button title="View Details" className="bg-gray-600 text-white p-1 rounded hover:bg-gray-700" onClick={() => { setCurrentVariant(variant); setShowDetailsModal(true); }}><FaInfoCircle /></button>
                     </div>
                   </td>
@@ -579,33 +607,41 @@ const StockManagement = () => {
               </div>
               <div className="grid grid-cols-4 gap-4">
                 <div><label className="block text-sm font-medium">Stock</label><input className="w-full p-2 border rounded-lg bg-gray-100 text-blue-600" value={currentVariant.stock_quantity || 0} readOnly /></div>
-                <div><label className="block text-sm font-medium">Items in Carts/Wishlists</label><input className="w-full p-2 border rounded-lg bg-gray-100 text-orange-600" value={currentVariant.in_carts_wishlists || 0} readOnly /></div>
+                <div><label className="block text-sm font-medium">Reserved</label><input className="w-full p-2 border rounded-lg bg-gray-100 text-orange-600" value={currentVariant.reserved || 0} readOnly /></div>
                 <div><label className="block text-sm font-medium">Available</label><input className="w-full p-2 border rounded-lg bg-gray-100 text-green-600" value={currentVariant.availableStock} readOnly /></div>
                 <div><label className="block text-sm font-medium">Sold</label><input className="w-full p-2 border rounded-lg bg-gray-100 text-purple-600" value={currentVariant.sold || 0} readOnly /></div>
               </div>
               <div className="border-t pt-4">
-                <h3 className="text-lg font-semibold mb-3">Stock Adjustment</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div><label className="block text-sm font-medium">Add Stock</label><input type="number" min="0" className="w-full p-2 border rounded-lg" value={addStock} onChange={(e) => setAddStock(parseInt(e.target.value) || 0)} /></div>
-                  <div><label className="block text-sm font-medium">Reduce Stock</label><input type="number" min="0" className="w-full p-2 border rounded-lg" value={reduceStock} onChange={(e) => setAddStock(parseInt(e.target.value) || 0)} /></div>
+                <h3 className="text-lg font-semibold mb-3">Update Stock Quantity</h3>
+                <div>
+                  <label className="block text-sm font-medium">New Stock Quantity</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="w-full p-2 border rounded-lg"
+                    value={newStockQuantity}
+                    onChange={(e) => setNewStockQuantity(parseInt(e.target.value) || 0)}
+                  />
                 </div>
-                {(addStock > 0 || reduceStock > 0) && (
+                {newStockQuantity !== (currentVariant.stock_quantity || 0) && (
                   <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                    <p><strong>New Stock:</strong> {(currentVariant.stock_quantity || 0) + addStock - reduceStock}</p>
-                    <p><strong>New Available:</strong> {Math.max(0, (currentVariant.stock_quantity || 0) + addStock - reduceStock - (currentVariant.in_carts_wishlists || 0))}</p>
+                    <p><strong>Current Stock:</strong> {currentVariant.stock_quantity || 0}</p>
+                    <p><strong>New Stock:</strong> {newStockQuantity}</p>
+                    <p><strong>Change:</strong> {newStockQuantity - (currentVariant.stock_quantity || 0) >= 0 ? '+' : ''}{newStockQuantity - (currentVariant.stock_quantity || 0)}</p>
+                    <p><strong>New Available:</strong> {Math.max(0, newStockQuantity - (currentVariant.reserved || 0))}</p>
                   </div>
                 )}
               </div>
               <div className="flex justify-end gap-2 pt-4 border-t">
-                <button className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center" onClick={() => { setShowStockModal(false); setAddStock(0); setReduceStock(0); }}>
+                <button className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center" onClick={() => { setShowStockModal(false); setNewStockQuantity(0); }}>
                   <FaTimes className="mr-2" /> Cancel
                 </button>
                 <button
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center disabled:opacity-50"
                   onClick={handleStockUpdate}
-                  disabled={addStock === 0 && reduceStock === 0}
+                  disabled={newStockQuantity === (currentVariant.stock_quantity || 0) || loading}
                 >
-                  <FaCheckCircle className="mr-2 text-lg" /> Confirm Update
+                  <FaCheckCircle className="mr-2 text-lg" /> {loading ? 'Updating...' : 'Update Stock'}
                 </button>
               </div>
             </div>
@@ -674,7 +710,7 @@ const StockManagement = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="block text-sm font-medium">Stock</label><p className="p-2 text-sm bg-gray-100 rounded-lg text-blue-600">{currentVariant.stock_quantity}</p></div>
-                <div><label className="block text-sm font-medium">Items in Carts/Wishlists</label><p className="p-2 text-sm bg-gray-100 rounded-lg text-orange-600">{currentVariant.in_carts_wishlists}</p></div>
+                <div><label className="block text-sm font-medium">Reserved</label><p className="p-2 text-sm bg-gray-100 rounded-lg text-orange-600">{currentVariant.reserved || 0}</p></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="block text-sm font-medium">Available</label><p className="p-2 text-sm bg-gray-100 rounded-lg text-green-600">{currentVariant.availableStock}</p></div>

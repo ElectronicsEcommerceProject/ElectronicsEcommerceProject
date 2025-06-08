@@ -21,6 +21,7 @@ import adminProductReviewRoutes from "./adminProductReview.routes.js";
 import adminDashboardDataRoutes from "./adminDashboardData.routes.js";
 import adminProductManagmentDataRoutes from "./adminProductManagmentData.routes.js";
 import adminAnalyticsDashboardDataRoutes from "./adminReportsAndAnalyticsData.routes.js";
+import adminStockManagementDataRoutes from "./adminStockManagementData.routes.js";
 
 const app = express();
 
@@ -66,5 +67,7 @@ app.use("/discount-Rule", discountRuleRoutes);
 app.use("/stock-Alert", stockAlertRoutes);
 
 app.use("/product-Reviews", adminProductReviewRoutes);
+
+app.use("/stock-management", adminStockManagementDataRoutes);
 
 export default app;
