@@ -440,12 +440,12 @@ const DashboardContent = ({ data }) => (
         <div className="relative z-10">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center">
             <FiActivity className="w-5 h-5 mr-2 text-blue-400" />
-            New Signups
+            New Signups 
           </h2>
           <p className="text-3xl font-bold text-gray-900 mt-2">
             {data.newSignups}
           </p>
-          <p className="text-sm text-gray-500 mt-1">Recent Registrations</p>
+          <p className="text-sm text-gray-500 mt-1">Recent Registrations of Last 7 Days</p>
           <div className="mt-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Total:</span>
