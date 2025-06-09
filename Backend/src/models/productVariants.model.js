@@ -83,6 +83,12 @@ export default (sequelize) => {
     ProductVariant.hasMany(models.Coupon, {
       foreignKey: "product_variant_id",
     });
+
+    // Relationship with OrderItem for stock analytics
+    ProductVariant.hasMany(models.OrderItem, {
+      foreignKey: "product_variant_id",
+      as: "orderItems",
+    });
   };
 
   return ProductVariant;

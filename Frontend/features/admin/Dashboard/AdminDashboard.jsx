@@ -4,6 +4,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { ClientSideRowModelModule } from "ag-grid-community";
 import { useNavigate } from "react-router-dom";
+import CouponForm from "../CouponManagement/CouponForm";
 
 import { adminDashboardDataRoute, getApi } from "../../../src/index.js";
 
@@ -25,10 +26,27 @@ const AdminDashboard = () => {
   const [lowStockAlerts, setLowStockAlerts] = useState([]);
   const [topSellingProducts, setTopSellingProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showCouponForm, setShowCouponForm] = useState(false);
   const navigate = useNavigate();
 
   const handleAddProduct = () => {
     navigate("/admin/product-form");
+  };
+
+  const handleCreateCoupon = () => {
+    setShowCouponForm(true);
+  };
+
+  const handleCloseCouponForm = () => {
+    setShowCouponForm(false);
+  };
+
+  const handleSaveCoupon = (couponData) => {
+    // Handle the saved coupon data here
+    console.log("Coupon saved:", couponData);
+    setShowCouponForm(false);
+    // You can add additional logic here like showing a success message
+    // or refreshing dashboard data if needed
   };
 
   useEffect(() => {
@@ -521,7 +539,10 @@ const AdminDashboard = () => {
               >
                 Add Product
               </button>
-              <button className="w-full bg-blue-600 text-white py-1 sm:py-2 rounded-lg hover:bg-blue-700 transition-transform transform hover:scale-[1.02] duration-300 shadow-sm text-sm sm:text-base">
+              <button
+                className="w-full bg-blue-600 text-white py-1 sm:py-2 rounded-lg hover:bg-blue-700 transition-transform transform hover:scale-[1.02] duration-300 shadow-sm text-sm sm:text-base"
+                onClick={handleCreateCoupon}
+              >
                 Create Coupon
               </button>
             </div>
@@ -578,6 +599,15 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Coupon Form Modal */}
+      {showCouponForm && (
+        <CouponForm
+          coupon={null} // null for creating new coupon
+          onSave={handleSaveCoupon}
+          onClose={handleCloseCouponForm}
+        />
+      )}
     </div>
   );
 };

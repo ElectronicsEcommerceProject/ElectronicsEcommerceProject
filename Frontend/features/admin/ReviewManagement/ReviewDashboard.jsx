@@ -588,7 +588,7 @@ const ReviewDashboard = () => {
     const changeReviewStatus = async () => {
       try {
         if (action === "Delete") {
-          const deleteReview = await deleteApiById(deleteReviewByIdRoute, id);
+          const deleteReview = await deleteApiById(reviewManagmentDashboardDataRoute, id);
 
           if (deleteReview.success === true) {
             console.log("Review deleted successfully");
