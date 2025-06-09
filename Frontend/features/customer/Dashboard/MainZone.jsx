@@ -11,6 +11,7 @@ import {
   FiBriefcase,
   FiNavigation,
   FiX,
+  FiFilter,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -41,18 +42,9 @@ import {
   discounts,
 } from "../../../components/Data/filters";
 
-const navItems = [
-  { icon: FiSmartphone, label: "Mobiles" },
-  { icon: FiMonitor, label: "Electronics" },
-  { icon: FiHeadphones, label: "Audio" },
-  { icon: FiCamera, label: "Cameras" },
-  { icon: FiBriefcase, label: "Travel" },
-  { icon: FiNavigation, label: "Navigation" },
-];
-
 const MainZone = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isHoveringLogin, setIsHoveringLogin] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState({});
   const [searchBrand, setSearchBrand] = useState("");
   const [showMoreBrands, setShowMoreBrands] = useState(false);
@@ -60,6 +52,20 @@ const MainZone = () => {
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [appliedFilters, setAppliedFilters] = useState([]);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [hoveredProduct, setHoveredProduct] = useState(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      if (window.innerWidth >= 768 && isFilterOpen) {
+        setIsFilterOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isFilterOpen]);
 
   const dispatch = useDispatch();
   const filterState = useSelector((state) => state.filters);
@@ -77,62 +83,20 @@ const MainZone = () => {
     sortOption,
   } = filterState;
 
-  // Track applied filters
-  useEffect(() => {
-    const filters = [];
+  // Define toggleCategory function
+  const toggleCategory = (category) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [category]: !prev[category],
+    }));
+  };
 
-    if (searchTerm) filters.push({ type: "search", value: searchTerm });
-    if (selectedCategories.length)
-      filters.push({ type: "category", value: selectedCategories.join(", ") });
-    if (selectedBrands.length)
-      filters.push({ type: "brand", value: selectedBrands.join(", ") });
-    if (selectedPriceRange)
-      filters.push({ type: "price range", value: selectedPriceRange });
-    if (customMinPrice !== 100 || customMaxPrice !== 20000) {
-      filters.push({
-        type: "price",
-        value: `₹${customMinPrice} - ₹${customMaxPrice}`,
-      });
-    }
-    if (selectedRating) filters.push({ type: "rating", value: selectedRating });
-    if (selectedDiscounts.length)
-      filters.push({ type: "discount", value: selectedDiscounts.join(", ") });
-    if (!inStockOnly)
-      filters.push({ type: "stock", value: "Include out of stock" });
-    if (newArrivals) filters.push({ type: "arrival", value: newArrivals });
-
-    setAppliedFilters(filters);
-  }, [filterState]);
-
-  // Generate search suggestions
-  useEffect(() => {
-    if (searchInput.trim() === "") {
-      setSearchSuggestions([]);
-      return;
-    }
-
-    const suggestions = [
-      ...new Set([
-        ...dummyProducts
-          .filter((product) =>
-            product.name.toLowerCase().includes(searchInput.toLowerCase())
-          )
-          .map((product) => product.name),
-        ...dummyProducts
-          .filter((product) =>
-            product.category.toLowerCase().includes(searchInput.toLowerCase())
-          )
-          .map((product) => product.category),
-        ...dummyProducts
-          .filter((product) =>
-            product.brand.toLowerCase().includes(searchInput.toLowerCase())
-          )
-          .map((product) => product.brand),
-      ]),
-    ].slice(0, 5);
-
-    setSearchSuggestions(suggestions);
-  }, [searchInput]);
+  const handleCategoryCheckbox = (subcategory) => {
+    const newSelectedCategories = selectedCategories.includes(subcategory)
+      ? selectedCategories.filter((item) => item !== subcategory)
+      : [...selectedCategories, subcategory];
+    dispatch(setSelectedCategories(newSelectedCategories));
+  };
 
   const handleSearchChange = (e) => {
     setSearchInput(e.target.value);
@@ -154,20 +118,6 @@ const MainZone = () => {
     setSearchInput(suggestion);
     dispatch(setSearchTerm(suggestion));
     setShowSuggestions(false);
-  };
-
-  const toggleCategory = (category) => {
-    setExpandedCategories((prev) => ({
-      ...prev,
-      [category]: !prev[category],
-    }));
-  };
-
-  const handleCategoryCheckbox = (subcategory) => {
-    const newSelectedCategories = selectedCategories.includes(subcategory)
-      ? selectedCategories.filter((item) => item !== subcategory)
-      : [...selectedCategories, subcategory];
-    dispatch(setSelectedCategories(newSelectedCategories));
   };
 
   const filteredBrands = brandsData.filter((brand) =>
@@ -213,7 +163,6 @@ const MainZone = () => {
 
   const handlePriceInput = (min, max) => {
     dispatch(setCustomPrice({ min, max }));
-    // Find matching price range
     const matchedRange = priceRanges.find((range) => {
       const [rangeMin, rangeMax] = range.value.split("-").map(Number);
       return min === rangeMin && max === rangeMax;
@@ -223,7 +172,6 @@ const MainZone = () => {
 
   const handleSliderChange = (min, max) => {
     dispatch(setCustomPrice({ min, max }));
-    // Uncheck any selected price range when using slider
     dispatch(setPriceRange(""));
   };
 
@@ -282,9 +230,77 @@ const MainZone = () => {
     setSearchInput("");
   };
 
+  const handleProductClick = (productId) => {
+    console.log("Product clicked:", productId);
+    // navigate(`/product/${productId}`);
+  };
+
+  const handleProductHover = (productId) => {
+    setHoveredProduct(productId);
+  };
+
+  const handleProductLeave = () => {
+    setHoveredProduct(null);
+  };
+
+  // Track applied filters
+  useEffect(() => {
+    const filters = [];
+    if (searchTerm) filters.push({ type: "search", value: searchTerm });
+    if (selectedCategories.length)
+      filters.push({ type: "category", value: selectedCategories.join(", ") });
+    if (selectedBrands.length)
+      filters.push({ type: "brand", value: selectedBrands.join(", ") });
+    if (selectedPriceRange)
+      filters.push({ type: "price range", value: selectedPriceRange });
+    if (customMinPrice !== 100 || customMaxPrice !== 20000) {
+      filters.push({
+        type: "price",
+        value: `₹${customMinPrice} - ₹${customMaxPrice}`,
+      });
+    }
+    if (selectedRating) filters.push({ type: "rating", value: selectedRating });
+    if (selectedDiscounts.length)
+      filters.push({ type: "discount", value: selectedDiscounts.join(", ") });
+    if (!inStockOnly)
+      filters.push({ type: "stock", value: "Include out of stock" });
+    if (newArrivals) filters.push({ type: "arrival", value: newArrivals });
+
+    setAppliedFilters(filters);
+  }, [filterState]);
+
+  // Generate search suggestions
+  useEffect(() => {
+    if (searchInput.trim() === "") {
+      setSearchSuggestions([]);
+      return;
+    }
+
+    const suggestions = [
+      ...new Set([
+        ...dummyProducts
+          .filter((product) =>
+            product.name.toLowerCase().includes(searchInput.toLowerCase())
+          )
+          .map((product) => product.name),
+        ...dummyProducts
+          .filter((product) =>
+            product.category.toLowerCase().includes(searchInput.toLowerCase())
+          )
+          .map((product) => product.category),
+        ...dummyProducts
+          .filter((product) =>
+            product.brand.toLowerCase().includes(searchInput.toLowerCase())
+          )
+          .map((product) => product.brand),
+      ]),
+    ].slice(0, 5);
+
+    setSearchSuggestions(suggestions);
+  }, [searchInput]);
+
   const filteredProducts = dummyProducts
     .filter((product) => {
-      // Advanced search logic with multiple matching criteria
       const searchMatch =
         !searchTerm ||
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -292,30 +308,25 @@ const MainZone = () => {
         product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.description.toLowerCase().includes(searchTerm.toLowerCase());
 
-      // Category filter with subcategory support
       const categoryMatch =
         !selectedCategories.length ||
         selectedCategories.some((cat) =>
           product.category.toLowerCase().includes(cat.toLowerCase())
         );
 
-      // Brand filter with partial matching
       const brandMatch =
         !selectedBrands.length ||
         selectedBrands.some((brand) =>
           product.brand.toLowerCase().includes(brand.toLowerCase())
         );
 
-      // Price range filter
       const priceMatch =
         product.price >= customMinPrice && product.price <= customMaxPrice;
 
-      // Rating filter (>= selected rating)
       const ratingMatch =
         !selectedRating ||
         Math.floor(product.rating) >= parseInt(selectedRating);
 
-      // Discount filter with special cases
       const discountMatch =
         !selectedDiscounts.length ||
         selectedDiscounts.some((discount) => {
@@ -324,10 +335,8 @@ const MainZone = () => {
           return product.discount === discount;
         });
 
-      // Stock filter
       const stockMatch = !inStockOnly || product.inStock;
 
-      // New arrivals filter
       const arrivalMatch =
         !newArrivals ||
         (newArrivals === "Last 30 days" && product.isNewArrival) ||
@@ -358,7 +367,6 @@ const MainZone = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-      {/* Header */}
       <Header />
 
       {/* Applied Filters Bar */}
@@ -369,7 +377,7 @@ const MainZone = () => {
             {appliedFilters.map((filter, index) => (
               <div
                 key={index}
-                className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm"
+                className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm hover:bg-gray-200 transition-colors cursor-pointer"
               >
                 <span className="font-medium">{filter.type}:</span>
                 <span className="mx-1">{filter.value}</span>
@@ -383,7 +391,7 @@ const MainZone = () => {
             ))}
             <button
               onClick={resetAllFilters}
-              className="ml-2 text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+              className="ml-2 text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
             >
               Clear All
             </button>
@@ -391,51 +399,118 @@ const MainZone = () => {
         </div>
       )}
 
+      {/* Mobile Filter Button */}
+      {windowWidth < 768 && (
+        <div className="sticky top-16 z-10 bg-white p-2 shadow-sm flex justify-between items-center">
+          <button
+            onClick={() => setIsFilterOpen(true)}
+            className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+          >
+            <FiFilter size={16} />
+            <span>Filters</span>
+          </button>
+          {filteredProducts.length > 0 && (
+            <SortOptions 
+              sortOption={sortOption} 
+              handleSort={handleSort} 
+              mobileView={true}
+            />
+          )}
+        </div>
+      )}
+
       {/* Content */}
       <div className="flex flex-col md:flex-row gap-4 mt-4 px-4">
-        <FilterSidebar
-          categoriesData={categoriesData}
-          expandedCategories={expandedCategories}
-          toggleCategory={toggleCategory}
-          selectedCategories={selectedCategories}
-          handleCategoryCheckbox={handleCategoryCheckbox}
-          brandsData={brandsData}
-          searchBrand={searchBrand}
-          setSearchBrand={setSearchBrand}
-          displayedBrands={displayedBrands}
-          selectedBrands={selectedBrands}
-          handleBrandCheckbox={handleBrandCheckbox}
-          showMoreBrands={showMoreBrands}
-          setShowMoreBrands={setShowMoreBrands}
-          priceRanges={priceRanges}
-          selectedPriceRange={selectedPriceRange}
-          handlePriceRange={handlePriceRange}
-          customMinPrice={customMinPrice}
-          customMaxPrice={customMaxPrice}
-          handlePriceInput={handlePriceInput}
-          handleSliderChange={handleSliderChange}
-          ratings={ratings}
-          selectedRating={selectedRating}
-          handleRating={handleRating}
-          discounts={discounts}
-          selectedDiscounts={selectedDiscounts}
-          handleDiscount={handleDiscount}
-          inStockOnly={inStockOnly}
-          setInStockOnly={(value) => dispatch(setInStockOnly(value))}
-          newArrivals={newArrivals}
-          setNewArrivals={(value) => dispatch(setNewArrivals(value))}
-          resetAllFilters={resetAllFilters}
-        />
-
-        <div className="flex-1 bg-white p-4 shadow-lg rounded-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">
-              Products ({filteredProducts.length})
-            </h2>
-            {filteredProducts.length > 0 && (
-              <SortOptions sortOption={sortOption} handleSort={handleSort} />
+        {/* Filter Sidebar */}
+        {(windowWidth >= 768 || isFilterOpen) && (
+          <div className={`${windowWidth < 768 ? 
+            'fixed inset-0 z-20 bg-white overflow-y-auto p-4' : 
+            'w-64 flex-shrink-0'}`}
+          >
+            {windowWidth < 768 && (
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Filters</h2>
+                <button 
+                  onClick={() => setIsFilterOpen(false)}
+                  className="text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  <FiX size={24} />
+                </button>
+              </div>
+            )}
+            
+            <FilterSidebar
+              categoriesData={categoriesData}
+              expandedCategories={expandedCategories}
+              toggleCategory={toggleCategory}
+              selectedCategories={selectedCategories}
+              handleCategoryCheckbox={handleCategoryCheckbox}
+              brandsData={brandsData}
+              searchBrand={searchBrand}
+              setSearchBrand={setSearchBrand}
+              displayedBrands={displayedBrands}
+              selectedBrands={selectedBrands}
+              handleBrandCheckbox={handleBrandCheckbox}
+              showMoreBrands={showMoreBrands}
+              setShowMoreBrands={setShowMoreBrands}
+              priceRanges={priceRanges}
+              selectedPriceRange={selectedPriceRange}
+              handlePriceRange={handlePriceRange}
+              customMinPrice={customMinPrice}
+              customMaxPrice={customMaxPrice}
+              handlePriceInput={handlePriceInput}
+              handleSliderChange={handleSliderChange}
+              ratings={ratings}
+              selectedRating={selectedRating}
+              handleRating={handleRating}
+              discounts={discounts}
+              selectedDiscounts={selectedDiscounts}
+              handleDiscount={handleDiscount}
+              inStockOnly={inStockOnly}
+              setInStockOnly={(value) => dispatch(setInStockOnly(value))}
+              newArrivals={newArrivals}
+              setNewArrivals={(value) => dispatch(setNewArrivals(value))}
+              resetAllFilters={resetAllFilters}
+              mobileView={windowWidth < 768}
+            />
+            
+            {windowWidth < 768 && (
+              <div className="sticky bottom-0 bg-white py-4 border-t border-gray-200">
+                <button
+                  onClick={() => setIsFilterOpen(false)}
+                  className="w-full py-3 bg-indigo-600 text-white rounded-md font-medium hover:bg-indigo-700 transition-colors"
+                >
+                  Apply Filters
+                </button>
+              </div>
             )}
           </div>
+        )}
+
+        {/* Overlay for mobile filter */}
+        {isFilterOpen && windowWidth < 768 && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-10"
+            onClick={() => setIsFilterOpen(false)}
+          />
+        )}
+
+        {/* Main Content Area */}
+        <div className={`bg-white p-4 shadow-lg rounded-lg ${windowWidth < 768 ? 'w-full' : 'flex-1'}`}>
+          {windowWidth >= 768 && filteredProducts.length > 0 && (
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">
+                Products ({filteredProducts.length})
+              </h2>
+              <SortOptions sortOption={sortOption} handleSort={handleSort} />
+            </div>
+          )}
+
+          {windowWidth < 768 && (
+            <h2 className="text-lg font-semibold mb-4">
+              {filteredProducts.length} Products
+            </h2>
+          )}
 
           {filteredProducts.length === 0 ? (
             <div className="text-center py-10">
@@ -444,13 +519,20 @@ const MainZone = () => {
               </p>
               <button
                 onClick={resetAllFilters}
-                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
               >
                 Reset All Filters
               </button>
             </div>
           ) : (
-            <ProductGrid products={filteredProducts} />
+            <ProductGrid 
+              products={filteredProducts} 
+              mobileView={windowWidth < 768}
+              onProductClick={handleProductClick}
+              onProductHover={handleProductHover}
+              onProductLeave={handleProductLeave}
+              hoveredProduct={hoveredProduct}
+            />
           )}
         </div>
       </div>

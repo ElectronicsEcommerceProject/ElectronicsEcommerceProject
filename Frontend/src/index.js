@@ -9,8 +9,6 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 
 // import AdminLogin from "../features/auth/AdminLogin.jsx";
 // import ForgotPassword from "../features/auth/ForgotPassword.jsx";
-import LoginForm from "../features/auth/LoginForm.jsx";
-import SignupForm from "../features/auth/SignupForm.jsx";
 
 //***************************************************************************************************** */
 
@@ -103,12 +101,15 @@ const adminReportsAnalyticsProductsDataRoute = import.meta.env
   .VITE_ADMIN_REPORT_ANALYTICS_PRODUCTS_DATA_ENDPOINT;
 
 const adminReportsAnalyticsCouponsDataRoute = import.meta.env
-.VITE_ADMIN_REPORT_ANALYTICS_COUPONS_DATA_ENDPOINT
+  .VITE_ADMIN_REPORT_ANALYTICS_COUPONS_DATA_ENDPOINT;
 
 // Stock Management Routes
-const stockManagementVariantsRoute = import.meta.env.VITE_STOCK_MANAGEMENT_VARIANTS_ENDPOINT;
-const stockManagementVariantByIdRoute = import.meta.env.VITE_STOCK_MANAGEMENT_VARIANT_BY_ID_ENDPOINT;
-const stockManagementAnalyticsRoute = import.meta.env.VITE_STOCK_MANAGEMENT_ANALYTICS_ENDPOINT;
+const stockManagementVariantsRoute = import.meta.env
+  .VITE_STOCK_MANAGEMENT_VARIANTS_ENDPOINT;
+const stockManagementVariantByIdRoute = import.meta.env
+  .VITE_STOCK_MANAGEMENT_VARIANT_BY_ID_ENDPOINT;
+const stockManagementAnalyticsRoute = import.meta.env
+  .VITE_STOCK_MANAGEMENT_ANALYTICS_ENDPOINT;
 
 export {
   FaEye,
@@ -118,8 +119,6 @@ export {
   FaUser,
   AdminLogin,
   ForgotPassword,
-  LoginForm,
-  SignupForm,
   AdminDashboard,
   AdminSlidebar,
   AnalyticsDashboard,

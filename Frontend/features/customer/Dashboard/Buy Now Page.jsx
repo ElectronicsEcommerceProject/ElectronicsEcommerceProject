@@ -523,9 +523,10 @@ const BuyNowPage = () => {
               </div>
             ))}
           </div>
-          <Footer/>
+         
         </div>
       )}
+       <Footer/>
     </div>
   );
 };
