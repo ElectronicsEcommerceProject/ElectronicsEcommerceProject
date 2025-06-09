@@ -73,6 +73,29 @@ const OrderDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
+
+  // Enhanced date range handler with validation
+  const handleDateRangeChange = (field, value) => {
+    if (field === "start") {
+      // When start date changes, validate and update end date if necessary
+      const newDateRange = { ...dateRange, start: value };
+
+      // If end date exists and is before the new start date, clear or update it
+      if (dateRange.end && value && new Date(dateRange.end) < new Date(value)) {
+        newDateRange.end = value; // Set end date to match start date
+      }
+
+      setDateRange(newDateRange);
+    } else if (field === "end") {
+      // When end date changes, ensure it's not before start date
+      if (dateRange.start && value && new Date(value) < new Date(dateRange.start)) {
+        // Don't allow end date to be before start date
+        return;
+      }
+
+      setDateRange({ ...dateRange, end: value });
+    }
+  };
   const [userType, setUserType] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -523,6 +546,7 @@ const OrderDashboard = () => {
           setStatusFilter={setStatusFilter}
           dateRange={dateRange}
           setDateRange={setDateRange}
+          handleDateRangeChange={handleDateRangeChange}
           exportOrders={exportOrders}
           userType={userType}
           setUserType={setUserType}

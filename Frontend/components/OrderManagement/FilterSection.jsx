@@ -5,6 +5,7 @@ const FiltersSection = ({
   searchQuery, setSearchQuery,
   statusFilter, setStatusFilter,
   dateRange, setDateRange,
+  handleDateRangeChange,
   exportOrders,
   userType, setUserType
 }) => (
@@ -38,20 +39,39 @@ const FiltersSection = ({
       </select>
 
       {/* Date Range Start */}
-      <input
-        type="date"
-        className="w-[150px] px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-        value={dateRange.start}
-        onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-      />
+      <div className="flex flex-col">
+        <input
+          type="date"
+          className="w-[150px] px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          value={dateRange.start}
+          onChange={(e) => handleDateRangeChange ? handleDateRangeChange("start", e.target.value) : setDateRange({ ...dateRange, start: e.target.value })}
+          title="Select start date for filtering orders"
+        />
+      </div>
 
       {/* Date Range End */}
-      <input
-        type="date"
-        className="w-[150px] px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-        value={dateRange.end}
-        onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-      />
+      <div className="flex flex-col">
+        <input
+          type="date"
+          className="w-[150px] px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          value={dateRange.end}
+          min={dateRange.start || undefined}
+          onChange={(e) => handleDateRangeChange ? handleDateRangeChange("end", e.target.value) : setDateRange({ ...dateRange, end: e.target.value })}
+          title={dateRange.start ? `Select end date (must be on or after ${dateRange.start})` : "Select end date for filtering orders"}
+          disabled={!dateRange.start}
+        />
+      </div>
+
+      {/* Clear Date Range Button */}
+      {(dateRange.start || dateRange.end) && (
+        <button
+          onClick={() => setDateRange({ start: "", end: "" })}
+          className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+          title="Clear date range filter"
+        >
+          Clear Dates
+        </button>
+      )}
 
       {/* User Type Dropdown */}
       <select
@@ -59,7 +79,7 @@ const FiltersSection = ({
         value={userType}
         onChange={(e) => setUserType(e.target.value)}
       >
-        <option value="">Customer</option>
+        <option value="">User Type</option>
         <option value="Customer">Customer</option>
         <option value="Retailer">Retailer</option>
       </select>
