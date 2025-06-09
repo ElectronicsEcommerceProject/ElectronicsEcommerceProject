@@ -583,12 +583,12 @@ const StockManagement = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-6">
         {[
-          { key: 'all', title: 'Total', value: summaryData.totalVariants, icon: FaBox, color: 'blue' },
+          { key: 'all', title: 'Total Variants', value: summaryData.totalVariants, icon: FaBox, color: 'blue' },
           { key: 'inStock', title: 'In Stock', value: summaryData.inStock, icon: FaCheckCircle, color: 'green' },
           { key: 'lowStock', title: 'Low Stock', value: summaryData.lowStock, icon: FaExclamationTriangle, color: 'yellow' },
           { key: 'outStock', title: 'Out Stock', value: summaryData.outStock, icon: FaTimesCircle, color: 'red' },
-          { key: 'in_carts_wishlists', title: 'In Carts', value: summaryData.itemsInCartsWishlists, icon: FaTruck, color: 'gray', tooltip: 'Items temporarily allocated to customer carts and wishlists' },
-          { key: 'sold', title: 'Sold', value: summaryData.soldItems, icon: FaShoppingCart, color: 'purple' },
+          { key: 'in_carts_wishlists', title: 'In Carts/Wishlists', value: summaryData.itemsInCartsWishlists, icon: FaTruck, color: 'gray', tooltip: 'Items temporarily allocated to customer carts and wishlists' },
+          { key: 'sold', title: 'Sold/Delivered', value: summaryData.soldItems, icon: FaShoppingCart, color: 'purple' },
         ].map(card => (
           <div
             key={card.key}
