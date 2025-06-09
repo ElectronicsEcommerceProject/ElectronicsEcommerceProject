@@ -1,13 +1,15 @@
 // 📁 Customer Dashboard Pages
 import MainDashboard from "../../features/customer/Dashboard/MainDashboard";
 import MainZone from "../../features/customer/Dashboard/MainZone";
-import BuyNowPage from "../../features/customer/Dashboard/Buy Now Page";
+import BuyNowPage from "./Dashboard/BuyNowPage.jsx";
 
 // 📁 Customer Profile
 import ProfilePage from "../../features/customer/Profile/ProfilePage";
 
 // 🛒 Cart
 import ShoppingCart from "../../components/CartSummary/ShoppingCart";
+
+import OrderCheckoutPage from "../../features/Order/OrderCheckoutPage.jsx";
 
 // 🧭 Common UI
 import Header from "../../components/Header/Header";
@@ -45,13 +47,14 @@ export {
   BuyNowPage,
   ProfilePage,
   ShoppingCart,
+  OrderCheckoutPage,
   Header,
   Footer,
   HoverMenu,
   FilterSidebar,
   ProductGrid,
   SortOptions,
-  
+
   categoriesData,
   brandsData,
   dummyProducts,

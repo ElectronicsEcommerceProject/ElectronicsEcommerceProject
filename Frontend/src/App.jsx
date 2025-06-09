@@ -7,7 +7,8 @@ import {
   BuyNowPage,
   ProfilePage,
   ShoppingCart,
-} from '../features/customer/index';
+  OrderCheckoutPage,
+} from '../features/customer/index.js';
 import AdminLayout from '../features/admin/AdminLayout/AdminLayout.jsx'; //AdminLayout
 import ProductForm from '../features/admin/ProductManagement/ProductForm.jsx'; //AdminLayout
 
@@ -20,6 +21,7 @@ const App = () => {
         <Route path="/buynow" element={<BuyNowPage />} />
         <Route path="/profilepage" element={<ProfilePage />} />
         <Route path="/cart" element={<ShoppingCart />} />
+        <Route path = "/orderCheckout" element={<OrderCheckoutPage />} />
 
         //AdminRoutes
         <Route path="/adminDashboard" element={<AdminLayout />} />
