@@ -1,41 +1,60 @@
 import React, { useState, useEffect } from 'react';
 
-// Order Status Data
-const initialOrderStatus = {
-  overallStatus: 'delivered',
-  statusMessage: 'Delivery between 08:00 AM - 07:55 PM on JUN 17',
-  additionalMessage: 'Your Order has been placed.',
-  timeline: [
-    { status: 'orderConfirmed', completed: true, date: 'Today', label: 'Order Confirmed' },
-    { status: 'orderPlaced', completed: true, date: 'Mon 9th Jun', label: 'Your Order has been placed' },
-    { status: 'shipped', completed: true, date: 'Jun 13', label: 'Shipped, Expected by' },
-    { status: 'outForDelivery', completed: true, label: 'Out for Delivery' },
-    { status: 'delivery', completed: true, date: 'Jun 17 (08:00 AM - 07:55 PM)', label: 'Delivery' },
-  ],
+// Placeholder API fetch function (to be replaced with real backend call)
+const fetchOrderData = async () => {
+  // Simulate API response
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        overallStatus: 'delivered',
+        statusMessage: 'Delivery between 08:00 AM - 07:55 PM on JUN 17',
+        additionalMessage: 'Your Order has been placed.',
+        timeline: [
+          { status: 'orderConfirmed', completed: true, date: 'Today', label: 'Order Confirmed' },
+          { status: 'orderPlaced', completed: true, date: 'Mon 9th Jun', label: 'Your Order has been placed' },
+          { status: 'shipped', completed: true, date: 'Jun 13', label: 'Shipped, Expected by' },
+          { status: 'outForDelivery', completed: true, label: 'Out for Delivery' },
+          { status: 'delivery', completed: true, date: 'Jun 17 (08:00 AM - 07:55 PM)', label: 'Delivery' },
+        ],
+      });
+    }, 1000);
+  });
 };
 
 // Main React Component
 const OrderDetails = () => {
-  const [orderStatus, setOrderStatus] = useState(initialOrderStatus);
+  // State for order data, loading, and error
+  const [orderStatus, setOrderStatus] = useState(null);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [isCancelPopupVisible, setIsCancelPopupVisible] = useState(false);
-  const [tickedStatuses, setTickedStatuses] = useState(['orderConfirmed']); // Default to first status ticked
+  const [tickedStatuses, setTickedStatuses] = useState(['orderConfirmed']);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Update order status on mount
+  // Fetch order data on mount
   useEffect(() => {
-    setOrderStatus(initialOrderStatus);
-    setTickedStatuses(['orderConfirmed']); // Ensure first status is ticked on mount
+    const loadOrderData = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchOrderData(); // Replace with real API call, e.g., fetch('/api/order')
+        setOrderStatus(data);
+        setTickedStatuses(['orderConfirmed', 'orderPlaced']); // Default ticked statuses
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to fetch order data');
+        setLoading(false);
+        console.error(err);
+      }
+    };
+    loadOrderData();
   }, []);
 
   // Handle status click
   const handleStatusClick = (index) => {
-    // If the order is cancelled, prevent any status changes
-    if (orderStatus.overallStatus === 'cancelled') {
+    if (orderStatus?.overallStatus === 'cancelled') {
       console.log('Cannot change status: Order is cancelled.');
       return;
     }
-
-    // Tick the clicked status and all previous statuses
     const newTickedStatuses = orderStatus.timeline
       .slice(0, index + 1)
       .map((item) => item.status);
@@ -70,7 +89,7 @@ const OrderDetails = () => {
       statusMessage: 'Cancelled on JUN 09',
       additionalMessage: 'Your order has been cancelled.',
     });
-    setTickedStatuses([]); // Clear ticked statuses on cancel
+    setTickedStatuses([]);
     setIsCancelPopupVisible(false);
     console.log('Order cancelled successfully');
   };
@@ -91,73 +110,21 @@ const OrderDetails = () => {
     console.log('Fetching coupon details...');
   };
 
+  // Loading and error states
+  if (loading) {
+    return <div className="text-center text-gray-600">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500">{error}</div>;
+  }
+
   return (
-    <div className="font-sans m-0 p-3 sm:p-5 bg-gray-100 min-h-screen">
-      <style>
-        {`
-          .timeline-container {
-            position: relative;
-            padding-left: 24px;
-          }
-          .timeline-item {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            position: relative;
-          }
-          .timeline-item.disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-          }
-          .checkmark {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            border: 2px solid #ccc;
-            background-color: transparent;
-            margin-right: 8px;
-            position: relative;
-            z-index: 1;
-          }
-          .checkmark.completed {
-            border-color: #22c55e;
-            background-color: #22c55e;
-          }
-          .checkmark.completed::after {
-            content: '✔';
-            color: white !important;
-            font-size: 10px;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-          }
-          .timeline-item:not(:first-child)::before {
-            content: '';
-            position: absolute;
-            left: 7px;
-            top: -20px;
-            height: 20px;
-            width: 2px;
-            background-color: #ccc;
-            z-index: 0;
-          }
-          .timeline-item.completed:not(:first-child)::before {
-            background-color: #22c55e;
-          }
-          .timeline-item:last-child::before {
-            display: none;
-          }
-        `}
-      </style>
+    <div className="font-sans p-3 sm:p-5 bg-gray-100 min-h-screen">
       <div className="flex flex-col sm:flex-row justify-between max-w-6xl mx-auto gap-4 sm:gap-0">
         <div className="w-full sm:w-3/5 bg-white rounded-lg shadow-md p-4 sm:p-5">
           <button
-            className="bg-yellow-400 text-gray-800 py-2 px-5 rounded text-base cursor-pointer hover:bg-yellow-500 transition-colors"
+            className="bg-yellow-400 text-gray-800 py-2 px-5 rounded text-base hover:bg-yellow-500 transition-colors"
             onClick={handlePayment}
           >
             PAY ₹1908
@@ -170,7 +137,10 @@ const OrderDetails = () => {
               onClick={showPopup}
             />
             <div>
-              <h4 className="m-0 text-sm sm:text-base text-gray-800 font-normal">
+              <h4
+                className="m-0 text-sm sm:text-base text-gray-800 cursor-pointer hover:text-blue-500 hover:underline hover:scale-[1.02] transition-all"
+                onClick={showPopup}
+              >
                 JACY LONIDON Hard Sided PC 8 Wheel Spinners, with Telescopic Steel Trolley and Number Lock Cabin Suitcase 8 Wheels - 21 inch
               </h4>
               <p className="my-1 text-xs sm:text-sm text-gray-600">BLUE</p>
@@ -189,51 +159,71 @@ const OrderDetails = () => {
           <div className="my-5">
             <p
               className={`text-xs sm:text-sm font-bold flex items-center ${
-                orderStatus.overallStatus === 'delivered' ? 'text-green-500' : 'text-red-500'
+                orderStatus.overallStatus === 'delivered' ? 'text-green-500' : 'text-red-600'
               }`}
             >
               <span
                 className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full mr-1 sm:mr-1.5 ${
-                  orderStatus.overallStatus === 'delivered' ? 'bg-green-500' : 'bg-red-500'
+                  orderStatus.overallStatus === 'delivered' ? 'bg-green-500' : 'bg-red-600'
                 }`}
               ></span>
               {orderStatus.statusMessage}
             </p>
             <p className="text-xs sm:text-sm text-gray-600">{orderStatus.additionalMessage}</p>
           </div>
-          <div className="my-5 timeline-container">
+          <div className="relative pl-6">
             {orderStatus.timeline.map((item, index) => (
               <div
-                key={index}
-                className={`timeline-item ${
+                key={item.status}
+                className={`flex items-center mb-3 relative ${
                   tickedStatuses.includes(item.status) ? 'completed' : ''
-                } ${orderStatus.overallStatus === 'cancelled' ? 'disabled' : ''}`}
+                } ${orderStatus.overallStatus === 'cancelled' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                 onClick={() =>
                   orderStatus.overallStatus !== 'cancelled' ? handleStatusClick(index) : null
                 }
               >
                 <span
-                  className={`checkmark ${tickedStatuses.includes(item.status) ? 'completed' : ''}`}
-                ></span>
+                  className={`flex items-center justify-center w-4 h-4 rounded-full border-2 ${
+                    tickedStatuses.includes(item.status)
+                      ? 'border-green-500 bg-green-500'
+                      : 'border-gray-300 bg-transparent'
+                  } relative z-10`}
+                >
+                  {tickedStatuses.includes(item.status) && (
+                    <span className="text-white text-[10px]">✔</span>
+                  )}
+                </span>
                 <p
-                  className={`m-0 text-xs sm:text-sm font-bold ${orderStatus.overallStatus === 'cancelled' ? 'text-red-500' : 'text-gray-800'}`}
+                  className={`m-0 ml-2 text-xs sm:text-sm font-bold ${
+                    orderStatus.overallStatus === 'cancelled' ? 'text-red-600' : 'text-gray-800'
+                  }`}
                 >
                   {item.label}{item.date ? `, ${item.date}` : ''}
                 </p>
+                {index < orderStatus.timeline.length - 1 && (
+                  <div
+                    className={`absolute left-[7px] top-[18px] h-[12px] w-[2px] ${
+                      tickedStatuses.includes(item.status) ||
+                      tickedStatuses.includes(orderStatus.timeline[index - 1]?.status)
+                        ? 'bg-green-500'
+                        : 'bg-gray-300'
+                    } z-0`}
+                  ></div>
+                )}
               </div>
             ))}
           </div>
           <div className="border-t border-gray-200 my-5"></div>
           <div className="flex flex-col sm:flex-row justify-between items-center mt-2 sm:mt-2.5">
             <button
-              className="bg-white text-red-500 border border-red-500 py-1.5 px-4 sm:py-2 sm:px-5 rounded text-xs sm:text-sm cursor-pointer hover:bg-red-500 hover:text-white transition-colors mb-2 sm:mb-0"
+              className="bg-white text-red-600 border border-red-600 py-1.5 px-4 sm:py-2 sm:px-5 rounded text-xs sm:text-sm hover:bg-red-600 hover:text-white transition-colors mb-2 sm:mb-0"
               onClick={showCancelPopup}
             >
               Cancel
             </button>
             <a
               href="#"
-              className="text-blue-500 text-xs sm:text-sm cursor-pointer hover:text-blue-700 transition-colors no-underline"
+              className="text-blue-500 text-xs sm:text-sm hover:text-blue-700 transition-colors no-underline"
               onClick={seeUpdates}
             >
               SEE ALL UPDATES
@@ -251,7 +241,7 @@ const OrderDetails = () => {
             </p>
             <p className="my-2 text-xs sm:text-sm text-gray-600">Phone number: 6202670526</p>
             <button
-              className="text-blue-500 border border-blue-500 py-1 px-2.5 rounded text-xs sm:text-sm cursor-pointer hover:bg-blue-500 hover:text-white transition-colors"
+              className="text-blue-500 border border-blue-500 py-1 px-2.5 rounded text-xs sm:text-sm hover:bg-blue-500 hover:text-white transition-colors"
               onClick={changeAddress}
             >
               Change
@@ -308,37 +298,43 @@ const OrderDetails = () => {
         }`}
       ></div>
       <div
-        className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 sm:p-5 rounded-lg shadow-2xl z-[1000] text-center w-11/12 sm:w-auto max-w-md ${
+        className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-4 sm:p-5 rounded-lg shadow-2xl z-[1000] text-center w-11/12 sm:w-96 ${
           isPopupVisible ? 'block' : 'hidden'
         }`}
       >
         <button
-          className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 bg-red-500 text-white border-none rounded-full w-5 h-5 sm:w-6 sm:h-6 cursor-pointer hover:bg-red-700 transition-colors"
+          className="absolute top-2 right-2 bg-red-600 text-white border-none rounded-full w-6 h-6 cursor-pointer hover:bg-red-700 transition-colors text-sm"
           onClick={closePopup}
         >
           X
         </button>
-        <img src="https://via.placeholder.com/150" alt="Product Image" className="w-32 h-32 sm:w-[150px] sm:h-[150px] block mx-auto mb-4 sm:mb-5" />
-        <h4 className="m-0 mb-2 text-base sm:text-lg">JACY LONIDON Hard Sided PC 8 Wheel Spinners</h4>
-        <p className="my-1 text-xs sm:text-sm text-gray-600">Color: BLUE</p>
-        <p className="my-1 text-xs sm:text-sm text-gray-600">Price: ₹1,908</p>
-        <p className="my-1 text-xs sm:text-sm text-gray-600">Seller: yoursuitcase</p>
+        <img
+          src="https://via.placeholder.com/150"
+          alt="Product Image"
+          className="w-32 h-32 block mx-auto mb-4"
+        />
+        <h4 className="m-0 mb-2 text-lg font-bold text-gray-800">
+          JACY LONIDON Hard Sided PC 8 Wheel Spinners
+        </h4>
+        <p className="my-1 text-sm text-gray-600">Color: BLUE</p>
+        <p className="my-1 text-sm text-gray-600">Price: ₹1,908</p>
+        <p className="my-1 text-sm text-gray-600">Seller: yoursuitcase</p>
       </div>
       <div
-        className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 sm:p-5 rounded-lg shadow-2xl z-[1000] text-center w-11/12 sm:w-auto max-w-md ${
+        className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-4 sm:p-5 rounded-lg shadow-2xl z-[1000] text-center w-11/12 sm:w-96 ${
           isCancelPopupVisible ? 'block' : 'hidden'
         }`}
       >
         <button
-          className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 bg-red-500 text-white border-none rounded-full w-5 h-5 sm:w-6 sm:h-6 cursor-pointer hover:bg-red-700 transition-colors"
+          className="absolute top-2 right-2 bg-red-600 text-white border-none rounded-full w-6 h-6 cursor-pointer hover:bg-red-700 transition-colors text-sm"
           onClick={closeCancelPopup}
         >
           X
         </button>
-        <h4 className="m-0 mb-2 text-base sm:text-lg">Cancel Order</h4>
-        <p className="my-1 text-xs sm:text-sm text-gray-600">Are you sure you want to cancel this order?</p>
+        <h4 className="m-0 mb-2 text-lg font-bold text-gray-800">Cancel Order</h4>
+        <p className="my-1 text-sm text-gray-600">Are you sure you want to cancel this order?</p>
         <button
-          className="bg-red-500 text-white border-none py-1.5 px-4 sm:py-2 sm:px-5 rounded text-xs sm:text-sm cursor-pointer m-2 sm:m-2.5 hover:bg-red-700 transition-colors"
+          className="bg-red-600 text-white border-none py-2 px-5 rounded-full text-sm cursor-pointer hover:bg-red-700 transition-colors mt-2"
           onClick={confirmCancel}
         >
           Confirm
