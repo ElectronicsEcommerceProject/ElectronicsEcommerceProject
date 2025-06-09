@@ -9,8 +9,9 @@ import {
   ShoppingCart,
   OrderCheckoutPage,
 } from '../features/customer/index.js';
-import AdminLayout from '../features/admin/AdminLayout/AdminLayout.jsx'; //AdminLayout
-import ProductForm from '../features/admin/ProductManagement/ProductForm.jsx'; //AdminLayout
+
+
+import {AdminLayout, ProductForm} from '../features/admin/index.js';
 
 const App = () => {
   return (

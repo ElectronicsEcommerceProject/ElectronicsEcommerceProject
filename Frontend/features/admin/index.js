@@ -4,7 +4,6 @@ import React from "react";
 // Pages & Features
 import Dashboard from "../../features/admin/Dashboard/AdminDashboard.jsx";
 import ProductManagement from "../../features/admin/ProductManagement/ProductDashboard.jsx";
-import ProductForm from "../../features/admin/ProductManagement/ProductForm.jsx";
 import OrderManagement from "../../features/admin/OrderDashboard/OrderDashboard.jsx";
 import Header from "../../components/OrderManagement/Header.jsx";
 import FiltersSection from "../../components/OrderManagement/FilterSection.jsx";
@@ -25,12 +24,13 @@ import ReportsAnalytics from "../../features/admin/AnalyticManagement/AnalyticDa
 import StockManagement from "../../features/admin/StockManagement/StockManagement.jsx"; //import StockManagement from "../../features/admin/StockManagement/StockDashboard.jsx";
 // Layout Components
 import AdminHeader from "../../components/Header/AdminHeader.jsx";
+import AdminLayout from "../../features/admin/AdminLayout/AdminLayout.jsx";
+import ProductForm from "../../features/admin/ProductManagement/ProductForm.jsx";
 
 // Export all for global use
 export {
   Dashboard,
   ProductManagement,
-  ProductForm,
   OrderManagement,
   Header,
   FiltersSection,
@@ -49,4 +49,6 @@ export {
   ReportsAnalytics,
   AdminHeader,
   StockManagement,
+  AdminLayout,
+  ProductForm,
 };
