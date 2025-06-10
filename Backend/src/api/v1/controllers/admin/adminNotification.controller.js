@@ -5,8 +5,8 @@ import MESSAGE from "../../../../constants/message.js";
 
 const { Notification, NotificationTemplate, User } = db;
 
-// Send Notification Controller
-export const sendNotification = async (req, res) => {
+// Add Notification Controller
+export const addNotification = async (req, res) => {
   try {
     const {
       targetAudience,
@@ -115,7 +115,7 @@ export const sendNotification = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Send notification error:", error);
+    console.error("Add notification error:", error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: MESSAGE.post.fail,

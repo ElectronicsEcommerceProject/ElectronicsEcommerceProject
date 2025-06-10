@@ -1,12 +1,12 @@
 import express from "express";
 import {
-  sendNotification,
   getNotificationLogs,
   getNotificationStats,
   getTemplates,
   createTemplate,
   updateTemplate,
   deleteTemplate,
+  addNotification,
 } from "../../controllers/admin/adminNotification.controller.js";
 import {
   verifyJwtToken,
@@ -18,7 +18,7 @@ const router = express.Router();
 // Notification Management Routes
 
 /**
- * @route   POST /api/v1/admin/notifications/send
+ * @route   POST /api/v1/admin/notifications/add-Notification
  * @desc    Send notification to target audience
  * @access  Admin only
  * @body    {
@@ -30,7 +30,7 @@ const router = express.Router();
  *   specificUserIds?: string[]
  * }
  */
-router.post("/send", verifyJwtToken, isAdmin, sendNotification);
+router.post("/add-Notification", verifyJwtToken, isAdmin, addNotification);
 
 /**
  * @route   GET /api/v1/admin/notifications/logs

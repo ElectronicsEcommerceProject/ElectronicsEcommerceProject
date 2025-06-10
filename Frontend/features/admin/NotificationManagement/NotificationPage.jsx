@@ -1,6 +1,22 @@
 
 import React from 'react';
 
+import {
+  getApi,
+  createApi,
+  updateApiById,
+  deleteApiById
+} from '../../../src/api/api.js';
+import MESSAGE from '../../../src/api/message.js';
+import {
+  adminNotificationRoute,
+  adminNotificationAddRoute,
+  adminNotificationLogsRoute,
+  adminNotificationStatsRoute,
+  adminNotificationTemplatesRoute,
+  adminNotificationTemplateByIdRoute,
+} from '../../../src/index.js';
+
 const NavBar = ({ activeTab, setActiveTab }) => (
   <nav className="flex items-center justify-between p-4 bg-white shadow-md">
     <div className="flex items-center space-x-2">
@@ -172,13 +188,31 @@ const TemplateModal = ({ isOpen, onClose, template, onSave }) => {
 };
 
 const TemplatesManager = () => {
-  const [templates, setTemplates] = React.useState([
-    { id: 1, name: "Welcome Email", type: "Email", created: "4/15/2025", content: "Welcome to our platform!" },
-    { id: 2, name: "Order Confirmation", type: "SMS", created: "4/10/2025", content: "Your order has been confirmed." },
-    { id: 3, name: "Password Reset", type: "Email", created: "4/8/2025", content: "Click here to reset your password." }
-  ]);
+  const [templates, setTemplates] = React.useState([]);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [editingTemplate, setEditingTemplate] = React.useState(null);
+  const [loading, setLoading] = React.useState(false);
+
+  // Fetch templates on component mount
+  React.useEffect(() => {
+    fetchTemplates();
+  }, []);
+
+  const fetchTemplates = async () => {
+    try {
+      setLoading(true);
+      const response = await getApi(adminNotificationTemplatesRoute);
+      if (response.success) {
+        setTemplates(response.data?.templates || []);
+      }
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+      // Keep empty array if API fails
+      setTemplates([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleNewTemplate = () => {
     setEditingTemplate(null);
@@ -190,26 +224,53 @@ const TemplatesManager = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteTemplate = (templateId) => {
+  const handleDeleteTemplate = async (templateId) => {
     if (window.confirm('Are you sure you want to delete this template?')) {
-      setTemplates(templates.filter(t => t.id !== templateId));
+      try {
+        setLoading(true);
+        const response = await deleteApiById(adminNotificationTemplateByIdRoute.replace(':templateId', templateId), templateId);
+        if (response.success) {
+          setTemplates(templates.filter(t => t.id !== templateId));
+          console.log('Template deleted successfully');
+        }
+      } catch (error) {
+        console.error('Error deleting template:', error);
+        alert('Failed to delete template. Please try again.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  const handleSaveTemplate = (templateData) => {
-    if (editingTemplate) {
-      // Update existing template
-      setTemplates(templates.map(t =>
-        t.id === editingTemplate.id ? { ...templateData, id: editingTemplate.id } : t
-      ));
-    } else {
-      // Create new template
-      const newTemplate = {
-        ...templateData,
-        id: Math.max(...templates.map(t => t.id)) + 1,
-        created: new Date().toLocaleDateString()
-      };
-      setTemplates([...templates, newTemplate]);
+  const handleSaveTemplate = async (templateData) => {
+    try {
+      setLoading(true);
+      if (editingTemplate) {
+        // Update existing template
+        const response = await updateApiById(
+          adminNotificationTemplateByIdRoute.replace(':templateId', editingTemplate.id),
+          editingTemplate.id,
+          templateData
+        );
+        if (response.success) {
+          setTemplates(templates.map(t =>
+            t.id === editingTemplate.id ? { ...response.data.template } : t
+          ));
+          console.log('Template updated successfully');
+        }
+      } else {
+        // Create new template
+        const response = await createApi(adminNotificationTemplatesRoute, templateData);
+        if (response.success) {
+          setTemplates([...templates, response.data.template]);
+          console.log('Template created successfully');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving template:', error);
+      alert('Failed to save template. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -281,6 +342,27 @@ const SendNotification = () => {
   const [channel, setChannel] = React.useState('Email');
   const [template, setTemplate] = React.useState('No Template');
   const [selectedCustomers, setSelectedCustomers] = React.useState([]);
+  const [title, setTitle] = React.useState('');
+  const [message, setMessage] = React.useState('');
+  const [templates, setTemplates] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+
+  // Fetch templates on component mount
+  React.useEffect(() => {
+    fetchTemplates();
+  }, []);
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await getApi(adminNotificationTemplatesRoute);
+      if (response.success) {
+        setTemplates(response.data?.templates || []);
+      }
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+      setTemplates([]);
+    }
+  };
 
   const customers = [
     { name: "John Doe", email: "john.doe@example.com" },
@@ -295,6 +377,50 @@ const SendNotification = () => {
         ? prev.filter((e) => e !== email)
         : [...prev, email]
     );
+  };
+
+  const handleSendNotification = async () => {
+    try {
+      setLoading(true);
+
+      // Validate required fields
+      if (!title.trim()) {
+        alert('Please enter a notification title');
+        return;
+      }
+      if (!message.trim()) {
+        alert('Please enter a notification message');
+        return;
+      }
+      if (targetAudience.includes('Specific') && selectedCustomers.length === 0) {
+        alert('Please select at least one recipient');
+        return;
+      }
+
+      const notificationData = {
+        targetAudience,
+        channel,
+        templateId: template !== 'No Template' ? template : null,
+        title: title.trim(),
+        message: message.trim(),
+        specificUserIds: targetAudience.includes('Specific') ? selectedCustomers : null
+      };
+
+      const response = await createApi(adminNotificationAddRoute, notificationData);
+      if (response.success) {
+        alert('Notification sent successfully!');
+        // Reset form
+        setTitle('');
+        setMessage('');
+        setSelectedCustomers([]);
+        setTemplate('No Template');
+      }
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      alert('Failed to send notification. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -371,24 +497,46 @@ const SendNotification = () => {
               onChange={(e) => setTemplate(e.target.value)}
               className="w-full p-2 border rounded-lg"
             >
-              <option>No Template</option>
-              <option>Welcome Email</option>
-              <option>Order Confirmation</option>
-              <option>Password Reset</option>
+              <option value="No Template">No Template</option>
+              {templates.map((temp) => (
+                <option key={temp.id} value={temp.id}>
+                  {temp.name}
+                </option>
+              ))}
             </select>
+          </div>
+          <div className="mb-4">
+            <label className="flex items-center text-gray-600 mb-2">
+              <span className="mr-1">📌</span> Notification Title
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter notification title..."
+              className="w-full p-2 border rounded-lg"
+              required
+            />
           </div>
           <div>
             <label className="flex items-center text-gray-600 mb-2">
               <span className="mr-1">📝</span> Message Content
             </label>
             <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
               placeholder="Craft your message here... ✨"
               className="w-full p-2 border rounded-lg h-32"
-            ></textarea>
-            
+              required
+            />
           </div>
-          <button className="mt-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 py-2 rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 w-full flex items-center justify-center">
-            <span className="mr-1">✈️</span> Send Notification
+          <button
+            onClick={handleSendNotification}
+            disabled={loading}
+            className={`mt-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 py-2 rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 w-full flex items-center justify-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <span className="mr-1">✈️</span>
+            {loading ? 'Sending...' : 'Send Notification'}
           </button>
         </div>
       </div>
@@ -438,43 +586,88 @@ const LogRow = ({ log, onViewDetails }) => (
 );
 
 const NotificationLogs = () => {
-  const [logs, setLogs] = React.useState([
-    { id: 1, date: "5/1/2025 3:30:00 PM", sentBy: "admin1", audience: "All Users", channel: "Email", status: "Sent", message: "Welcome to our platform!" },
-    { id: 2, date: "4/30/2025 8:00:00 PM", sentBy: "admin2", audience: "All Retailers", channel: "SMS", status: "Failed", message: "System maintenance notification" },
-    { id: 3, date: "4/29/2025 2:45:00 PM", sentBy: "admin1", audience: "All Customers", channel: "Email", status: "Sent", message: "New product announcement" },
-    { id: 4, date: "4/28/2025 9:50:00 PM", sentBy: "admin1", audience: "John Doe, Jane Smith", channel: "Email", status: "Sent", message: "Order confirmation" },
-    { id: 5, date: "4/27/2025 5:15:00 PM", sentBy: "admin2", audience: "SuperMart, MegaStore", channel: "SMS", status: "Sent", message: "Inventory update" },
-    { id: 6, date: "4/26/2025 1:20:00 PM", sentBy: "admin1", audience: "All Users", channel: "In app SMS", status: "Sent", message: "App update available" },
-    { id: 7, date: "4/25/2025 11:30:00 AM", sentBy: "admin2", audience: "All Customers", channel: "Email", status: "Failed", message: "Newsletter" }
-  ]);
+  const [logs, setLogs] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
 
   const [filters, setFilters] = React.useState({
     channel: 'All Channels',
     status: 'All Statuses',
     audience: 'All Audiences'
   });
-
   const [selectedDetailLog, setSelectedDetailLog] = React.useState(null);
-
-  // Filter logs based on current filters
-  const filteredLogs = logs.filter(log => {
-    const channelMatch = filters.channel === 'All Channels' || log.channel === filters.channel;
-    const statusMatch = filters.status === 'All Statuses' || log.status === filters.status;
-    const audienceMatch = filters.audience === 'All Audiences' ||
-      (filters.audience === 'All Users' && log.audience === 'All Users') ||
-      (filters.audience === 'All Customers' && log.audience === 'All Customers') ||
-      (filters.audience === 'All Retailers' && log.audience === 'All Retailers');
-
-    return channelMatch && statusMatch && audienceMatch;
+  const [stats, setStats] = React.useState({
+    total: 0,
+    successful: 0,
+    failed: 0,
+    openRate: 0
   });
 
-  // Calculate stats from filtered logs
-  const stats = {
-    total: filteredLogs.length,
-    successful: filteredLogs.filter(log => log.status === 'Sent').length,
-    failed: filteredLogs.filter(log => log.status === 'Failed').length,
-    openRate: filteredLogs.length > 0 ? Math.round((filteredLogs.filter(log => log.status === 'Sent').length / filteredLogs.length) * 100) : 0
+  // Fetch logs and stats on component mount and filter changes
+  React.useEffect(() => {
+    fetchLogs();
+    fetchStats();
+  }, [filters]);
+
+  const fetchLogs = async () => {
+    try {
+      setLoading(true);
+      const queryParams = new URLSearchParams();
+
+      if (filters.channel !== 'All Channels') queryParams.append('channel', filters.channel);
+      if (filters.status !== 'All Statuses') queryParams.append('status', filters.status);
+      if (filters.audience !== 'All Audiences') queryParams.append('audience', filters.audience);
+
+      const queryString = queryParams.toString();
+      const endpoint = queryString ? `${adminNotificationLogsRoute}?${queryString}` : adminNotificationLogsRoute;
+      const response = await getApi(endpoint);
+
+      if (response.success) {
+        setLogs(response.data?.logs || []);
+        // Also update stats from the logs response
+        if (response.data?.stats) {
+          setStats({
+            total: response.data.stats.total || 0,
+            successful: response.data.stats.successful || 0,
+            failed: response.data.stats.failed || 0,
+            openRate: response.data.stats.successRate || 0
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+      setLogs([]);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const fetchStats = async () => {
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (filters.channel !== 'All Channels') queryParams.append('channel', filters.channel);
+      if (filters.audience !== 'All Audiences') queryParams.append('audience', filters.audience);
+
+      const queryString = queryParams.toString();
+      const endpoint = queryString ? `${adminNotificationStatsRoute}?${queryString}` : adminNotificationStatsRoute;
+      const response = await getApi(endpoint);
+
+      if (response.success && response.data?.stats) {
+        setStats({
+          total: response.data.stats.total || 0,
+          successful: response.data.stats.successful || 0,
+          failed: response.data.stats.failed || 0,
+          openRate: response.data.stats.successRate || 0
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      setStats({ total: 0, successful: 0, failed: 0, openRate: 0 });
+    }
+  };
+
+  // Since we're fetching filtered data from API, we use logs directly
+  const filteredLogs = logs;
 
   const handleStatClick = (filterType) => {
     switch(filterType) {
@@ -575,7 +768,7 @@ const NotificationLogs = () => {
           </div>
         </div>
         <div className="mt-4 text-sm text-gray-600">
-          Showing {filteredLogs.length} of {logs.length} notifications
+          {loading ? 'Loading notifications...' : `Showing ${filteredLogs.length} notifications`}
         </div>
       </div>
 
@@ -592,7 +785,13 @@ const NotificationLogs = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredLogs.length > 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan="6" className="py-8 px-4 text-center text-gray-500">
+                  Loading notifications...
+                </td>
+              </tr>
+            ) : filteredLogs.length > 0 ? (
               filteredLogs.map((log) => (
                 <LogRow
                   key={log.id}
