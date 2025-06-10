@@ -29,6 +29,15 @@ export const addNotification = async (req, res) => {
       });
     }
 
+    // Validate that the admin user exists in the database
+    const adminUser = await User.findByPk(adminId);
+    if (!adminUser) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: MESSAGE.custom("Invalid user. User not found in database."),
+      });
+    }
+
     // Map frontend channel values to backend enum values
     const channelMap = {
       Email: "email",
@@ -398,6 +407,15 @@ export const createTemplate = async (req, res) => {
       });
     }
 
+    // Validate that the admin user exists in the database
+    const adminUser = await User.findByPk(adminId);
+    if (!adminUser) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: MESSAGE.custom("Invalid user. User not found in database."),
+      });
+    }
+
     // Map frontend type to backend enum
     const typeMap = {
       Email: "email",
@@ -451,6 +469,7 @@ export const createTemplate = async (req, res) => {
 // Update Template
 export const updateTemplate = async (req, res) => {
   try {
+    console.log("testing for update");
     const { templateId } = req.params;
     const { name, type, content } = req.body;
     const adminId = req.user.user_id;
@@ -462,6 +481,15 @@ export const updateTemplate = async (req, res) => {
         message: MESSAGE.custom(
           "Missing required fields: name, type, and content are required"
         ),
+      });
+    }
+
+    // Validate that the admin user exists in the database
+    const adminUser = await User.findByPk(adminId);
+    if (!adminUser) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: MESSAGE.custom("Invalid user. User not found in database."),
       });
     }
 

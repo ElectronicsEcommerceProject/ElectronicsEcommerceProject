@@ -126,8 +126,6 @@ const adminNotificationStatsRoute = import.meta.env
   .VITE_ADMIN_NOTIFICATION_STATS_ENDPOINT;
 const adminNotificationTemplatesRoute = import.meta.env
   .VITE_ADMIN_NOTIFICATION_TEMPLATES_ENDPOINT;
-const adminNotificationTemplateByIdRoute = import.meta.env
-  .VITE_ADMIN_NOTIFICATION_TEMPLATE_BY_ID_ENDPOINT;
 
 export {
   FaEye,
@@ -193,5 +191,4 @@ export {
   adminNotificationLogsRoute,
   adminNotificationStatsRoute,
   adminNotificationTemplatesRoute,
-  adminNotificationTemplateByIdRoute,
 };

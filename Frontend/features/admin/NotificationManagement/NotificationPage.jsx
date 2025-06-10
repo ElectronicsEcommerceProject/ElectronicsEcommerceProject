@@ -14,7 +14,6 @@ import {
   adminNotificationLogsRoute,
   adminNotificationStatsRoute,
   adminNotificationTemplatesRoute,
-  adminNotificationTemplateByIdRoute,
   allCustomerRoute,
   allRetailerRoute,
 } from '../../../src/index.js';
@@ -230,7 +229,7 @@ const TemplatesManager = () => {
     if (window.confirm('Are you sure you want to delete this template?')) {
       try {
         setLoading(true);
-        const response = await deleteApiById(adminNotificationTemplateByIdRoute.replace(':templateId', templateId), templateId);
+        const response = await deleteApiById(adminNotificationTemplatesRoute, templateId);
         if (response.success) {
           setTemplates(templates.filter(t => t.id !== templateId));
           console.log('Template deleted successfully');
@@ -250,7 +249,7 @@ const TemplatesManager = () => {
       if (editingTemplate) {
         // Update existing template
         const response = await updateApiById(
-          adminNotificationTemplateByIdRoute.replace(':templateId', editingTemplate.id),
+          adminNotificationTemplatesRoute,
           editingTemplate.id,
           templateData
         );

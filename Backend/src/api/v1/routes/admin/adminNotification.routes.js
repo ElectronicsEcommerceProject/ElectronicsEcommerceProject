@@ -88,7 +88,7 @@ router.get("/templates", verifyJwtToken, isAdmin, getTemplates);
 router.post("/templates", verifyJwtToken, isAdmin, createTemplate);
 
 /**
- * @route   PUT /api/v1/admin/notifications/templates/:templateId
+ * @route   PATCH /api/v1/admin/notifications/templates/:templateId
  * @desc    Update notification template
  * @access  Admin only
  * @params  templateId: string
@@ -98,7 +98,7 @@ router.post("/templates", verifyJwtToken, isAdmin, createTemplate);
  *   content: string
  * }
  */
-router.put("/templates/:templateId", verifyJwtToken, isAdmin, updateTemplate);
+router.patch("/templates/:templateId", verifyJwtToken, isAdmin, updateTemplate);
 
 /**
  * @route   DELETE /api/v1/admin/notifications/templates/:templateId
