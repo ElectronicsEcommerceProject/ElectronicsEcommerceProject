@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import React from 'react';
+import { OrderSummary } from "../../customer/index.js";
 
 const Profile = () => {
   const [user, setUser] = useState({
@@ -19,11 +20,7 @@ const Profile = () => {
     { id: 1, address: '123 Main Street, City, Country, 123456' },
     { id: 2, address: '456 Park Avenue, City, Country, 654321' },
   ]);
-  const [orders, setOrders] = useState([
-    { id: 1, date: '2025-05-20', item: 'Laptop', status: 'Delivered', tracking: 'Track Here' },
-    { id: 2, date: '2025-05-18', item: 'Headphones', status: 'Shipped', tracking: 'Track Here' },
-    { id: 3, date: '2025-05-15', item: 'Mouse', status: 'Processing', tracking: 'Not Available' },
-  ]);
+
   const [wishlistItems, setWishlistItems] = useState([
     { id: 1, item: 'Smartphone', price: '₹25,000' },
     { id: 2, item: 'Laptop', price: '₹65,000' },
@@ -33,6 +30,7 @@ const Profile = () => {
     { id: 1, upi: 'sunil@upi' },
     { id: 2, upi: 'sunil2@upi' },
   ]);
+
   const [savedCards, setSavedCards] = useState([
     { id: 1, card: '**** **** **** 1234', expiry: '12/26' },
   ]);
@@ -57,6 +55,7 @@ const Profile = () => {
     allowAnalytics: true,
     allowPersonalizedAds: false,
   });
+
   const [consentHistory, setConsentHistory] = useState([
     { date: '2025-05-29', action: 'Updated privacy settings' },
   ]);
@@ -75,6 +74,7 @@ const Profile = () => {
       { id: 2, device: 'MacBook Pro', location: 'Delhi, IN', time: '2025-05-28 14:20 IST' },
     ],
   });
+
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -82,8 +82,8 @@ const Profile = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const section = params.get('section');
-    if (section === 'orders') {
-      setActiveSection('My Orders');
+    if (section === 'OrderSummary') {
+      setActiveSection('OrderSummary');
     } else if (section === 'wishlist') {
       setActiveSection('Wishlist');
     } else {
@@ -132,8 +132,8 @@ const Profile = () => {
 
     const handleMenuClick = (item, subItem) => {
       if (item === 'MY ORDERS') {
-        setActiveSection('My Orders');
-        setActiveMenu('My Orders');
+        setActiveSection('OrderSummary');
+        setActiveMenu('OrderSummary');
       } else if (item === 'WISHLIST') {
         setActiveSection('Wishlist');
         setActiveMenu('Wishlist');
@@ -225,6 +225,7 @@ const Profile = () => {
     );
   };
 
+  // Other components (PersonalInformation, EmailAddress, MobileNumber, etc.) remain unchanged
   const PersonalInformation = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState(user);
@@ -590,70 +591,6 @@ const Profile = () => {
             </ul>
           ) : (
             <p className="text-gray-600 text-sm">No addresses found.</p>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  const MyOrders = () => {
-    const handleTrackOrder = (tracking) => {
-      if (tracking === 'Not Available') {
-        alert('Tracking information is not available yet.');
-        return;
-      }
-      alert(`Tracking Link: ${tracking}`);
-    };
-
-    const handleCancelOrder = (orderId) => {
-      const order = orders.find((o) => o.id === orderId);
-      if (order.status !== 'Processing') {
-        alert('Only orders in "Processing" status can be canceled.');
-        return;
-      }
-      if (window.confirm('Are you sure you want to cancel this order?')) {
-        setOrders(orders.filter((o) => o.id !== orderId));
-        alert('Order canceled successfully!');
-      }
-    };
-
-    return (
-      <div className="mb-6 p-4 sm:p-6 bg-white border border-gray-200 rounded-lg hover:shadow-lg transition-all duration-300">
-        <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">My Orders</h2>
-        <div>
-          {orders.length > 0 ? (
-            <ul className="space-y-2">
-              {orders.map((order) => (
-                <li
-                  key={order.id}
-                  className="p-2 border border-gray-200 rounded-lg flex flex-col sm:flex-row sm:justify-between sm:items-center"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">Order #{order.id}: {order.item}</p>
-                    <p className="text-sm text-gray-600">Date: {order.date}</p>
-                    <p className="text-sm text-gray-600">Status: {order.status}</p>
-                  </div>
-                  <div className="flex space-x-2 mt-2 sm:mt-0">
-                    <button
-                      onClick={() => handleTrackOrder(order.tracking)}
-                      className="text-blue-600 hover:underline text-sm font-medium"
-                    >
-                      Track Order
-                    </button>
-                    {order.status === 'Processing' && (
-                      <button
-                        onClick={() => handleCancelOrder(order.id)}
-                        className="text-red-600 hover:underline text-sm font-medium"
-                      >
-                        Cancel Order
-                      </button>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-600 text-sm">No orders found.</p>
           )}
         </div>
       </div>
@@ -1324,8 +1261,8 @@ const Profile = () => {
         return <ManageAddresses />;
       case 'PAN Card Information':
         return <PANCardInformation />;
-      case 'My Orders':
-        return <MyOrders />;
+      case 'OrderSummary':
+        return <OrderSummary />;
       case 'Wishlist':
         return <Wishlist />;
       case 'Saved UPI':

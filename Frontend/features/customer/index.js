@@ -10,6 +10,8 @@ import ProfilePage from "../../features/customer/Profile/ProfilePage";
 import ShoppingCart from "../../components/CartSummary/ShoppingCart";
 
 import OrderCheckoutPage from "../../features/Order/OrderCheckoutPage.jsx";
+import OrderSummary from "../../features/Order/orderSummary.jsx";
+import OrderStatus from "../../features/Order/OrderStatus.jsx";
 
 // 🧭 Common UI
 import Header from "../../components/Header/Header";
@@ -48,6 +50,8 @@ export {
   ProfilePage,
   ShoppingCart,
   OrderCheckoutPage,
+  OrderSummary,
+  OrderStatus,
   Header,
   Footer,
   HoverMenu,
@@ -59,3 +63,4 @@ export {
   brandsData,
   dummyProducts,
 };
+

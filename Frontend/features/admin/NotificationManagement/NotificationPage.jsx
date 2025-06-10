@@ -1,428 +1,671 @@
-import React, { useState } from 'react';
 
-const NotificationPage = () => {
-  // State for active tab
-  const [activeSection, setActiveSection] = useState('send');
+import React from 'react';
 
-  // Mock data for templates
-  const [templates, setTemplates] = useState([
-    { id: 1, name: "Welcome Email", type: "Email", createdDate: "2025-04-15", content: "Hello {user_name}, welcome to our platform!" },
-    { id: 2, name: "Order Confirmation", type: "SMS", createdDate: "2025-04-10", content: "Order {order_id} confirmed!" },
-  ]);
+const NavBar = ({ activeTab, setActiveTab }) => (
+  <nav className="flex items-center justify-between p-4 bg-white shadow-md">
+    <div className="flex items-center space-x-2">
+      <div className="text-blue-600 text-2xl">🔔</div>
+      <span className="text-xl font-semibold text-gray-800">NotifyHub</span>
+    </div>
+    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+      <button
+        onClick={() => setActiveTab('send')}
+        className={`flex items-center px-4 py-2 rounded-lg ${
+          activeTab === 'send'
+            ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white'
+            : 'text-gray-600 hover:text-gray-800'
+        }`}
+      >
+        <span className="mr-1">✈️</span> Send Notification
+      </button>
+      <button
+        onClick={() => setActiveTab('templates')}
+        className={`flex items-center px-4 py-2 rounded-lg ${
+          activeTab === 'templates'
+            ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white'
+            : 'text-gray-600 hover:text-gray-800'
+        }`}
+      >
+        <span className="mr-1">📋</span> Templates Manager
+      </button>
+      <button
+        onClick={() => setActiveTab('logs')}
+        className={`flex items-center px-4 py-2 rounded-lg ${
+          activeTab === 'logs'
+            ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white'
+            : 'text-gray-600 hover:text-gray-800'
+        }`}
+      >
+        <span className="mr-1">🔄</span> Notification Logs
+      </button>
+    </div>
+  </nav>
+);
 
-  // Mock data for logs
-  const [logs, setLogs] = useState([
-    { id: 1, date: "2025-05-01 10:00", sentBy: "Admin John", audience: "All Users", channel: "Email", status: "Sent", openRate: "65%", clickRate: "20%", content: "Promotion alert!" },
-    { id: 2, date: "2025-04-30 14:30", sentBy: "Admin Jane", audience: "Retailers", channel: "SMS", status: "Failed", openRate: "N/A", clickRate: "N/A", content: "Stock update" },
-  ]);
+const TemplateRow = ({ template, isHighlighted, onEdit, onDelete }) => (
+  <tr className={`border-b ${isHighlighted ? 'bg-gray-100' : ''}`}>
+    <td className="py-3 px-4">{template.name}</td>
+    <td className="py-3 px-4 flex items-center">
+      {template.type === 'Email' ? (
+        <span className="flex items-center text-blue-600">
+          <span className="mr-1">📧</span> Email
+        </span>
+      ) : template.type === 'SMS' ? (
+        <span className="flex items-center text-gray-600">
+          <span className="mr-1">📱</span> SMS
+        </span>
+      ) : (
+        <span className="flex items-center text-purple-600">
+          <span className="mr-1">📲</span> In app SMS
+        </span>
+      )}
+    </td>
+    <td className="py-3 px-4">{template.created}</td>
+    <td className="py-3 px-4 flex space-x-2">
+      <button
+        onClick={() => onEdit(template)}
+        className="text-blue-600 hover:text-blue-800"
+        title="Edit Template"
+      >
+        ✏️
+      </button>
+      <button
+        onClick={() => onDelete(template.id)}
+        className="text-red-600 hover:text-red-800"
+        title="Delete Template"
+      >
+        🗑️
+      </button>
+    </td>
+  </tr>
+);
 
-  // Navigation component
-  const TopNav = () => {
-    const navItems = [
-      { id: 'send', label: '📤 Send Notification' },
-      { id: 'templates', label: '🧾 Templates Manager' },
-      { id: 'logs', label: '📑 Notification Logs' },
-    ];
+const TemplateModal = ({ isOpen, onClose, template, onSave }) => {
+  const [formData, setFormData] = React.useState({
+    name: template?.name || '',
+    type: template?.type || 'Email',
+    content: template?.content || ''
+  });
 
-    return (
-      <nav className="bg-white shadow sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex space-x-8">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                    activeSection === item.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                  }`}
-                  onClick={() => setActiveSection(item.id)}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </nav>
-    );
+  React.useEffect(() => {
+    if (template) {
+      setFormData({
+        name: template.name || '',
+        type: template.type || 'Email',
+        content: template.content || ''
+      });
+    } else {
+      setFormData({
+        name: '',
+        type: 'Email',
+        content: ''
+      });
+    }
+  }, [template]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({ ...template, ...formData });
+    onClose();
   };
 
-  // Send Notification Component
-  const SendNotification = () => {
-    const [formData, setFormData] = useState({
-      audience: 'all',
-      channel: 'email',
-      message: '',
-      schedule: 'now'
-    });
+  if (!isOpen) return null;
 
-    const handleSubmit = (e) => {
-      e.preventDefault();
-      alert(`Notification sent via ${formData.channel} to ${formData.audience}`);
-      
-      // Add to logs
-      const newLog = {
-        id: logs.length + 1,
-        date: new Date().toLocaleString(),
-        sentBy: "Current User",
-        audience: formData.audience,
-        channel: formData.channel,
-        status: "Sent",
-        openRate: "0%",
-        clickRate: "0%",
-        content: formData.message
-      };
-      
-      setLogs([newLog, ...logs]);
-    };
-
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Send Notification</h1>
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow">
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <h2 className="text-xl font-bold mb-4">
+          {template ? 'Edit Template' : 'New Template'}
+        </h2>
+        <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Audience</label>
-            <select
-              className="w-full p-2 border rounded-md"
-              value={formData.audience}
-              onChange={(e) => setFormData({...formData, audience: e.target.value})}
-            >
-              <option value="all">All Users</option>
-              <option value="customer">Customers</option>
-              <option value="retailer">Retailers</option>
-            </select>
-          </div>
-          
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Channel</label>
-            <select
-              className="w-full p-2 border rounded-md"
-              value={formData.channel}
-              onChange={(e) => setFormData({...formData, channel: e.target.value})}
-            >
-              <option value="email">Email</option>
-              <option value="sms">SMS</option>
-              <option value="inapp">In-App</option>
-            </select>
-          </div>
-          
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
-            <textarea
-              className="w-full p-2 border rounded-md"
-              rows={4}
-              value={formData.message}
-              onChange={(e) => setFormData({...formData, message: e.target.value})}
-              placeholder="Type your message here..."
+            <label className="block text-gray-600 mb-2">Template Name</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full p-2 border rounded-lg"
               required
             />
           </div>
-          
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-          >
-            Send Notification
-          </button>
+          <div className="mb-4">
+            <label className="block text-gray-600 mb-2">Type</label>
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              className="w-full p-2 border rounded-lg"
+            >
+              <option value="Email">Email</option>
+              <option value="SMS">SMS</option>
+              <option value="In app SMS">In app SMS</option>
+            </select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-600 mb-2">Content</label>
+            <textarea
+              value={formData.content}
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              className="w-full p-2 border rounded-lg h-32"
+              placeholder="Enter template content..."
+              required
+            />
+          </div>
+          <div className="flex space-x-2">
+            <button
+              type="submit"
+              className="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+            >
+              {template ? 'Update' : 'Create'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
-    );
+    </div>
+  );
+};
+
+const TemplatesManager = () => {
+  const [templates, setTemplates] = React.useState([
+    { id: 1, name: "Welcome Email", type: "Email", created: "4/15/2025", content: "Welcome to our platform!" },
+    { id: 2, name: "Order Confirmation", type: "SMS", created: "4/10/2025", content: "Your order has been confirmed." },
+    { id: 3, name: "Password Reset", type: "Email", created: "4/8/2025", content: "Click here to reset your password." }
+  ]);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [editingTemplate, setEditingTemplate] = React.useState(null);
+
+  const handleNewTemplate = () => {
+    setEditingTemplate(null);
+    setIsModalOpen(true);
   };
 
-  // Templates Manager Component
-  const TemplatesManager = () => {
-    const [showForm, setShowForm] = useState(false);
-    const [newTemplate, setNewTemplate] = useState({ 
-      name: "", 
-      type: "Email", 
-      content: "" 
-    });
-    const [previewTemplate, setPreviewTemplate] = useState(null);
+  const handleEditTemplate = (template) => {
+    setEditingTemplate(template);
+    setIsModalOpen(true);
+  };
 
-    const handleAddTemplate = (e) => {
-      e.preventDefault();
-      const templateToAdd = {
-        ...newTemplate,
-        id: templates.length + 1,
-        createdDate: new Date().toISOString().split('T')[0]
+  const handleDeleteTemplate = (templateId) => {
+    if (window.confirm('Are you sure you want to delete this template?')) {
+      setTemplates(templates.filter(t => t.id !== templateId));
+    }
+  };
+
+  const handleSaveTemplate = (templateData) => {
+    if (editingTemplate) {
+      // Update existing template
+      setTemplates(templates.map(t =>
+        t.id === editingTemplate.id ? { ...templateData, id: editingTemplate.id } : t
+      ));
+    } else {
+      // Create new template
+      const newTemplate = {
+        ...templateData,
+        id: Math.max(...templates.map(t => t.id)) + 1,
+        created: new Date().toLocaleDateString()
       };
-      
-      setTemplates([...templates, templateToAdd]);
-      setShowForm(false);
-      setNewTemplate({ name: "", type: "Email", content: "" });
-    };
-
-    const handlePreview = (template) => {
-      const previewContent = template.content
-        .replace("{user_name}", "John Doe")
-        .replace("{order_id}", "12345");
-      setPreviewTemplate({ ...template, content: previewContent });
-    };
-
-    const deleteTemplate = (id) => {
-      if (window.confirm("Are you sure you want to delete this template?")) {
-        setTemplates(templates.filter(t => t.id !== id));
-      }
-    };
-
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Templates Manager</h1>
-        
-        <button
-          className="bg-green-600 text-white px-4 py-2 rounded-md mb-4 hover:bg-green-700 transition"
-          onClick={() => setShowForm(true)}
-        >
-          Add New Template
-        </button>
-
-        {showForm && (
-          <div className="bg-white p-6 rounded-lg shadow mb-6">
-            <form onSubmit={handleAddTemplate}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Template Name</label>
-                <input
-                  className="w-full p-2 border rounded-md"
-                  value={newTemplate.name}
-                  onChange={(e) => setNewTemplate({...newTemplate, name: e.target.value})}
-                  required
-                />
-              </div>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
-                <select
-                  className="w-full p-2 border rounded-md"
-                  value={newTemplate.type}
-                  onChange={(e) => setNewTemplate({...newTemplate, type: e.target.value})}
-                >
-                  <option value="Email">Email</option>
-                  <option value="SMS">SMS</option>
-                  <option value="In-App">In-App</option>
-                </select>
-              </div>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Content</label>
-                <textarea
-                  className="w-full p-2 border rounded-md"
-                  rows={5}
-                  value={newTemplate.content}
-                  onChange={(e) => setNewTemplate({...newTemplate, content: e.target.value})}
-                  placeholder="Use {user_name}, {order_id} as variables"
-                  required
-                />
-              </div>
-              
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-              >
-                Save Template
-              </button>
-              
-              <button
-                type="button"
-                className="ml-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
-                onClick={() => setShowForm(false)}
-              >
-                Cancel
-              </button>
-            </form>
-          </div>
-        )}
-
-        <div className="overflow-x-auto">
-          <table className="w-full bg-white rounded-lg shadow">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="p-4 text-left">Name</th>
-                <th className="p-4 text-left">Type</th>
-                <th className="p-4 text-left">Created</th>
-                <th className="p-4 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {templates.map((template) => (
-                <tr key={template.id} className="hover:bg-gray-50">
-                  <td className="p-4">{template.name}</td>
-                  <td className="p-4">{template.type}</td>
-                  <td className="p-4">{template.createdDate}</td>
-                  <td className="p-4">
-                    <button 
-                      className="text-blue-600 mr-2 hover:underline"
-                      onClick={() => {
-                        setNewTemplate({
-                          name: template.name,
-                          type: template.type,
-                          content: template.content
-                        });
-                        setShowForm(true);
-                      }}
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      className="text-red-600 mr-2 hover:underline"
-                      onClick={() => deleteTemplate(template.id)}
-                    >
-                      Delete
-                    </button>
-                    <button 
-                      className="text-purple-600 hover:underline"
-                      onClick={() => handlePreview(template)}
-                    >
-                      Preview
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {previewTemplate && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg max-w-lg w-full">
-              <h2 className="text-xl font-bold mb-4">{previewTemplate.name} Preview</h2>
-              <div className="p-4 border rounded bg-gray-50">
-                {previewTemplate.content}
-              </div>
-              <button
-                className="mt-4 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
-                onClick={() => setPreviewTemplate(null)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
+      setTemplates([...templates, newTemplate]);
+    }
   };
 
-  // Notification Logs Component
-  const NotificationLogs = () => {
-    const [selectedLog, setSelectedLog] = useState(null);
-    const [filters, setFilters] = useState({
-      channel: '',
-      status: ''
-    });
-
-    const filteredLogs = logs.filter(log => {
-      return (
-        (filters.channel === '' || log.channel.toLowerCase().includes(filters.channel.toLowerCase())) &&
-        (filters.status === '' || log.status.toLowerCase().includes(filters.status.toLowerCase()))
-      );
-    });
-
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Notification Logs</h1>
-        
-        <div className="mb-4 flex space-x-4">
-          <select
-            className="p-2 border rounded-md"
-            value={filters.channel}
-            onChange={(e) => setFilters({...filters, channel: e.target.value})}
-          >
-            <option value="">All Channels</option>
-            <option value="email">Email</option>
-            <option value="sms">SMS</option>
-          </select>
-          
-          <select
-            className="p-2 border rounded-md"
-            value={filters.status}
-            onChange={(e) => setFilters({...filters, status: e.target.value})}
-          >
-            <option value="">All Statuses</option>
-            <option value="sent">Sent</option>
-            <option value="failed">Failed</option>
-          </select>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full bg-white rounded-lg shadow">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="p-4 text-left">Date</th>
-                <th className="p-4 text-left">Sent By</th>
-                <th className="p-4 text-left">Channel</th>
-                <th className="p-4 text-left">Status</th>
-                <th className="p-4 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLogs.map((log) => (
-                <tr key={log.id} className="hover:bg-gray-50">
-                  <td className="p-4">{log.date}</td>
-                  <td className="p-4">{log.sentBy}</td>
-                  <td className="p-4">{log.channel}</td>
-                  <td className="p-4">
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      log.status === 'Sent' ? 'bg-green-100 text-green-800' : 
-                      log.status === 'Failed' ? 'bg-red-100 text-red-800' : 'bg-gray-100'
-                    }`}>
-                      {log.status}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <button 
-                      className="text-blue-600 hover:underline"
-                      onClick={() => setSelectedLog(log)}
-                    >
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {selectedLog && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg max-w-lg w-full">
-              <h2 className="text-xl font-bold mb-4">Notification Details</h2>
-              
-              <div className="space-y-3">
-                <p><strong>Date:</strong> {selectedLog.date}</p>
-                <p><strong>Sent By:</strong> {selectedLog.sentBy}</p>
-                <p><strong>Channel:</strong> {selectedLog.channel}</p>
-                <p><strong>Status:</strong> {selectedLog.status}</p>
-                <p><strong>Audience:</strong> {selectedLog.audience}</p>
-                <div className="mt-4 p-3 bg-gray-50 rounded">
-                  <p className="font-medium">Content:</p>
-                  <p>{selectedLog.content}</p>
-                </div>
-              </div>
-              
-              <button
-                className="mt-4 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
-                onClick={() => setSelectedLog(null)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // Main render
   return (
-    <div className="bg-gray-100 min-h-screen">
-      <TopNav />
-      
-      <main>
-        {activeSection === 'send' && <SendNotification />}
-        {activeSection === 'templates' && <TemplatesManager />}
-        {activeSection === 'logs' && <NotificationLogs />}
-      </main>
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Templates Manager</h1>
+          <p className="text-gray-600">Create and manage reusable notification templates</p>
+        </div>
+        <button
+          onClick={handleNewTemplate}
+          className="mt-2 sm:mt-0 bg-green-500 text-white px-4 py-2 rounded-lg shadow hover:bg-green-600 flex items-center"
+        >
+          <span className="mr-1">+</span> New Template
+        </button>
+      </div>
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="py-3 px-4 text-left text-gray-600">📋 Name</th>
+              <th className="py-3 px-4 text-left text-gray-600">🔤 Type</th>
+              <th className="py-3 px-4 text-left text-gray-600">🗓️ Created</th>
+              <th className="py-3 px-4 text-left text-gray-600">⚙️ Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {templates.map((template, index) => (
+              <TemplateRow
+                key={template.id}
+                template={template}
+                isHighlighted={index === 0}
+                onEdit={handleEditTemplate}
+                onDelete={handleDeleteTemplate}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <TemplateModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        template={editingTemplate}
+        onSave={handleSaveTemplate}
+      />
+    </div>
+  );
+};
+
+const CustomerRow = ({ name, email, isChecked, onCheckChange }) => (
+  <div className="flex items-center py-2 border-b">
+    <input
+      type="checkbox"
+      checked={isChecked}
+      onChange={onCheckChange}
+      className="mr-3"
+    />
+    <div>
+      <p className="font-medium">{name}</p>
+      <p className="text-gray-600">{email}</p>
+    </div>
+  </div>
+);
+
+const SendNotification = () => {
+  const [targetAudience, setTargetAudience] = React.useState('All Users');
+  const [channel, setChannel] = React.useState('Email');
+  const [template, setTemplate] = React.useState('No Template');
+  const [selectedCustomers, setSelectedCustomers] = React.useState([]);
+
+  const customers = [
+    { name: "John Doe", email: "john.doe@example.com" },
+    { name: "Jane Smith", email: "jane.smith@example.com" },
+    { name: "Robert Johnson", email: "robert.johnson@example.com" },
+    { name: "Emily Davis", email: "emily.davis@example.com" },
+  ];
+
+  const handleCustomerCheck = (email) => {
+    setSelectedCustomers((prev) =>
+      prev.includes(email)
+        ? prev.filter((e) => e !== email)
+        : [...prev, email]
+    );
+  };
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-800">Send Notification</h1>
+        <p className="text-gray-600 mb-4">Reach your audience with targeted messages</p>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex flex-col sm:flex-row sm:space-x-4 mb-4">
+            <div className="flex-1">
+              <label className="flex items-center text-gray-600 mb-2">
+                <span className="mr-1">👥</span> Target Audience
+              </label>
+              <select
+                value={targetAudience}
+                onChange={(e) => setTargetAudience(e.target.value)}
+                className="w-full p-2 border rounded-lg"
+              >
+                <option>All Users</option>
+                <option>All Customers</option>
+                <option>All Retailers</option>
+                <option>Specific Customers</option>
+                <option>Specific Retailers</option>
+              </select>
+            </div>
+            <div className="flex-1">
+              <label className="flex items-center text-gray-600 mb-2">
+                <span className="mr-1">📡</span> Channel
+              </label>
+              <select
+                value={channel}
+                onChange={(e) => setChannel(e.target.value)}
+                className="w-full p-2 border rounded-lg"
+              >
+                <option>Email</option>
+                <option>SMS</option>
+                <option>In app SMS</option>
+              </select>
+            </div>
+          </div>
+          {targetAudience.includes('Specific') && (
+            <div className="mb-4">
+              <label className="flex items-center text-gray-600 mb-2">
+                <span className="mr-1">👤</span> Select Customers
+              </label>
+              <input
+                type="text"
+                placeholder="Search customers..."
+                className="w-full p-2 border rounded-lg mb-2"
+              />
+              <div className="max-h-40 overflow-y-auto">
+                {customers.map((customer) => (
+                  <CustomerRow
+                    key={customer.email}
+                    name={customer.name}
+                    email={customer.email}
+                    isChecked={selectedCustomers.includes(customer.email)}
+                    onCheckChange={() => handleCustomerCheck(customer.email)}
+                  />
+                ))}
+              </div>
+              {selectedCustomers.length === 0 && (
+                <p className="text-red-600 mt-2">⚠️ Please select at least one recipient</p>
+              )}
+              <p className="text-gray-600 mt-2">{selectedCustomers.length} selected</p>
+            </div>
+          )}
+          <div className="mb-4">
+            <label className="flex items-center text-gray-600 mb-2">
+              <span className="mr-1">📄</span> Template (Optional)
+            </label>
+            <select
+              value={template}
+              onChange={(e) => setTemplate(e.target.value)}
+              className="w-full p-2 border rounded-lg"
+            >
+              <option>No Template</option>
+              <option>Welcome Email</option>
+              <option>Order Confirmation</option>
+              <option>Password Reset</option>
+            </select>
+          </div>
+          <div>
+            <label className="flex items-center text-gray-600 mb-2">
+              <span className="mr-1">📝</span> Message Content
+            </label>
+            <textarea
+              placeholder="Craft your message here... ✨"
+              className="w-full p-2 border rounded-lg h-32"
+            ></textarea>
+            
+          </div>
+          <button className="mt-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 py-2 rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 w-full flex items-center justify-center">
+            <span className="mr-1">✈️</span> Send Notification
+          </button>
+        </div>
+      </div>
+
+    </div>
+  );
+};
+
+const LogRow = ({ log, onViewDetails }) => (
+  <tr className="border-b">
+    <td className="py-3 px-4">{log.date}</td>
+    <td className="py-3 px-4">{log.sentBy}</td>
+    <td className="py-3 px-4">{log.audience}</td>
+    <td className="py-3 px-4 flex items-center">
+      {log.channel === 'Email' ? (
+        <span className="flex items-center text-blue-600">
+          <span className="mr-1">📧</span> Email
+        </span>
+      ) : log.channel === 'SMS' ? (
+        <span className="flex items-center text-gray-600">
+          <span className="mr-1">📱</span> SMS
+        </span>
+      ) : (
+        <span className="flex items-center text-purple-600">
+          <span className="mr-1">📲</span> In app SMS
+        </span>
+      )}
+    </td>
+    <td className="py-3 px-4">
+      <span
+        className={`${
+          log.status === 'Sent' ? 'text-green-600' : 'text-red-600'
+        } flex items-center`}
+      >
+        <span className="mr-1">{log.status === 'Sent' ? '✅' : '❌'}</span> {log.status}
+      </span>
+    </td>
+    <td className="py-3 px-4">
+      <button
+        onClick={() => onViewDetails(log)}
+        className="text-blue-600 hover:text-blue-800"
+      >
+        👁️ View Details
+      </button>
+    </td>
+  </tr>
+);
+
+const NotificationLogs = () => {
+  const [logs, setLogs] = React.useState([
+    { id: 1, date: "5/1/2025 3:30:00 PM", sentBy: "admin1", audience: "All Users", channel: "Email", status: "Sent", message: "Welcome to our platform!" },
+    { id: 2, date: "4/30/2025 8:00:00 PM", sentBy: "admin2", audience: "All Retailers", channel: "SMS", status: "Failed", message: "System maintenance notification" },
+    { id: 3, date: "4/29/2025 2:45:00 PM", sentBy: "admin1", audience: "All Customers", channel: "Email", status: "Sent", message: "New product announcement" },
+    { id: 4, date: "4/28/2025 9:50:00 PM", sentBy: "admin1", audience: "John Doe, Jane Smith", channel: "Email", status: "Sent", message: "Order confirmation" },
+    { id: 5, date: "4/27/2025 5:15:00 PM", sentBy: "admin2", audience: "SuperMart, MegaStore", channel: "SMS", status: "Sent", message: "Inventory update" },
+    { id: 6, date: "4/26/2025 1:20:00 PM", sentBy: "admin1", audience: "All Users", channel: "In app SMS", status: "Sent", message: "App update available" },
+    { id: 7, date: "4/25/2025 11:30:00 AM", sentBy: "admin2", audience: "All Customers", channel: "Email", status: "Failed", message: "Newsletter" }
+  ]);
+
+  const [filters, setFilters] = React.useState({
+    channel: 'All Channels',
+    status: 'All Statuses',
+    audience: 'All Audiences'
+  });
+
+  const [selectedDetailLog, setSelectedDetailLog] = React.useState(null);
+
+  // Filter logs based on current filters
+  const filteredLogs = logs.filter(log => {
+    const channelMatch = filters.channel === 'All Channels' || log.channel === filters.channel;
+    const statusMatch = filters.status === 'All Statuses' || log.status === filters.status;
+    const audienceMatch = filters.audience === 'All Audiences' ||
+      (filters.audience === 'All Users' && log.audience === 'All Users') ||
+      (filters.audience === 'All Customers' && log.audience === 'All Customers') ||
+      (filters.audience === 'All Retailers' && log.audience === 'All Retailers');
+
+    return channelMatch && statusMatch && audienceMatch;
+  });
+
+  // Calculate stats from filtered logs
+  const stats = {
+    total: filteredLogs.length,
+    successful: filteredLogs.filter(log => log.status === 'Sent').length,
+    failed: filteredLogs.filter(log => log.status === 'Failed').length,
+    openRate: filteredLogs.length > 0 ? Math.round((filteredLogs.filter(log => log.status === 'Sent').length / filteredLogs.length) * 100) : 0
+  };
+
+  const handleStatClick = (filterType) => {
+    switch(filterType) {
+      case 'total':
+        setFilters({ ...filters, status: 'All Statuses' });
+        break;
+      case 'successful':
+        setFilters({ ...filters, status: 'Sent' });
+        break;
+      case 'failed':
+        setFilters({ ...filters, status: 'Failed' });
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleViewDetails = (log) => {
+    setSelectedDetailLog(log);
+  };
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <h1 className="text-2xl font-bold text-gray-800">Notification Logs</h1>
+      <p className="text-gray-600 mb-4">Track and analyze your notification performance</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div
+          onClick={() => handleStatClick('total')}
+          className="bg-blue-500 text-white rounded-lg p-4 flex items-center justify-between cursor-pointer hover:bg-blue-600 transition-colors"
+        >
+          <span>Total Sent</span>
+          <span className="text-2xl">{stats.total}</span>
+        </div>
+        <div
+          onClick={() => handleStatClick('successful')}
+          className="bg-green-500 text-white rounded-lg p-4 flex items-center justify-between cursor-pointer hover:bg-green-600 transition-colors"
+        >
+          <span>Successful</span>
+          <span className="text-2xl">{stats.successful}</span>
+        </div>
+        <div
+          onClick={() => handleStatClick('failed')}
+          className="bg-red-500 text-white rounded-lg p-4 flex items-center justify-between cursor-pointer hover:bg-red-600 transition-colors"
+        >
+          <span>Failed</span>
+          <span className="text-2xl">{stats.failed}</span>
+        </div>
+        <div className="bg-purple-500 text-white rounded-lg p-4 flex items-center justify-between">
+          <span>Success Rate</span>
+          <span className="text-2xl">{stats.openRate}%</span>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-md p-4 mb-4">
+        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+          <div className="flex-1">
+            <label className="flex items-center text-gray-600 mb-2">
+              <span className="mr-1">🔍</span> Channel Filter
+            </label>
+            <select
+              value={filters.channel}
+              onChange={(e) => setFilters({ ...filters, channel: e.target.value })}
+              className="w-full p-2 border rounded-lg"
+            >
+              <option>All Channels</option>
+              <option>Email</option>
+              <option>SMS</option>
+              <option>In app SMS</option>
+            </select>
+          </div>
+          <div className="flex-1">
+            <label className="flex items-center text-gray-600 mb-2">
+              <span className="mr-1">📊</span> Status Filter
+            </label>
+            <select
+              value={filters.status}
+              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              className="w-full p-2 border rounded-lg"
+            >
+              <option>All Statuses</option>
+              <option>Sent</option>
+              <option>Failed</option>
+            </select>
+          </div>
+          <div className="flex-1">
+            <label className="flex items-center text-gray-600 mb-2">
+              <span className="mr-1">👥</span> Audience Filter
+            </label>
+            <select
+              value={filters.audience}
+              onChange={(e) => setFilters({ ...filters, audience: e.target.value })}
+              className="w-full p-2 border rounded-lg"
+            >
+              <option>All Audiences</option>
+              <option>All Users</option>
+              <option>All Customers</option>
+              <option>All Retailers</option>
+            </select>
+          </div>
+        </div>
+        <div className="mt-4 text-sm text-gray-600">
+          Showing {filteredLogs.length} of {logs.length} notifications
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="py-3 px-4 text-left text-gray-600">📅 Date & Time</th>
+              <th className="py-3 px-4 text-left text-gray-600">👤 Sent By</th>
+              <th className="py-3 px-4 text-left text-gray-600">👥 Audience</th>
+              <th className="py-3 px-4 text-left text-gray-600">📡 Channel</th>
+              <th className="py-3 px-4 text-left text-gray-600">📊 Status</th>
+              <th className="py-3 px-4 text-left text-gray-600">⚙️ Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredLogs.length > 0 ? (
+              filteredLogs.map((log) => (
+                <LogRow
+                  key={log.id}
+                  log={log}
+                  onViewDetails={handleViewDetails}
+                />
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6" className="py-8 px-4 text-center text-gray-500">
+                  No notifications found matching the current filters
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Details Modal */}
+      {selectedDetailLog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h2 className="text-xl font-bold mb-4">Notification Details</h2>
+            <div className="space-y-3">
+              <div>
+                <span className="font-semibold text-gray-600">Date & Time:</span>
+                <p>{selectedDetailLog.date}</p>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-600">Sent By:</span>
+                <p>{selectedDetailLog.sentBy}</p>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-600">Audience:</span>
+                <p>{selectedDetailLog.audience}</p>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-600">Channel:</span>
+                <p>{selectedDetailLog.channel}</p>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-600">Status:</span>
+                <p className={selectedDetailLog.status === 'Sent' ? 'text-green-600' : 'text-red-600'}>
+                  {selectedDetailLog.status}
+                </p>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-600">Message:</span>
+                <p className="bg-gray-50 p-2 rounded">{selectedDetailLog.message}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setSelectedDetailLog(null)}
+              className="mt-4 w-full bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const NotificationPage = () => {
+  const [activeTab, setActiveTab] = React.useState('send');
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <NavBar activeTab={activeTab} setActiveTab={setActiveTab} />
+      {activeTab === 'send' && <SendNotification />}
+      {activeTab === 'templates' && <TemplatesManager />}
+      {activeTab === 'logs' && <NotificationLogs />}
     </div>
   );
 };
