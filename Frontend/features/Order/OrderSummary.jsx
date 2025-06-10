@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import OrderStatus from "../Order/OrderStatus.jsx";
+import { useNavigate } from 'react-router-dom';
 
 const dummyOrders = [
   {
@@ -104,8 +106,11 @@ const FilterSidebar = ({ orderStatusFilters, setOrderStatusFilters, orderTimeFil
 };
 
 const OrderCard = ({ order }) => {
+  const navigate = useNavigate();
+
   const handleItemClick = (item) => {
     console.log(`Clicked ${item}:`, order[item]);
+    navigate('/OrderStatus');
   };
 
   return (

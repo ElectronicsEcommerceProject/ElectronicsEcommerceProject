@@ -8,6 +8,7 @@ import {
   ProfilePage,
   ShoppingCart,
   OrderCheckoutPage,
+  OrderStatus,
 } from '../features/customer/index.js';
 
 
@@ -23,6 +24,7 @@ const App = () => {
         <Route path="/profilepage" element={<ProfilePage />} />
         <Route path="/cart" element={<ShoppingCart />} />
         <Route path = "/orderCheckout" element={<OrderCheckoutPage />} />
+        <Route path = "/OrderStatus" element={<OrderStatus />} />
 
         //AdminRoutes
         <Route path="/adminDashboard" element={<AdminLayout />} />
