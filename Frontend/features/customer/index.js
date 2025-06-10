@@ -10,7 +10,7 @@ import ProfilePage from "../../features/customer/Profile/ProfilePage";
 import ShoppingCart from "../../components/CartSummary/ShoppingCart";
 
 import OrderCheckoutPage from "../../features/Order/OrderCheckoutPage.jsx";
-import OrderSummary from "../../features/Order/orderSummary.jsx";
+import OrderSummary from "../../features/Order/OrderSummary.jsx";
 import OrderStatus from "../../features/Order/OrderStatus.jsx";
 
 // 🧭 Common UI
