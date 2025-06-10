@@ -15,6 +15,8 @@ import {
   adminNotificationStatsRoute,
   adminNotificationTemplatesRoute,
   adminNotificationTemplateByIdRoute,
+  allCustomerRoute,
+  allRetailerRoute,
 } from '../../../src/index.js';
 
 const NavBar = ({ activeTab, setActiveTab }) => (
@@ -345,12 +347,28 @@ const SendNotification = () => {
   const [title, setTitle] = React.useState('');
   const [message, setMessage] = React.useState('');
   const [templates, setTemplates] = React.useState([]);
+  const [customers, setCustomers] = React.useState([]);
+  const [retailers, setRetailers] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState('');
 
   // Fetch templates on component mount
   React.useEffect(() => {
     fetchTemplates();
   }, []);
+
+  // Fetch customers/retailers when target audience changes
+  React.useEffect(() => {
+    // Clear selected customers and search term when audience changes
+    setSelectedCustomers([]);
+    setSearchTerm('');
+
+    if (targetAudience === 'Specific Customers') {
+      fetchCustomers();
+    } else if (targetAudience === 'Specific Retailers') {
+      fetchRetailers();
+    }
+  }, [targetAudience]);
 
   const fetchTemplates = async () => {
     try {
@@ -364,18 +382,35 @@ const SendNotification = () => {
     }
   };
 
-  const customers = [
-    { name: "John Doe", email: "john.doe@example.com" },
-    { name: "Jane Smith", email: "jane.smith@example.com" },
-    { name: "Robert Johnson", email: "robert.johnson@example.com" },
-    { name: "Emily Davis", email: "emily.davis@example.com" },
-  ];
+  const fetchCustomers = async () => {
+    try {
+      const response = await getApi(allCustomerRoute);
+      if (response.success) {
+        setCustomers(response.customers || []);
+      }
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      setCustomers([]);
+    }
+  };
 
-  const handleCustomerCheck = (email) => {
+  const fetchRetailers = async () => {
+    try {
+      const response = await getApi(allRetailerRoute);
+      if (response.success) {
+        setRetailers(response.retailers || []);
+      }
+    } catch (error) {
+      console.error('Error fetching retailers:', error);
+      setRetailers([]);
+    }
+  };
+
+  const handleCustomerCheck = (userId) => {
     setSelectedCustomers((prev) =>
-      prev.includes(email)
-        ? prev.filter((e) => e !== email)
-        : [...prev, email]
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
     );
   };
 
@@ -423,6 +458,17 @@ const SendNotification = () => {
     }
   };
 
+  // Filter users based on search term
+  const getFilteredUsers = () => {
+    const users = targetAudience === 'Specific Customers' ? customers : retailers;
+    if (!searchTerm.trim()) return users;
+
+    return users.filter(user =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div>
@@ -464,23 +510,31 @@ const SendNotification = () => {
           {targetAudience.includes('Specific') && (
             <div className="mb-4">
               <label className="flex items-center text-gray-600 mb-2">
-                <span className="mr-1">👤</span> Select Customers
+                <span className="mr-1">👤</span> Select {targetAudience === 'Specific Customers' ? 'Customers' : 'Retailers'}
               </label>
               <input
                 type="text"
-                placeholder="Search customers..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder={`Search ${targetAudience === 'Specific Customers' ? 'customers' : 'retailers'}...`}
                 className="w-full p-2 border rounded-lg mb-2"
               />
               <div className="max-h-40 overflow-y-auto">
-                {customers.map((customer) => (
-                  <CustomerRow
-                    key={customer.email}
-                    name={customer.name}
-                    email={customer.email}
-                    isChecked={selectedCustomers.includes(customer.email)}
-                    onCheckChange={() => handleCustomerCheck(customer.email)}
-                  />
-                ))}
+                {loading ? (
+                  <div className="py-4 text-center text-gray-500">
+                    Loading {targetAudience === 'Specific Customers' ? 'customers' : 'retailers'}...
+                  </div>
+                ) : (
+                  getFilteredUsers().map((user) => (
+                    <CustomerRow
+                      key={user.user_id}
+                      name={user.name}
+                      email={user.email}
+                      isChecked={selectedCustomers.includes(user.user_id)}
+                      onCheckChange={() => handleCustomerCheck(user.user_id)}
+                    />
+                  ))
+                )}
               </div>
               {selectedCustomers.length === 0 && (
                 <p className="text-red-600 mt-2">⚠️ Please select at least one recipient</p>

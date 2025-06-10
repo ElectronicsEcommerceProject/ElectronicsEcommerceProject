@@ -52,6 +52,10 @@ const adminProductManagementDashboardDataRoute = import.meta.env
   .VITE_PRODUCT_MANAGMENT_DASHBOARD_DATA_ENDPOINT;
 
 const allUserRoute = import.meta.env.VITE_USER_ENDPOINT;
+const allCustomerRoute = import.meta.env.VITE_CUSTOMER_ENDPOINT;
+const allRetailerRoute = import.meta.env.VITE_RETAILER_ENDPOINT;
+
+
 const orderRoute = import.meta.env.VITE_ORDER_ENDPOINT;
 const latestOrderRoute = import.meta.env.VITE_LATEST_ORDER_ENDPOINT;
 const userManagmentDashboardDataRoute = import.meta.env
@@ -159,6 +163,8 @@ export {
   adminDashboardDataRoute,
   adminProductManagementDashboardDataRoute,
   allUserRoute,
+  allCustomerRoute,
+  allRetailerRoute,
   orderRoute,
   latestOrderRoute,
   userManagmentDashboardDataRoute,
