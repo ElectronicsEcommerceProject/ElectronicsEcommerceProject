@@ -1,0 +1,367 @@
+import React, { useState, useEffect } from 'react';
+
+// Order Status Data
+const initialOrderStatus = {
+  overallStatus: 'delivered',
+  statusMessage: 'Delivery between 08:00 AM - 07:55 PM on JUN 17',
+  additionalMessage: 'Your Order has been placed.',
+  timeline: [
+    { status: 'orderConfirmed', completed: true, date: 'Today', label: 'Order Confirmed' },
+    { status: 'orderPlaced', completed: true, date: 'Mon 9th Jun', label: 'Your Order has been placed' },
+    { status: 'shipped', completed: true, date: 'Jun 13', label: 'Shipped, Expected by' },
+    { status: 'outForDelivery', completed: true, label: 'Out for Delivery' },
+    { status: 'delivery', completed: true, date: 'Jun 17 (08:00 AM - 07:55 PM)', label: 'Delivery' },
+  ],
+};
+
+// Main React Component
+const OrderDetails = () => {
+  const [orderStatus, setOrderStatus] = useState(initialOrderStatus);
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [isCancelPopupVisible, setIsCancelPopupVisible] = useState(false);
+  const [tickedStatuses, setTickedStatuses] = useState(['orderConfirmed']);
+
+  useEffect(() => {
+    setOrderStatus(initialOrderStatus);
+    setTickedStatuses(['orderConfirmed']);
+  }, []);
+
+  const handleStatusClick = (index) => {
+    if (orderStatus.overallStatus === 'cancelled') {
+      console.log('Cannot change status: Order is cancelled.');
+      return;
+    }
+    const newTickedStatuses = orderStatus.timeline
+      .slice(0, index + 1)
+      .map((item) => item.status);
+    setTickedStatuses(newTickedStatuses);
+  };
+
+  const handlePayment = () => {
+    console.log('Payment initiated for ₹1908');
+  };
+
+  const showPopup = () => {
+    setIsPopupVisible(true);
+  };
+
+  const closePopup = () => {
+    setIsPopupVisible(false);
+  };
+
+  const showCancelPopup = () => {
+    setIsCancelPopupVisible(true);
+  };
+
+  const closeCancelPopup = () => {
+    setIsCancelPopupVisible(false);
+  };
+
+  const confirmCancel = () => {
+    setOrderStatus({
+      ...orderStatus,
+      overallStatus: 'cancelled',
+      statusMessage: 'Cancelled on JUN 09',
+      additionalMessage: 'Your order has been cancelled.',
+    });
+    setTickedStatuses([]);
+    setIsCancelPopupVisible(false);
+    console.log('Order cancelled successfully');
+  };
+
+  const viewSeller = () => {
+    console.log('Viewing seller: yoursuitcase');
+  };
+
+  const seeUpdates = () => {
+    console.log('Fetching all updates...');
+  };
+
+  const changeAddress = () => {
+    console.log('Changing shipping address...');
+  };
+
+  const knowMore = () => {
+    console.log('Fetching coupon details...');
+  };
+
+  return (
+    <div className="font-sans m-0 p-3 sm:p-5 bg-gray-100 min-h-screen">
+      <style>
+        {`
+          .timeline-container {
+            position: relative;
+            padding-left: 24px;
+          }
+          .timeline-item {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+          }
+          .timeline-item.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+          }
+          .checkmark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            background-color: transparent;
+            margin-right: 8px;
+            position: relative;
+            z-index: 1;
+          }
+          .checkmark.completed {
+            border-color: #22c55e;
+            background-color: #22c55e;
+          }
+          .checkmark.completed::after {
+            content: '✔';
+            color: white !important;
+            font-size: 10px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+          .timeline-item:not(:first-child)::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: -20px;
+            height: 20px;
+            width: 2px;
+            background-color: #ccc;
+            z-index: 0;
+          }
+          .timeline-item.completed:not(:first-child)::before {
+            background-color: #22c55e;
+          }
+          .timeline-item:last-child::before {
+            display: none;
+          }
+          .hover-effect:hover {
+            transform: scale(1.02);
+            transition: transform 0.2s ease-in-out;
+          }
+          .cancel-button {
+            position: relative;
+            overflow: hidden;
+          }
+          .cancel-button:hover::after {
+            content: 'Cancel';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ef4444;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s ease-in-out;
+          }
+        `}
+      </style>
+      <div className="flex flex-col sm:flex-row justify-between max-w-6xl mx-auto gap-4 sm:gap-0">
+        <div className="w-full sm:w-3/5 bg-white rounded-lg shadow-md p-4 sm:p-5">
+          <button
+            className="bg-yellow-400 text-gray-800 py-2 px-5 rounded text-base cursor-pointer hover:bg-yellow-500 transition-colors"
+            onClick={handlePayment}
+          >
+            PAY ₹1908
+          </button>
+          <div className="p-4 sm:p-5 my-5 flex items-center hover-effect">
+            <img
+              src="https://via.placeholder.com/80"
+              alt="Product Image"
+              className="w-16 h-16 sm:w-20 sm:h-20 mr-3 sm:mr-5 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={showPopup}
+            />
+            <div>
+              <h4 className="m-0 text-sm sm:text-base text-gray-800 font-normal hover-effect cursor-pointer">
+                JACY LONIDON Hard Sided PC 8 Wheel Spinners, with Telescopic Steel Trolley and Number Lock Cabin Suitcase 8 Wheels - 21 inch
+              </h4>
+              <p className="my-1 text-xs sm:text-sm text-gray-600 hover-effect cursor-pointer">BLUE</p>
+              <p
+                className="my-1 text-xs sm:text-sm text-blue-500 cursor-pointer hover:text-blue-700 hover-effect transition-colors"
+                onClick={viewSeller}
+              >
+                Seller: yoursuitcase
+              </p>
+              <p className="my-1 text-xs sm:text-sm font-bold text-gray-800 hover-effect cursor-pointer">
+                ₹1,908 <span className="text-green-500">1 offer</span>
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-gray-200 my-5"></div>
+          <div className="my-5">
+            <p
+              className={`text-xs sm:text-sm font-bold flex items-center ${
+                orderStatus.overallStatus === 'delivered' ? 'text-green-500' : 'text-red-500'
+              }`}
+            >
+              <span
+                className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full mr-1 sm:mr-1.5 ${
+                  orderStatus.overallStatus === 'delivered' ? 'bg-green-500' : 'bg-red-500'
+                }`}
+              ></span>
+              {orderStatus.statusMessage}
+            </p>
+            <p className="text-xs sm:text-sm text-gray-600">{orderStatus.additionalMessage}</p>
+          </div>
+          <div className="my-5 timeline-container">
+            {orderStatus.timeline.map((item, index) => (
+              <div
+                key={index}
+                className={`timeline-item ${
+                  tickedStatuses.includes(item.status) ? 'completed' : ''
+                } ${orderStatus.overallStatus === 'cancelled' ? 'disabled' : ''}`}
+                onClick={() =>
+                  orderStatus.overallStatus !== 'cancelled' ? handleStatusClick(index) : null
+                }
+              >
+                <span
+                  className={`checkmark ${tickedStatuses.includes(item.status) ? 'completed' : ''}`}
+                ></span>
+                <p
+                  className={`m-0 text-xs sm:text-sm font-bold ${orderStatus.overallStatus === 'cancelled' ? 'text-red-500' : 'text-gray-800'}`}
+                >
+                  {item.label}{item.date ? `, ${item.date}` : ''}
+                </p>
+              </div>
+            ))}
+          </div>
+          <div className="border-t border-gray-200 my-5"></div>
+          <div className="flex flex-col sm:flex-row justify-between items-center mt-2 sm:mt-2.5">
+            <button
+              className="bg-white text-red-500 border border-red-500 py-1.5 px-4 sm:py-2 sm:px-5 rounded text-xs sm:text-sm cursor-pointer cancel-button"
+              onClick={showCancelPopup}
+            >
+              Cancel
+            </button>
+            <a
+              href="#"
+              className="text-blue-500 text-xs sm:text-sm cursor-pointer hover:text-blue-700 transition-colors no-underline"
+              onClick={seeUpdates}
+            >
+              SEE ALL UPDATES
+            </a>
+          </div>
+        </div>
+        <div className="w-full sm:w-1/3 flex flex-col gap-4">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-5 w-full">
+            <h4 className="m-0 text-base text-gray-800 border-b border-gray-200 pb-2">Shipping Details</h4>
+            <p className="my-2 text-xs sm:text-sm text-gray-600">
+              <strong>Rohit Kumar</strong>
+            </p>
+            <p className="my-2 text-xs sm:text-sm text-gray-600">
+              12/ABC Electric Bill Collection Point, Shrikrishna Nagar, Near - Advance patna central Hospital Patna Bihar - 800020
+            </p>
+            <p className="my-2 text-xs sm:text-sm text-gray-600">Phone number: 6202670526</p>
+            <button
+              className="text-blue-500 border border-blue-500 py-1 px-2.5 rounded text-xs sm:text-sm cursor-pointer hover:bg-blue-500 hover:text-white transition-colors"
+              onClick={changeAddress}
+            >
+              Change
+            </button>
+          </div>
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-5 w-full">
+            <h4 className="m-0 text-base text-gray-800 border-b border-gray-200 pb-2">Price Details</h4>
+            <p className="my-2 text-xs sm:text-sm text-gray-600">
+              List price <span className="float-right">₹1,999</span>
+            </p>
+            <p className="my-2 text-xs sm:text-sm text-gray-600">
+              Selling price <span className="float-right">₹1,999</span>
+            </p>
+            <p className="my-2 text-xs sm:text-sm text-gray-600">
+              Extra Discount <span className="float-right">-₹1,944</span>
+            </p>
+            <p className="my-2 text-xs sm:text-sm text-gray-600">
+              Special Price <span className="float-right">₹1,955</span>
+            </p>
+            <p className="my-2 text-xs sm:text-sm text-gray-600">
+              Delivery Charge <span className="float-right">₹40 Free</span>
+            </p>
+            <p className="my-2 text-xs sm:text-sm text-gray-600">
+              Handling Fee <span className="float-right">₹10</span>
+            </p>
+            <p className="my-2 text-xs sm:text-sm text-gray-600">
+              Get extra ₹60 off on 1 items (price inclusive of cashback/coupon) <span className="float-right text-green-500">-₹60</span>
+            </p>
+            <p className="my-2 text-xs sm:text-sm text-gray-600">
+              Platform fee <span className="float-right">₹3</span>
+            </p>
+            <hr className="my-2" />
+            <p className="my-2 text-xs sm:text-sm text-gray-800 font-bold">
+              Total Amount <span className="float-right">₹1,908</span>
+            </p>
+            <p className="my-2 text-xs sm:text-sm text-green-500">
+              1 coupon: Get extra ₹60 off on 1 items (price inclusive of cashback/coupon) <span className="float-right">-₹60</span>{' '}
+              <span
+                className="text-blue-500 cursor-pointer hover:text-blue-700 transition-colors"
+                onClick={knowMore}
+              >
+                Know more
+              </span>
+            </p>
+            <p className="my-2 text-xs sm:text-sm text-gray-600">
+              Cash On Delivery: <span className="float-right">₹1908.0</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div
+        className={`fixed inset-0 bg-black bg-opacity-50 z-[999] ${
+          isPopupVisible || isCancelPopupVisible ? 'block' : 'hidden'
+        }`}
+      ></div>
+      <div
+        className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 sm:p-5 rounded-lg shadow-2xl z-[1000] text-center w-11/12 sm:w-auto max-w-md ${
+          isPopupVisible ? 'block' : 'hidden'
+        }`}
+      >
+        <button
+          className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 bg-red-500 text-white border-none rounded-full w-5 h-5 sm:w-6 sm:h-6 cursor-pointer hover:bg-red-700 transition-colors"
+          onClick={closePopup}
+        >
+          X
+        </button>
+        <img src="https://via.placeholder.com/150" alt="Product Image" className="w-32 h-32 sm:w-[150px] sm:h-[150px] block mx-auto mb-4 sm:mb-5" />
+        <h4 className="m-0 mb-2 text-base sm:text-lg">JACY LONIDON Hard Sided PC 8 Wheel Spinners</h4>
+        <p className="my-1 text-xs sm:text-sm text-gray-600">Color: BLUE</p>
+        <p className="my-1 text-xs sm:text-sm text-gray-600">Price: ₹1,908</p>
+        <p className="my-1 text-xs sm:text-sm text-gray-600">Seller: yoursuitcase</p>
+      </div>
+      <div
+        className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 sm:p-5 rounded-lg shadow-2xl z-[1000] text-center w-11/12 sm:w-auto max-w-md ${
+          isCancelPopupVisible ? 'block' : 'hidden'
+        }`}
+      >
+        <button
+          className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 bg-red-500 text-white border-none rounded-full w-5 h-5 sm:w-6 sm:h-6 cursor-pointer hover:bg-red-700 transition-colors"
+          onClick={closeCancelPopup}
+        >
+          X
+        </button>
+        <h4 className="m-0 mb-2 text-base sm:text-lg">Cancel Order</h4>
+        <p className="my-1 text-xs sm:text-sm text-gray-600">Are you sure you want to cancel this order?</p>
+        <button
+          className="bg-red-500 text-white border-none py-1.5 px-4 sm:py-2 sm:px-5 rounded text-xs sm:text-sm cursor-pointer m-2 sm:m-2.5 hover:bg-red-700 transition-colors"
+          onClick={confirmCancel}
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default OrderDetails;
