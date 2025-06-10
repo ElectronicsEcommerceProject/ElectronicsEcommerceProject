@@ -93,6 +93,8 @@ import Owner from "./owner.model.js";
 import CouponRedemption from "./couponRedemption.model.js";
 import Store from "./store.model.js";
 import Payment from "./payment.model.js";
+import Notification from "./notification.model.js";
+import NotificationTemplate from "./notificationTemplate.js";
 
 // Initialize models
 db.User = User(sequelize);
@@ -121,6 +123,8 @@ db.Owner = Owner(sequelize);
 db.CouponRedemption = CouponRedemption(sequelize);
 db.Store = Store(sequelize);
 db.Payment = Payment(sequelize);
+db.Notification = Notification(sequelize);
+db.NotificationTemplate = NotificationTemplate(sequelize);
 
 // Set up associations
 Object.keys(db).forEach((modelName) => {
