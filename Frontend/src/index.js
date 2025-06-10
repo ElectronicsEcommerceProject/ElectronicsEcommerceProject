@@ -9,8 +9,6 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 
 // import AdminLogin from "../features/auth/AdminLogin.jsx";
 // import ForgotPassword from "../features/auth/ForgotPassword.jsx";
-import LoginForm from "../features/auth/LoginForm.jsx";
-import SignupForm from "../features/auth/SignupForm.jsx";
 
 //***************************************************************************************************** */
 
@@ -54,6 +52,10 @@ const adminProductManagementDashboardDataRoute = import.meta.env
   .VITE_PRODUCT_MANAGMENT_DASHBOARD_DATA_ENDPOINT;
 
 const allUserRoute = import.meta.env.VITE_USER_ENDPOINT;
+const allCustomerRoute = import.meta.env.VITE_CUSTOMER_ENDPOINT;
+const allRetailerRoute = import.meta.env.VITE_RETAILER_ENDPOINT;
+
+
 const orderRoute = import.meta.env.VITE_ORDER_ENDPOINT;
 const latestOrderRoute = import.meta.env.VITE_LATEST_ORDER_ENDPOINT;
 const userManagmentDashboardDataRoute = import.meta.env
@@ -103,12 +105,27 @@ const adminReportsAnalyticsProductsDataRoute = import.meta.env
   .VITE_ADMIN_REPORT_ANALYTICS_PRODUCTS_DATA_ENDPOINT;
 
 const adminReportsAnalyticsCouponsDataRoute = import.meta.env
-.VITE_ADMIN_REPORT_ANALYTICS_COUPONS_DATA_ENDPOINT
+  .VITE_ADMIN_REPORT_ANALYTICS_COUPONS_DATA_ENDPOINT;
 
 // Stock Management Routes
-const stockManagementVariantsRoute = import.meta.env.VITE_STOCK_MANAGEMENT_VARIANTS_ENDPOINT;
-const stockManagementVariantByIdRoute = import.meta.env.VITE_STOCK_MANAGEMENT_VARIANT_BY_ID_ENDPOINT;
-const stockManagementAnalyticsRoute = import.meta.env.VITE_STOCK_MANAGEMENT_ANALYTICS_ENDPOINT;
+const stockManagementVariantsRoute = import.meta.env
+  .VITE_STOCK_MANAGEMENT_VARIANTS_ENDPOINT;
+const stockManagementVariantByIdRoute = import.meta.env
+  .VITE_STOCK_MANAGEMENT_VARIANT_BY_ID_ENDPOINT;
+const stockManagementAnalyticsRoute = import.meta.env
+  .VITE_STOCK_MANAGEMENT_ANALYTICS_ENDPOINT;
+
+// Notification Management Routes
+const adminNotificationRoute = import.meta.env
+  .VITE_ADMIN_NOTIFICATION_ENDPOINT;
+const adminNotificationAddRoute = import.meta.env
+  .VITE_ADMIN_NOTIFICATION_ADD_ENDPOINT;
+const adminNotificationLogsRoute = import.meta.env
+  .VITE_ADMIN_NOTIFICATION_LOGS_ENDPOINT;
+const adminNotificationStatsRoute = import.meta.env
+  .VITE_ADMIN_NOTIFICATION_STATS_ENDPOINT;
+const adminNotificationTemplatesRoute = import.meta.env
+  .VITE_ADMIN_NOTIFICATION_TEMPLATES_ENDPOINT;
 
 export {
   FaEye,
@@ -118,8 +135,6 @@ export {
   FaUser,
   AdminLogin,
   ForgotPassword,
-  LoginForm,
-  SignupForm,
   AdminDashboard,
   AdminSlidebar,
   AnalyticsDashboard,
@@ -146,6 +161,8 @@ export {
   adminDashboardDataRoute,
   adminProductManagementDashboardDataRoute,
   allUserRoute,
+  allCustomerRoute,
+  allRetailerRoute,
   orderRoute,
   latestOrderRoute,
   userManagmentDashboardDataRoute,
@@ -169,4 +186,9 @@ export {
   stockManagementVariantsRoute,
   stockManagementVariantByIdRoute,
   stockManagementAnalyticsRoute,
+  adminNotificationRoute,
+  adminNotificationAddRoute,
+  adminNotificationLogsRoute,
+  adminNotificationStatsRoute,
+  adminNotificationTemplatesRoute,
 };

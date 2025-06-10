@@ -68,6 +68,11 @@ export default (sequelize) => {
       foreignKey: "user_id",
       as: "couponRedemptions",
     });
+
+    User.hasMany(models.Notification, { foreignKey: "user_id" });
+    User.hasMany(models.Notification, { foreignKey: "created_by" });
+    User.hasMany(models.NotificationTemplate, { foreignKey: "created_by" });
+    User.hasMany(models.NotificationTemplate, { foreignKey: "updated_by" });
   };
 
   return User;

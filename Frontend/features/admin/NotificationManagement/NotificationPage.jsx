@@ -1,428 +1,923 @@
-import React, { useState } from 'react';
 
-const NotificationPage = () => {
-  // State for active tab
-  const [activeSection, setActiveSection] = useState('send');
+import React from 'react';
 
-  // Mock data for templates
-  const [templates, setTemplates] = useState([
-    { id: 1, name: "Welcome Email", type: "Email", createdDate: "2025-04-15", content: "Hello {user_name}, welcome to our platform!" },
-    { id: 2, name: "Order Confirmation", type: "SMS", createdDate: "2025-04-10", content: "Order {order_id} confirmed!" },
-  ]);
+import {
+  getApi,
+  createApi,
+  updateApiById,
+  deleteApiById
+} from '../../../src/api/api.js';
+import MESSAGE from '../../../src/api/message.js';
+import {
+  adminNotificationRoute,
+  adminNotificationAddRoute,
+  adminNotificationLogsRoute,
+  adminNotificationStatsRoute,
+  adminNotificationTemplatesRoute,
+  allCustomerRoute,
+  allRetailerRoute,
+} from '../../../src/index.js';
 
-  // Mock data for logs
-  const [logs, setLogs] = useState([
-    { id: 1, date: "2025-05-01 10:00", sentBy: "Admin John", audience: "All Users", channel: "Email", status: "Sent", openRate: "65%", clickRate: "20%", content: "Promotion alert!" },
-    { id: 2, date: "2025-04-30 14:30", sentBy: "Admin Jane", audience: "Retailers", channel: "SMS", status: "Failed", openRate: "N/A", clickRate: "N/A", content: "Stock update" },
-  ]);
+const NavBar = ({ activeTab, setActiveTab }) => (
+  <nav className="flex items-center justify-between p-4 bg-white shadow-md">
+    <div className="flex items-center space-x-2">
+      <div className="text-blue-600 text-2xl">🔔</div>
+      <span className="text-xl font-semibold text-gray-800">NotifyHub</span>
+    </div>
+    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+      <button
+        onClick={() => setActiveTab('send')}
+        className={`flex items-center px-4 py-2 rounded-lg ${
+          activeTab === 'send'
+            ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white'
+            : 'text-gray-600 hover:text-gray-800'
+        }`}
+      >
+        <span className="mr-1">✈️</span> Send Notification
+      </button>
+      <button
+        onClick={() => setActiveTab('templates')}
+        className={`flex items-center px-4 py-2 rounded-lg ${
+          activeTab === 'templates'
+            ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white'
+            : 'text-gray-600 hover:text-gray-800'
+        }`}
+      >
+        <span className="mr-1">📋</span> Templates Manager
+      </button>
+      <button
+        onClick={() => setActiveTab('logs')}
+        className={`flex items-center px-4 py-2 rounded-lg ${
+          activeTab === 'logs'
+            ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white'
+            : 'text-gray-600 hover:text-gray-800'
+        }`}
+      >
+        <span className="mr-1">🔄</span> Notification Logs
+      </button>
+    </div>
+  </nav>
+);
 
-  // Navigation component
-  const TopNav = () => {
-    const navItems = [
-      { id: 'send', label: '📤 Send Notification' },
-      { id: 'templates', label: '🧾 Templates Manager' },
-      { id: 'logs', label: '📑 Notification Logs' },
-    ];
+const TemplateRow = ({ template, isHighlighted, onEdit, onDelete }) => (
+  <tr className={`border-b ${isHighlighted ? 'bg-gray-100' : ''}`}>
+    <td className="py-3 px-4">{template.name}</td>
+    <td className="py-3 px-4 flex items-center">
+      {template.type === 'Email' ? (
+        <span className="flex items-center text-blue-600">
+          <span className="mr-1">📧</span> Email
+        </span>
+      ) : template.type === 'SMS' ? (
+        <span className="flex items-center text-gray-600">
+          <span className="mr-1">📱</span> SMS
+        </span>
+      ) : (
+        <span className="flex items-center text-purple-600">
+          <span className="mr-1">📲</span> In app SMS
+        </span>
+      )}
+    </td>
+    <td className="py-3 px-4">{template.created}</td>
+    <td className="py-3 px-4 flex space-x-2">
+      <button
+        onClick={() => onEdit(template)}
+        className="text-blue-600 hover:text-blue-800"
+        title="Edit Template"
+      >
+        ✏️
+      </button>
+      <button
+        onClick={() => onDelete(template.id)}
+        className="text-red-600 hover:text-red-800"
+        title="Delete Template"
+      >
+        🗑️
+      </button>
+    </td>
+  </tr>
+);
 
-    return (
-      <nav className="bg-white shadow sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex space-x-8">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                    activeSection === item.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                  }`}
-                  onClick={() => setActiveSection(item.id)}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </nav>
-    );
+const TemplateModal = ({ isOpen, onClose, template, onSave }) => {
+  const [formData, setFormData] = React.useState({
+    name: template?.name || '',
+    type: template?.type || 'Email',
+    content: template?.content || ''
+  });
+
+  React.useEffect(() => {
+    if (template) {
+      setFormData({
+        name: template.name || '',
+        type: template.type || 'Email',
+        content: template.content || ''
+      });
+    } else {
+      setFormData({
+        name: '',
+        type: 'Email',
+        content: ''
+      });
+    }
+  }, [template]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({ ...template, ...formData });
+    onClose();
   };
 
-  // Send Notification Component
-  const SendNotification = () => {
-    const [formData, setFormData] = useState({
-      audience: 'all',
-      channel: 'email',
-      message: '',
-      schedule: 'now'
-    });
+  if (!isOpen) return null;
 
-    const handleSubmit = (e) => {
-      e.preventDefault();
-      alert(`Notification sent via ${formData.channel} to ${formData.audience}`);
-      
-      // Add to logs
-      const newLog = {
-        id: logs.length + 1,
-        date: new Date().toLocaleString(),
-        sentBy: "Current User",
-        audience: formData.audience,
-        channel: formData.channel,
-        status: "Sent",
-        openRate: "0%",
-        clickRate: "0%",
-        content: formData.message
-      };
-      
-      setLogs([newLog, ...logs]);
-    };
-
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Send Notification</h1>
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow">
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <h2 className="text-xl font-bold mb-4">
+          {template ? 'Edit Template' : 'New Template'}
+        </h2>
+        <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Audience</label>
-            <select
-              className="w-full p-2 border rounded-md"
-              value={formData.audience}
-              onChange={(e) => setFormData({...formData, audience: e.target.value})}
-            >
-              <option value="all">All Users</option>
-              <option value="customer">Customers</option>
-              <option value="retailer">Retailers</option>
-            </select>
-          </div>
-          
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Channel</label>
-            <select
-              className="w-full p-2 border rounded-md"
-              value={formData.channel}
-              onChange={(e) => setFormData({...formData, channel: e.target.value})}
-            >
-              <option value="email">Email</option>
-              <option value="sms">SMS</option>
-              <option value="inapp">In-App</option>
-            </select>
-          </div>
-          
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
-            <textarea
-              className="w-full p-2 border rounded-md"
-              rows={4}
-              value={formData.message}
-              onChange={(e) => setFormData({...formData, message: e.target.value})}
-              placeholder="Type your message here..."
+            <label className="block text-gray-600 mb-2">Template Name</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full p-2 border rounded-lg"
               required
             />
           </div>
-          
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-          >
-            Send Notification
-          </button>
+          <div className="mb-4">
+            <label className="block text-gray-600 mb-2">Type</label>
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              className="w-full p-2 border rounded-lg"
+            >
+              <option value="Email">Email</option>
+              <option value="SMS">SMS</option>
+              <option value="In app SMS">In app SMS</option>
+            </select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-600 mb-2">Content</label>
+            <textarea
+              value={formData.content}
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              className="w-full p-2 border rounded-lg h-32"
+              placeholder="Enter template content..."
+              required
+            />
+          </div>
+          <div className="flex space-x-2">
+            <button
+              type="submit"
+              className="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+            >
+              {template ? 'Update' : 'Create'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
-    );
-  };
+    </div>
+  );
+};
 
-  // Templates Manager Component
-  const TemplatesManager = () => {
-    const [showForm, setShowForm] = useState(false);
-    const [newTemplate, setNewTemplate] = useState({ 
-      name: "", 
-      type: "Email", 
-      content: "" 
-    });
-    const [previewTemplate, setPreviewTemplate] = useState(null);
+const TemplatesManager = () => {
+  const [templates, setTemplates] = React.useState([]);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [editingTemplate, setEditingTemplate] = React.useState(null);
+  const [loading, setLoading] = React.useState(false);
 
-    const handleAddTemplate = (e) => {
-      e.preventDefault();
-      const templateToAdd = {
-        ...newTemplate,
-        id: templates.length + 1,
-        createdDate: new Date().toISOString().split('T')[0]
-      };
-      
-      setTemplates([...templates, templateToAdd]);
-      setShowForm(false);
-      setNewTemplate({ name: "", type: "Email", content: "" });
-    };
+  // Fetch templates on component mount
+  React.useEffect(() => {
+    fetchTemplates();
+  }, []);
 
-    const handlePreview = (template) => {
-      const previewContent = template.content
-        .replace("{user_name}", "John Doe")
-        .replace("{order_id}", "12345");
-      setPreviewTemplate({ ...template, content: previewContent });
-    };
-
-    const deleteTemplate = (id) => {
-      if (window.confirm("Are you sure you want to delete this template?")) {
-        setTemplates(templates.filter(t => t.id !== id));
+  const fetchTemplates = async () => {
+    try {
+      setLoading(true);
+      const response = await getApi(adminNotificationTemplatesRoute);
+      if (response.success) {
+        setTemplates(response.data?.templates || []);
       }
-    };
-
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Templates Manager</h1>
-        
-        <button
-          className="bg-green-600 text-white px-4 py-2 rounded-md mb-4 hover:bg-green-700 transition"
-          onClick={() => setShowForm(true)}
-        >
-          Add New Template
-        </button>
-
-        {showForm && (
-          <div className="bg-white p-6 rounded-lg shadow mb-6">
-            <form onSubmit={handleAddTemplate}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Template Name</label>
-                <input
-                  className="w-full p-2 border rounded-md"
-                  value={newTemplate.name}
-                  onChange={(e) => setNewTemplate({...newTemplate, name: e.target.value})}
-                  required
-                />
-              </div>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
-                <select
-                  className="w-full p-2 border rounded-md"
-                  value={newTemplate.type}
-                  onChange={(e) => setNewTemplate({...newTemplate, type: e.target.value})}
-                >
-                  <option value="Email">Email</option>
-                  <option value="SMS">SMS</option>
-                  <option value="In-App">In-App</option>
-                </select>
-              </div>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Content</label>
-                <textarea
-                  className="w-full p-2 border rounded-md"
-                  rows={5}
-                  value={newTemplate.content}
-                  onChange={(e) => setNewTemplate({...newTemplate, content: e.target.value})}
-                  placeholder="Use {user_name}, {order_id} as variables"
-                  required
-                />
-              </div>
-              
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-              >
-                Save Template
-              </button>
-              
-              <button
-                type="button"
-                className="ml-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
-                onClick={() => setShowForm(false)}
-              >
-                Cancel
-              </button>
-            </form>
-          </div>
-        )}
-
-        <div className="overflow-x-auto">
-          <table className="w-full bg-white rounded-lg shadow">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="p-4 text-left">Name</th>
-                <th className="p-4 text-left">Type</th>
-                <th className="p-4 text-left">Created</th>
-                <th className="p-4 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {templates.map((template) => (
-                <tr key={template.id} className="hover:bg-gray-50">
-                  <td className="p-4">{template.name}</td>
-                  <td className="p-4">{template.type}</td>
-                  <td className="p-4">{template.createdDate}</td>
-                  <td className="p-4">
-                    <button 
-                      className="text-blue-600 mr-2 hover:underline"
-                      onClick={() => {
-                        setNewTemplate({
-                          name: template.name,
-                          type: template.type,
-                          content: template.content
-                        });
-                        setShowForm(true);
-                      }}
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      className="text-red-600 mr-2 hover:underline"
-                      onClick={() => deleteTemplate(template.id)}
-                    >
-                      Delete
-                    </button>
-                    <button 
-                      className="text-purple-600 hover:underline"
-                      onClick={() => handlePreview(template)}
-                    >
-                      Preview
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {previewTemplate && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg max-w-lg w-full">
-              <h2 className="text-xl font-bold mb-4">{previewTemplate.name} Preview</h2>
-              <div className="p-4 border rounded bg-gray-50">
-                {previewTemplate.content}
-              </div>
-              <button
-                className="mt-4 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
-                onClick={() => setPreviewTemplate(null)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+      // Keep empty array if API fails
+      setTemplates([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Notification Logs Component
-  const NotificationLogs = () => {
-    const [selectedLog, setSelectedLog] = useState(null);
-    const [filters, setFilters] = useState({
-      channel: '',
-      status: ''
-    });
-
-    const filteredLogs = logs.filter(log => {
-      return (
-        (filters.channel === '' || log.channel.toLowerCase().includes(filters.channel.toLowerCase())) &&
-        (filters.status === '' || log.status.toLowerCase().includes(filters.status.toLowerCase()))
-      );
-    });
-
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Notification Logs</h1>
-        
-        <div className="mb-4 flex space-x-4">
-          <select
-            className="p-2 border rounded-md"
-            value={filters.channel}
-            onChange={(e) => setFilters({...filters, channel: e.target.value})}
-          >
-            <option value="">All Channels</option>
-            <option value="email">Email</option>
-            <option value="sms">SMS</option>
-          </select>
-          
-          <select
-            className="p-2 border rounded-md"
-            value={filters.status}
-            onChange={(e) => setFilters({...filters, status: e.target.value})}
-          >
-            <option value="">All Statuses</option>
-            <option value="sent">Sent</option>
-            <option value="failed">Failed</option>
-          </select>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full bg-white rounded-lg shadow">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="p-4 text-left">Date</th>
-                <th className="p-4 text-left">Sent By</th>
-                <th className="p-4 text-left">Channel</th>
-                <th className="p-4 text-left">Status</th>
-                <th className="p-4 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLogs.map((log) => (
-                <tr key={log.id} className="hover:bg-gray-50">
-                  <td className="p-4">{log.date}</td>
-                  <td className="p-4">{log.sentBy}</td>
-                  <td className="p-4">{log.channel}</td>
-                  <td className="p-4">
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      log.status === 'Sent' ? 'bg-green-100 text-green-800' : 
-                      log.status === 'Failed' ? 'bg-red-100 text-red-800' : 'bg-gray-100'
-                    }`}>
-                      {log.status}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <button 
-                      className="text-blue-600 hover:underline"
-                      onClick={() => setSelectedLog(log)}
-                    >
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {selectedLog && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg max-w-lg w-full">
-              <h2 className="text-xl font-bold mb-4">Notification Details</h2>
-              
-              <div className="space-y-3">
-                <p><strong>Date:</strong> {selectedLog.date}</p>
-                <p><strong>Sent By:</strong> {selectedLog.sentBy}</p>
-                <p><strong>Channel:</strong> {selectedLog.channel}</p>
-                <p><strong>Status:</strong> {selectedLog.status}</p>
-                <p><strong>Audience:</strong> {selectedLog.audience}</p>
-                <div className="mt-4 p-3 bg-gray-50 rounded">
-                  <p className="font-medium">Content:</p>
-                  <p>{selectedLog.content}</p>
-                </div>
-              </div>
-              
-              <button
-                className="mt-4 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
-                onClick={() => setSelectedLog(null)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
+  const handleNewTemplate = () => {
+    setEditingTemplate(null);
+    setIsModalOpen(true);
   };
 
-  // Main render
+  const handleEditTemplate = (template) => {
+    setEditingTemplate(template);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteTemplate = async (templateId) => {
+    if (window.confirm('Are you sure you want to delete this template?')) {
+      try {
+        setLoading(true);
+        const response = await deleteApiById(adminNotificationTemplatesRoute, templateId);
+        if (response.success) {
+          setTemplates(templates.filter(t => t.id !== templateId));
+          console.log('Template deleted successfully');
+        }
+      } catch (error) {
+        console.error('Error deleting template:', error);
+        alert('Failed to delete template. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleSaveTemplate = async (templateData) => {
+    try {
+      setLoading(true);
+      if (editingTemplate) {
+        // Update existing template
+        const response = await updateApiById(
+          adminNotificationTemplatesRoute,
+          editingTemplate.id,
+          templateData
+        );
+        if (response.success) {
+          setTemplates(templates.map(t =>
+            t.id === editingTemplate.id ? { ...response.data.template } : t
+          ));
+          console.log('Template updated successfully');
+        }
+      } else {
+        // Create new template
+        const response = await createApi(adminNotificationTemplatesRoute, templateData);
+        if (response.success) {
+          setTemplates([...templates, response.data.template]);
+          console.log('Template created successfully');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving template:', error);
+      alert('Failed to save template. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="bg-gray-100 min-h-screen">
-      <TopNav />
-      
-      <main>
-        {activeSection === 'send' && <SendNotification />}
-        {activeSection === 'templates' && <TemplatesManager />}
-        {activeSection === 'logs' && <NotificationLogs />}
-      </main>
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Templates Manager</h1>
+          <p className="text-gray-600">Create and manage reusable notification templates</p>
+        </div>
+        <button
+          onClick={handleNewTemplate}
+          className="mt-2 sm:mt-0 bg-green-500 text-white px-4 py-2 rounded-lg shadow hover:bg-green-600 flex items-center"
+        >
+          <span className="mr-1">+</span> New Template
+        </button>
+      </div>
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="py-3 px-4 text-left text-gray-600">📋 Name</th>
+              <th className="py-3 px-4 text-left text-gray-600">🔤 Type</th>
+              <th className="py-3 px-4 text-left text-gray-600">🗓️ Created</th>
+              <th className="py-3 px-4 text-left text-gray-600">⚙️ Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {templates.map((template, index) => (
+              <TemplateRow
+                key={template.id}
+                template={template}
+                isHighlighted={index === 0}
+                onEdit={handleEditTemplate}
+                onDelete={handleDeleteTemplate}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <TemplateModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        template={editingTemplate}
+        onSave={handleSaveTemplate}
+      />
+    </div>
+  );
+};
+
+const CustomerRow = ({ name, email, isChecked, onCheckChange }) => (
+  <div className="flex items-center py-2 border-b">
+    <input
+      type="checkbox"
+      checked={isChecked}
+      onChange={onCheckChange}
+      className="mr-3"
+    />
+    <div>
+      <p className="font-medium">{name}</p>
+      <p className="text-gray-600">{email}</p>
+    </div>
+  </div>
+);
+
+const SendNotification = () => {
+  const [targetAudience, setTargetAudience] = React.useState('All Users');
+  const [channel, setChannel] = React.useState('Email');
+  const [template, setTemplate] = React.useState('No Template');
+  const [selectedCustomers, setSelectedCustomers] = React.useState([]);
+  const [title, setTitle] = React.useState('');
+  const [message, setMessage] = React.useState('');
+  const [templates, setTemplates] = React.useState([]);
+  const [customers, setCustomers] = React.useState([]);
+  const [retailers, setRetailers] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState('');
+
+  // Fetch templates on component mount
+  React.useEffect(() => {
+    fetchTemplates();
+  }, []);
+
+  // Fetch customers/retailers when target audience changes
+  React.useEffect(() => {
+    // Clear selected customers and search term when audience changes
+    setSelectedCustomers([]);
+    setSearchTerm('');
+
+    if (targetAudience === 'Specific Customers') {
+      fetchCustomers();
+    } else if (targetAudience === 'Specific Retailers') {
+      fetchRetailers();
+    }
+  }, [targetAudience]);
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await getApi(adminNotificationTemplatesRoute);
+      if (response.success) {
+        setTemplates(response.data?.templates || []);
+      }
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+      setTemplates([]);
+    }
+  };
+
+  const fetchCustomers = async () => {
+    try {
+      const response = await getApi(allCustomerRoute);
+      if (response.success) {
+        setCustomers(response.customers || []);
+      }
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      setCustomers([]);
+    }
+  };
+
+  const fetchRetailers = async () => {
+    try {
+      const response = await getApi(allRetailerRoute);
+      if (response.success) {
+        setRetailers(response.retailers || []);
+      }
+    } catch (error) {
+      console.error('Error fetching retailers:', error);
+      setRetailers([]);
+    }
+  };
+
+  const handleCustomerCheck = (userId) => {
+    setSelectedCustomers((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const handleSendNotification = async () => {
+    try {
+      setLoading(true);
+
+      // Validate required fields
+      if (!title.trim()) {
+        alert('Please enter a notification title');
+        return;
+      }
+      if (!message.trim()) {
+        alert('Please enter a notification message');
+        return;
+      }
+      if (targetAudience.includes('Specific') && selectedCustomers.length === 0) {
+        alert('Please select at least one recipient');
+        return;
+      }
+
+      const notificationData = {
+        targetAudience,
+        channel,
+        templateId: template !== 'No Template' ? template : null,
+        title: title.trim(),
+        message: message.trim(),
+        specificUserIds: targetAudience.includes('Specific') ? selectedCustomers : null
+      };
+
+      const response = await createApi(adminNotificationAddRoute, notificationData);
+      if (response.success) {
+        alert('Notification sent successfully!');
+        // Reset form
+        setTitle('');
+        setMessage('');
+        setSelectedCustomers([]);
+        setTemplate('No Template');
+      }
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      alert('Failed to send notification. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter users based on search term
+  const getFilteredUsers = () => {
+    const users = targetAudience === 'Specific Customers' ? customers : retailers;
+    if (!searchTerm.trim()) return users;
+
+    return users.filter(user =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-800">Send Notification</h1>
+        <p className="text-gray-600 mb-4">Reach your audience with targeted messages</p>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex flex-col sm:flex-row sm:space-x-4 mb-4">
+            <div className="flex-1">
+              <label className="flex items-center text-gray-600 mb-2">
+                <span className="mr-1">👥</span> Target Audience
+              </label>
+              <select
+                value={targetAudience}
+                onChange={(e) => setTargetAudience(e.target.value)}
+                className="w-full p-2 border rounded-lg"
+              >
+                <option>All Users</option>
+                <option>All Customers</option>
+                <option>All Retailers</option>
+                <option>Specific Customers</option>
+                <option>Specific Retailers</option>
+              </select>
+            </div>
+            <div className="flex-1">
+              <label className="flex items-center text-gray-600 mb-2">
+                <span className="mr-1">📡</span> Channel
+              </label>
+              <select
+                value={channel}
+                onChange={(e) => setChannel(e.target.value)}
+                className="w-full p-2 border rounded-lg"
+              >
+                <option>Email</option>
+                <option>SMS</option>
+                <option>In app SMS</option>
+              </select>
+            </div>
+          </div>
+          {targetAudience.includes('Specific') && (
+            <div className="mb-4">
+              <label className="flex items-center text-gray-600 mb-2">
+                <span className="mr-1">👤</span> Select {targetAudience === 'Specific Customers' ? 'Customers' : 'Retailers'}
+              </label>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder={`Search ${targetAudience === 'Specific Customers' ? 'customers' : 'retailers'}...`}
+                className="w-full p-2 border rounded-lg mb-2"
+              />
+              <div className="max-h-40 overflow-y-auto">
+                {loading ? (
+                  <div className="py-4 text-center text-gray-500">
+                    Loading {targetAudience === 'Specific Customers' ? 'customers' : 'retailers'}...
+                  </div>
+                ) : (
+                  getFilteredUsers().map((user) => (
+                    <CustomerRow
+                      key={user.user_id}
+                      name={user.name}
+                      email={user.email}
+                      isChecked={selectedCustomers.includes(user.user_id)}
+                      onCheckChange={() => handleCustomerCheck(user.user_id)}
+                    />
+                  ))
+                )}
+              </div>
+              {selectedCustomers.length === 0 && (
+                <p className="text-red-600 mt-2">⚠️ Please select at least one recipient</p>
+              )}
+              <p className="text-gray-600 mt-2">{selectedCustomers.length} selected</p>
+            </div>
+          )}
+          <div className="mb-4">
+            <label className="flex items-center text-gray-600 mb-2">
+              <span className="mr-1">📄</span> Template (Optional)
+            </label>
+            <select
+              value={template}
+              onChange={(e) => setTemplate(e.target.value)}
+              className="w-full p-2 border rounded-lg"
+            >
+              <option value="No Template">No Template</option>
+              {templates.map((temp) => (
+                <option key={temp.id} value={temp.id}>
+                  {temp.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-4">
+            <label className="flex items-center text-gray-600 mb-2">
+              <span className="mr-1">📌</span> Notification Title
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter notification title..."
+              className="w-full p-2 border rounded-lg"
+              required
+            />
+          </div>
+          <div>
+            <label className="flex items-center text-gray-600 mb-2">
+              <span className="mr-1">📝</span> Message Content
+            </label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Craft your message here... ✨"
+              className="w-full p-2 border rounded-lg h-32"
+              required
+            />
+          </div>
+          <button
+            onClick={handleSendNotification}
+            disabled={loading}
+            className={`mt-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 py-2 rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 w-full flex items-center justify-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <span className="mr-1">✈️</span>
+            {loading ? 'Sending...' : 'Send Notification'}
+          </button>
+        </div>
+      </div>
+
+    </div>
+  );
+};
+
+const LogRow = ({ log, onViewDetails }) => (
+  <tr className="border-b">
+    <td className="py-3 px-4">{log.date}</td>
+    <td className="py-3 px-4">{log.sentBy}</td>
+    <td className="py-3 px-4">{log.audience}</td>
+    <td className="py-3 px-4 flex items-center">
+      {log.channel === 'Email' ? (
+        <span className="flex items-center text-blue-600">
+          <span className="mr-1">📧</span> Email
+        </span>
+      ) : log.channel === 'SMS' ? (
+        <span className="flex items-center text-gray-600">
+          <span className="mr-1">📱</span> SMS
+        </span>
+      ) : (
+        <span className="flex items-center text-purple-600">
+          <span className="mr-1">📲</span> In app SMS
+        </span>
+      )}
+    </td>
+    <td className="py-3 px-4">
+      <span
+        className={`${
+          log.status === 'Sent' ? 'text-green-600' : 'text-red-600'
+        } flex items-center`}
+      >
+        <span className="mr-1">{log.status === 'Sent' ? '✅' : '❌'}</span> {log.status}
+      </span>
+    </td>
+    <td className="py-3 px-4">
+      <button
+        onClick={() => onViewDetails(log)}
+        className="text-blue-600 hover:text-blue-800"
+      >
+        👁️ View Details
+      </button>
+    </td>
+  </tr>
+);
+
+const NotificationLogs = () => {
+  const [logs, setLogs] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+
+  const [filters, setFilters] = React.useState({
+    channel: 'All Channels',
+    status: 'All Statuses',
+    audience: 'All Audiences'
+  });
+  const [selectedDetailLog, setSelectedDetailLog] = React.useState(null);
+  const [stats, setStats] = React.useState({
+    total: 0,
+    successful: 0,
+    failed: 0,
+    openRate: 0
+  });
+
+  // Fetch logs and stats on component mount and filter changes
+  React.useEffect(() => {
+    fetchLogs();
+    fetchStats();
+  }, [filters]);
+
+  const fetchLogs = async () => {
+    try {
+      setLoading(true);
+      const queryParams = new URLSearchParams();
+
+      if (filters.channel !== 'All Channels') queryParams.append('channel', filters.channel);
+      if (filters.status !== 'All Statuses') queryParams.append('status', filters.status);
+      if (filters.audience !== 'All Audiences') queryParams.append('audience', filters.audience);
+
+      const queryString = queryParams.toString();
+      const endpoint = queryString ? `${adminNotificationLogsRoute}?${queryString}` : adminNotificationLogsRoute;
+      const response = await getApi(endpoint);
+
+      if (response.success) {
+        setLogs(response.data?.logs || []);
+        // Also update stats from the logs response
+        if (response.data?.stats) {
+          setStats({
+            total: response.data.stats.total || 0,
+            successful: response.data.stats.successful || 0,
+            failed: response.data.stats.failed || 0,
+            openRate: response.data.stats.successRate || 0
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+      setLogs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (filters.channel !== 'All Channels') queryParams.append('channel', filters.channel);
+      if (filters.audience !== 'All Audiences') queryParams.append('audience', filters.audience);
+
+      const queryString = queryParams.toString();
+      const endpoint = queryString ? `${adminNotificationStatsRoute}?${queryString}` : adminNotificationStatsRoute;
+      const response = await getApi(endpoint);
+
+      if (response.success && response.data?.stats) {
+        setStats({
+          total: response.data.stats.total || 0,
+          successful: response.data.stats.successful || 0,
+          failed: response.data.stats.failed || 0,
+          openRate: response.data.stats.successRate || 0
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      setStats({ total: 0, successful: 0, failed: 0, openRate: 0 });
+    }
+  };
+
+  // Since we're fetching filtered data from API, we use logs directly
+  const filteredLogs = logs;
+
+  const handleStatClick = (filterType) => {
+    switch(filterType) {
+      case 'total':
+        setFilters({ ...filters, status: 'All Statuses' });
+        break;
+      case 'successful':
+        setFilters({ ...filters, status: 'Sent' });
+        break;
+      case 'failed':
+        setFilters({ ...filters, status: 'Failed' });
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleViewDetails = (log) => {
+    setSelectedDetailLog(log);
+  };
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <h1 className="text-2xl font-bold text-gray-800">Notification Logs</h1>
+      <p className="text-gray-600 mb-4">Track and analyze your notification performance</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div
+          onClick={() => handleStatClick('total')}
+          className="bg-blue-500 text-white rounded-lg p-4 flex items-center justify-between cursor-pointer hover:bg-blue-600 transition-colors"
+        >
+          <span>Total Sent</span>
+          <span className="text-2xl">{stats.total}</span>
+        </div>
+        <div
+          onClick={() => handleStatClick('successful')}
+          className="bg-green-500 text-white rounded-lg p-4 flex items-center justify-between cursor-pointer hover:bg-green-600 transition-colors"
+        >
+          <span>Successful</span>
+          <span className="text-2xl">{stats.successful}</span>
+        </div>
+        <div
+          onClick={() => handleStatClick('failed')}
+          className="bg-red-500 text-white rounded-lg p-4 flex items-center justify-between cursor-pointer hover:bg-red-600 transition-colors"
+        >
+          <span>Failed</span>
+          <span className="text-2xl">{stats.failed}</span>
+        </div>
+        <div className="bg-purple-500 text-white rounded-lg p-4 flex items-center justify-between">
+          <span>Success Rate</span>
+          <span className="text-2xl">{stats.openRate}%</span>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-md p-4 mb-4">
+        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+          <div className="flex-1">
+            <label className="flex items-center text-gray-600 mb-2">
+              <span className="mr-1">🔍</span> Channel Filter
+            </label>
+            <select
+              value={filters.channel}
+              onChange={(e) => setFilters({ ...filters, channel: e.target.value })}
+              className="w-full p-2 border rounded-lg"
+            >
+              <option>All Channels</option>
+              <option>Email</option>
+              <option>SMS</option>
+              <option>In app SMS</option>
+            </select>
+          </div>
+          <div className="flex-1">
+            <label className="flex items-center text-gray-600 mb-2">
+              <span className="mr-1">📊</span> Status Filter
+            </label>
+            <select
+              value={filters.status}
+              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              className="w-full p-2 border rounded-lg"
+            >
+              <option>All Statuses</option>
+              <option>Sent</option>
+              <option>Failed</option>
+            </select>
+          </div>
+          <div className="flex-1">
+            <label className="flex items-center text-gray-600 mb-2">
+              <span className="mr-1">👥</span> Audience Filter
+            </label>
+            <select
+              value={filters.audience}
+              onChange={(e) => setFilters({ ...filters, audience: e.target.value })}
+              className="w-full p-2 border rounded-lg"
+            >
+              <option>All Audiences</option>
+              <option>All Users</option>
+              <option>All Customers</option>
+              <option>All Retailers</option>
+            </select>
+          </div>
+        </div>
+        <div className="mt-4 text-sm text-gray-600">
+          {loading ? 'Loading notifications...' : `Showing ${filteredLogs.length} notifications`}
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="py-3 px-4 text-left text-gray-600">📅 Date & Time</th>
+              <th className="py-3 px-4 text-left text-gray-600">👤 Sent By</th>
+              <th className="py-3 px-4 text-left text-gray-600">👥 Audience</th>
+              <th className="py-3 px-4 text-left text-gray-600">📡 Channel</th>
+              <th className="py-3 px-4 text-left text-gray-600">📊 Status</th>
+              <th className="py-3 px-4 text-left text-gray-600">⚙️ Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan="6" className="py-8 px-4 text-center text-gray-500">
+                  Loading notifications...
+                </td>
+              </tr>
+            ) : filteredLogs.length > 0 ? (
+              filteredLogs.map((log) => (
+                <LogRow
+                  key={log.id}
+                  log={log}
+                  onViewDetails={handleViewDetails}
+                />
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6" className="py-8 px-4 text-center text-gray-500">
+                  No notifications found matching the current filters
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Details Modal */}
+      {selectedDetailLog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h2 className="text-xl font-bold mb-4">Notification Details</h2>
+            <div className="space-y-3">
+              <div>
+                <span className="font-semibold text-gray-600">Date & Time:</span>
+                <p>{selectedDetailLog.date}</p>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-600">Sent By:</span>
+                <p>{selectedDetailLog.sentBy}</p>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-600">Audience:</span>
+                <p>{selectedDetailLog.audience}</p>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-600">Channel:</span>
+                <p>{selectedDetailLog.channel}</p>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-600">Status:</span>
+                <p className={selectedDetailLog.status === 'Sent' ? 'text-green-600' : 'text-red-600'}>
+                  {selectedDetailLog.status}
+                </p>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-600">Message:</span>
+                <p className="bg-gray-50 p-2 rounded">{selectedDetailLog.message}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setSelectedDetailLog(null)}
+              className="mt-4 w-full bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const NotificationPage = () => {
+  const [activeTab, setActiveTab] = React.useState('send');
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <NavBar activeTab={activeTab} setActiveTab={setActiveTab} />
+      {activeTab === 'send' && <SendNotification />}
+      {activeTab === 'templates' && <TemplatesManager />}
+      {activeTab === 'logs' && <NotificationLogs />}
     </div>
   );
 };

@@ -1,66 +1,38 @@
-// filepath: c:\Users\satyam singh\Deskt
-// op\vite-project\maaLaxmiEcommerceWebsite\ElectronicsEcommerceProject\Frontend\src\App.jsx
-import React from "react";
-import { Route, Routes } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import "@fortawesome/fontawesome-free/css/all.min.css";
-// import {AnalyticDashboard} from "../src/index.js"
-import AnalyticDashboard from "../features/admin/AnalyticManagement/AnalyticDashboard";
-import OrderDashboard from "../features/admin/OrderDashboard/OrderDashboard";
-import AdminDashboard from "../features/admin/Dashboard/AdminDashboard";
-import MainDashboard from "../features/customer/Dashboard/MainDashboard";
-import MainZone from "../features/customer/Dashboard/MainZone";
-import BuyNowPage from "../features/customer/Dashboard/Buy Now Page";
+
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import {
-  AdminLogin,
-  ForgotPassword,
-  AdminLayout,
-  ProductDashboard,
-  ProductForm,
-} from "./index.js";
+  MainDashboard,
+  MainZone,
+  BuyNowPage,
+  ProfilePage,
+  ShoppingCart,
+  OrderCheckoutPage,
+  OrderStatus,
+} from '../features/customer/index.js';
+
+
+import {AdminLayout, ProductForm} from '../features/admin/index.js';
 
 const App = () => {
   return (
-    <div className="app-container">
-      <ToastContainer />
-
+    
       <Routes>
-        {/* <Route path="/signup" element={<SignupForm />} />
-          <Route path="/login" element={<LoginForm />} />  */}
-        {/* <Route path="/maindashboard" element={<MainDashboard />} />
+        <Route path="/" element={<MainDashboard />} />
         <Route path="/mainzone" element={<MainZone />} />
-        <Route path="/buynowpage" element={<BuyNowPage />} /> */}
-        <Route path="/" element={<AdminLayout />} />
-        <Route path="/adminlogin" element={<AdminLogin />} />
-        <Route path="/admin/product-Dashboard" element={<ProductDashboard />} />
-        <Route path="/admin/product-Form" element={<ProductForm />} />
+        <Route path="/buynow" element={<BuyNowPage />} />
+        <Route path="/profilepage" element={<ProfilePage />} />
+        <Route path="/cart" element={<ShoppingCart />} />
+        <Route path = "/orderCheckout" element={<OrderCheckoutPage />} />
+        <Route path = "/OrderStatus" element={<OrderStatus />} />
 
-        {/* <Route path="/profilePage" element={<ProfilePage />} />
-          <Route path="/product/:productId" element={<ShowProductDescription />} />
-          <Route path="/showCartItems" element={<ShowAllCartItems />} />
-          <Route path="/adminlogin" element={<AdminLogin />} /> */}
-        {/* <Route
-          path="/admindashboard"
-          element={
-            <div className="admin-container">
-              <Layout />
-            </div>
-          }
-        /> */}
-        {/* <Route path="/productform" element={<ProductForm />} />
-        <Route path="/productlist" element={<ProductList />} />
-        <Route path="/productdashboard" element={<ProductDashboard />} />
-        <Route path="/orderdashboard" element={<OrderDashboard />} />
-        <Route path="/userdashboard" element={<UserDashboard />} />
-        <Route path="/reviewdashboard" element={<ReviewDashboard />} />
-        <Route path="/coupondashboard" element={<CouponDashboard />} />
-        <Route path="/notification" element={<NotificationPage />} />
-        <Route path="/analyticdashboard" element={<AnalyticDashboard />} />
-        <Route path="/userprofileview" element={<UserProfileView />} /> */}
+        //AdminRoutes
+        <Route path="/adminDashboard" element={<AdminLayout />} />
+        <Route path="/admin/product-Form" element={<ProductForm />} />
       </Routes>
-    </div>
+   
   );
 };
 
 export default App;
+
