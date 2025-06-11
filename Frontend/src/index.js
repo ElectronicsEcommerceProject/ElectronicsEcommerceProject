@@ -127,6 +127,12 @@ const adminNotificationStatsRoute = import.meta.env
 const adminNotificationTemplatesRoute = import.meta.env
   .VITE_ADMIN_NOTIFICATION_TEMPLATES_ENDPOINT;
 
+
+  //user Panel Routes
+
+  const userPanelLoginRoute = import.meta.env.VITE_AUTH_LOGIN_ENDPOINT;
+  const userPanelRegisterRoute = import.meta.env.VITE_AUTH_SIGNUP_ENDPOINT;
+
 export {
   FaEye,
   FaEyeSlash,
@@ -191,4 +197,8 @@ export {
   adminNotificationLogsRoute,
   adminNotificationStatsRoute,
   adminNotificationTemplatesRoute,
+
+  //User Panel Routes
+  userPanelLoginRoute,
+  userPanelRegisterRoute
 };

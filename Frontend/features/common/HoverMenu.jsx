@@ -15,7 +15,7 @@ import Signup from "../customer/SignIn/Signup";
 import ForgotPassword from "../customer/SignIn/ForgotPassword";
 import LogoutModal from "../customer/SignIn/Logout";
 
-const HoverMenu = ({ isMobile = false }) => {
+const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
   const [modalContent, setModalContent] = useState(null);
   const [user, setUser] = useState(null); // Initialize as null for initial Login/Signup view
   const [message, setMessage] = useState("");
@@ -69,6 +69,13 @@ const HoverMenu = ({ isMobile = false }) => {
       document.body.style.overflow = "auto";
     }
   }, [modalContent, showLogoutModal]);
+
+  // Notify parent component about modal state changes
+  useEffect(() => {
+    if (onModalStateChange) {
+      onModalStateChange(modalContent !== null || showLogoutModal);
+    }
+  }, [modalContent, showLogoutModal, onModalStateChange]);
 
   const menuItems = [
     { id: "orders", label: "My Orders", icon: FaShoppingBag, path: "/profilepage?section=orders" },
@@ -235,20 +242,18 @@ const HoverMenu = ({ isMobile = false }) => {
               initial={{ y: 20 }}
               animate={{ y: 0 }}
               className="bg-white rounded-xl w-full max-w-md p-6 sm:p-8 relative shadow-2xl"
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
             >
               {modalContent === "login" ? (
                 <Login
                   setModalContent={setModalContent}
                   setUser={setUser}
-                  closeModal={closeModal}
                   setMessage={setMessage}
                 />
               ) : modalContent === "signup" ? (
                 <Signup
                   setModalContent={setModalContent}
                   setUser={setUser}
-                  closeModal={closeModal}
-                  setMessage={setMessage}
                 />
               ) : modalContent === "forgotPassword" ? (
                 <ForgotPassword setModalContent={setModalContent} setMessage={setMessage} />

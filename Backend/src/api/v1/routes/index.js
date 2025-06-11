@@ -17,7 +17,7 @@ import productReviewRoutes from "./commonRoutes/product/productReview/productRev
 
 const app = express();
 
-app.use("/auth", authRoutes);
+app.use("/user/auth", authRoutes);
 
 app.use("/user/profile", profileRoutes);
 

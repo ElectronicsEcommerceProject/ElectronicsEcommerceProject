@@ -33,6 +33,7 @@ const login = async (req, res) => {
     const token = encodeJwtToken(email, user.user_id, user.role);
 
     return res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.get.custom("Login successful"),
       token,
     });

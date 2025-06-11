@@ -27,6 +27,7 @@ import Footer from "../../../components/Footer/Footer";
 const MainDashboard = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHoveringLogin, setIsHoveringLogin] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeBanner, setActiveBanner] = useState(0);
   const [searchInput, setSearchInput] = useState("");
   const dispatch = useDispatch();
@@ -59,6 +60,14 @@ const MainDashboard = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // Keep hover menu open when modal is open
+  useEffect(() => {
+    if (isModalOpen) {
+      // Keep the hover menu visible when modal is open
+      setIsHoveringLogin(true);
+    }
+  }, [isModalOpen]);
 
   const navItems = [
     { icon: FaMobileAlt, label: "Mobiles" },
@@ -184,6 +193,24 @@ const MainDashboard = () => {
     navigate("/mainzone");
   };
 
+  // Handle modal state changes from HoverMenu
+  const handleModalStateChange = (isOpen) => {
+    setIsModalOpen(isOpen);
+  };
+
+  // Handle mouse leave with modal check
+  const handleMouseLeave = () => {
+    // Only close hover menu if no modal is open
+    if (!isModalOpen) {
+      // Add a small delay to prevent accidental closing
+      setTimeout(() => {
+        if (!isModalOpen) {
+          setIsHoveringLogin(false);
+        }
+      }, 2000);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       {/* Header */}
@@ -215,7 +242,7 @@ const MainDashboard = () => {
             <div
               className="relative group"
               onMouseEnter={() => setIsHoveringLogin(true)}
-              onMouseLeave={() => setIsHoveringLogin(false)}
+              onMouseLeave={handleMouseLeave}
             >
               <div className="flex items-center cursor-pointer px-3 py-2">
                 <FaUser className="w-5 h-5 mr-1" />
@@ -231,7 +258,7 @@ const MainDashboard = () => {
                     className="absolute top-full mt-2 left-0 z-50"
                   >
                     <div className="w-3 h-3 bg-white rotate-45 absolute -top-1 left-5 shadow-sm" />
-                    <HoverMenu />
+                    <HoverMenu onModalStateChange={handleModalStateChange} />
                   </motion.div>
                 )}
               </AnimatePresence>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiMenu,
   FiUser,
@@ -32,11 +32,38 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const cartCount = 3;
 
+  // Keep hover menu open when modal is open
+  useEffect(() => {
+    if (isModalOpen) {
+      // Keep the hover menu visible when modal is open
+      setIsHoveringSignIn(true);
+    }
+  }, [isModalOpen]);
+
   const handleSearch = () => {
     console.log("Searching for:", searchInput);
+  };
+
+  // Handle modal state changes from HoverMenu
+  const handleModalStateChange = (isOpen) => {
+    setIsModalOpen(isOpen);
+  };
+
+  // Handle mouse leave with modal check
+  const handleMouseLeave = () => {
+    // Only close hover menu if no modal is open
+    if (!isModalOpen) {
+      // Add a small delay to prevent accidental closing
+      setTimeout(() => {
+        if (!isModalOpen) {
+          setIsHoveringSignIn(false);
+        }
+      }, 200);
+    }
   };
 
   return (
@@ -77,7 +104,7 @@ const Header = () => {
             <div
               className="relative group"
               onMouseEnter={() => setIsHoveringSignIn(true)}
-              onMouseLeave={() => setIsHoveringSignIn(false)}
+              onMouseLeave={handleMouseLeave}
             >
               <div className="flex items-center cursor-pointer hover:text-amber-500 transition-colors duration-200 px-3 py-2">
                 <FiUser className="w-5 h-5 mr-1" />
@@ -94,7 +121,7 @@ const Header = () => {
                     className="absolute top-full mt-2 left-0 z-50"
                   >
                     <div className="w-3 h-3 bg-white rotate-45 absolute -top-1 left-5 shadow-sm" />
-                    <HoverMenu />
+                    <HoverMenu onModalStateChange={handleModalStateChange} />
                   </motion.div>
                 )}
               </AnimatePresence>
