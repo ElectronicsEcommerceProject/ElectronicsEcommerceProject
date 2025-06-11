@@ -12,19 +12,57 @@ import {
   FiNavigation,
   FiChevronDown,
   FiX,
+  FiPackage,
+  FiClock,
+  FiHome,
+  FiShoppingBag,
+  FiBookOpen,
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import HoverMenu from "../../features/common/HoverMenu"; // Import HoverMenu as specified
 
-const navItems = [
-  { icon: FiSmartphone, label: "Mobiles" },
-  { icon: FiMonitor, label: "Electronics" },
-  { icon: FiHeadphones, label: "Audio" },
-  { icon: FiCamera, label: "Cameras" },
-  { icon: FiBriefcase, label: "Travel" },
-  { icon: FiNavigation, label: "Navigation" },
-];
+import { getApi, getAllCategoryRoute } from "../../src/index.js";
+
+// Function to map category names to appropriate icons
+const getCategoryIcon = (categoryName) => {
+  const name = categoryName.toLowerCase();
+
+  if (name.includes("mobile") || name.includes("phone")) return FiSmartphone;
+  if (
+    name.includes("electronic") ||
+    name.includes("tv") ||
+    name.includes("television")
+  )
+    return FiMonitor;
+  if (
+    name.includes("audio") ||
+    name.includes("headphone") ||
+    name.includes("speaker")
+  )
+    return FiHeadphones;
+  if (name.includes("camera") || name.includes("photo")) return FiCamera;
+  if (
+    name.includes("travel") ||
+    name.includes("bag") ||
+    name.includes("luggage")
+  )
+    return FiBriefcase;
+  if (name.includes("navigation") || name.includes("gps")) return FiNavigation;
+  if (name.includes("watch") || name.includes("time")) return FiClock;
+  if (name.includes("home") || name.includes("appliance")) return FiHome;
+  if (
+    name.includes("clothing") ||
+    name.includes("fashion") ||
+    name.includes("apparel")
+  )
+    return FiShoppingBag;
+  if (name.includes("book") || name.includes("education")) return FiBookOpen;
+  if (name.includes("computer") || name.includes("laptop")) return FiMonitor;
+
+  // Default icon for unknown categories
+  return FiPackage;
+};
 
 const Header = () => {
   const [isHoveringCategory, setIsHoveringCategory] = useState(false);
@@ -34,7 +72,86 @@ const Header = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // New state for categories
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState(null);
+
   const cartCount = 3;
+
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        setCategoriesError(null);
+
+        const response = await getApi(getAllCategoryRoute);
+
+        if (response.status && response.data) {
+          // Transform API data to match our component structure
+          const transformedCategories = response.data.map((category) => ({
+            icon: getCategoryIcon(category.name),
+            label: category.name,
+            slug: category.slug,
+            category_id: category.category_id,
+          }));
+
+          setCategories(transformedCategories);
+        } else {
+          throw new Error("Invalid response format");
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setCategoriesError(error.message || "Failed to fetch categories");
+
+        // Fallback to hardcoded data if API fails
+        const fallbackCategories = [
+          {
+            icon: FiSmartphone,
+            label: "Mobiles",
+            slug: "mobiles",
+            category_id: "fallback-1",
+          },
+          {
+            icon: FiMonitor,
+            label: "Electronics",
+            slug: "electronics",
+            category_id: "fallback-2",
+          },
+          {
+            icon: FiHeadphones,
+            label: "Audio",
+            slug: "audio",
+            category_id: "fallback-3",
+          },
+          {
+            icon: FiCamera,
+            label: "Cameras",
+            slug: "cameras",
+            category_id: "fallback-4",
+          },
+          {
+            icon: FiBriefcase,
+            label: "Travel",
+            slug: "travel",
+            category_id: "fallback-5",
+          },
+          {
+            icon: FiNavigation,
+            label: "Navigation",
+            slug: "navigation",
+            category_id: "fallback-6",
+          },
+        ];
+        setCategories(fallbackCategories);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   // Keep hover menu open when modal is open
   useEffect(() => {
@@ -208,33 +325,53 @@ const Header = () => {
             </div>
             {isHoveringCategory && (
               <div className="absolute top-8 left-0 bg-gray-50 text-gray-800 rounded-lg shadow-lg z-50 border border-gray-200 w-48">
-                {navItems.map((item, index) => (
-                  <a
-                    key={index}
-                    href="#"
-                    className="flex items-center space-x-2 px-4 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200"
-                  >
-                    <item.icon className="w-5 h-5 text-gray-600" />
-                    <span className="text-sm font-medium">{item.label}</span>
-                  </a>
-                ))}
+                {categoriesLoading ? (
+                  <div className="px-4 py-3 text-center text-gray-500">
+                    <span className="text-sm">Loading categories...</span>
+                  </div>
+                ) : categoriesError ? (
+                  <div className="px-4 py-3 text-center text-red-500">
+                    <span className="text-sm">Failed to load categories</span>
+                  </div>
+                ) : (
+                  categories.map((item, index) => (
+                    <a
+                      key={item.category_id || index}
+                      href="#"
+                      className="flex items-center space-x-2 px-4 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200"
+                    >
+                      <item.icon className="w-5 h-5 text-gray-600" />
+                      <span className="text-sm font-medium">{item.label}</span>
+                    </a>
+                  ))
+                )}
               </div>
             )}
           </div>
 
           {/* NAV LINKS */}
           <div className="flex overflow-x-auto md:overflow-visible flex-1 justify-start md:justify-center space-x-4 md:space-x-8 scrollbar-hide">
-            {navItems.map((item, index) => (
-              <a
-                key={index}
-                href="#"
-                className="text-xs md:text-sm font-medium text-gray-800 hover:text-amber-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 whitespace-nowrap flex items-center px-1 py-1 relative group transition-colors duration-200"
-              >
-                <item.icon className="mr-1 md:mr-2 text-base md:text-lg text-gray-600" />
-                {item.label}
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-500 group-hover:w-full transition-all duration-200"></span>
-              </a>
-            ))}
+            {categoriesLoading ? (
+              <div className="text-xs md:text-sm text-gray-500 px-1 py-1">
+                Loading...
+              </div>
+            ) : categoriesError ? (
+              <div className="text-xs md:text-sm text-red-500 px-1 py-1">
+                Error loading categories
+              </div>
+            ) : (
+              categories.map((item, index) => (
+                <a
+                  key={item.category_id || index}
+                  href="#"
+                  className="text-xs md:text-sm font-medium text-gray-800 hover:text-amber-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 whitespace-nowrap flex items-center px-1 py-1 relative group transition-colors duration-200"
+                >
+                  <item.icon className="mr-1 md:mr-2 text-base md:text-lg text-gray-600" />
+                  {item.label}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-500 group-hover:w-full transition-all duration-200"></span>
+                </a>
+              ))
+            )}
           </div>
         </div>
       </nav>
