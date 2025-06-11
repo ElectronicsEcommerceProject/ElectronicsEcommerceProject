@@ -113,6 +113,9 @@ const Signup = ({ setModalContent, setUser }) => {
 
       // Handle successful signup
       if (response.success && response.user) {
+        // Dispatch custom event to notify other components
+        window.dispatchEvent(new Event('tokenChanged'));
+
         setUser({
           email: response.user.email,
           name: response.user.name,

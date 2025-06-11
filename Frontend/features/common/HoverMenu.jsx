@@ -10,6 +10,7 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
+import { jwtDecode } from "jwt-decode";
 import Login from "../customer/SignIn/Login";
 import Signup from "../customer/SignIn/Signup";
 import ForgotPassword from "../customer/SignIn/ForgotPassword";
@@ -23,6 +24,63 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
+  // Check for existing token on component mount and listen for storage changes
+  useEffect(() => {
+    const checkExistingToken = () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const decodedToken = jwtDecode(token);
+          // Check if token is not expired
+          const currentTime = Date.now() / 1000;
+          if (decodedToken.exp > currentTime) {
+            setUser({
+              email: decodedToken.email,
+              emailOrMobile: decodedToken.email,
+              user_id: decodedToken.user_id,
+              role: decodedToken.role,
+              name: decodedToken.name || decodedToken.email
+            });
+          } else {
+            // Token expired, remove it
+            localStorage.removeItem('token');
+            setUser(null);
+          }
+        } catch (error) {
+          console.error('Error decoding token:', error);
+          localStorage.removeItem('token');
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+    };
+
+    // Check on mount
+    checkExistingToken();
+
+    // Listen for storage changes (when token is added/removed)
+    const handleStorageChange = (e) => {
+      if (e.key === 'token') {
+        checkExistingToken();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also listen for custom events (for same-tab changes)
+    const handleTokenChange = () => {
+      checkExistingToken();
+    };
+
+    window.addEventListener('tokenChanged', handleTokenChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('tokenChanged', handleTokenChange);
+    };
+  }, []);
+
   const handleLogout = () => {
     setShowLogoutModal(true);
   };
@@ -31,6 +89,12 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
     setIsLoading(true);
     // Simulate API call
     setTimeout(() => {
+      // Clear token from localStorage
+      localStorage.removeItem('token');
+
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new Event('tokenChanged'));
+
       setUser(null); // Reset user to null to show Login/Signup
       setShowLogoutModal(false);
       setModalContent("success");
@@ -56,11 +120,30 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
         setTimeout(() => {
           setModalContent(null);
           setMessage("");
+          // Check for token after success modal closes (in case of login)
+          const token = localStorage.getItem('token');
+          if (token && !user) {
+            try {
+              const decodedToken = jwtDecode(token);
+              const currentTime = Date.now() / 1000;
+              if (decodedToken.exp > currentTime) {
+                setUser({
+                  email: decodedToken.email,
+                  emailOrMobile: decodedToken.email,
+                  user_id: decodedToken.user_id,
+                  role: decodedToken.role,
+                  name: decodedToken.name || decodedToken.email
+                });
+              }
+            } catch (error) {
+              console.error('Error decoding token:', error);
+            }
+          }
         }, 300);
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [modalContent]);
+  }, [modalContent, user]);
 
   useEffect(() => {
     if (modalContent || showLogoutModal) {
@@ -69,6 +152,31 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
       document.body.style.overflow = "auto";
     }
   }, [modalContent, showLogoutModal]);
+
+  // Check for token changes when modal closes
+  useEffect(() => {
+    if (!modalContent && !showLogoutModal) {
+      // Modal just closed, check if user logged in
+      const token = localStorage.getItem('token');
+      if (token && !user) {
+        try {
+          const decodedToken = jwtDecode(token);
+          const currentTime = Date.now() / 1000;
+          if (decodedToken.exp > currentTime) {
+            setUser({
+              email: decodedToken.email,
+              emailOrMobile: decodedToken.email,
+              user_id: decodedToken.user_id,
+              role: decodedToken.role,
+              name: decodedToken.name || decodedToken.email
+            });
+          }
+        } catch (error) {
+          console.error('Error decoding token:', error);
+        }
+      }
+    }
+  }, [modalContent, showLogoutModal, user]);
 
   // Notify parent component about modal state changes
   useEffect(() => {

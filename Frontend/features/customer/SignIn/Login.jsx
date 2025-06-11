@@ -64,6 +64,9 @@ const Login = ({ setModalContent, setUser, setMessage }) => {
         // Store the token in localStorage
         localStorage.setItem('token', response.token);
 
+        // Dispatch custom event to notify other components
+        window.dispatchEvent(new Event('tokenChanged'));
+
         // Decode token to get user information (optional, for immediate use)
         try {
           const tokenPayload = JSON.parse(atob(response.token.split('.')[1]));
