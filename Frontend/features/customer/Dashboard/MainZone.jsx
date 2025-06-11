@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   FiSearch,
@@ -12,6 +13,7 @@ import {
   FiNavigation,
   FiX,
   FiFilter,
+  FiHeart,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -27,7 +29,6 @@ import {
   setSortOption,
   resetFilters,
 } from "../../../components/Redux/filterSlice";
-
 import FilterSidebar from "../../../components/ProductZone/FilterSidebar";
 import ProductGrid from "../../../components/ProductZone/ProductGrid";
 import SortOptions from "../../../components/ProductZone/SortOptions";
@@ -36,11 +37,7 @@ import { brandsData } from "../../../components/Data/brands";
 import { dummyProducts } from "../../../components/Data/products";
 import Footer from "../../../components/Footer/Footer";
 import Header from "../../../components/Header/Header";
-import {
-  priceRanges,
-  ratings,
-  discounts,
-} from "../../../components/Data/filters";
+import { priceRanges, ratings, discounts } from "../../../components/Data/filters";
 
 const MainZone = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -54,6 +51,15 @@ const MainZone = () => {
   const [appliedFilters, setAppliedFilters] = useState([]);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [hoveredProduct, setHoveredProduct] = useState(null);
+  const [wishlist, setWishlist] = useState([]);
+
+  const toggleWishlist = (productId) => {
+    setWishlist((prev) =>
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
+    );
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -63,8 +69,8 @@ const MainZone = () => {
       }
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [isFilterOpen]);
 
   const dispatch = useDispatch();
@@ -83,7 +89,6 @@ const MainZone = () => {
     sortOption,
   } = filterState;
 
-  // Define toggleCategory function
   const toggleCategory = (category) => {
     setExpandedCategories((prev) => ({
       ...prev,
@@ -243,7 +248,6 @@ const MainZone = () => {
     setHoveredProduct(null);
   };
 
-  // Track applied filters
   useEffect(() => {
     const filters = [];
     if (searchTerm) filters.push({ type: "search", value: searchTerm });
@@ -269,7 +273,6 @@ const MainZone = () => {
     setAppliedFilters(filters);
   }, [filterState]);
 
-  // Generate search suggestions
   useEffect(() => {
     if (searchInput.trim() === "") {
       setSearchSuggestions([]);
@@ -368,8 +371,6 @@ const MainZone = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <Header />
-
-      {/* Applied Filters Bar */}
       {appliedFilters.length > 0 && (
         <div className="bg-white py-2 px-4 border-b border-gray-200">
           <div className="flex flex-wrap items-center gap-2">
@@ -398,8 +399,6 @@ const MainZone = () => {
           </div>
         </div>
       )}
-
-      {/* Mobile Filter Button */}
       {windowWidth < 768 && (
         <div className="sticky top-16 z-10 bg-white p-2 shadow-sm flex justify-between items-center">
           <button
@@ -410,27 +409,27 @@ const MainZone = () => {
             <span>Filters</span>
           </button>
           {filteredProducts.length > 0 && (
-            <SortOptions 
-              sortOption={sortOption} 
-              handleSort={handleSort} 
+            <SortOptions
+              sortOption={sortOption}
+              handleSort={handleSort}
               mobileView={true}
             />
           )}
         </div>
       )}
-
-      {/* Content */}
       <div className="flex flex-col md:flex-row gap-4 mt-4 px-4">
-        {/* Filter Sidebar */}
         {(windowWidth >= 768 || isFilterOpen) && (
-          <div className={`${windowWidth < 768 ? 
-            'fixed inset-0 z-20 bg-white overflow-y-auto p-4' : 
-            'w-64 flex-shrink-0'}`}
+          <div
+            className={`${
+              windowWidth < 768
+                ? "fixed inset-0 z-20 bg-white overflow-y-auto p-4"
+                : "w-64 flex-shrink-0"
+            }`}
           >
             {windowWidth < 768 && (
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">Filters</h2>
-                <button 
+                <button
                   onClick={() => setIsFilterOpen(false)}
                   className="text-gray-500 hover:text-gray-700 transition-colors"
                 >
@@ -438,7 +437,6 @@ const MainZone = () => {
                 </button>
               </div>
             )}
-            
             <FilterSidebar
               categoriesData={categoriesData}
               expandedCategories={expandedCategories}
@@ -473,7 +471,6 @@ const MainZone = () => {
               resetAllFilters={resetAllFilters}
               mobileView={windowWidth < 768}
             />
-            
             {windowWidth < 768 && (
               <div className="sticky bottom-0 bg-white py-4 border-t border-gray-200">
                 <button
@@ -486,17 +483,17 @@ const MainZone = () => {
             )}
           </div>
         )}
-
-        {/* Overlay for mobile filter */}
         {isFilterOpen && windowWidth < 768 && (
-          <div 
+          <div
             className="fixed inset-0 bg-black bg-opacity-50 z-10"
             onClick={() => setIsFilterOpen(false)}
           />
         )}
-
-        {/* Main Content Area */}
-        <div className={`bg-white p-4 shadow-lg rounded-lg ${windowWidth < 768 ? 'w-full' : 'flex-1'}`}>
+        <div
+          className={`bg-white p-4 shadow-lg rounded-lg ${
+            windowWidth < 768 ? "w-full" : "flex-1"
+          }`}
+        >
           {windowWidth >= 768 && filteredProducts.length > 0 && (
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">
@@ -505,13 +502,11 @@ const MainZone = () => {
               <SortOptions sortOption={sortOption} handleSort={handleSort} />
             </div>
           )}
-
           {windowWidth < 768 && (
             <h2 className="text-lg font-semibold mb-4">
               {filteredProducts.length} Products
             </h2>
           )}
-
           {filteredProducts.length === 0 ? (
             <div className="text-center py-10">
               <p className="text-gray-600 text-lg mb-4">
@@ -525,18 +520,19 @@ const MainZone = () => {
               </button>
             </div>
           ) : (
-            <ProductGrid 
-              products={filteredProducts} 
+            <ProductGrid
+              products={filteredProducts}
               mobileView={windowWidth < 768}
               onProductClick={handleProductClick}
               onProductHover={handleProductHover}
               onProductLeave={handleProductLeave}
               hoveredProduct={hoveredProduct}
+              wishlist={wishlist}
+              toggleWishlist={toggleWishlist}
             />
           )}
         </div>
       </div>
-
       <Footer />
     </div>
   );

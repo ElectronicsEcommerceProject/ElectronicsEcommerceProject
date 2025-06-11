@@ -1,4 +1,6 @@
+
 import React from "react";
+import { FiHeart } from "react-icons/fi";
 
 const ProductCard = ({
   product,
@@ -6,11 +8,9 @@ const ProductCard = ({
   onProductHover,
   onProductLeave,
   isHovered,
+  wishlist,
+  toggleWishlist,
 }) => {
-  // Debugging: Log received props to ensure they are passed correctly
-  // console.log("ProductCard props:", { product, onProductClick, onProductHover, onProductLeave, isHovered });
-
-  // Ensure product has an id
   if (!product?.id) {
     console.error("Product missing id:", product);
     return <div className="text-red-500">Error: Product ID missing</div>;
@@ -18,26 +18,35 @@ const ProductCard = ({
 
   return (
     <div
-      className={`bg-white p-3 rounded shadow text-sm cursor-pointer transition-all duration-200 ${
+      className={`relative bg-white p-3 rounded shadow text-sm cursor-pointer transition-all duration-200 ${
         isHovered ? "scale-105 shadow-lg" : "hover:scale-105 hover:shadow-lg"
       }`}
-      onClick={() => {
-        console.log("Card clicked for product:", product.id);
-        onProductClick(product.id);
-      }}
-      onMouseEnter={() => {
-        console.log("Card hovered for product:", product.id);
-        onProductHover(product.id);
-      }}
-      onMouseLeave={() => {
-        console.log("Card left for product:", product.id);
-        onProductLeave();
-      }}
-      onTouchStart={() => {
-        console.log("Card touched for product:", product.id);
-        onProductHover(product.id);
-      }}
+      onClick={() => onProductClick(product.id)}
+      onMouseEnter={() => onProductHover(product.id)}
+      onMouseLeave={() => onProductLeave()}
+      onTouchStart={() => onProductHover(product.id)}
     >
+      <button
+        className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 transition-colors z-10"
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleWishlist(product.id);
+        }}
+        aria-label={
+          wishlist.includes(product.id)
+            ? "Remove from Wishlist"
+            : "Add to Wishlist"
+        }
+      >
+        <FiHeart
+          size={20}
+          className={`${
+            wishlist.includes(product.id)
+              ? "text-red-500 fill-red-500"
+              : "text-gray-500"
+          } transition-colors`}
+        />
+      </button>
       <img
         src={product.image}
         alt={product.name}

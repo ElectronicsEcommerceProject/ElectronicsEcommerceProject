@@ -1,3 +1,4 @@
+
 import React from "react";
 import ProductCard from "../../components/ProductZone/ProductCard";
 
@@ -8,6 +9,8 @@ const ProductGrid = ({
   onProductHover,
   onProductLeave,
   hoveredProduct,
+  wishlist,
+  toggleWishlist,
 }) => {
   return (
     <section aria-label="Product Grid">
@@ -30,7 +33,11 @@ const ProductGrid = ({
               onProductClick={onProductClick}
               onProductHover={onProductHover}
               onProductLeave={onProductLeave}
-              isHovered={hoveredProduct === product.id}
+              isHovered={hoveredProduct === product
+
+.id}
+              wishlist={wishlist}
+              toggleWishlist={toggleWishlist}
             />
           ))
         )}
