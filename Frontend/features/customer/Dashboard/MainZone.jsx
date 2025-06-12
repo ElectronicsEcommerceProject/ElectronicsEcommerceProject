@@ -31,25 +31,30 @@ import {
 import FilterSidebar from "../../../components/ProductZone/FilterSidebar";
 import ProductGrid from "../../../components/ProductZone/ProductGrid";
 import SortOptions from "../../../components/ProductZone/SortOptions";
-
 import Footer from "../../../components/Footer/Footer";
 import Header from "../../../components/Header/Header";
 import { priceRanges, ratings } from "../../../components/Data/filters";
 
-// Products data
+// Enhanced products data with additional fields
 const dummyProducts = [
   {
     id: 1,
     name: "Laptop Pro",
     category: "Laptops",
+    categoryPath: "Electronics > Laptops",
     brand: "Apple",
     price: 15000,
-    rating: "⭐⭐⭐⭐",
-    discount: "10% Off or More",
+    rating: 4.0,
+    ratingCount: 120,
+    discount: "10% off with CODE123",
     discountPercent: 10,
     inStock: true,
-    arrival: "Last 30 Days",
+    stockLevel: 5,
+    hasVariants: true,
+    shortDescription: "High-performance laptop with M1 chip, 16GB RAM...",
+    arrival: "Launched: Jan 2025",
     popularity: 95,
+    isFeatured: true,
     image:
       "https://m.media-amazon.com/images/I/61bK6PMOC3L._AC_UF1000,1000_QL80_.jpg",
   },
@@ -57,14 +62,20 @@ const dummyProducts = [
     id: 2,
     name: "Wireless Headset",
     category: "Headsets",
+    categoryPath: "Electronics > Headsets",
     brand: "JBL",
     price: 3000,
-    rating: "⭐⭐⭐",
-    discount: "25% Off or More",
+    rating: 3.0,
+    ratingCount: 80,
+    discount: "25% off on bulk (5+ units)",
     discountPercent: 25,
     inStock: true,
-    arrival: "Last 90 Days",
+    stockLevel: 50,
+    hasVariants: false,
+    shortDescription: "Crystal-clear audio with 20-hour battery life...",
+    arrival: "Restocked: May 2025",
     popularity: 80,
+    isFeatured: false,
     image:
       "https://m.media-amazon.com/images/I/61cwywLZR-L._AC_UF1000,1000_QL80_.jpg",
   },
@@ -72,14 +83,20 @@ const dummyProducts = [
     id: 3,
     name: "Gaming Monitor",
     category: "Monitors",
+    categoryPath: "Electronics > Monitors",
     brand: "Samsung",
     price: 12000,
-    rating: "⭐⭐⭐⭐",
-    discount: "10% Off or More",
+    rating: 4.0,
+    ratingCount: 90,
+    discount: "10% off with CODE456",
     discountPercent: 10,
     inStock: false,
-    arrival: "Last 30 Days",
+    stockLevel: 0,
+    hasVariants: true,
+    shortDescription: "27-inch 4K monitor with 144Hz refresh rate...",
+    arrival: "Launched: Apr 2025",
     popularity: 85,
+    isFeatured: true,
     image:
       "https://m.media-amazon.com/images/I/71V--WZVUIL._AC_UF1000,1000_QL80_.jpg",
   },
@@ -87,14 +104,20 @@ const dummyProducts = [
     id: 4,
     name: "Portable Speaker",
     category: "Speakers",
+    categoryPath: "Electronics > Speakers",
     brand: "boAt",
     price: 2000,
-    rating: "⭐⭐⭐",
-    discount: "35% Off or More",
+    rating: 3.0,
+    ratingCount: 150,
+    discount: "35% off on clearance",
     discountPercent: 35,
     inStock: true,
-    arrival: "Last 90 Days",
+    stockLevel: 20,
+    hasVariants: false,
+    shortDescription: "Waterproof speaker with deep bass...",
+    arrival: "Restocked: Mar 2025",
     popularity: 90,
+    isFeatured: false,
     image:
       "https://m.media-amazon.com/images/I/61bK6PMOC3L._AC_UF1000,1000_QL80_.jpg",
   },
@@ -102,14 +125,20 @@ const dummyProducts = [
     id: 5,
     name: "External SSD",
     category: "External Devices & Data Storage",
+    categoryPath: "Electronics > Storage",
     brand: "HP",
     price: 8000,
-    rating: "⭐⭐⭐⭐",
-    discount: "10% Off or More",
+    rating: 4.0,
+    ratingCount: 60,
+    discount: "10% off with CODE789",
     discountPercent: 10,
     inStock: true,
-    arrival: "Last 30 Days",
+    stockLevel: 10,
+    hasVariants: true,
+    shortDescription: "1TB SSD with USB-C connectivity...",
+    arrival: "Launched: Feb 2025",
     popularity: 75,
+    isFeatured: false,
     image:
       "https://m.media-amazon.com/images/I/61cwywLZR-L._AC_UF1000,1000_QL80_.jpg",
   },
@@ -117,14 +146,20 @@ const dummyProducts = [
     id: 6,
     name: "Desktop PC",
     category: "Desktops",
+    categoryPath: "Electronics > Desktops",
     brand: "Lenovo",
     price: 25000,
-    rating: "⭐⭐⭐⭐",
-    discount: "All Discounts",
+    rating: 4.0,
+    ratingCount: 70,
+    discount: "5% off for retailers",
     discountPercent: 5,
     inStock: true,
-    arrival: "Last 90 Days",
+    stockLevel: 15,
+    hasVariants: true,
+    shortDescription: "Powerful PC with Intel i7 and 32GB RAM...",
+    arrival: "Restocked: Apr 2025",
     popularity: 70,
+    isFeatured: false,
     image:
       "https://m.media-amazon.com/images/I/61bK6PMOC3L._AC_UF1000,1000_QL80_.jpg",
   },
@@ -132,14 +167,20 @@ const dummyProducts = [
     id: 7,
     name: "Noise Cancelling Headphones",
     category: "Headsets",
+    categoryPath: "Electronics > Headsets",
     brand: "Sony",
     price: 1500,
-    rating: "⭐⭐",
-    discount: "50% Off or More",
+    rating: 2.0,
+    ratingCount: 100,
+    discount: "50% off clearance sale",
     discountPercent: 50,
     inStock: false,
-    arrival: "Last 30 Days",
+    stockLevel: 0,
+    hasVariants: false,
+    shortDescription: "Comfortable headphones with ANC...",
+    arrival: "Launched: Jan 2025",
     popularity: 88,
+    isFeatured: false,
     image:
       "https://m.media-amazon.com/images/I/61bK6PMOC3L._AC_UF1000,1000_QL80_.jpg",
   },
@@ -147,14 +188,20 @@ const dummyProducts = [
     id: 8,
     name: "Tablet Air",
     category: "Tablets",
+    categoryPath: "Electronics > Tablets",
     brand: "Apple",
     price: 18000,
-    rating: "⭐⭐⭐⭐",
-    discount: "10% Off or More",
+    rating: 4.0,
+    ratingCount: 200,
+    discount: "10% off with CODE101",
     discountPercent: 10,
     inStock: true,
-    arrival: "Last 30 Days",
+    stockLevel: 8,
+    hasVariants: true,
+    shortDescription: "Lightweight tablet with Retina display...",
+    arrival: "Launched: Mar 2025",
     popularity: 92,
+    isFeatured: true,
     image:
       "https://m.media-amazon.com/images/I/71V--WZVUIL._AC_UF1000,1000_QL80_.jpg",
   },
@@ -162,14 +209,20 @@ const dummyProducts = [
     id: 9,
     name: "Wireless Router",
     category: "Networking Devices",
+    categoryPath: "Electronics > Networking",
     brand: "ZEBRONICS",
     price: 2500,
-    rating: "⭐⭐⭐",
-    discount: "25% Off or More",
+    rating: 3.0,
+    ratingCount: 50,
+    discount: "25% off with CODE202",
     discountPercent: 25,
     inStock: true,
-    arrival: "Last 90 Days",
+    stockLevel: 30,
+    hasVariants: false,
+    shortDescription: "Dual-band router with gigabit speeds...",
+    arrival: "Restocked: May 2025",
     popularity: 78,
+    isFeatured: false,
     image:
       "https://m.media-amazon.com/images/I/61cwywLZR-L._AC_UF1000,1000_QL80_.jpg",
   },
@@ -177,14 +230,20 @@ const dummyProducts = [
     id: 10,
     name: "Inkjet Printer",
     category: "Printers, Inks & Accessories",
+    categoryPath: "Electronics > Printers",
     brand: "HP",
     price: 6000,
-    rating: "⭐⭐⭐",
-    discount: "10% Off or More",
+    rating: 3.0,
+    ratingCount: 85,
+    discount: "10% off with CODE303",
     discountPercent: 10,
     inStock: true,
-    arrival: "Last 30 Days",
+    stockLevel: 12,
+    hasVariants: false,
+    shortDescription: "Compact printer with wireless printing...",
+    arrival: "Launched: Feb 2025",
     popularity: 82,
+    isFeatured: false,
     image:
       "https://m.media-amazon.com/images/I/61bK6PMOC3L._AC_UF1000,1000_QL80_.jpg",
   },
@@ -211,7 +270,6 @@ const MainZone = () => {
     );
   };
 
-  // Handle category_id from URL parameters
   useEffect(() => {
     const categoryId = searchParams.get("category_id");
     if (categoryId) {
@@ -226,7 +284,6 @@ const MainZone = () => {
         setIsFilterOpen(false);
       }
     };
-
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [isFilterOpen]);
@@ -292,7 +349,6 @@ const MainZone = () => {
   const handlePriceRange = (range) => {
     const newRange = range === selectedPriceRange ? "" : range;
     dispatch(setPriceRange(newRange));
-
     if (newRange) {
       switch (newRange) {
         case "Under ₹1,000":
@@ -408,7 +464,6 @@ const MainZone = () => {
     if (!inStockOnly)
       filters.push({ type: "stock", value: "Include out of stock" });
     if (newArrivals) filters.push({ type: "arrival", value: newArrivals });
-
     setAppliedFilters(filters);
   }, [filterState]);
 
@@ -417,7 +472,6 @@ const MainZone = () => {
       setSearchSuggestions([]);
       return;
     }
-
     const suggestions = [
       ...new Set([
         ...dummyProducts
@@ -435,9 +489,15 @@ const MainZone = () => {
             product.brand.toLowerCase().includes(searchInput.toLowerCase())
           )
           .map((product) => product.brand),
+        ...dummyProducts
+          .filter((product) =>
+            product.shortDescription
+              .toLowerCase()
+              .includes(searchInput.toLowerCase())
+          )
+          .map((product) => product.shortDescription),
       ]),
     ].slice(0, 5);
-
     setSearchSuggestions(suggestions);
   }, [searchInput]);
 
@@ -448,34 +508,27 @@ const MainZone = () => {
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase());
-
+        product.shortDescription
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
       const categoryMatch =
         !selectedCategories.length ||
         selectedCategories.some((cat) =>
           product.category.toLowerCase().includes(cat.toLowerCase())
         );
-
       const brandMatch =
         !selectedBrands.length ||
         selectedBrands.some((brand) =>
           product.brand.toLowerCase().includes(brand.toLowerCase())
         );
-
       const priceMatch =
         product.price >= customMinPrice && product.price <= customMaxPrice;
-
       const ratingMatch =
-        !selectedRating ||
-        Math.floor(product.rating) >= parseInt(selectedRating);
-
+        !selectedRating || product.rating >= parseInt(selectedRating);
       const stockMatch = !inStockOnly || product.inStock;
-
       const arrivalMatch =
         !newArrivals ||
-        (newArrivals === "Last 30 days" && product.isNewArrival) ||
-        (newArrivals === "Last 7 days" && product.isNewRelease);
-
+        product.arrival.toLowerCase().includes(newArrivals.toLowerCase());
       return (
         searchMatch &&
         categoryMatch &&
@@ -491,10 +544,12 @@ const MainZone = () => {
       if (sortOption === "low-to-high") return a.price - b.price;
       if (sortOption === "high-to-low") return b.price - a.price;
       if (sortOption === "rating") return b.rating - a.rating;
-      if (sortOption === "newest")
-        return new Date(b.releaseDate) - new Date(a.releaseDate);
+      if (sortOption === "newest") return b.arrival.localeCompare(a.arrival);
       return 0;
     });
+
+  // Debug log to verify filteredProducts data
+  console.log("Filtered Products:", filteredProducts);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
