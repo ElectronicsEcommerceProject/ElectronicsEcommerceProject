@@ -18,7 +18,7 @@ import {
   FiShoppingBag,
   FiBookOpen,
 } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import HoverMenu from "../../features/common/HoverMenu"; // Import HoverMenu as specified
 
@@ -78,6 +78,7 @@ const Header = () => {
   const [categoriesError, setCategoriesError] = useState(null);
 
   const cartCount = 3;
+  const navigate = useNavigate();
 
   // Fetch categories from API
   useEffect(() => {
@@ -163,6 +164,11 @@ const Header = () => {
 
   const handleSearch = () => {
     console.log("Searching for:", searchInput);
+  };
+
+  // Handle category click
+  const handleCategoryClick = (category) => {
+    navigate(`/mainzone?category_id=${category.category_id}`);
   };
 
   // Handle modal state changes from HoverMenu
@@ -335,14 +341,14 @@ const Header = () => {
                   </div>
                 ) : (
                   categories.map((item, index) => (
-                    <a
+                    <button
                       key={item.category_id || index}
-                      href="#"
-                      className="flex items-center space-x-2 px-4 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200"
+                      onClick={() => handleCategoryClick(item)}
+                      className="flex items-center space-x-2 px-4 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200 w-full text-left"
                     >
                       <item.icon className="w-5 h-5 text-gray-600" />
                       <span className="text-sm font-medium">{item.label}</span>
-                    </a>
+                    </button>
                   ))
                 )}
               </div>
@@ -361,15 +367,15 @@ const Header = () => {
               </div>
             ) : (
               categories.map((item, index) => (
-                <a
+                <button
                   key={item.category_id || index}
-                  href="#"
+                  onClick={() => handleCategoryClick(item)}
                   className="text-xs md:text-sm font-medium text-gray-800 hover:text-amber-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 whitespace-nowrap flex items-center px-1 py-1 relative group transition-colors duration-200"
                 >
                   <item.icon className="mr-1 md:mr-2 text-base md:text-lg text-gray-600" />
                   {item.label}
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-500 group-hover:w-full transition-all duration-200"></span>
-                </a>
+                </button>
               ))
             )}
           </div>

@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   FiSearch,
   FiUser,
@@ -32,14 +32,18 @@ import {
 import FilterSidebar from "../../../components/ProductZone/FilterSidebar";
 import ProductGrid from "../../../components/ProductZone/ProductGrid";
 import SortOptions from "../../../components/ProductZone/SortOptions";
-import categoriesData from "../../../components/Data/categories";
 import { brandsData } from "../../../components/Data/brands";
 import { dummyProducts } from "../../../components/Data/products";
 import Footer from "../../../components/Footer/Footer";
 import Header from "../../../components/Header/Header";
-import { priceRanges, ratings, discounts } from "../../../components/Data/filters";
+import {
+  priceRanges,
+  ratings,
+  discounts,
+} from "../../../components/Data/filters";
 
 const MainZone = () => {
+  const [searchParams] = useSearchParams();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState({});
@@ -60,6 +64,14 @@ const MainZone = () => {
         : [...prev, productId]
     );
   };
+
+  // Handle category_id from URL parameters
+  useEffect(() => {
+    const categoryId = searchParams.get("category_id");
+    if (categoryId) {
+      alert(`Category selected with ID: ${categoryId}`);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -438,7 +450,6 @@ const MainZone = () => {
               </div>
             )}
             <FilterSidebar
-              categoriesData={categoriesData}
               expandedCategories={expandedCategories}
               toggleCategory={toggleCategory}
               selectedCategories={selectedCategories}
