@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react"; // professional dropdown icon
+import { getApi, getAllBrandsRoute } from "../../src/index.js";
 
 const FilterSidebar = ({
   categoriesData = [],
@@ -7,14 +8,8 @@ const FilterSidebar = ({
   toggleCategory,
   selectedCategories,
   handleCategoryCheckbox,
-  brandsData,
-  searchBrand,
-  setSearchBrand,
-  displayedBrands,
   selectedBrands,
   handleBrandCheckbox,
-  showMoreBrands,
-  setShowMoreBrands,
   priceRanges,
   selectedPriceRange,
   handlePriceRange,
@@ -24,7 +19,6 @@ const FilterSidebar = ({
   ratings,
   selectedRating,
   handleRating,
-  discounts,
   selectedDiscounts,
   handleDiscount,
   inStockOnly,
@@ -32,6 +26,88 @@ const FilterSidebar = ({
   newArrivals,
   setNewArrivals,
 }) => {
+  // Internal state for brand filtering
+  const [searchBrand, setSearchBrand] = useState("");
+  const [showMoreBrands, setShowMoreBrands] = useState(false);
+
+  // State for brands from API
+  const [brands, setBrands] = useState([]);
+  const [brandsLoading, setBrandsLoading] = useState(true);
+  const [brandsError, setBrandsError] = useState(null);
+
+  // Hardcoded discounts data
+  const hardcodedDiscounts = [
+    "10% Off",
+    "20% Off",
+    "30% Off",
+    "50% Off",
+    "Buy 1 Get 1 Free",
+    "Flash Sale",
+    "Today's Deal",
+    "Clearance Sale",
+    "Special Offer",
+  ];
+
+  // Fetch brands from API
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        setBrandsLoading(true);
+        setBrandsError(null);
+
+        const response = await getApi(getAllBrandsRoute);
+
+        if (response.success && response.data) {
+          // Transform API data to extract brand names
+          const brandNames = response.data.map((brand) => brand.name);
+          setBrands(brandNames);
+        } else {
+          throw new Error("Invalid response format");
+        }
+      } catch (error) {
+        console.error("Error fetching brands:", error);
+        setBrandsError(error.message || "Failed to fetch brands");
+
+        // Fallback to hardcoded data if API fails
+        const fallbackBrands = [
+          "Apple",
+          "Samsung",
+          "Sony",
+          "LG",
+          "Dell",
+          "HP",
+          "Lenovo",
+          "Asus",
+          "Acer",
+          "Microsoft",
+          "Google",
+          "OnePlus",
+          "Xiaomi",
+          "Huawei",
+          "Canon",
+          "Nikon",
+          "JBL",
+          "Bose",
+          "Sennheiser",
+          "Logitech",
+        ];
+        setBrands(fallbackBrands);
+      } finally {
+        setBrandsLoading(false);
+      }
+    };
+
+    fetchBrands();
+  }, []);
+
+  // Filter brands based on search
+  const filteredBrands = brands.filter((brand) =>
+    brand.toLowerCase().includes(searchBrand.toLowerCase())
+  );
+  const displayedBrands = showMoreBrands
+    ? filteredBrands
+    : filteredBrands.slice(0, 10);
+
   return (
     <div className="w-full sm:w-56 md:w-64 bg-white p-4 shadow-lg overflow-y-auto custom-scrollbar sm:mr-4 max-h-screen mr-4">
       {" "}
@@ -78,36 +154,48 @@ const FilterSidebar = ({
       {/* Brands */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-2">Brands</h2>
-        <input
-          type="text"
-          placeholder="Search brands..."
-          value={searchBrand}
-          onChange={(e) => setSearchBrand(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded mb-2 text-sm"
-        />
-        <div className="max-h-40 overflow-y-auto custom-scrollbar">
-          {displayedBrands.map((brand) => (
-            <label
-              key={brand}
-              className="flex items-center mb-1 hover:bg-gray-50 p-1 rounded"
-            >
-              <input
-                type="checkbox"
-                checked={selectedBrands.includes(brand)}
-                onChange={() => handleBrandCheckbox(brand)}
-                className="mr-2"
-              />
-              {brand}
-            </label>
-          ))}
-        </div>
-        {brandsData.length > 10 && (
-          <button
-            onClick={() => setShowMoreBrands(!showMoreBrands)}
-            className="text-sm text-blue-600 mt-2 hover:underline"
-          >
-            {showMoreBrands ? "Show Less" : "Show More"}
-          </button>
+        {brandsLoading ? (
+          <div className="text-center py-4">
+            <span className="text-sm text-gray-500">Loading brands...</span>
+          </div>
+        ) : brandsError ? (
+          <div className="text-center py-4">
+            <span className="text-sm text-red-500">Failed to load brands</span>
+          </div>
+        ) : (
+          <>
+            <input
+              type="text"
+              placeholder="Search brands..."
+              value={searchBrand}
+              onChange={(e) => setSearchBrand(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded mb-2 text-sm"
+            />
+            <div className="max-h-40 overflow-y-auto custom-scrollbar">
+              {displayedBrands.map((brand) => (
+                <label
+                  key={brand}
+                  className="flex items-center mb-1 hover:bg-gray-50 p-1 rounded"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedBrands.includes(brand)}
+                    onChange={() => handleBrandCheckbox(brand)}
+                    className="mr-2"
+                  />
+                  {brand}
+                </label>
+              ))}
+            </div>
+            {brands.length > 10 && (
+              <button
+                onClick={() => setShowMoreBrands(!showMoreBrands)}
+                className="text-sm text-blue-600 mt-2 hover:underline"
+              >
+                {showMoreBrands ? "Show Less" : "Show More"}
+              </button>
+            )}
+          </>
         )}
       </div>
       {/* Price */}
@@ -190,15 +278,17 @@ const FilterSidebar = ({
       {/* Discounts */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-2">Deals & Discounts</h2>
-        {discounts.map((discount) => (
+        {hardcodedDiscounts.map((discount) => (
           <label
             key={discount}
             className="flex items-center mb-1 hover:bg-gray-50 p-1 rounded"
           >
             <input
               type="checkbox"
-              checked={selectedDiscounts.includes(discount)}
-              onChange={() => handleDiscount(discount)}
+              checked={
+                selectedDiscounts && selectedDiscounts.includes(discount)
+              }
+              onChange={() => handleDiscount && handleDiscount(discount)}
               className="mr-2"
             />
             {discount}

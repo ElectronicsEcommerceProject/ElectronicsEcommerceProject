@@ -23,7 +23,6 @@ import {
   setPriceRange,
   setCustomPrice,
   setRating,
-  setDiscounts,
   setInStockOnly,
   setNewArrivals,
   setSortOption,
@@ -32,23 +31,16 @@ import {
 import FilterSidebar from "../../../components/ProductZone/FilterSidebar";
 import ProductGrid from "../../../components/ProductZone/ProductGrid";
 import SortOptions from "../../../components/ProductZone/SortOptions";
-import { brandsData } from "../../../components/Data/brands";
 import { dummyProducts } from "../../../components/Data/products";
 import Footer from "../../../components/Footer/Footer";
 import Header from "../../../components/Header/Header";
-import {
-  priceRanges,
-  ratings,
-  discounts,
-} from "../../../components/Data/filters";
+import { priceRanges, ratings } from "../../../components/Data/filters";
 
 const MainZone = () => {
   const [searchParams] = useSearchParams();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState({});
-  const [searchBrand, setSearchBrand] = useState("");
-  const [showMoreBrands, setShowMoreBrands] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -95,7 +87,6 @@ const MainZone = () => {
     customMinPrice,
     customMaxPrice,
     selectedRating,
-    selectedDiscounts,
     inStockOnly,
     newArrivals,
     sortOption,
@@ -136,13 +127,6 @@ const MainZone = () => {
     dispatch(setSearchTerm(suggestion));
     setShowSuggestions(false);
   };
-
-  const filteredBrands = brandsData.filter((brand) =>
-    brand.toLowerCase().includes(searchBrand.toLowerCase())
-  );
-  const displayedBrands = showMoreBrands
-    ? filteredBrands
-    : filteredBrands.slice(0, 10);
 
   const handleBrandCheckbox = (brand) => {
     const newSelectedBrands = selectedBrands.includes(brand)
@@ -196,13 +180,6 @@ const MainZone = () => {
     dispatch(setRating(rating === selectedRating ? "" : rating));
   };
 
-  const handleDiscount = (discount) => {
-    const newSelectedDiscounts = selectedDiscounts.includes(discount)
-      ? selectedDiscounts.filter((item) => item !== discount)
-      : [...selectedDiscounts, discount];
-    dispatch(setDiscounts(newSelectedDiscounts));
-  };
-
   const handleSort = (option) => {
     dispatch(setSortOption(option === sortOption ? "" : option));
   };
@@ -227,9 +204,6 @@ const MainZone = () => {
         break;
       case "rating":
         dispatch(setRating(""));
-        break;
-      case "discount":
-        dispatch(setDiscounts([]));
         break;
       case "stock":
         dispatch(setInStockOnly(true));
@@ -276,8 +250,6 @@ const MainZone = () => {
       });
     }
     if (selectedRating) filters.push({ type: "rating", value: selectedRating });
-    if (selectedDiscounts.length)
-      filters.push({ type: "discount", value: selectedDiscounts.join(", ") });
     if (!inStockOnly)
       filters.push({ type: "stock", value: "Include out of stock" });
     if (newArrivals) filters.push({ type: "arrival", value: newArrivals });
@@ -342,14 +314,6 @@ const MainZone = () => {
         !selectedRating ||
         Math.floor(product.rating) >= parseInt(selectedRating);
 
-      const discountMatch =
-        !selectedDiscounts.length ||
-        selectedDiscounts.some((discount) => {
-          if (discount === "All Discounts") return product.discountPercent > 0;
-          if (discount === "Today's Deals") return product.isDealOfTheDay;
-          return product.discount === discount;
-        });
-
       const stockMatch = !inStockOnly || product.inStock;
 
       const arrivalMatch =
@@ -363,7 +327,6 @@ const MainZone = () => {
         brandMatch &&
         priceMatch &&
         ratingMatch &&
-        discountMatch &&
         stockMatch &&
         arrivalMatch
       );
@@ -372,8 +335,6 @@ const MainZone = () => {
       if (sortOption === "popularity") return b.popularity - a.popularity;
       if (sortOption === "low-to-high") return a.price - b.price;
       if (sortOption === "high-to-low") return b.price - a.price;
-      if (sortOption === "discount")
-        return b.discountPercent - a.discountPercent;
       if (sortOption === "rating") return b.rating - a.rating;
       if (sortOption === "newest")
         return new Date(b.releaseDate) - new Date(a.releaseDate);
@@ -454,14 +415,8 @@ const MainZone = () => {
               toggleCategory={toggleCategory}
               selectedCategories={selectedCategories}
               handleCategoryCheckbox={handleCategoryCheckbox}
-              brandsData={brandsData}
-              searchBrand={searchBrand}
-              setSearchBrand={setSearchBrand}
-              displayedBrands={displayedBrands}
               selectedBrands={selectedBrands}
               handleBrandCheckbox={handleBrandCheckbox}
-              showMoreBrands={showMoreBrands}
-              setShowMoreBrands={setShowMoreBrands}
               priceRanges={priceRanges}
               selectedPriceRange={selectedPriceRange}
               handlePriceRange={handlePriceRange}
@@ -472,9 +427,6 @@ const MainZone = () => {
               ratings={ratings}
               selectedRating={selectedRating}
               handleRating={handleRating}
-              discounts={discounts}
-              selectedDiscounts={selectedDiscounts}
-              handleDiscount={handleDiscount}
               inStockOnly={inStockOnly}
               setInStockOnly={(value) => dispatch(setInStockOnly(value))}
               newArrivals={newArrivals}

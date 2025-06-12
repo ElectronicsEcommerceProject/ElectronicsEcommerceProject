@@ -42,7 +42,7 @@ const getAllBrands = async (req, res) => {
     const brands = await Brand.findAll();
     res
       .status(StatusCodes.OK)
-      .json({ message: MESSAGE.get.succ, data: brands });
+      .json({ success: true, message: MESSAGE.get.succ, data: brands });
   } catch (error) {
     console.error("Error fetching brands:", error);
     res
