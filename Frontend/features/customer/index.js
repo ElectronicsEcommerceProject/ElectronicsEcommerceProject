@@ -40,7 +40,6 @@ import SortOptions from "../../components/ProductZone/SortOptions";
 // 📊 Dummy Data
 import categoriesData from "../../components/Data/categories";
 import { brandsData } from "../../components/Data/brands";
-import { dummyProducts } from "../../components/Data/products";
 
 // ✅ Named Exports (excluding Redux actions)
 export {
@@ -58,9 +57,6 @@ export {
   FilterSidebar,
   ProductGrid,
   SortOptions,
-
   categoriesData,
   brandsData,
-  dummyProducts,
 };
-
