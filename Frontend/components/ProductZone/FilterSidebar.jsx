@@ -31,7 +31,7 @@ const FilterSidebar = ({
   const [showMoreBrands, setShowMoreBrands] = useState(false);
 
   // State for brands from API
-  const [brands, setBrands] = useState([]);
+  const [brands, setBrands] = useState([]); // Now stores array of { id, name }
   const [brandsLoading, setBrandsLoading] = useState(true);
   const [brandsError, setBrandsError] = useState(null);
 
@@ -58,9 +58,9 @@ const FilterSidebar = ({
         const response = await getApi(getAllBrandsRoute);
 
         if (response.success && response.data) {
-          // Transform API data to extract brand names
-          const brandNames = response.data.map((brand) => brand.name);
-          setBrands(brandNames);
+          // Store full brand objects (id and name)
+          console.warn(response.data);
+          setBrands(response.data);
         } else {
           throw new Error("Invalid response format");
         }
@@ -70,26 +70,26 @@ const FilterSidebar = ({
 
         // Fallback to hardcoded data if API fails
         const fallbackBrands = [
-          "Apple",
-          "Samsung",
-          "Sony",
-          "LG",
-          "Dell",
-          "HP",
-          "Lenovo",
-          "Asus",
-          "Acer",
-          "Microsoft",
-          "Google",
-          "OnePlus",
-          "Xiaomi",
-          "Huawei",
-          "Canon",
-          "Nikon",
-          "JBL",
-          "Bose",
-          "Sennheiser",
-          "Logitech",
+          { id: 1, name: "Apple" },
+          { id: 2, name: "Samsung" },
+          { id: 3, name: "Sony" },
+          { id: 4, name: "LG" },
+          { id: 5, name: "Dell" },
+          { id: 6, name: "HP" },
+          { id: 7, name: "Lenovo" },
+          { id: 8, name: "Asus" },
+          { id: 9, name: "Acer" },
+          { id: 10, name: "Microsoft" },
+          { id: 11, name: "Google" },
+          { id: 12, name: "OnePlus" },
+          { id: 13, name: "Xiaomi" },
+          { id: 14, name: "Huawei" },
+          { id: 15, name: "Canon" },
+          { id: 16, name: "Nikon" },
+          { id: 17, name: "JBL" },
+          { id: 18, name: "Bose" },
+          { id: 19, name: "Sennheiser" },
+          { id: 20, name: "Logitech" },
         ];
         setBrands(fallbackBrands);
       } finally {
@@ -102,11 +102,17 @@ const FilterSidebar = ({
 
   // Filter brands based on search
   const filteredBrands = brands.filter((brand) =>
-    brand.toLowerCase().includes(searchBrand.toLowerCase())
+    brand.name.toLowerCase().includes(searchBrand.toLowerCase())
   );
   const displayedBrands = showMoreBrands
     ? filteredBrands
     : filteredBrands.slice(0, 10);
+
+  // Handler to show alert with brand id and call parent handler
+  const handleBrandClick = (brand) => {
+    alert(`Brand ID: ${brand.brand_id}`);
+    handleBrandCheckbox(brand.name);
+  };
 
   return (
     <div className="w-full sm:w-56 md:w-64 bg-white p-4 shadow-lg overflow-y-auto custom-scrollbar sm:mr-4 max-h-screen mr-4">
@@ -174,16 +180,16 @@ const FilterSidebar = ({
             <div className="max-h-40 overflow-y-auto custom-scrollbar">
               {displayedBrands.map((brand) => (
                 <label
-                  key={brand}
+                  key={brand.id || brand.name}
                   className="flex items-center mb-1 hover:bg-gray-50 p-1 rounded"
                 >
                   <input
                     type="checkbox"
-                    checked={selectedBrands.includes(brand)}
-                    onChange={() => handleBrandCheckbox(brand)}
+                    checked={selectedBrands.includes(brand.name)}
+                    onChange={() => handleBrandClick(brand)}
                     className="mr-2"
                   />
-                  {brand}
+                  {brand.name}
                 </label>
               ))}
             </div>

@@ -23,8 +23,6 @@ import {
   FiPercent,
   FiDollarSign,
   FiUsers,
-  FiRefreshCw,
-  FiInfo,
   FiLayers,
   FiCheckCircle,
   FiAlertTriangle,
@@ -66,15 +64,7 @@ const dummyProducts = [
     availableOffers: ["CODE123", "FLAT500"],
     rating: 4.0,
     ratingCount: 120,
-    reviewsPreview: [
-      { title: "Amazing laptop!", rating: 5, isVerified: true },
-      { title: "Battery life could be better", rating: 4, isVerified: false },
-    ],
     shortDescription: "High-performance laptop with M1 chip, 16GB RAM...",
-    mediaGalleryThumbs: [
-      "https://example.com/images/laptop1_thumb.jpg",
-      "https://example.com/images/laptop2_thumb.jpg",
-    ],
     image: "https://m.media-amazon.com/images/I/71eknZxZLmL._SL1500_.jpg",
     inStock: true,
     stockLevel: 5,
@@ -82,7 +72,6 @@ const dummyProducts = [
     hasVariants: true,
     totalVariants: 3,
     variantAttributes: ["Color: Silver", "RAM: 16GB"],
-    deliveryEstimation: "Get it by June 18",
     arrival: "Launched: Jan 2025",
     popularity: 95,
     isFeatured: true,
@@ -92,18 +81,11 @@ const dummyProducts = [
 
     // Retailer-specific
     stockLevelDetailed: {
-      current: 5,
       minRetailerQty: 2,
       bulkDiscountQty: 10,
     },
-    pendingStockAlerts: false,
     wholesalePrice: 12000,
     orderHistoryCount: 45,
-    averageLeadTime: "3 days",
-    activeCouponsCount: 2,
-    returnRate: "5%",
-    createdBy: "AdminUser123",
-    updatedBy: "AdminUser123",
   },
   {
     id: 2,
@@ -118,15 +100,7 @@ const dummyProducts = [
     availableOffers: ["CODEMOBILE"],
     rating: 4.5,
     ratingCount: 250,
-    reviewsPreview: [
-      { title: "Great value!", rating: 5, isVerified: true },
-      { title: "Camera is awesome", rating: 4, isVerified: true },
-    ],
     shortDescription: 'Powerful smartphone with 6.5" display, 128GB storage...',
-    mediaGalleryThumbs: [
-      "https://example.com/images/phone1_thumb.jpg",
-      "https://example.com/images/phone2_thumb.jpg",
-    ],
     image: "https://m.media-amazon.com/images/I/71DSxfKzkJL._SL1500_.jpg",
     inStock: true,
     stockLevel: 12,
@@ -134,7 +108,6 @@ const dummyProducts = [
     hasVariants: true,
     totalVariants: 4,
     variantAttributes: ["Color: Black", "Storage: 128GB"],
-    deliveryEstimation: "Get it by June 17",
     arrival: "Launched: Mar 2025",
     popularity: 88,
     isFeatured: false,
@@ -144,18 +117,11 @@ const dummyProducts = [
 
     // Retailer-specific
     stockLevelDetailed: {
-      current: 12,
       minRetailerQty: 5,
       bulkDiscountQty: 20,
     },
-    pendingStockAlerts: false,
     wholesalePrice: 6500,
     orderHistoryCount: 80,
-    averageLeadTime: "2 days",
-    activeCouponsCount: 1,
-    returnRate: "3%",
-    createdBy: "RetailAdmin01",
-    updatedBy: "RetailAdmin01",
   },
   {
     id: 3,
@@ -170,15 +136,7 @@ const dummyProducts = [
     availableOffers: ["AUDIO10", "NEWUSER"],
     rating: 3.5,
     ratingCount: 89,
-    reviewsPreview: [
-      { title: "Good sound quality", rating: 4, isVerified: true },
-      { title: "Comfortable to wear", rating: 3, isVerified: false },
-    ],
     shortDescription: "Premium wireless headphones with noise cancellation...",
-    mediaGalleryThumbs: [
-      "https://example.com/images/headphones1_thumb.jpg",
-      "https://example.com/images/headphones2_thumb.jpg",
-    ],
     image: "https://m.media-amazon.com/images/I/61SUj2aKoEL._SL1500_.jpg",
     inStock: true,
     stockLevel: 25,
@@ -186,7 +144,6 @@ const dummyProducts = [
     hasVariants: true,
     totalVariants: 2,
     variantAttributes: ["Color: Black", "Color: White"],
-    deliveryEstimation: "Get it by June 20",
     arrival: "Launched: Feb 2025",
     popularity: 75,
     isFeatured: false,
@@ -196,18 +153,11 @@ const dummyProducts = [
 
     // Retailer-specific
     stockLevelDetailed: {
-      current: 25,
       minRetailerQty: 3,
       bulkDiscountQty: 15,
     },
-    pendingStockAlerts: false,
     wholesalePrice: 4000,
     orderHistoryCount: 32,
-    averageLeadTime: "1 day",
-    activeCouponsCount: 2,
-    returnRate: "2%",
-    createdBy: "ProductManager02",
-    updatedBy: "ProductManager02",
   },
 ];
 const MainZone = () => {
@@ -948,24 +898,10 @@ const MainZone = () => {
                       <div className="text-xs font-medium text-yellow-800 mb-2">
                         📊 Product Stats
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="grid grid-cols-1 gap-2 text-xs">
                         <div className="text-gray-600">
                           <FiUsers size={10} className="inline mr-1" />
                           🛒 {product.orderHistoryCount} sold
-                        </div>
-                        <div className="text-gray-600">
-                          <FiRefreshCw size={10} className="inline mr-1" />
-                          ↩️ {product.returnRate} return rate
-                        </div>
-                        <div className="text-gray-600">
-                          <FiTag size={10} className="inline mr-1" />
-                          🎫 {product.activeCouponsCount} active deals
-                        </div>
-                        <div className="text-gray-600">
-                          <FiInfo size={10} className="inline mr-1" />
-                          {product.pendingStockAlerts
-                            ? "🔔 Stock alerts on"
-                            : "✅ Well stocked"}
                         </div>
                       </div>
                     </div>
