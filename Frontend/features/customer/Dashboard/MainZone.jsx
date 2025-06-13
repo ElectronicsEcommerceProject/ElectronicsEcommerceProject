@@ -852,54 +852,93 @@ const MainZone = () => {
                         )}
                     </div>
 
-                    {/* Stock and Options Information */}
-                    <div className="bg-gray-50 p-3 rounded-lg space-y-2">
-                      <div className="flex items-center justify-between">
+                    {/* Availability Information */}
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg border border-green-200">
+                      <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <FiPackage size={12} className="text-blue-600" />
-                          <span className="text-xs font-medium">
-                            📦 {product.stockLevel} Available
+                          <FiPackage size={14} className="text-green-600" />
+                          <span className="text-sm font-semibold text-green-800">
+                            📦 {product.stockLevel} Units Available
                           </span>
                           {product.inStock ? (
                             <FiCheckCircle
-                              className="text-green-500"
-                              size={12}
+                              className="text-green-600"
+                              size={14}
                             />
                           ) : (
                             <FiAlertTriangle
                               className="text-red-500"
-                              size={12}
+                              size={14}
                             />
                           )}
                         </div>
-                        {product.hasVariants && (
-                          <div className="text-xs text-purple-600">
-                            <FiLayers size={10} className="inline mr-1" />
-                            🎨 {product.totalVariants} options
-                          </div>
+                        {product.lowStockWarning && (
+                          <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full font-medium">
+                            🔥 Low Stock!
+                          </span>
                         )}
                       </div>
 
-                      {product.variantAttributes &&
-                        product.variantAttributes.length > 0 && (
-                          <div className="text-xs text-gray-600">
-                            <span className="font-medium">
-                              🎯 Available in:{" "}
-                            </span>
-                            {product.variantAttributes.join(", ")}
+                      {/* Stock Status Bar */}
+                      <div className="mb-3">
+                        <div className="flex justify-between text-xs text-gray-600 mb-1">
+                          <span>Stock Level</span>
+                          <span>
+                            {product.inStock
+                              ? "✅ In Stock"
+                              : "❌ Out of Stock"}
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full ${
+                              product.stockLevel > 10
+                                ? "bg-green-500"
+                                : product.stockLevel > 5
+                                ? "bg-yellow-500"
+                                : "bg-red-500"
+                            }`}
+                            style={{
+                              width: `${Math.min(
+                                (product.stockLevel / 20) * 100,
+                                100
+                              )}%`,
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+
+                      {product.hasVariants && (
+                        <div className="mb-2">
+                          <div className="text-xs text-purple-600 font-medium mb-1">
+                            <FiLayers size={10} className="inline mr-1" />�
+                            Available Options ({product.totalVariants})
                           </div>
-                        )}
+                          {product.variantAttributes &&
+                            product.variantAttributes.length > 0 && (
+                              <div className="text-xs text-gray-600">
+                                {product.variantAttributes.join(" • ")}
+                              </div>
+                            )}
+                        </div>
+                      )}
 
                       <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="text-gray-600">
-                          <FiPackage size={10} className="inline mr-1" />
-                          📦 Min Order:{" "}
-                          {product.stockLevelDetailed.minRetailerQty}
+                        <div className="bg-blue-50 p-2 rounded text-center">
+                          <div className="font-medium text-blue-800">
+                            📦 Min Order
+                          </div>
+                          <div className="text-blue-600">
+                            {product.stockLevelDetailed.minRetailerQty} units
+                          </div>
                         </div>
-                        <div className="text-gray-600">
-                          <FiBarChart size={10} className="inline mr-1" />
-                          💰 Bulk Discount:{" "}
-                          {product.stockLevelDetailed.bulkDiscountQty}+ items
+                        <div className="bg-purple-50 p-2 rounded text-center">
+                          <div className="font-medium text-purple-800">
+                            💰 Bulk Discount
+                          </div>
+                          <div className="text-purple-600">
+                            {product.stockLevelDetailed.bulkDiscountQty}+ units
+                          </div>
                         </div>
                       </div>
                     </div>
