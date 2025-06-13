@@ -14,6 +14,22 @@ import {
   FiX,
   FiFilter,
   FiHeart,
+  FiTag,
+  FiShield,
+  FiPackage,
+  FiTrendingUp,
+  FiAward,
+  FiBarChart,
+  FiPercent,
+  FiDollarSign,
+  FiUsers,
+  FiRefreshCw,
+  FiInfo,
+  FiLayers,
+  FiCheckCircle,
+  FiAlertTriangle,
+  FiEye,
+  FiShoppingBag,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -43,212 +59,157 @@ const dummyProducts = [
     category: "Laptops",
     categoryPath: "Electronics > Laptops",
     brand: "Apple",
-    price: 15000,
-    rating: 4.0,
-    ratingCount: 120,
+    basePrice: 15000, // Original price
+    finalPrice: 13500, // After discount
     discount: "10% off with CODE123",
     discountPercent: 10,
+    availableOffers: ["CODE123", "FLAT500"],
+    rating: 4.0,
+    ratingCount: 120,
+    reviewsPreview: [
+      { title: "Amazing laptop!", rating: 5, isVerified: true },
+      { title: "Battery life could be better", rating: 4, isVerified: false },
+    ],
+    shortDescription: "High-performance laptop with M1 chip, 16GB RAM...",
+    mediaGalleryThumbs: [
+      "https://example.com/images/laptop1_thumb.jpg",
+      "https://example.com/images/laptop2_thumb.jpg",
+    ],
+    image: "https://m.media-amazon.com/images/I/71eknZxZLmL._SL1500_.jpg",
     inStock: true,
     stockLevel: 5,
+    lowStockWarning: true, // stockLevel <= 5
     hasVariants: true,
-    shortDescription: "High-performance laptop with M1 chip, 16GB RAM...",
+    totalVariants: 3,
+    variantAttributes: ["Color: Silver", "RAM: 16GB"],
+    deliveryEstimation: "Get it by June 18",
     arrival: "Launched: Jan 2025",
     popularity: 95,
     isFeatured: true,
-    image:
-      "https://m.media-amazon.com/images/I/61bK6PMOC3L._AC_UF1000,1000_QL80_.jpg",
+    wishlistStatus: false, // logged‑in user hasn't wishlisted
+    isInCart: false,
+    recentlyViewedBadge: true,
+
+    // Retailer-specific
+    stockLevelDetailed: {
+      current: 5,
+      minRetailerQty: 2,
+      bulkDiscountQty: 10,
+    },
+    pendingStockAlerts: false,
+    wholesalePrice: 12000,
+    orderHistoryCount: 45,
+    averageLeadTime: "3 days",
+    activeCouponsCount: 2,
+    returnRate: "5%",
+    createdBy: "AdminUser123",
+    updatedBy: "AdminUser123",
   },
   {
     id: 2,
-    name: "Wireless Headset",
-    category: "Headsets",
-    categoryPath: "Electronics > Headsets",
-    brand: "JBL",
-    price: 3000,
-    rating: 3.0,
-    ratingCount: 80,
-    discount: "25% off on bulk (5+ units)",
-    discountPercent: 25,
+    name: "Smartphone X",
+    category: "Mobile Phones",
+    categoryPath: "Electronics > Mobile Phones",
+    brand: "Samsung",
+    basePrice: 8000,
+    finalPrice: 7200,
+    discount: "10% off with CODEMOBILE",
+    discountPercent: 10,
+    availableOffers: ["CODEMOBILE"],
+    rating: 4.5,
+    ratingCount: 250,
+    reviewsPreview: [
+      { title: "Great value!", rating: 5, isVerified: true },
+      { title: "Camera is awesome", rating: 4, isVerified: true },
+    ],
+    shortDescription: 'Powerful smartphone with 6.5" display, 128GB storage...',
+    mediaGalleryThumbs: [
+      "https://example.com/images/phone1_thumb.jpg",
+      "https://example.com/images/phone2_thumb.jpg",
+    ],
+    image: "https://m.media-amazon.com/images/I/71DSxfKzkJL._SL1500_.jpg",
     inStock: true,
-    stockLevel: 50,
-    hasVariants: false,
-    shortDescription: "Crystal-clear audio with 20-hour battery life...",
-    arrival: "Restocked: May 2025",
-    popularity: 80,
+    stockLevel: 12,
+    lowStockWarning: false,
+    hasVariants: true,
+    totalVariants: 4,
+    variantAttributes: ["Color: Black", "Storage: 128GB"],
+    deliveryEstimation: "Get it by June 17",
+    arrival: "Launched: Mar 2025",
+    popularity: 88,
     isFeatured: false,
-    image:
-      "https://m.media-amazon.com/images/I/61cwywLZR-L._AC_UF1000,1000_QL80_.jpg",
+    wishlistStatus: true,
+    isInCart: true,
+    recentlyViewedBadge: false,
+
+    // Retailer-specific
+    stockLevelDetailed: {
+      current: 12,
+      minRetailerQty: 5,
+      bulkDiscountQty: 20,
+    },
+    pendingStockAlerts: false,
+    wholesalePrice: 6500,
+    orderHistoryCount: 80,
+    averageLeadTime: "2 days",
+    activeCouponsCount: 1,
+    returnRate: "3%",
+    createdBy: "RetailAdmin01",
+    updatedBy: "RetailAdmin01",
   },
   {
     id: 3,
-    name: "Gaming Monitor",
-    category: "Monitors",
-    categoryPath: "Electronics > Monitors",
-    brand: "Samsung",
-    price: 12000,
-    rating: 4.0,
-    ratingCount: 90,
-    discount: "10% off with CODE456",
+    name: "Wireless Headphones",
+    category: "Audio",
+    categoryPath: "Electronics > Audio > Headphones",
+    brand: "Sony",
+    basePrice: 5000,
+    finalPrice: 4500,
+    discount: "10% off with AUDIO10",
     discountPercent: 10,
-    inStock: false,
-    stockLevel: 0,
-    hasVariants: true,
-    shortDescription: "27-inch 4K monitor with 144Hz refresh rate...",
-    arrival: "Launched: Apr 2025",
-    popularity: 85,
-    isFeatured: true,
-    image:
-      "https://m.media-amazon.com/images/I/71V--WZVUIL._AC_UF1000,1000_QL80_.jpg",
-  },
-  {
-    id: 4,
-    name: "Portable Speaker",
-    category: "Speakers",
-    categoryPath: "Electronics > Speakers",
-    brand: "boAt",
-    price: 2000,
-    rating: 3.0,
-    ratingCount: 150,
-    discount: "35% off on clearance",
-    discountPercent: 35,
+    availableOffers: ["AUDIO10", "NEWUSER"],
+    rating: 3.5,
+    ratingCount: 89,
+    reviewsPreview: [
+      { title: "Good sound quality", rating: 4, isVerified: true },
+      { title: "Comfortable to wear", rating: 3, isVerified: false },
+    ],
+    shortDescription: "Premium wireless headphones with noise cancellation...",
+    mediaGalleryThumbs: [
+      "https://example.com/images/headphones1_thumb.jpg",
+      "https://example.com/images/headphones2_thumb.jpg",
+    ],
+    image: "https://m.media-amazon.com/images/I/61SUj2aKoEL._SL1500_.jpg",
     inStock: true,
-    stockLevel: 20,
-    hasVariants: false,
-    shortDescription: "Waterproof speaker with deep bass...",
-    arrival: "Restocked: Mar 2025",
-    popularity: 90,
-    isFeatured: false,
-    image:
-      "https://m.media-amazon.com/images/I/61bK6PMOC3L._AC_UF1000,1000_QL80_.jpg",
-  },
-  {
-    id: 5,
-    name: "External SSD",
-    category: "External Devices & Data Storage",
-    categoryPath: "Electronics > Storage",
-    brand: "HP",
-    price: 8000,
-    rating: 4.0,
-    ratingCount: 60,
-    discount: "10% off with CODE789",
-    discountPercent: 10,
-    inStock: true,
-    stockLevel: 10,
+    stockLevel: 25,
+    lowStockWarning: false,
     hasVariants: true,
-    shortDescription: "1TB SSD with USB-C connectivity...",
+    totalVariants: 2,
+    variantAttributes: ["Color: Black", "Color: White"],
+    deliveryEstimation: "Get it by June 20",
     arrival: "Launched: Feb 2025",
     popularity: 75,
     isFeatured: false,
-    image:
-      "https://m.media-amazon.com/images/I/61cwywLZR-L._AC_UF1000,1000_QL80_.jpg",
-  },
-  {
-    id: 6,
-    name: "Desktop PC",
-    category: "Desktops",
-    categoryPath: "Electronics > Desktops",
-    brand: "Lenovo",
-    price: 25000,
-    rating: 4.0,
-    ratingCount: 70,
-    discount: "5% off for retailers",
-    discountPercent: 5,
-    inStock: true,
-    stockLevel: 15,
-    hasVariants: true,
-    shortDescription: "Powerful PC with Intel i7 and 32GB RAM...",
-    arrival: "Restocked: Apr 2025",
-    popularity: 70,
-    isFeatured: false,
-    image:
-      "https://m.media-amazon.com/images/I/61bK6PMOC3L._AC_UF1000,1000_QL80_.jpg",
-  },
-  {
-    id: 7,
-    name: "Noise Cancelling Headphones",
-    category: "Headsets",
-    categoryPath: "Electronics > Headsets",
-    brand: "Sony",
-    price: 1500,
-    rating: 2.0,
-    ratingCount: 100,
-    discount: "50% off clearance sale",
-    discountPercent: 50,
-    inStock: false,
-    stockLevel: 0,
-    hasVariants: false,
-    shortDescription: "Comfortable headphones with ANC...",
-    arrival: "Launched: Jan 2025",
-    popularity: 88,
-    isFeatured: false,
-    image:
-      "https://m.media-amazon.com/images/I/61bK6PMOC3L._AC_UF1000,1000_QL80_.jpg",
-  },
-  {
-    id: 8,
-    name: "Tablet Air",
-    category: "Tablets",
-    categoryPath: "Electronics > Tablets",
-    brand: "Apple",
-    price: 18000,
-    rating: 4.0,
-    ratingCount: 200,
-    discount: "10% off with CODE101",
-    discountPercent: 10,
-    inStock: true,
-    stockLevel: 8,
-    hasVariants: true,
-    shortDescription: "Lightweight tablet with Retina display...",
-    arrival: "Launched: Mar 2025",
-    popularity: 92,
-    isFeatured: true,
-    image:
-      "https://m.media-amazon.com/images/I/71V--WZVUIL._AC_UF1000,1000_QL80_.jpg",
-  },
-  {
-    id: 9,
-    name: "Wireless Router",
-    category: "Networking Devices",
-    categoryPath: "Electronics > Networking",
-    brand: "ZEBRONICS",
-    price: 2500,
-    rating: 3.0,
-    ratingCount: 50,
-    discount: "25% off with CODE202",
-    discountPercent: 25,
-    inStock: true,
-    stockLevel: 30,
-    hasVariants: false,
-    shortDescription: "Dual-band router with gigabit speeds...",
-    arrival: "Restocked: May 2025",
-    popularity: 78,
-    isFeatured: false,
-    image:
-      "https://m.media-amazon.com/images/I/61cwywLZR-L._AC_UF1000,1000_QL80_.jpg",
-  },
-  {
-    id: 10,
-    name: "Inkjet Printer",
-    category: "Printers, Inks & Accessories",
-    categoryPath: "Electronics > Printers",
-    brand: "HP",
-    price: 6000,
-    rating: 3.0,
-    ratingCount: 85,
-    discount: "10% off with CODE303",
-    discountPercent: 10,
-    inStock: true,
-    stockLevel: 12,
-    hasVariants: false,
-    shortDescription: "Compact printer with wireless printing...",
-    arrival: "Launched: Feb 2025",
-    popularity: 82,
-    isFeatured: false,
-    image:
-      "https://m.media-amazon.com/images/I/61bK6PMOC3L._AC_UF1000,1000_QL80_.jpg",
+    wishlistStatus: false,
+    isInCart: false,
+    recentlyViewedBadge: false,
+
+    // Retailer-specific
+    stockLevelDetailed: {
+      current: 25,
+      minRetailerQty: 3,
+      bulkDiscountQty: 15,
+    },
+    pendingStockAlerts: false,
+    wholesalePrice: 4000,
+    orderHistoryCount: 32,
+    averageLeadTime: "1 day",
+    activeCouponsCount: 2,
+    returnRate: "2%",
+    createdBy: "ProductManager02",
+    updatedBy: "ProductManager02",
   },
 ];
-
 const MainZone = () => {
   const [searchParams] = useSearchParams();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -522,7 +483,8 @@ const MainZone = () => {
           product.brand.toLowerCase().includes(brand.toLowerCase())
         );
       const priceMatch =
-        product.price >= customMinPrice && product.price <= customMaxPrice;
+        (product.basePrice || product.finalPrice) >= customMinPrice &&
+        (product.basePrice || product.finalPrice) <= customMaxPrice;
       const ratingMatch =
         !selectedRating || product.rating >= parseInt(selectedRating);
       const stockMatch = !inStockOnly || product.inStock;
@@ -541,8 +503,10 @@ const MainZone = () => {
     })
     .sort((a, b) => {
       if (sortOption === "popularity") return b.popularity - a.popularity;
-      if (sortOption === "low-to-high") return a.price - b.price;
-      if (sortOption === "high-to-low") return b.price - a.price;
+      if (sortOption === "low-to-high")
+        return (a.finalPrice || a.basePrice) - (b.finalPrice || b.basePrice);
+      if (sortOption === "high-to-low")
+        return (b.finalPrice || b.basePrice) - (a.finalPrice || a.basePrice);
       if (sortOption === "rating") return b.rating - a.rating;
       if (sortOption === "newest") return b.arrival.localeCompare(a.arrival);
       return 0;
@@ -693,16 +657,291 @@ const MainZone = () => {
               </button>
             </div>
           ) : (
-            <ProductGrid
-              products={filteredProducts}
-              mobileView={windowWidth < 768}
-              onProductClick={handleProductClick}
-              onProductHover={handleProductHover}
-              onProductLeave={handleProductLeave}
-              hoveredProduct={hoveredProduct}
-              wishlist={wishlist}
-              toggleWishlist={toggleWishlist}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300"
+                >
+                  {/* Header Section */}
+                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-3 border-b">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-2">
+                        {product.isFeatured && (
+                          <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                            <FiAward size={10} />⭐ Top Pick
+                          </span>
+                        )}
+                        {product.recentlyViewedBadge && (
+                          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                            <FiEye size={10} />
+                            Recently Viewed
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => toggleWishlist(product.id)}
+                        className="p-1 rounded-full bg-white shadow hover:bg-gray-100 transition-colors"
+                        title={
+                          product.wishlistStatus ||
+                          wishlist.includes(product.id)
+                            ? "Remove from Wishlist"
+                            : "Add to Wishlist"
+                        }
+                      >
+                        <FiHeart
+                          size={18}
+                          color={
+                            product.wishlistStatus ||
+                            wishlist.includes(product.id)
+                              ? "red"
+                              : "gray"
+                          }
+                          fill={
+                            product.wishlistStatus ||
+                            wishlist.includes(product.id)
+                              ? "red"
+                              : "none"
+                          }
+                        />
+                      </button>
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      <span className="font-medium">
+                        {product.categoryPath}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Image Section */}
+                  <div className="relative">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-48 object-contain p-4 bg-gray-50"
+                    />
+                    {product.discountPercent > 0 && (
+                      <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                        <FiPercent size={10} />
+                        {product.discountPercent}% OFF
+                      </div>
+                    )}
+                    {product.lowStockWarning && (
+                      <div className="absolute bottom-2 left-2 bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded flex items-center">
+                        <FiAlertTriangle className="mr-1" size={12} />
+                        🔥 Only {product.stockLevel} left!
+                      </div>
+                    )}
+                    {product.isInCart && (
+                      <div className="absolute top-2 right-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                        <FiShoppingBag size={10} />✓ Added to Cart
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Product Details */}
+                  <div className="p-4 space-y-3">
+                    {/* Brand and Name */}
+                    <div>
+                      <h3 className="text-sm text-indigo-600 font-medium mb-1">
+                        {product.brand}
+                      </h3>
+                      <h2 className="font-semibold text-gray-800 text-base leading-tight">
+                        {product.name}
+                      </h2>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-xs text-gray-600 line-clamp-2">
+                      {product.shortDescription}
+                    </p>
+
+                    {/* Rating and Reviews */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => {
+                              const starValue = i + 1;
+                              const rating = product.rating;
+
+                              if (rating >= starValue) {
+                                // Full star
+                                return (
+                                  <span
+                                    key={i}
+                                    className="text-yellow-500 text-sm"
+                                  >
+                                    ★
+                                  </span>
+                                );
+                              } else if (rating >= starValue - 0.5) {
+                                // Half star
+                                return (
+                                  <span
+                                    key={i}
+                                    className="text-yellow-500 text-sm relative"
+                                  >
+                                    <span className="text-gray-300">★</span>
+                                    <span className="absolute left-0 top-0 overflow-hidden w-1/2 text-yellow-500">
+                                      ★
+                                    </span>
+                                  </span>
+                                );
+                              } else {
+                                // Empty star
+                                return (
+                                  <span
+                                    key={i}
+                                    className="text-gray-300 text-sm"
+                                  >
+                                    ★
+                                  </span>
+                                );
+                              }
+                            })}
+                          </div>
+                          <span className="text-sm font-medium">
+                            {product.rating}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          ({product.ratingCount} reviews)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-orange-600">
+                        <FiTrendingUp size={12} />
+                        🔥 {product.popularity}% customers love this
+                      </div>
+                    </div>
+
+                    {/* Pricing */}
+                    <div className="bg-gradient-to-r from-green-50 to-blue-50 p-3 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-lg text-green-700">
+                            ₹{product.finalPrice || product.basePrice}
+                          </span>
+                          {product.finalPrice &&
+                            product.basePrice &&
+                            product.finalPrice < product.basePrice && (
+                              <span className="text-gray-500 line-through text-sm">
+                                ₹{product.basePrice}
+                              </span>
+                            )}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          <FiDollarSign size={10} className="inline mr-1" />
+                          💰 Bulk Price: ₹{product.wholesalePrice}
+                        </div>
+                      </div>
+                      {product.discount && (
+                        <div className="flex items-center text-xs text-green-600 mb-2">
+                          <FiTag size={12} className="mr-1" />
+                          💸 {product.discount}
+                        </div>
+                      )}
+                      {product.availableOffers &&
+                        product.availableOffers.length > 0 && (
+                          <div className="text-xs text-blue-600">
+                            <span className="font-medium">
+                              🎁 Extra Savings:{" "}
+                            </span>
+                            {product.availableOffers.join(", ")}
+                          </div>
+                        )}
+                    </div>
+
+                    {/* Stock and Options Information */}
+                    <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <FiPackage size={12} className="text-blue-600" />
+                          <span className="text-xs font-medium">
+                            📦 {product.stockLevel} Available
+                          </span>
+                          {product.inStock ? (
+                            <FiCheckCircle
+                              className="text-green-500"
+                              size={12}
+                            />
+                          ) : (
+                            <FiAlertTriangle
+                              className="text-red-500"
+                              size={12}
+                            />
+                          )}
+                        </div>
+                        {product.hasVariants && (
+                          <div className="text-xs text-purple-600">
+                            <FiLayers size={10} className="inline mr-1" />
+                            🎨 {product.totalVariants} options
+                          </div>
+                        )}
+                      </div>
+
+                      {product.variantAttributes &&
+                        product.variantAttributes.length > 0 && (
+                          <div className="text-xs text-gray-600">
+                            <span className="font-medium">
+                              🎯 Available in:{" "}
+                            </span>
+                            {product.variantAttributes.join(", ")}
+                          </div>
+                        )}
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="text-gray-600">
+                          <FiPackage size={10} className="inline mr-1" />
+                          📦 Min Order:{" "}
+                          {product.stockLevelDetailed.minRetailerQty}
+                        </div>
+                        <div className="text-gray-600">
+                          <FiBarChart size={10} className="inline mr-1" />
+                          💰 Bulk Discount:{" "}
+                          {product.stockLevelDetailed.bulkDiscountQty}+ items
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Product Stats */}
+                    <div className="bg-yellow-50 p-3 rounded-lg space-y-2">
+                      <div className="text-xs font-medium text-yellow-800 mb-2">
+                        📊 Product Stats
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="text-gray-600">
+                          <FiUsers size={10} className="inline mr-1" />
+                          🛒 {product.orderHistoryCount} sold
+                        </div>
+                        <div className="text-gray-600">
+                          <FiRefreshCw size={10} className="inline mr-1" />
+                          ↩️ {product.returnRate} return rate
+                        </div>
+                        <div className="text-gray-600">
+                          <FiTag size={10} className="inline mr-1" />
+                          🎫 {product.activeCouponsCount} active deals
+                        </div>
+                        <div className="text-gray-600">
+                          <FiInfo size={10} className="inline mr-1" />
+                          {product.pendingStockAlerts
+                            ? "🔔 Stock alerts on"
+                            : "✅ Well stocked"}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <button
+                      onClick={() => handleProductClick(product.id)}
+                      className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                    >
+                      🛍️ View Product Details
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>
