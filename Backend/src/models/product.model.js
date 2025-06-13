@@ -120,6 +120,10 @@ export default (sequelize) => {
     Product.hasMany(models.Coupon, {
       foreignKey: "product_id",
     });
+    Product.hasMany(models.DiscountRule, {
+      foreignKey: "product_id",
+      as: "discountRules",
+    });
   };
 
   return Product;

@@ -229,10 +229,15 @@ export default (sequelize) => {
     });
     Category.hasMany(models.Product, { foreignKey: "category_id" });
     Category.hasMany(models.Coupon, { foreignKey: "category_id" });
+    Category.hasMany(models.DiscountRule, {
+      foreignKey: "category_id",
+      as: "discountRules",
+    });
   };
 
   return Category;
 };
+
 ===============================
 ===============================
 \hrule
@@ -513,11 +518,21 @@ export default (sequelize) => {
   );
 
   DiscountRule.associate = (models) => {
-    DiscountRule.belongsTo(models.Product, { foreignKey: "product_id" });
-    DiscountRule.belongsTo(models.Category, { foreignKey: "category_id" });
-    DiscountRule.belongsTo(models.Brand, { foreignKey: "brand_id" });
+    DiscountRule.belongsTo(models.Product, {
+      foreignKey: "product_id",
+      as: "product",
+    });
+    DiscountRule.belongsTo(models.Category, {
+      foreignKey: "category_id",
+      as: "category",
+    });
+    DiscountRule.belongsTo(models.Brand, {
+      foreignKey: "brand_id",
+      as: "brand",
+    });
     DiscountRule.belongsTo(models.ProductVariant, {
       foreignKey: "product_variant_id",
+      as: "productVariant",
     });
     DiscountRule.belongsTo(models.User, {
       foreignKey: "created_by",
@@ -531,6 +546,7 @@ export default (sequelize) => {
 
   return DiscountRule;
 };
+
 
 ===============================
 ===============================
@@ -866,10 +882,15 @@ export default (sequelize) => {
     Product.hasMany(models.Coupon, {
       foreignKey: "product_id",
     });
+    Product.hasMany(models.DiscountRule, {
+      foreignKey: "product_id",
+      as: "discountRules",
+    });
   };
 
   return Product;
 };
+
 
 ===============================
 ===============================
@@ -1032,10 +1053,15 @@ export default (sequelize) => {
     Brand.belongsTo(models.User, { foreignKey: "updated_by", as: "updater" });
     Brand.hasMany(models.Product, { foreignKey: "brand_id" });
     Brand.hasMany(models.Coupon, { foreignKey: "brand_id" });
+    Brand.hasMany(models.DiscountRule, {
+      foreignKey: "brand_id",
+      as: "discountRules",
+    });
   };
 
   return Brand;
 };
+
 
 ===============================
 ===============================
@@ -1231,7 +1257,7 @@ export default (sequelize) => {
 ===============================
 \hrule
 
-//productVariants model 
+//productVariant model 
 
 import { DataTypes } from "sequelize";
 
@@ -1318,10 +1344,23 @@ export default (sequelize) => {
     ProductVariant.hasMany(models.Coupon, {
       foreignKey: "product_variant_id",
     });
+
+    // Relationship with OrderItem for stock analytics
+    ProductVariant.hasMany(models.OrderItem, {
+      foreignKey: "product_variant_id",
+      as: "orderItems",
+    });
+
+    // Relationship with DiscountRule
+    ProductVariant.hasMany(models.DiscountRule, {
+      foreignKey: "product_variant_id",
+      as: "discountRules",
+    });
   };
 
   return ProductVariant;
 };
+
 
 ===============================
 ===============================

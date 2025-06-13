@@ -89,6 +89,12 @@ export default (sequelize) => {
       foreignKey: "product_variant_id",
       as: "orderItems",
     });
+
+    // Relationship with DiscountRule
+    ProductVariant.hasMany(models.DiscountRule, {
+      foreignKey: "product_variant_id",
+      as: "discountRules",
+    });
   };
 
   return ProductVariant;
