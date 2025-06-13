@@ -17,17 +17,13 @@ import {
   FiTag,
   FiShield,
   FiPackage,
-  FiTrendingUp,
   FiAward,
-  FiBarChart,
   FiPercent,
   FiDollarSign,
   FiUsers,
   FiLayers,
   FiCheckCircle,
   FiAlertTriangle,
-  FiEye,
-  FiShoppingBag,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -38,7 +34,6 @@ import {
   setCustomPrice,
   setRating,
   setInStockOnly,
-  setNewArrivals,
   setSortOption,
   resetFilters,
 } from "../../../components/Redux/filterSlice";
@@ -49,13 +44,12 @@ import Footer from "../../../components/Footer/Footer";
 import Header from "../../../components/Header/Header";
 import { priceRanges, ratings } from "../../../components/Data/filters";
 
-// Enhanced products data with additional fields
+// Products data based on backend models
 const dummyProducts = [
   {
     id: 1,
     name: "Laptop Pro",
     category: "Laptops",
-    categoryPath: "Electronics > Laptops",
     brand: "Apple",
     basePrice: 15000, // Original price
     finalPrice: 13500, // After discount
@@ -68,16 +62,10 @@ const dummyProducts = [
     image: "https://m.media-amazon.com/images/I/71eknZxZLmL._SL1500_.jpg",
     inStock: true,
     stockLevel: 5,
-    lowStockWarning: true, // stockLevel <= 5
     hasVariants: true,
     totalVariants: 3,
     variantAttributes: ["Color: Silver", "RAM: 16GB"],
-    arrival: "Launched: Jan 2025",
-    popularity: 95,
     isFeatured: true,
-    wishlistStatus: false, // logged‑in user hasn't wishlisted
-    isInCart: false,
-    recentlyViewedBadge: true,
 
     // Retailer-specific
     stockLevelDetailed: {
@@ -91,7 +79,6 @@ const dummyProducts = [
     id: 2,
     name: "Smartphone X",
     category: "Mobile Phones",
-    categoryPath: "Electronics > Mobile Phones",
     brand: "Samsung",
     basePrice: 8000,
     finalPrice: 7200,
@@ -104,16 +91,10 @@ const dummyProducts = [
     image: "https://m.media-amazon.com/images/I/71DSxfKzkJL._SL1500_.jpg",
     inStock: true,
     stockLevel: 12,
-    lowStockWarning: false,
     hasVariants: true,
     totalVariants: 4,
     variantAttributes: ["Color: Black", "Storage: 128GB"],
-    arrival: "Launched: Mar 2025",
-    popularity: 88,
     isFeatured: false,
-    wishlistStatus: true,
-    isInCart: true,
-    recentlyViewedBadge: false,
 
     // Retailer-specific
     stockLevelDetailed: {
@@ -127,7 +108,6 @@ const dummyProducts = [
     id: 3,
     name: "Wireless Headphones",
     category: "Audio",
-    categoryPath: "Electronics > Audio > Headphones",
     brand: "Sony",
     basePrice: 5000,
     finalPrice: 4500,
@@ -140,16 +120,10 @@ const dummyProducts = [
     image: "https://m.media-amazon.com/images/I/61SUj2aKoEL._SL1500_.jpg",
     inStock: true,
     stockLevel: 25,
-    lowStockWarning: false,
     hasVariants: true,
     totalVariants: 2,
     variantAttributes: ["Color: Black", "Color: White"],
-    arrival: "Launched: Feb 2025",
-    popularity: 75,
     isFeatured: false,
-    wishlistStatus: false,
-    isInCart: false,
-    recentlyViewedBadge: false,
 
     // Retailer-specific
     stockLevelDetailed: {
@@ -210,7 +184,7 @@ const MainZone = () => {
     customMaxPrice,
     selectedRating,
     inStockOnly,
-    newArrivals,
+
     sortOption,
   } = filterState;
 
@@ -329,9 +303,7 @@ const MainZone = () => {
       case "stock":
         dispatch(setInStockOnly(true));
         break;
-      case "arrival":
-        dispatch(setNewArrivals(""));
-        break;
+
       default:
         break;
     }
@@ -374,7 +346,7 @@ const MainZone = () => {
     if (selectedRating) filters.push({ type: "rating", value: selectedRating });
     if (!inStockOnly)
       filters.push({ type: "stock", value: "Include out of stock" });
-    if (newArrivals) filters.push({ type: "arrival", value: newArrivals });
+
     setAppliedFilters(filters);
   }, [filterState]);
 
@@ -438,27 +410,21 @@ const MainZone = () => {
       const ratingMatch =
         !selectedRating || product.rating >= parseInt(selectedRating);
       const stockMatch = !inStockOnly || product.inStock;
-      const arrivalMatch =
-        !newArrivals ||
-        product.arrival.toLowerCase().includes(newArrivals.toLowerCase());
       return (
         searchMatch &&
         categoryMatch &&
         brandMatch &&
         priceMatch &&
         ratingMatch &&
-        stockMatch &&
-        arrivalMatch
+        stockMatch
       );
     })
     .sort((a, b) => {
-      if (sortOption === "popularity") return b.popularity - a.popularity;
       if (sortOption === "low-to-high")
         return (a.finalPrice || a.basePrice) - (b.finalPrice || b.basePrice);
       if (sortOption === "high-to-low")
         return (b.finalPrice || b.basePrice) - (a.finalPrice || a.basePrice);
       if (sortOption === "rating") return b.rating - a.rating;
-      if (sortOption === "newest") return b.arrival.localeCompare(a.arrival);
       return 0;
     });
 
@@ -553,8 +519,6 @@ const MainZone = () => {
               handleRating={handleRating}
               inStockOnly={inStockOnly}
               setInStockOnly={(value) => dispatch(setInStockOnly(value))}
-              newArrivals={newArrivals}
-              setNewArrivals={(value) => dispatch(setNewArrivals(value))}
               resetAllFilters={resetAllFilters}
               mobileView={windowWidth < 768}
             />
@@ -614,18 +578,12 @@ const MainZone = () => {
                   className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300"
                 >
                   {/* Header Section */}
-                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-3 border-b">
-                    <div className="flex justify-between items-start mb-2">
+                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-2 border-b">
+                    <div className="flex justify-between items-start mb-1">
                       <div className="flex items-center gap-2">
                         {product.isFeatured && (
                           <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
                             <FiAward size={10} />⭐ Top Pick
-                          </span>
-                        )}
-                        {product.recentlyViewedBadge && (
-                          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                            <FiEye size={10} />
-                            Recently Viewed
                           </span>
                         )}
                       </div>
@@ -633,33 +591,20 @@ const MainZone = () => {
                         onClick={() => toggleWishlist(product.id)}
                         className="p-1 rounded-full bg-white shadow hover:bg-gray-100 transition-colors"
                         title={
-                          product.wishlistStatus ||
                           wishlist.includes(product.id)
                             ? "Remove from Wishlist"
                             : "Add to Wishlist"
                         }
                       >
                         <FiHeart
-                          size={18}
-                          color={
-                            product.wishlistStatus ||
-                            wishlist.includes(product.id)
-                              ? "red"
-                              : "gray"
-                          }
-                          fill={
-                            product.wishlistStatus ||
-                            wishlist.includes(product.id)
-                              ? "red"
-                              : "none"
-                          }
+                          size={16}
+                          color={wishlist.includes(product.id) ? "red" : "gray"}
+                          fill={wishlist.includes(product.id) ? "red" : "none"}
                         />
                       </button>
                     </div>
                     <div className="text-xs text-gray-600">
-                      <span className="font-medium">
-                        {product.categoryPath}
-                      </span>
+                      <span className="font-medium">{product.category}</span>
                     </div>
                   </div>
 
@@ -668,29 +613,24 @@ const MainZone = () => {
                     <img
                       src={product.image}
                       alt={product.name}
-                      className="w-full h-48 object-contain p-4 bg-gray-50"
+                      className="w-full h-40 object-contain p-2 bg-gray-50"
                     />
                     {product.discountPercent > 0 && (
-                      <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                      <div className="absolute top-1 left-1 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
                         <FiPercent size={10} />
                         {product.discountPercent}% OFF
                       </div>
                     )}
-                    {product.lowStockWarning && (
-                      <div className="absolute bottom-2 left-2 bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded flex items-center">
+                    {product.stockLevel <= 5 && (
+                      <div className="absolute bottom-1 left-1 bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded flex items-center">
                         <FiAlertTriangle className="mr-1" size={12} />
                         🔥 Only {product.stockLevel} left!
-                      </div>
-                    )}
-                    {product.isInCart && (
-                      <div className="absolute top-2 right-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                        <FiShoppingBag size={10} />✓ Added to Cart
                       </div>
                     )}
                   </div>
 
                   {/* Product Details */}
-                  <div className="p-4 space-y-3">
+                  <div className="p-3 space-y-2">
                     {/* Brand and Name */}
                     <div>
                       <h3 className="text-sm text-indigo-600 font-medium mb-1">
@@ -759,15 +699,11 @@ const MainZone = () => {
                           ({product.ratingCount} reviews)
                         </span>
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-orange-600">
-                        <FiTrendingUp size={12} />
-                        🔥 {product.popularity}% customers love this
-                      </div>
                     </div>
 
                     {/* Pricing */}
-                    <div className="bg-gradient-to-r from-green-50 to-blue-50 p-3 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
+                    <div className="bg-gradient-to-r from-green-50 to-blue-50 p-2 rounded-lg">
+                      <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-lg text-green-700">
                             ₹{product.finalPrice || product.basePrice}
@@ -786,7 +722,7 @@ const MainZone = () => {
                         </div>
                       </div>
                       {product.discount && (
-                        <div className="flex items-center text-xs text-green-600 mb-2">
+                        <div className="flex items-center text-xs text-green-600 mb-1">
                           <FiTag size={12} className="mr-1" />
                           💸 {product.discount}
                         </div>
@@ -803,26 +739,26 @@ const MainZone = () => {
                     </div>
 
                     {/* Availability Information */}
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg border border-green-200">
-                      <div className="flex items-center justify-between mb-2">
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-2 rounded-lg border border-green-200">
+                      <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
-                          <FiPackage size={14} className="text-green-600" />
+                          <FiPackage size={12} className="text-green-600" />
                           <span className="text-sm font-semibold text-green-800">
                             📦 {product.stockLevel} Units Available
                           </span>
                           {product.inStock ? (
                             <FiCheckCircle
                               className="text-green-600"
-                              size={14}
+                              size={12}
                             />
                           ) : (
                             <FiAlertTriangle
                               className="text-red-500"
-                              size={14}
+                              size={12}
                             />
                           )}
                         </div>
-                        {product.lowStockWarning && (
+                        {product.stockLevel <= 5 && (
                           <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full font-medium">
                             🔥 Low Stock!
                           </span>
@@ -830,7 +766,7 @@ const MainZone = () => {
                       </div>
 
                       {/* Stock Status Bar */}
-                      <div className="mb-3">
+                      <div className="mb-2">
                         <div className="flex justify-between text-xs text-gray-600 mb-1">
                           <span>Stock Level</span>
                           <span>
@@ -859,15 +795,28 @@ const MainZone = () => {
                       </div>
 
                       {product.hasVariants && (
-                        <div className="mb-2">
-                          <div className="text-xs text-purple-600 font-medium mb-1">
-                            <FiLayers size={10} className="inline mr-1" />�
-                            Available Options ({product.totalVariants})
+                        <div className="mb-2 bg-gradient-to-r from-purple-50 to-indigo-50 p-2 rounded-lg border border-purple-200">
+                          <div className="text-sm text-purple-700 font-semibold mb-1 flex items-center">
+                            <FiLayers
+                              size={12}
+                              className="mr-2 text-purple-600"
+                            />
+                            🎨 Available Options ({product.totalVariants}{" "}
+                            variants)
                           </div>
                           {product.variantAttributes &&
                             product.variantAttributes.length > 0 && (
-                              <div className="text-xs text-gray-600">
-                                {product.variantAttributes.join(" • ")}
+                              <div className="flex flex-wrap gap-1">
+                                {product.variantAttributes.map(
+                                  (attribute, index) => (
+                                    <span
+                                      key={index}
+                                      className="bg-white text-purple-700 text-xs px-2 py-1 rounded-full border border-purple-300 font-medium shadow-sm"
+                                    >
+                                      {attribute}
+                                    </span>
+                                  )
+                                )}
                               </div>
                             )}
                         </div>
@@ -894,22 +843,20 @@ const MainZone = () => {
                     </div>
 
                     {/* Product Stats */}
-                    <div className="bg-yellow-50 p-3 rounded-lg space-y-2">
-                      <div className="text-xs font-medium text-yellow-800 mb-2">
+                    <div className="bg-yellow-50 p-2 rounded-lg">
+                      <div className="text-xs font-medium text-yellow-800 mb-1">
                         📊 Product Stats
                       </div>
-                      <div className="grid grid-cols-1 gap-2 text-xs">
-                        <div className="text-gray-600">
-                          <FiUsers size={10} className="inline mr-1" />
-                          🛒 {product.orderHistoryCount} sold
-                        </div>
+                      <div className="text-xs text-gray-600">
+                        <FiUsers size={10} className="inline mr-1" />
+                        🛒 {product.orderHistoryCount} sold
                       </div>
                     </div>
 
                     {/* Action Button */}
                     <button
                       onClick={() => handleProductClick(product.id)}
-                      className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                      className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
                     >
                       🛍️ View Product Details
                     </button>
