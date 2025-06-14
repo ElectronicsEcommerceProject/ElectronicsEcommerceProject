@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   FiSearch,
   FiUser,
@@ -53,6 +53,7 @@ import {
 
 const MainZone = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState({});
   const [searchInput, setSearchInput] = useState("");
@@ -418,9 +419,8 @@ const MainZone = () => {
   };
 
   const handleProductClick = (productId) => {
-    alert(`Product clicked with ID: ${productId}`);
-    console.log("Product clicked:", productId);
-    // navigate(`/product/${productId}`);
+    console.log("🛍️ Navigating to product details for ID:", productId);
+    navigate(`/product/${productId}`);
   };
 
   const handleProductHover = (productId) => {
