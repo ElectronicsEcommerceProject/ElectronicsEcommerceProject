@@ -4,7 +4,21 @@ import MESSAGE from "../../../../constants/message.js";
 import slugify from "slugify";
 import { Op } from "sequelize";
 
-const { Product, Category, Brand, User } = db;
+const {
+  Product,
+  Category,
+  Brand,
+  User,
+  ProductVariant,
+  Coupon,
+  DiscountRule,
+  ProductReview,
+  OrderItem,
+  ProductMedia,
+  ProductMediaUrl,
+  AttributeValue,
+  Attribute,
+} = db;
 
 // ✅ Create a new product
 const createProduct = async (req, res) => {
@@ -308,6 +322,250 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+//get products by brand_id
+
+const getProductsByBrandId = async (req, res) => {
+  try {
+    const { brand_id } = req.params;
+
+    console.log("testing", brand_id);
+
+    // 1. Validate brand exists
+    const brand = await Brand.findByPk(brand_id);
+    if (!brand) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Brand not found" });
+    }
+
+    // 2. Fetch all products for this brand
+    const products = await Product.findAll({
+      where: { brand_id },
+      include: [
+        { model: Category, as: "category", attributes: ["name"] },
+        {
+          model: ProductVariant,
+          as: "variants",
+          attributes: [
+            "product_variant_id",
+            "price",
+            "stock_quantity",
+            "base_variant_image_url",
+          ],
+          include: [
+            {
+              model: AttributeValue,
+              attributes: ["value"],
+              include: [
+                {
+                  model: Attribute,
+                  attributes: ["name"],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          model: ProductMedia,
+          as: "media",
+          attributes: ["product_media_id", "media_type"],
+          include: [
+            {
+              model: ProductMediaUrl,
+              attributes: ["product_media_url", "media_type"],
+              where: { media_type: "image" }, // Only get images
+              required: false,
+            },
+          ],
+          required: false,
+        },
+        {
+          model: Coupon,
+          as: "coupons",
+          where: {
+            is_active: true,
+            valid_from: { [Op.lte]: new Date() },
+            valid_to: { [Op.gte]: new Date() },
+          },
+          required: false,
+        },
+        {
+          model: DiscountRule,
+          as: "discountRules",
+          where: {
+            is_active: true,
+          },
+          required: false,
+        },
+        { model: ProductReview, as: "reviews", attributes: ["rating"] },
+        { model: OrderItem, as: "orderItems", attributes: ["order_item_id"] },
+      ],
+    });
+
+    // 3. Map into desired shape
+    const data = products.map((prod) => {
+      const basePrice = parseFloat(prod.base_price);
+      const coupons = prod.coupons || []; // Fixed: use correct alias
+      const rules = prod.discountRules || []; // Fixed: use correct alias
+      const variants = prod.variants || []; // Fixed: use correct alias
+      const reviews = prod.reviews || []; // Fixed: use correct alias
+      const orders = prod.orderItems || []; // Fixed: use correct alias
+      const media = prod.media || []; // Product media
+
+      // console.log("basePrice:", basePrice);
+      // console.log("Coupons:", coupons);
+      // console.log("Rules:", rules);
+      // console.log("Variants:", variants);
+      // console.log("Reviews:", reviews);
+      // console.log("Orders:", orders);
+      // console.log("Media:", media);
+
+      // Find the LEAST discount coupon to show to user (smallest discount_value)
+      let leastDiscountCoupon = null;
+      coupons.forEach((c) => {
+        if (
+          !leastDiscountCoupon ||
+          parseFloat(c.discount_value) <
+            parseFloat(leastDiscountCoupon.discount_value)
+        ) {
+          leastDiscountCoupon = c;
+        }
+      });
+
+      // Calculate discount based on type (percentage or fixed)
+      let discountPercent = 0;
+      let discountAmount = 0;
+
+      if (leastDiscountCoupon) {
+        if (leastDiscountCoupon.type === "percentage") {
+          discountPercent = parseFloat(leastDiscountCoupon.discount_value);
+          discountAmount = (basePrice * discountPercent) / 100;
+        } else if (leastDiscountCoupon.type === "fixed") {
+          discountAmount = parseFloat(leastDiscountCoupon.discount_value);
+          discountPercent = (discountAmount / basePrice) * 100;
+        }
+      }
+
+      const couponDesc = leastDiscountCoupon
+        ? `${leastDiscountCoupon.discount_value}${
+            leastDiscountCoupon.type === "percentage" ? "%" : ""
+          } off with ${leastDiscountCoupon.code}`
+        : null;
+
+      // Retailer/bulk rule
+      const retailerRule = rules.find((r) => r.rule_type === "retailer");
+      const bulkRule = rules.find((r) => r.rule_type === "bulk");
+      const stockLevelDetailed = retailerRule
+        ? {
+            minRetailerQty: retailerRule.min_retailer_quantity,
+            bulkDiscountQty: bulkRule?.bulk_discount_quantity || null,
+          }
+        : null;
+
+      // Stock & variant summary
+      const inStock = variants.some((v) => v.stock_quantity > 0);
+      const stockLevel = variants.reduce((sum, v) => sum + v.stock_quantity, 0);
+      const totalVariants = variants.length;
+      const hasVariants = totalVariants > 0;
+
+      // Get real variant attributes from database
+      const variantAttributes = [];
+      variants.slice(0, 2).forEach((variant) => {
+        if (variant.AttributeValues && variant.AttributeValues.length > 0) {
+          variant.AttributeValues.forEach((attrValue) => {
+            if (attrValue.Attribute) {
+              variantAttributes.push(
+                `${attrValue.Attribute.name}: ${attrValue.value}`
+              );
+            }
+          });
+        }
+      });
+
+      // Ratings
+      const ratingCount = reviews.length;
+      const rating = ratingCount
+        ? reviews.reduce((sum, r) => sum + r.rating, 0) / ratingCount
+        : 0;
+
+      // Wholesale example (20% off)
+      const wholesalePrice = +(basePrice * 0.8).toFixed(2);
+
+      // Final price calculation using discount amount
+      let finalPrice = basePrice;
+      if (discountAmount > 0) {
+        finalPrice = +(basePrice - discountAmount).toFixed(2);
+        // Ensure final price doesn't go below 0
+        finalPrice = Math.max(finalPrice, 0);
+      }
+
+      // Get product image from ProductMediaUrl
+      let productImage = null;
+
+      if (media && media.length > 0) {
+        // Find the first media item that has ProductMediaURLs (note the capital U)
+        const mediaWithUrl = media.find(
+          (m) => m.ProductMediaURLs && m.ProductMediaURLs.length > 0
+        );
+        if (mediaWithUrl) {
+          productImage = mediaWithUrl.ProductMediaURLs[0].product_media_url;
+        }
+      }
+
+      // Fallback to variant image if no product media found
+      if (!productImage && variants && variants.length > 0) {
+        productImage = variants[0]?.base_variant_image_url || null;
+      }
+
+      // Convert relative path to full URL for response
+      if (productImage && !productImage.startsWith("http")) {
+        productImage = `${req.protocol}://${req.get(
+          "host"
+        )}/${productImage.replace(/\\/g, "/")}`;
+      }
+
+      return {
+        id: prod.product_id,
+        name: prod.name,
+        category: prod.category.name,
+        brand: brand.name,
+        basePrice,
+        finalPrice,
+        discount: couponDesc,
+        discountPercent,
+        availableOffers: coupons.map((c) => c.code),
+        rating: +rating.toFixed(1),
+        ratingCount,
+        shortDescription: prod.short_description,
+        image: productImage, // From ProductMediaURL table
+        inStock,
+        stockLevel,
+        hasVariants,
+        totalVariants,
+        variantAttributes,
+        isFeatured: prod.is_featured,
+
+        // Retailer-specific data
+        stockLevelDetailed,
+        wholesalePrice,
+        orderHistoryCount: orders.length,
+      };
+    });
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: MESSAGE.get.succ,
+      data,
+    });
+  } catch (err) {
+    console.error("getProductsByBrand error:", err);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: MESSAGE.get.fail,
+      error: err.message,
+    });
+  }
+};
+
 export default {
   createProduct,
   getAllProducts,
@@ -316,4 +574,5 @@ export default {
   getProductsByCategoryAndBrand,
   updateProduct,
   deleteProduct,
+  getProductsByBrandId,
 };

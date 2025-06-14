@@ -6,7 +6,7 @@ const initialState = {
   selectedBrands: [],
   selectedPriceRange: "",
   customMinPrice: 100,
-  customMaxPrice: 20000,
+  customMaxPrice: 100000, // Increased from 20000 to 100000 to accommodate higher-priced products
   selectedRating: "",
   selectedDiscounts: [],
   inStockOnly: true,

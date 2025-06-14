@@ -44,99 +44,15 @@ import Footer from "../../../components/Footer/Footer";
 import Header from "../../../components/Header/Header";
 import { priceRanges, ratings } from "../../../components/Data/filters";
 
-// Products data based on backend models
-const dummyProducts = [
-  {
-    id: 1,
-    name: "Laptop Pro",
-    category: "Laptops",
-    brand: "Apple",
-    basePrice: 15000, // Original price
-    finalPrice: 13500, // After discount
-    discount: "10% off with CODE123",
-    discountPercent: 10,
-    availableOffers: ["CODE123", "FLAT500"],
-    rating: 4.0,
-    ratingCount: 120,
-    shortDescription: "High-performance laptop with M1 chip, 16GB RAM...",
-    image: "https://m.media-amazon.com/images/I/71eknZxZLmL._SL1500_.jpg",
-    inStock: true,
-    stockLevel: 5,
-    hasVariants: true,
-    totalVariants: 3,
-    variantAttributes: ["Color: Silver", "RAM: 16GB"],
-    isFeatured: true,
+import {
+  getApiById,
+  getApi,
+  getAllBrandsRoute,
+  getProductsByBrandRoute,
+} from "../../../src/index.js";
 
-    // Retailer-specific
-    stockLevelDetailed: {
-      minRetailerQty: 2,
-      bulkDiscountQty: 10,
-    },
-    wholesalePrice: 12000,
-    orderHistoryCount: 45,
-  },
-  {
-    id: 2,
-    name: "Smartphone X",
-    category: "Mobile Phones",
-    brand: "Samsung",
-    basePrice: 8000,
-    finalPrice: 7200,
-    discount: "10% off with CODEMOBILE",
-    discountPercent: 10,
-    availableOffers: ["CODEMOBILE"],
-    rating: 4.5,
-    ratingCount: 250,
-    shortDescription: 'Powerful smartphone with 6.5" display, 128GB storage...',
-    image: "https://m.media-amazon.com/images/I/71DSxfKzkJL._SL1500_.jpg",
-    inStock: true,
-    stockLevel: 12,
-    hasVariants: true,
-    totalVariants: 4,
-    variantAttributes: ["Color: Black", "Storage: 128GB"],
-    isFeatured: false,
-
-    // Retailer-specific
-    stockLevelDetailed: {
-      minRetailerQty: 5,
-      bulkDiscountQty: 20,
-    },
-    wholesalePrice: 6500,
-    orderHistoryCount: 80,
-  },
-  {
-    id: 3,
-    name: "Wireless Headphones",
-    category: "Audio",
-    brand: "Sony",
-    basePrice: 5000,
-    finalPrice: 4500,
-    discount: "10% off with AUDIO10",
-    discountPercent: 10,
-    availableOffers: ["AUDIO10", "NEWUSER"],
-    rating: 3.5,
-    ratingCount: 89,
-    shortDescription: "Premium wireless headphones with noise cancellation...",
-    image: "https://m.media-amazon.com/images/I/61SUj2aKoEL._SL1500_.jpg",
-    inStock: true,
-    stockLevel: 25,
-    hasVariants: true,
-    totalVariants: 2,
-    variantAttributes: ["Color: Black", "Color: White"],
-    isFeatured: false,
-
-    // Retailer-specific
-    stockLevelDetailed: {
-      minRetailerQty: 3,
-      bulkDiscountQty: 15,
-    },
-    wholesalePrice: 4000,
-    orderHistoryCount: 32,
-  },
-];
 const MainZone = () => {
   const [searchParams] = useSearchParams();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState({});
   const [searchInput, setSearchInput] = useState("");
@@ -144,8 +60,31 @@ const MainZone = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [appliedFilters, setAppliedFilters] = useState([]);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const [hoveredProduct, setHoveredProduct] = useState(null);
   const [wishlist, setWishlist] = useState([]);
+
+  // API state
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Brand state for API calls
+  const [availableBrands, setAvailableBrands] = useState([]);
+  const [selectedBrandIds, setSelectedBrandIds] = useState([]);
+
+  // Redux state - moved to top to avoid initialization issues
+  const dispatch = useDispatch();
+  const filterState = useSelector((state) => state.filters);
+  const {
+    searchTerm,
+    selectedCategories,
+    selectedBrands,
+    selectedPriceRange,
+    customMinPrice,
+    customMaxPrice,
+    selectedRating,
+    inStockOnly,
+    sortOption,
+  } = filterState;
 
   const toggleWishlist = (productId) => {
     setWishlist((prev) =>
@@ -155,10 +94,111 @@ const MainZone = () => {
     );
   };
 
+  // Fetch all available brands
+  const fetchBrands = async () => {
+    try {
+      const response = await getApi(getAllBrandsRoute);
+      if (response.success && response.data) {
+        setAvailableBrands(response.data);
+      }
+    } catch (err) {
+      console.error("Error fetching brands:", err);
+    }
+  };
+
+  // Fetch products by single brand_id (for URL parameter)
+  const fetchProductsByBrand = async (brandId) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await getApiById(getProductsByBrandRoute, brandId);
+
+      if (response.success && response.data) {
+        setProducts(response.data);
+      } else {
+        throw new Error(response.message || "Failed to fetch products");
+      }
+    } catch (err) {
+      console.error("Error fetching products by brand:", err);
+      setError(err.message || "Failed to fetch products");
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch products by single brand_id (helper function)
+  const fetchProductsForBrand = async (brandId) => {
+    try {
+      const response = await getApiById(getProductsByBrandRoute, brandId);
+      if (response.success && response.data) {
+        return response.data;
+      }
+      return [];
+    } catch (err) {
+      console.error(`Error fetching products for brand ${brandId}:`, err);
+      return [];
+    }
+  };
+
+  // Fetch products for multiple selected brands
+  const fetchProductsForSelectedBrands = async (brandIds) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      if (brandIds.length === 0) {
+        setProducts([]);
+        return;
+      }
+
+      // Fetch products for each selected brand
+      const productPromises = brandIds.map((brandId) =>
+        fetchProductsForBrand(brandId)
+      );
+      const productArrays = await Promise.all(productPromises);
+
+      // Combine all products from different brands
+      const allProducts = productArrays.flat();
+      setProducts(allProducts);
+    } catch (err) {
+      console.error("Error fetching products for selected brands:", err);
+      setError(err.message || "Failed to fetch products");
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch brands on component mount
+  useEffect(() => {
+    fetchBrands();
+  }, []);
+
+  // Watch for brand filter changes and clear products if no brands selected
+  useEffect(() => {
+    // Only run if selectedBrands is properly initialized (not undefined)
+    if (
+      selectedBrands &&
+      selectedBrands.length === 0 &&
+      !searchParams.get("brand_id")
+    ) {
+      setProducts([]);
+      setSelectedBrandIds([]);
+    }
+  }, [selectedBrands, searchParams]);
+
   useEffect(() => {
     const categoryId = searchParams.get("category_id");
+    const brandId = searchParams.get("brand_id");
+
     if (categoryId) {
       alert(`Category selected with ID: ${categoryId}`);
+    }
+
+    if (brandId) {
+      fetchProductsByBrand(brandId);
     }
   }, [searchParams]);
 
@@ -172,21 +212,6 @@ const MainZone = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [isFilterOpen]);
-
-  const dispatch = useDispatch();
-  const filterState = useSelector((state) => state.filters);
-  const {
-    searchTerm,
-    selectedCategories,
-    selectedBrands,
-    selectedPriceRange,
-    customMinPrice,
-    customMaxPrice,
-    selectedRating,
-    inStockOnly,
-
-    sortOption,
-  } = filterState;
 
   const toggleCategory = (category) => {
     setExpandedCategories((prev) => ({
@@ -224,11 +249,23 @@ const MainZone = () => {
     setShowSuggestions(false);
   };
 
-  const handleBrandCheckbox = (brand) => {
-    const newSelectedBrands = selectedBrands.includes(brand)
-      ? selectedBrands.filter((item) => item !== brand)
-      : [...selectedBrands, brand];
+  const handleBrandCheckbox = (brandName, brandId) => {
+    // Safety check for selectedBrands initialization
+    const currentSelectedBrands = selectedBrands || [];
+
+    const newSelectedBrands = currentSelectedBrands.includes(brandName)
+      ? currentSelectedBrands.filter((item) => item !== brandName)
+      : [...currentSelectedBrands, brandName];
     dispatch(setSelectedBrands(newSelectedBrands));
+
+    // Update selected brand IDs for API calls
+    const newSelectedBrandIds = selectedBrandIds.includes(brandId)
+      ? selectedBrandIds.filter((id) => id !== brandId)
+      : [...selectedBrandIds, brandId];
+    setSelectedBrandIds(newSelectedBrandIds);
+
+    // Fetch products for selected brands
+    fetchProductsForSelectedBrands(newSelectedBrandIds);
   };
 
   const handlePriceRange = (range) => {
@@ -290,12 +327,14 @@ const MainZone = () => {
         break;
       case "brand":
         dispatch(setSelectedBrands([]));
+        setSelectedBrandIds([]);
+        setProducts([]);
         break;
       case "price range":
         dispatch(setPriceRange(""));
         break;
       case "price":
-        dispatch(setCustomPrice({ min: 100, max: 20000 }));
+        dispatch(setCustomPrice({ min: 100, max: 100000 }));
         break;
       case "rating":
         dispatch(setRating(""));
@@ -312,6 +351,8 @@ const MainZone = () => {
   const resetAllFilters = () => {
     dispatch(resetFilters());
     setSearchInput("");
+    setSelectedBrandIds([]);
+    setProducts([]);
   };
 
   const handleProductClick = (productId) => {
@@ -331,13 +372,13 @@ const MainZone = () => {
   useEffect(() => {
     const filters = [];
     if (searchTerm) filters.push({ type: "search", value: searchTerm });
-    if (selectedCategories.length)
+    if (selectedCategories && selectedCategories.length)
       filters.push({ type: "category", value: selectedCategories.join(", ") });
-    if (selectedBrands.length)
+    if (selectedBrands && selectedBrands.length)
       filters.push({ type: "brand", value: selectedBrands.join(", ") });
     if (selectedPriceRange)
       filters.push({ type: "price range", value: selectedPriceRange });
-    if (customMinPrice !== 100 || customMaxPrice !== 20000) {
+    if (customMinPrice !== 100 || customMaxPrice !== 100000) {
       filters.push({
         type: "price",
         value: `₹${customMinPrice} - ₹${customMaxPrice}`,
@@ -357,59 +398,70 @@ const MainZone = () => {
     }
     const suggestions = [
       ...new Set([
-        ...dummyProducts
+        ...products
           .filter((product) =>
             product.name.toLowerCase().includes(searchInput.toLowerCase())
           )
           .map((product) => product.name),
-        ...dummyProducts
+        ...products
           .filter((product) =>
             product.category.toLowerCase().includes(searchInput.toLowerCase())
           )
           .map((product) => product.category),
-        ...dummyProducts
+        ...products
           .filter((product) =>
             product.brand.toLowerCase().includes(searchInput.toLowerCase())
           )
           .map((product) => product.brand),
-        ...dummyProducts
-          .filter((product) =>
-            product.shortDescription
-              .toLowerCase()
-              .includes(searchInput.toLowerCase())
+        ...products
+          .filter(
+            (product) =>
+              product.shortDescription &&
+              product.shortDescription
+                .toLowerCase()
+                .includes(searchInput.toLowerCase())
           )
           .map((product) => product.shortDescription),
       ]),
     ].slice(0, 5);
     setSearchSuggestions(suggestions);
-  }, [searchInput]);
+  }, [searchInput, products]);
 
-  const filteredProducts = dummyProducts
+  const filteredProducts = products
     .filter((product) => {
       const searchMatch =
         !searchTerm ||
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.shortDescription
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
+        (product.shortDescription &&
+          product.shortDescription
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()));
+
       const categoryMatch =
+        !selectedCategories ||
         !selectedCategories.length ||
         selectedCategories.some((cat) =>
           product.category.toLowerCase().includes(cat.toLowerCase())
         );
+
       const brandMatch =
+        !selectedBrands ||
         !selectedBrands.length ||
         selectedBrands.some((brand) =>
           product.brand.toLowerCase().includes(brand.toLowerCase())
         );
+
       const priceMatch =
         (product.basePrice || product.finalPrice) >= customMinPrice &&
         (product.basePrice || product.finalPrice) <= customMaxPrice;
+
       const ratingMatch =
         !selectedRating || product.rating >= parseInt(selectedRating);
+
       const stockMatch = !inStockOnly || product.inStock;
+
       return (
         searchMatch &&
         categoryMatch &&
@@ -427,9 +479,6 @@ const MainZone = () => {
       if (sortOption === "rating") return b.rating - a.rating;
       return 0;
     });
-
-  // Debug log to verify filteredProducts data
-  console.log("Filtered Products:", filteredProducts);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
@@ -503,9 +552,9 @@ const MainZone = () => {
             <FilterSidebar
               expandedCategories={expandedCategories}
               toggleCategory={toggleCategory}
-              selectedCategories={selectedCategories}
+              selectedCategories={selectedCategories || []}
               handleCategoryCheckbox={handleCategoryCheckbox}
-              selectedBrands={selectedBrands}
+              selectedBrands={selectedBrands || []}
               handleBrandCheckbox={handleBrandCheckbox}
               priceRanges={priceRanges}
               selectedPriceRange={selectedPriceRange}
@@ -558,10 +607,34 @@ const MainZone = () => {
               {filteredProducts.length} Products
             </h2>
           )}
-          {filteredProducts.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-10">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 text-lg">Loading products...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-10">
+              <div className="text-red-500 mb-4">
+                <FiAlertTriangle size={48} className="mx-auto mb-2" />
+                <p className="text-lg font-semibold">Error Loading Products</p>
+                <p className="text-sm">{error}</p>
+              </div>
+              <button
+                onClick={() => {
+                  const brandId = searchParams.get("brand_id");
+                  if (brandId) fetchProductsByBrand(brandId);
+                }}
+                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : filteredProducts.length === 0 ? (
             <div className="text-center py-10">
               <p className="text-gray-600 text-lg mb-4">
-                No products match the selected filters.
+                {products.length === 0
+                  ? "No products found for this brand."
+                  : "No products match the selected filters."}
               </p>
               <button
                 onClick={resetAllFilters}
@@ -821,25 +894,6 @@ const MainZone = () => {
                             )}
                         </div>
                       )}
-
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="bg-blue-50 p-2 rounded text-center">
-                          <div className="font-medium text-blue-800">
-                            📦 Min Order
-                          </div>
-                          <div className="text-blue-600">
-                            {product.stockLevelDetailed.minRetailerQty} units
-                          </div>
-                        </div>
-                        <div className="bg-purple-50 p-2 rounded text-center">
-                          <div className="font-medium text-purple-800">
-                            💰 Bulk Discount
-                          </div>
-                          <div className="text-purple-600">
-                            {product.stockLevelDetailed.bulkDiscountQty}+ units
-                          </div>
-                        </div>
-                      </div>
                     </div>
 
                     {/* Product Stats */}

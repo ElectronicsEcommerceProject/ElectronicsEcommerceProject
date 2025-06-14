@@ -36,6 +36,13 @@ router.get(
   validator(validators.product.id, "params"),
   adminProductController.getProductsByCategoryId
 );
+// Get products by brand ID
+router.get(
+  "/brand/:brand_id",
+  verifyJwtToken,
+  // validator(validators.product.id, "params"),
+  adminProductController.getProductsByBrandId
+);
 
 // Get product by ID
 router.get(

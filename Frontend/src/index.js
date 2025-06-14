@@ -55,7 +55,6 @@ const allUserRoute = import.meta.env.VITE_USER_ENDPOINT;
 const allCustomerRoute = import.meta.env.VITE_CUSTOMER_ENDPOINT;
 const allRetailerRoute = import.meta.env.VITE_RETAILER_ENDPOINT;
 
-
 const orderRoute = import.meta.env.VITE_ORDER_ENDPOINT;
 const latestOrderRoute = import.meta.env.VITE_LATEST_ORDER_ENDPOINT;
 const userManagmentDashboardDataRoute = import.meta.env
@@ -88,6 +87,7 @@ const couponAndOffersDashboardChangeStatusRoute = import.meta.env
 const getAllProductsRoute = import.meta.env.VITE_PRODUCT_ENDPOINT;
 const getAllCategoryRoute = import.meta.env.VITE_CATEGORIES_ENDPOINT;
 const getAllBrandsRoute = import.meta.env.VITE_BRANDS_ENDPOINT;
+const getProductsByBrandRoute = import.meta.env.VITE_PRODUCT_BY_BRAND_ENDPOINT;
 
 const adminProductCatalogByCategoryAndBrandIdRoute = import.meta.env
   .VITE_ADMIN_PRODUCT_CATALOG_BY_CATEGORY_AND_BRAND_ID_ENDPOINT;
@@ -116,8 +116,7 @@ const stockManagementAnalyticsRoute = import.meta.env
   .VITE_STOCK_MANAGEMENT_ANALYTICS_ENDPOINT;
 
 // Notification Management Routes
-const adminNotificationRoute = import.meta.env
-  .VITE_ADMIN_NOTIFICATION_ENDPOINT;
+const adminNotificationRoute = import.meta.env.VITE_ADMIN_NOTIFICATION_ENDPOINT;
 const adminNotificationAddRoute = import.meta.env
   .VITE_ADMIN_NOTIFICATION_ADD_ENDPOINT;
 const adminNotificationLogsRoute = import.meta.env
@@ -127,11 +126,10 @@ const adminNotificationStatsRoute = import.meta.env
 const adminNotificationTemplatesRoute = import.meta.env
   .VITE_ADMIN_NOTIFICATION_TEMPLATES_ENDPOINT;
 
+//user Panel Routes
 
-  //user Panel Routes
-
-  const userPanelLoginRoute = import.meta.env.VITE_AUTH_LOGIN_ENDPOINT;
-  const userPanelRegisterRoute = import.meta.env.VITE_AUTH_SIGNUP_ENDPOINT;
+const userPanelLoginRoute = import.meta.env.VITE_AUTH_LOGIN_ENDPOINT;
+const userPanelRegisterRoute = import.meta.env.VITE_AUTH_SIGNUP_ENDPOINT;
 
 export {
   FaEye,
@@ -183,6 +181,7 @@ export {
   getAllCategoryRoute,
   getAllProductsRoute,
   getAllBrandsRoute,
+  getProductsByBrandRoute,
   adminProductCatalogByCategoryAndBrandIdRoute,
   productVariantByProductIdRoute,
   couponAndOffersDashboardAnalyticsDataRoute,
@@ -200,5 +199,5 @@ export {
 
   //User Panel Routes
   userPanelLoginRoute,
-  userPanelRegisterRoute
+  userPanelRegisterRoute,
 };

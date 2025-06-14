@@ -59,7 +59,7 @@ const FilterSidebar = ({
 
         if (response.success && response.data) {
           // Store full brand objects (id and name)
-          console.warn(response.data);
+          // console.warn(response.data);
           setBrands(response.data);
         } else {
           throw new Error("Invalid response format");
@@ -110,8 +110,8 @@ const FilterSidebar = ({
 
   // Handler to show alert with brand id and call parent handler
   const handleBrandClick = (brand) => {
-    alert(`Brand ID: ${brand.brand_id}`);
-    handleBrandCheckbox(brand.name);
+    // Pass both brand name and brand ID to parent handler
+    handleBrandCheckbox(brand.name, brand.brand_id);
   };
 
   return (
@@ -210,7 +210,7 @@ const FilterSidebar = ({
         <input
           type="range"
           min="100"
-          max="20000"
+          max="100000"
           value={customMaxPrice}
           onChange={(e) =>
             handlePriceInput(customMinPrice, Number(e.target.value))
@@ -239,7 +239,7 @@ const FilterSidebar = ({
               onChange={(e) =>
                 handlePriceInput(
                   customMinPrice,
-                  Number(e.target.value) || 20000
+                  Number(e.target.value) || 100000
                 )
               }
               className="w-20 p-1 border border-gray-300 rounded text-sm"
