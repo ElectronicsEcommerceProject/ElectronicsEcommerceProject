@@ -282,21 +282,50 @@ const FilterSidebar = ({
       </div>
       {/* Ratings */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Customer Ratings</h2>
+        <h2 className="text-lg font-semibold mb-2 flex items-center">
+          <span>Customer Ratings</span>
+          {selectedRating && (
+            <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+              Active
+            </span>
+          )}
+        </h2>
         {ratings.map((rating) => (
           <label
             key={rating}
-            className="flex items-center mb-1 hover:bg-gray-50 p-1 rounded"
+            className={`flex items-center mb-2 hover:bg-gray-50 p-2 rounded cursor-pointer transition-colors duration-200 ${
+              selectedRating === rating
+                ? "bg-blue-50 border border-blue-200"
+                : "border border-transparent"
+            }`}
           >
             <input
-              type="checkbox"
+              type="radio"
+              name="rating"
               checked={selectedRating === rating}
               onChange={() => handleRating(rating)}
-              className="mr-2"
+              className="mr-3 text-blue-600 focus:ring-blue-500"
             />
-            {rating}
+            <div className="flex items-center">
+              <span className="text-sm font-medium text-gray-700">
+                {rating}
+              </span>
+              {selectedRating === rating && (
+                <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                  Selected
+                </span>
+              )}
+            </div>
           </label>
         ))}
+        {selectedRating && (
+          <button
+            onClick={() => handleRating("")}
+            className="mt-2 text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
+          >
+            Clear Rating Filter
+          </button>
+        )}
       </div>
       {/* Discounts */}
       <div className="mb-6">

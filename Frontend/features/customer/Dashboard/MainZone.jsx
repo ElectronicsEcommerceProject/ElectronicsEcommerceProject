@@ -463,8 +463,34 @@ const MainZone = () => {
         (product.basePrice || product.finalPrice) >= customMinPrice &&
         (product.basePrice || product.finalPrice) <= customMaxPrice;
 
-      const ratingMatch =
-        !selectedRating || product.rating >= parseInt(selectedRating);
+      const ratingMatch = (() => {
+        if (!selectedRating) return true;
+
+        // Convert star rating to numeric value
+        const getMinRatingFromFilter = (ratingFilter) => {
+          if (ratingFilter === "⭐⭐⭐⭐ & Up") return 4;
+          if (ratingFilter === "⭐⭐⭐ & Up") return 3;
+          if (ratingFilter === "⭐⭐ & Up") return 2;
+          if (ratingFilter === "⭐ & Up") return 1;
+          return 0;
+        };
+
+        const minRating = getMinRatingFromFilter(selectedRating);
+        const productRating = parseFloat(product.rating) || 0;
+
+        // Debug logging for rating filter
+        if (selectedRating) {
+          console.log(`🌟 Rating Filter Debug:`, {
+            selectedRating,
+            minRating,
+            productName: product.name,
+            productRating,
+            passes: productRating >= minRating,
+          });
+        }
+
+        return productRating >= minRating;
+      })();
 
       const stockMatch = !inStockOnly || product.inStock;
 
