@@ -87,6 +87,7 @@ const couponAndOffersDashboardChangeStatusRoute = import.meta.env
 const getAllProductsRoute = import.meta.env.VITE_PRODUCT_ENDPOINT;
 const getAllCategoryRoute = import.meta.env.VITE_CATEGORIES_ENDPOINT;
 const getAllBrandsRoute = import.meta.env.VITE_BRANDS_ENDPOINT;
+const getBrandsByCategoryRoute = import.meta.env.VITE_BRANDS_ENDPOINT; // Will use with getApiById
 const getProductsByBrandRoute = import.meta.env.VITE_PRODUCT_BY_BRAND_ENDPOINT;
 
 const adminProductCatalogByCategoryAndBrandIdRoute = import.meta.env
@@ -181,6 +182,7 @@ export {
   getAllCategoryRoute,
   getAllProductsRoute,
   getAllBrandsRoute,
+  getBrandsByCategoryRoute,
   getProductsByBrandRoute,
   adminProductCatalogByCategoryAndBrandIdRoute,
   productVariantByProductIdRoute,

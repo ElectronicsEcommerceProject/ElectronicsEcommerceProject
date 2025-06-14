@@ -189,12 +189,18 @@ const MainZone = () => {
     }
   }, [selectedBrands, searchParams]);
 
+  // State to track current category ID
+  const [currentCategoryId, setCurrentCategoryId] = useState(null);
+
   useEffect(() => {
     const categoryId = searchParams.get("category_id");
     const brandId = searchParams.get("brand_id");
 
     if (categoryId) {
       alert(`Category selected with ID: ${categoryId}`);
+      setCurrentCategoryId(categoryId); // Set the category ID state
+    } else {
+      setCurrentCategoryId(null); // Clear category ID if not present
     }
 
     if (brandId) {
@@ -570,6 +576,7 @@ const MainZone = () => {
               setInStockOnly={(value) => dispatch(setInStockOnly(value))}
               resetAllFilters={resetAllFilters}
               mobileView={windowWidth < 768}
+              categoryId={currentCategoryId}
             />
             {windowWidth < 768 && (
               <div className="sticky bottom-0 bg-white py-4 border-t border-gray-200">

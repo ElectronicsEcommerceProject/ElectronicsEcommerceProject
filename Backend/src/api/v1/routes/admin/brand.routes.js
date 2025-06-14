@@ -24,7 +24,15 @@ router.post(
 // Get all brands //esmai adminRoleCheck ka koi jarurat nahi hai kyuki sabko dekhne hai...
 router.get("/", verifyJwtToken, adminBrandController.getAllBrands);
 
-// Update a category
+//get brand by category_id
+router.get(
+  "/:category_id",
+  verifyJwtToken,
+  validator(validators.brand.category_id, "params"), // Add validator middleware for category_id validation
+  adminBrandController.getBrandsByCategoryId // Add brand controller middleware here for category_id validation
+);
+
+// Update a brand
 router.put(
   "/:brand_id",
   verifyJwtToken,

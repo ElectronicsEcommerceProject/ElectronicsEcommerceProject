@@ -2,7 +2,7 @@ import db from "../../../../models/index.js";
 import { StatusCodes } from "http-status-codes";
 import MESSAGE from "../../../../constants/message.js";
 
-const { Brand, User } = db;
+const { Brand, User, Category, Product } = db;
 
 // Add a new brand
 const addBrand = async (req, res) => {
@@ -107,9 +107,67 @@ const deleteBrand = async (req, res) => {
   }
 };
 
+const getBrandsByCategoryId = async (req, res) => {
+  try {
+    const { category_id } = req.params;
+
+    // Validate category_id parameter
+    if (!category_id) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "Category ID is required" });
+    }
+
+    // Check if category exists
+    const category = await Category.findByPk(category_id);
+    if (!category) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Category not found" });
+    }
+
+    // Find all unique brands that have products in this category
+    const brands = await Brand.findAll({
+      include: [
+        {
+          model: Product,
+          where: { category_id: category_id },
+          attributes: [], // We don't need product data, just the association
+          required: true, // INNER JOIN - only brands that have products in this category
+        },
+      ],
+      attributes: [
+        "brand_id",
+        "name",
+        "slug",
+        "created_by",
+        "updated_by",
+        "createdAt",
+        "updatedAt",
+      ],
+      group: ["Brand.brand_id"], // Group by brand to get unique brands
+      order: [["name", "ASC"]], // Order by brand name alphabetically
+    });
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: MESSAGE.get.succ,
+      data: brands,
+    });
+  } catch (error) {
+    console.error("Error fetching brands by category ID:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: MESSAGE.get.fail,
+      error: error.message,
+    });
+  }
+};
+
 export default {
   addBrand,
   getAllBrands,
   updateBrand,
   deleteBrand,
+  getBrandsByCategoryId,
 };

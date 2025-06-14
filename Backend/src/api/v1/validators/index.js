@@ -163,6 +163,7 @@ export const validators = {
     brandValidator: brandValidator,
     brandUpdateValidator: brandUpdateValidator,
     brand_id: brand_id,
+    category_id: category_id,
   },
   attribute: {
     attributeValidator: attributeValidator,

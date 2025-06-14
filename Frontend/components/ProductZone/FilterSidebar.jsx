@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react"; // professional dropdown icon
-import { getApi, getAllBrandsRoute } from "../../src/index.js";
+import {
+  getApi,
+  getAllBrandsRoute,
+  getApiById,
+  getBrandsByCategoryRoute,
+} from "../../src/index.js";
 
 const FilterSidebar = ({
   categoriesData = [],
@@ -25,6 +30,7 @@ const FilterSidebar = ({
   setInStockOnly,
   newArrivals,
   setNewArrivals,
+  categoryId, // New prop for category ID
 }) => {
   // Internal state for brand filtering
   const [searchBrand, setSearchBrand] = useState("");
@@ -55,11 +61,22 @@ const FilterSidebar = ({
         setBrandsLoading(true);
         setBrandsError(null);
 
-        const response = await getApi(getAllBrandsRoute);
+        let response;
+
+        // If categoryId is provided, fetch brands for that category
+        if (categoryId) {
+          console.log("🔥 Fetching brands for category ID:", categoryId);
+          response = await getApiById(getBrandsByCategoryRoute, categoryId);
+          console.log("🔥 Brands by category response:", response);
+        } else {
+          // Otherwise, fetch all brands
+          console.log("🔥 Fetching all brands");
+          response = await getApi(getAllBrandsRoute);
+          console.log("🔥 All brands response:", response);
+        }
 
         if (response.success && response.data) {
           // Store full brand objects (id and name)
-          // console.warn(response.data);
           setBrands(response.data);
         } else {
           throw new Error("Invalid response format");
@@ -98,7 +115,7 @@ const FilterSidebar = ({
     };
 
     fetchBrands();
-  }, []);
+  }, [categoryId]); // Add categoryId as dependency
 
   // Filter brands based on search
   const filteredBrands = brands.filter((brand) =>
