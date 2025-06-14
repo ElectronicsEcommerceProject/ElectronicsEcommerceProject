@@ -66,6 +66,7 @@ const getCategoryIcon = (categoryName) => {
 
 const Header = () => {
   const [isHoveringCategory, setIsHoveringCategory] = useState(false);
+  const [categoryHoverTimeout, setCategoryHoverTimeout] = useState(null);
   const [isHoveringSignIn, setIsHoveringSignIn] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
@@ -162,6 +163,15 @@ const Header = () => {
     }
   }, [isModalOpen]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (categoryHoverTimeout) {
+        clearTimeout(categoryHoverTimeout);
+      }
+    };
+  }, [categoryHoverTimeout]);
+
   const handleSearch = () => {
     console.log("Searching for:", searchInput);
   };
@@ -185,8 +195,26 @@ const Header = () => {
         if (!isModalOpen) {
           setIsHoveringSignIn(false);
         }
-      }, 200);
+      }, 800);
     }
+  };
+
+  // Handle category dropdown hover
+  const handleCategoryMouseEnter = () => {
+    // Clear any existing timeout
+    if (categoryHoverTimeout) {
+      clearTimeout(categoryHoverTimeout);
+      setCategoryHoverTimeout(null);
+    }
+    setIsHoveringCategory(true);
+  };
+
+  const handleCategoryMouseLeave = () => {
+    // Add a delay before closing to allow moving to dropdown
+    const timeout = setTimeout(() => {
+      setIsHoveringCategory(false);
+    }, 150); // 150ms delay
+    setCategoryHoverTimeout(timeout);
   };
 
   return (
@@ -319,8 +347,8 @@ const Header = () => {
           {/* CATEGORIES DROPDOWN */}
           <div
             className="relative group"
-            onMouseEnter={() => setIsHoveringCategory(true)}
-            onMouseLeave={() => setIsHoveringCategory(false)}
+            onMouseEnter={handleCategoryMouseEnter}
+            onMouseLeave={handleCategoryMouseLeave}
           >
             <div className="flex items-center space-x-2 cursor-pointer group-hover:text-amber-500 transition-colors duration-200">
               <FiMenu className="w-5 h-5 text-gray-600" />
@@ -330,7 +358,11 @@ const Header = () => {
               <FiChevronDown className="w-4 h-4 text-gray-600" />
             </div>
             {isHoveringCategory && (
-              <div className="absolute top-8 left-0 bg-gray-50 text-gray-800 rounded-lg shadow-lg z-50 border border-gray-200 w-48">
+              <div
+                className="absolute top-6 left-0 bg-gray-50 text-gray-800 rounded-lg shadow-lg z-50 border border-gray-200 w-48 mt-1"
+                onMouseEnter={handleCategoryMouseEnter}
+                onMouseLeave={handleCategoryMouseLeave}
+              >
                 {categoriesLoading ? (
                   <div className="px-4 py-3 text-center text-gray-500">
                     <span className="text-sm">Loading categories...</span>
