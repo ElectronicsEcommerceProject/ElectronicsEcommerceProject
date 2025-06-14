@@ -73,6 +73,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
   // Redux for search functionality
   const dispatch = useDispatch();
@@ -203,9 +204,35 @@ const Header = () => {
     setSearchInput(searchTerm || "");
   }, [searchTerm]);
 
+  // Sync selected category with URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryId = urlParams.get("category_id");
+
+    if (categoryId) {
+      setSelectedCategoryId(categoryId);
+    } else {
+      setSelectedCategoryId(null);
+    }
+  }, [window.location.search]);
+
   // Handle category click
   const handleCategoryClick = (category) => {
+    setSelectedCategoryId(category.category_id);
     navigate(`/mainzone?category_id=${category.category_id}`);
+    console.log(
+      "🏷️ Category selected:",
+      category.label,
+      "ID:",
+      category.category_id
+    );
+  };
+
+  // Clear category selection
+  const clearCategorySelection = () => {
+    setSelectedCategoryId(null);
+    navigate("/mainzone");
+    console.log("🏷️ Category selection cleared");
   };
 
   // Handle modal state changes from HoverMenu
@@ -377,12 +404,42 @@ const Header = () => {
             onMouseEnter={handleCategoryMouseEnter}
             onMouseLeave={handleCategoryMouseLeave}
           >
-            <div className="flex items-center space-x-2 cursor-pointer group-hover:text-amber-500 transition-colors duration-200">
-              <FiMenu className="w-5 h-5 text-gray-600" />
-              <span className="text-sm font-medium text-gray-800">
+            <div
+              className={`flex items-center space-x-2 cursor-pointer transition-colors duration-200 relative ${
+                selectedCategoryId
+                  ? "text-indigo-600"
+                  : "group-hover:text-amber-500"
+              }`}
+            >
+              <FiMenu
+                className={`w-5 h-5 ${
+                  selectedCategoryId ? "text-indigo-600" : "text-gray-600"
+                }`}
+              />
+              <span
+                className={`text-sm font-medium ${
+                  selectedCategoryId
+                    ? "text-indigo-600 font-semibold"
+                    : "text-gray-800"
+                }`}
+              >
                 Categories
+                {selectedCategoryId && (
+                  <span className="ml-1 text-xs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">
+                    Active
+                  </span>
+                )}
               </span>
-              <FiChevronDown className="w-4 h-4 text-gray-600" />
+              <FiChevronDown
+                className={`w-4 h-4 ${
+                  selectedCategoryId ? "text-indigo-600" : "text-gray-600"
+                }`}
+              />
+              {selectedCategoryId && (
+                <div className="absolute -top-1 -right-1">
+                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                </div>
+              )}
             </div>
             {isHoveringCategory && (
               <div
@@ -399,16 +456,52 @@ const Header = () => {
                     <span className="text-sm">Failed to load categories</span>
                   </div>
                 ) : (
-                  categories.map((item, index) => (
-                    <button
-                      key={item.category_id || index}
-                      onClick={() => handleCategoryClick(item)}
-                      className="flex items-center space-x-2 px-4 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200 w-full text-left"
-                    >
-                      <item.icon className="w-5 h-5 text-gray-600" />
-                      <span className="text-sm font-medium">{item.label}</span>
-                    </button>
-                  ))
+                  <>
+                    {selectedCategoryId && (
+                      <button
+                        onClick={clearCategorySelection}
+                        className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 w-full text-left border-b border-gray-200"
+                      >
+                        <FiX className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm font-medium text-gray-700">
+                          Clear Category Filter
+                        </span>
+                      </button>
+                    )}
+                    {categories.map((item, index) => {
+                      const isSelected =
+                        selectedCategoryId === item.category_id;
+                      return (
+                        <button
+                          key={item.category_id || index}
+                          onClick={() => handleCategoryClick(item)}
+                          className={`flex items-center space-x-2 px-4 py-3 transition-colors duration-200 w-full text-left relative ${
+                            isSelected
+                              ? "bg-indigo-100 text-indigo-700 border-l-4 border-indigo-500"
+                              : "hover:bg-indigo-50 hover:text-indigo-600"
+                          }`}
+                        >
+                          <item.icon
+                            className={`w-5 h-5 ${
+                              isSelected ? "text-indigo-600" : "text-gray-600"
+                            }`}
+                          />
+                          <span
+                            className={`text-sm font-medium ${
+                              isSelected ? "font-semibold" : ""
+                            }`}
+                          >
+                            {item.label}
+                          </span>
+                          {isSelected && (
+                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                              <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </>
                 )}
               </div>
             )}
@@ -425,17 +518,39 @@ const Header = () => {
                 Error loading categories
               </div>
             ) : (
-              categories.map((item, index) => (
-                <button
-                  key={item.category_id || index}
-                  onClick={() => handleCategoryClick(item)}
-                  className="text-xs md:text-sm font-medium text-gray-800 hover:text-amber-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 whitespace-nowrap flex items-center px-1 py-1 relative group transition-colors duration-200"
-                >
-                  <item.icon className="mr-1 md:mr-2 text-base md:text-lg text-gray-600" />
-                  {item.label}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-500 group-hover:w-full transition-all duration-200"></span>
-                </button>
-              ))
+              categories.map((item, index) => {
+                const isSelected = selectedCategoryId === item.category_id;
+                return (
+                  <button
+                    key={item.category_id || index}
+                    onClick={() => handleCategoryClick(item)}
+                    className={`text-xs md:text-sm font-medium whitespace-nowrap flex items-center px-1 py-1 relative group transition-colors duration-200 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 ${
+                      isSelected
+                        ? "text-indigo-600 font-semibold"
+                        : "text-gray-800 hover:text-amber-500"
+                    }`}
+                  >
+                    <item.icon
+                      className={`mr-1 md:mr-2 text-base md:text-lg ${
+                        isSelected ? "text-indigo-600" : "text-gray-600"
+                      }`}
+                    />
+                    {item.label}
+                    <span
+                      className={`absolute bottom-0 left-0 h-0.5 transition-all duration-200 ${
+                        isSelected
+                          ? "w-full bg-indigo-500"
+                          : "w-0 bg-amber-500 group-hover:w-full"
+                      }`}
+                    ></span>
+                    {isSelected && (
+                      <div className="absolute -top-1 -right-1">
+                        <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                      </div>
+                    )}
+                  </button>
+                );
+              })
             )}
           </div>
         </div>
