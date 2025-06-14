@@ -20,6 +20,8 @@ import {
 } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import { setSearchTerm } from "../Redux/filterSlice";
 import HoverMenu from "../../features/common/HoverMenu"; // Import HoverMenu as specified
 
 import { getApi, getAllCategoryRoute } from "../../src/index.js";
@@ -69,9 +71,13 @@ const Header = () => {
   const [categoryHoverTimeout, setCategoryHoverTimeout] = useState(null);
   const [isHoveringSignIn, setIsHoveringSignIn] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchInput, setSearchInput] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Redux for search functionality
+  const dispatch = useDispatch();
+  const searchTerm = useSelector((state) => state.filters.searchTerm);
+  const [searchInput, setSearchInput] = useState(searchTerm || "");
 
   // New state for categories
   const [categories, setCategories] = useState([]);
@@ -173,8 +179,29 @@ const Header = () => {
   }, [categoryHoverTimeout]);
 
   const handleSearch = () => {
-    console.log("Searching for:", searchInput);
+    if (searchInput.trim()) {
+      // Update Redux search term
+      dispatch(setSearchTerm(searchInput.trim()));
+      // Navigate to MainZone with search
+      navigate("/mainzone");
+      console.log("Searching for:", searchInput.trim());
+    }
   };
+
+  // Handle search input change with real-time filtering
+  const handleSearchInputChange = (e) => {
+    const value = e.target.value;
+    setSearchInput(value);
+
+    // Real-time search: Update Redux immediately for live filtering
+    dispatch(setSearchTerm(value));
+    console.log("🔍 Real-time search from Header:", value);
+  };
+
+  // Sync local search input with Redux search term
+  useEffect(() => {
+    setSearchInput(searchTerm || "");
+  }, [searchTerm]);
 
   // Handle category click
   const handleCategoryClick = (category) => {
@@ -240,7 +267,7 @@ const Header = () => {
               <input
                 type="text"
                 value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
+                onChange={handleSearchInputChange}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setIsSearchFocused(false)}
@@ -330,7 +357,7 @@ const Header = () => {
             <input
               type="text"
               value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
+              onChange={handleSearchInputChange}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}

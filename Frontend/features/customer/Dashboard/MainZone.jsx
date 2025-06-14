@@ -94,6 +94,50 @@ const MainZone = () => {
     );
   };
 
+  // Highlight search terms in text
+  const highlightSearchTerm = (text, searchTerm) => {
+    if (!searchTerm || !text) return text;
+
+    const regex = new RegExp(
+      `(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
+      "gi"
+    );
+    const parts = text.split(regex);
+
+    return parts.map((part, index) =>
+      regex.test(part) ? (
+        <span
+          key={index}
+          className="bg-yellow-200 text-yellow-900 px-1 rounded font-semibold shadow-sm"
+        >
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
+
+  // Check which fields match the search term for a product
+  const getMatchingFields = (product, searchTerm) => {
+    if (!searchTerm) return [];
+
+    const term = searchTerm.toLowerCase();
+    const matches = [];
+
+    if (product.name.toLowerCase().includes(term)) matches.push("Name");
+    if (product.brand.toLowerCase().includes(term)) matches.push("Brand");
+    if (product.category.toLowerCase().includes(term)) matches.push("Category");
+    if (
+      product.shortDescription &&
+      product.shortDescription.toLowerCase().includes(term)
+    ) {
+      matches.push("Description");
+    }
+
+    return matches;
+  };
+
   // Fetch all available brands
   const fetchBrands = async () => {
     try {
@@ -191,6 +235,18 @@ const MainZone = () => {
 
   // State to track current category ID
   const [currentCategoryId, setCurrentCategoryId] = useState(null);
+
+  // Sync local search input with Redux search term
+  useEffect(() => {
+    setSearchInput(searchTerm || "");
+    console.log("🔍 Search term updated in MainZone:", searchTerm);
+  }, [searchTerm]);
+
+  // Real-time search: Update Redux search term when local input changes
+  useEffect(() => {
+    dispatch(setSearchTerm(searchInput));
+    console.log("🔍 Real-time search triggered:", searchInput);
+  }, [searchInput, dispatch]);
 
   useEffect(() => {
     const categoryId = searchParams.get("category_id");
@@ -435,15 +491,35 @@ const MainZone = () => {
 
   const filteredProducts = products
     .filter((product) => {
-      const searchMatch =
-        !searchTerm ||
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (product.shortDescription &&
-          product.shortDescription
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()));
+      const searchMatch = (() => {
+        if (!searchTerm) return true;
+
+        const term = searchTerm.toLowerCase();
+        const nameMatch = product.name.toLowerCase().includes(term);
+        const categoryMatch = product.category.toLowerCase().includes(term);
+        const brandMatch = product.brand.toLowerCase().includes(term);
+        const descriptionMatch =
+          product.shortDescription &&
+          product.shortDescription.toLowerCase().includes(term);
+
+        const matches =
+          nameMatch || categoryMatch || brandMatch || descriptionMatch;
+
+        // Debug logging for search filter
+        if (searchTerm) {
+          console.log(`🔍 Search Filter Debug:`, {
+            searchTerm,
+            productName: product.name,
+            nameMatch,
+            categoryMatch,
+            brandMatch,
+            descriptionMatch,
+            passes: matches,
+          });
+        }
+
+        return matches;
+      })();
 
       const categoryMatch =
         !selectedCategories ||
@@ -627,17 +703,73 @@ const MainZone = () => {
             windowWidth < 768 ? "w-full" : "flex-1"
           }`}
         >
-          {windowWidth >= 768 && filteredProducts.length > 0 && (
+          {/* Real-time Search Box */}
+          <div className="mb-6">
+            <div className="relative max-w-md">
+              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="🔍 Search products in real-time..."
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-sm"
+              />
+              {searchInput && (
+                <button
+                  onClick={() => setSearchInput("")}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <FiX size={18} />
+                </button>
+              )}
+            </div>
+            {searchInput && (
+              <div className="mt-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-medium">Searching for:</span>
+                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded font-medium">
+                    "{searchInput}"
+                  </span>
+                  <span className="text-indigo-600 font-medium">
+                    ({filteredProducts.length}{" "}
+                    {filteredProducts.length === 1 ? "result" : "results"}{" "}
+                    found)
+                  </span>
+                </div>
+                {filteredProducts.length > 0 && (
+                  <div className="mt-1 text-xs text-gray-500">
+                    💡{" "}
+                    <span className="bg-yellow-200 text-yellow-900 px-1 rounded font-semibold">
+                      Yellow highlights
+                    </span>{" "}
+                    show where your search term was found,
+                    <span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-medium ml-1">
+                      green badges
+                    </span>{" "}
+                    show which fields matched
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {windowWidth >= 768 && (
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">
-                Products ({filteredProducts.length})
+                {searchInput
+                  ? `Search Results (${filteredProducts.length})`
+                  : `Products (${filteredProducts.length})`}
               </h2>
-              <SortOptions sortOption={sortOption} handleSort={handleSort} />
+              {filteredProducts.length > 0 && (
+                <SortOptions sortOption={sortOption} handleSort={handleSort} />
+              )}
             </div>
           )}
           {windowWidth < 768 && (
             <h2 className="text-lg font-semibold mb-4">
-              {filteredProducts.length} Products
+              {searchInput
+                ? `Search Results: ${filteredProducts.length}`
+                : `${filteredProducts.length} Products`}
             </h2>
           )}
           {loading ? (
@@ -664,17 +796,43 @@ const MainZone = () => {
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="text-center py-10">
-              <p className="text-gray-600 text-lg mb-4">
-                {products.length === 0
-                  ? "No products found for this brand."
-                  : "No products match the selected filters."}
-              </p>
-              <button
-                onClick={resetAllFilters}
-                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
-              >
-                Reset All Filters
-              </button>
+              <div className="mb-4">
+                <FiSearch size={48} className="mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-600 text-lg mb-2">
+                  {searchInput
+                    ? `No products found for "${searchInput}"`
+                    : products.length === 0
+                    ? "No products found for this brand."
+                    : "No products match the selected filters."}
+                </p>
+                {searchInput && (
+                  <p className="text-gray-500 text-sm mb-4">
+                    Try searching for:
+                    <span className="block mt-1 text-indigo-600">
+                      • Product names (iPhone, MacBook, Dell)
+                      <br />
+                      • Brands (Apple, Samsung, Sony)
+                      <br />• Categories (Smartphones, Laptops, Headphones)
+                    </span>
+                  </p>
+                )}
+              </div>
+              <div className="flex gap-2 justify-center">
+                {searchInput && (
+                  <button
+                    onClick={() => setSearchInput("")}
+                    className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+                  >
+                    Clear Search
+                  </button>
+                )}
+                <button
+                  onClick={resetAllFilters}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+                >
+                  Reset All Filters
+                </button>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -709,8 +867,26 @@ const MainZone = () => {
                         />
                       </button>
                     </div>
-                    <div className="text-xs text-gray-600">
-                      <span className="font-medium">{product.category}</span>
+                    <div className="text-xs text-gray-600 flex items-center justify-between">
+                      <span className="font-medium">
+                        {highlightSearchTerm(product.category, searchTerm)}
+                      </span>
+                      {/* Show matching fields indicator */}
+                      {searchTerm && (
+                        <div className="flex gap-1">
+                          {getMatchingFields(product, searchTerm).map(
+                            (field) => (
+                              <span
+                                key={field}
+                                className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-medium"
+                                title={`Match found in ${field}`}
+                              >
+                                {field}
+                              </span>
+                            )
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -740,16 +916,19 @@ const MainZone = () => {
                     {/* Brand and Name */}
                     <div>
                       <h3 className="text-sm text-indigo-600 font-medium mb-1">
-                        {product.brand}
+                        {highlightSearchTerm(product.brand, searchTerm)}
                       </h3>
                       <h2 className="font-semibold text-gray-800 text-base leading-tight">
-                        {product.name}
+                        {highlightSearchTerm(product.name, searchTerm)}
                       </h2>
                     </div>
 
                     {/* Description */}
                     <p className="text-xs text-gray-600 line-clamp-2">
-                      {product.shortDescription}
+                      {highlightSearchTerm(
+                        product.shortDescription,
+                        searchTerm
+                      )}
                     </p>
 
                     {/* Rating and Reviews */}
