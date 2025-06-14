@@ -328,7 +328,7 @@ const getProductsByBrandId = async (req, res) => {
   try {
     const { brand_id } = req.params;
 
-    console.log("testing", brand_id);
+    // console.log("testing", brand_id);
 
     // 1. Validate brand exists
     const brand = await Brand.findByPk(brand_id);
