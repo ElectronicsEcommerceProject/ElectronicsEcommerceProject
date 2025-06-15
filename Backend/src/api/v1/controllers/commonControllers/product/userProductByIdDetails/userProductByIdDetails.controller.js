@@ -21,7 +21,9 @@ const {
   VariantAttributeValue,
   StockAlert,
   Wishlist,
+  WishListItem,
   Cart,
+  CartItem,
 } = db;
 
 /**
@@ -193,6 +195,45 @@ const userProductByIdDetails = async (req, res, next) => {
             "updated_by",
           ],
         },
+        {
+          model: WishListItem,
+          as: "wishlistItems",
+          include: [
+            {
+              model: Wishlist,
+              as: "wishlist",
+              attributes: ["wishlist_id", "user_id"],
+            },
+          ],
+          attributes: [
+            "wish_list_item_id",
+            "product_id",
+            "product_variant_id",
+            "createdAt",
+          ],
+        },
+        {
+          model: CartItem,
+          as: "cartItems",
+          include: [
+            {
+              model: Cart,
+              as: "cart",
+              attributes: ["cart_id", "user_id"],
+            },
+          ],
+          attributes: [
+            "cart_item_id",
+            "product_id",
+            "product_variant_id",
+            "total_quantity",
+            "discount_quantity",
+            "price_at_time",
+            "discount_applied",
+            "final_price",
+            "createdAt",
+          ],
+        },
       ],
       attributes: {
         exclude: ["createdAt", "updatedAt", "deletedAt"],
@@ -278,9 +319,76 @@ const formatProductResponse = (productData) => {
       typeof productData.rating_average === "number"
         ? productData.rating_average.toFixed(1)
         : "N/A",
-    reviews: `${productData.rating_count || 0} Ratings & ${
-      productData.reviews?.length || 0
-    } Reviews`,
+    reviews: Array.isArray(productData.reviews)
+      ? productData.reviews.map((review) => ({
+          ...review,
+          user: {
+            user_id: review.reviewer?.user_id || null,
+            name: review.reviewer?.name || "Anonymous",
+            profileImage_url: review.reviewer?.profileImage_url || null,
+            verified_buyer: review.is_verified_purchase || false,
+            totalReviews: 0, // Would need to query User model for actual count
+            helpfulVotes: 0, // Would need to query review interactions for actual count
+          },
+          variant: "Standard", // Would need to get from variant details
+          helpfulCount: review.helpful_count || 0,
+          reportCount: review.report_count || 0,
+        }))
+      : [],
+    rating_count: productData.rating_count || 0,
+    wishlistInfo:
+      productData.wishlistItems && productData.wishlistItems.length > 0
+        ? {
+            wishlist_id:
+              productData.wishlistItems[0]?.wishlist?.wishlist_id || null,
+            user_id: productData.wishlistItems[0]?.wishlist?.user_id || null,
+            items: productData.wishlistItems.map((item) => ({
+              wish_list_item_id: item.wish_list_item_id,
+              product_id: item.product_id,
+              product_variant_id: item.product_variant_id,
+              createdAt: item.createdAt,
+            })),
+          }
+        : null,
+    cartInfo:
+      productData.cartItems && productData.cartItems.length > 0
+        ? {
+            cart_id: productData.cartItems[0]?.cart?.cart_id || null,
+            user_id: productData.cartItems[0]?.cart?.user_id || null,
+            items: productData.cartItems.map((item) => ({
+              cart_item_id: item.cart_item_id,
+              product_id: item.product_id,
+              product_variant_id: item.product_variant_id,
+              total_quantity: item.total_quantity,
+              discount_quantity: item.discount_quantity,
+              price_at_time: item.price_at_time,
+              discount_applied: item.discount_applied,
+              final_price: item.final_price,
+              createdAt: item.createdAt,
+            })),
+          }
+        : null,
+    personalizedCoupons: Array.isArray(productData.personalizedCoupons)
+      ? productData.personalizedCoupons.map((coupon) => ({
+          coupon_id: coupon.coupon_id,
+          code: coupon.code,
+          description: coupon.description,
+          type: coupon.type,
+          discount_value: coupon.discount_value,
+          user_eligibility: coupon.is_user_new ? "new_user" : "all",
+          applicable: true,
+          savings_amount:
+            (coupon.discount_value * productData.variants?.[0]?.price) / 100,
+        }))
+      : [],
+    stockAlerts: productData.stockAlerts
+      ? productData.stockAlerts.map((alert) => ({
+          ...alert,
+          alert_threshold: 10,
+          message: `Only ${alert.stock_level} left in stock!`,
+          urgency: alert.stock_level <= 5 ? "high" : "medium",
+        }))
+      : [],
     price: `₹${productData.variants?.[0]?.price || productData.base_price}`,
     originalPrice: `₹${productData.base_price}`,
     discount: productData.variants?.[0]?.discount_percentage

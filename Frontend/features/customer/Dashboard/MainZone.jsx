@@ -158,6 +158,7 @@ const MainZone = () => {
       setError(null);
 
       const response = await getApiById(getProductsByBrandRoute, brandId);
+      console.warn("response", response);
 
       if (response.success && response.data) {
         setProducts(response.data);
@@ -349,7 +350,7 @@ const MainZone = () => {
           dispatch(setCustomPrice({ min: 10000, max: 20000 }));
           break;
         case "Over ₹20,000":
-          dispatch(setCustomPrice({ min: 20000, max: 100000 }));
+          dispatch(setCustomPrice({ min: 20000, max: 500000 }));
           break;
         default:
           break;
@@ -359,11 +360,26 @@ const MainZone = () => {
 
   const handlePriceInput = (min, max) => {
     dispatch(setCustomPrice({ min, max }));
+
+    // Find matching price range based on min/max values
     const matchedRange = priceRanges.find((range) => {
-      const [rangeMin, rangeMax] = range.value.split("-").map(Number);
-      return min === rangeMin && max === rangeMax;
+      switch (range) {
+        case "Under ₹1,000":
+          return min === 100 && max === 1000;
+        case "₹1,000 – ₹5,000":
+          return min === 1000 && max === 5000;
+        case "₹5,000 – ₹10,000":
+          return min === 5000 && max === 10000;
+        case "₹10,000 – ₹20,000":
+          return min === 10000 && max === 20000;
+        case "Over ₹20,000":
+          return min === 20000 && max === 500000;
+        default:
+          return false;
+      }
     });
-    dispatch(setPriceRange(matchedRange ? matchedRange.label : ""));
+
+    dispatch(setPriceRange(matchedRange || ""));
   };
 
   const handleSliderChange = (min, max) => {
@@ -397,7 +413,7 @@ const MainZone = () => {
         dispatch(setPriceRange(""));
         break;
       case "price":
-        dispatch(setCustomPrice({ min: 100, max: 100000 }));
+        dispatch(setCustomPrice({ min: 100, max: 500000 }));
         break;
       case "rating":
         dispatch(setRating(""));
@@ -440,7 +456,7 @@ const MainZone = () => {
       filters.push({ type: "brand", value: selectedBrands.join(", ") });
     if (selectedPriceRange)
       filters.push({ type: "price range", value: selectedPriceRange });
-    if (customMinPrice !== 100 || customMaxPrice !== 100000) {
+    if (customMinPrice !== 100 || customMaxPrice !== 500000) {
       filters.push({
         type: "price",
         value: `₹${customMinPrice} - ₹${customMaxPrice}`,

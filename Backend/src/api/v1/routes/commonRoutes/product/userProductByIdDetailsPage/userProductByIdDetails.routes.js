@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.get(
   "/product/:product_id",
-  // verifyJwtToken, // Temporarily disabled for testing
+  verifyJwtToken,
   // validator(validators.product.id, "params"),
   userProductByIdDetailsController.userProductByIdDetails
 );

@@ -227,7 +227,7 @@ const FilterSidebar = ({
         <input
           type="range"
           min="100"
-          max="100000"
+          max="500000"
           value={customMaxPrice}
           onChange={(e) =>
             handlePriceInput(customMinPrice, Number(e.target.value))
@@ -256,7 +256,7 @@ const FilterSidebar = ({
               onChange={(e) =>
                 handlePriceInput(
                   customMinPrice,
-                  Number(e.target.value) || 100000
+                  Number(e.target.value) || 500000
                 )
               }
               className="w-20 p-1 border border-gray-300 rounded text-sm"
