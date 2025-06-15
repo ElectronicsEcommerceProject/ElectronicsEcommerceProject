@@ -250,8 +250,17 @@ const userProductByIdDetails = async (req, res, next) => {
     // Convert to plain object for response
     const productData = product.get({ plain: true });
 
+    // Fetch related products (same category, different products)
+    const relatedProducts = await getRelatedProducts(
+      productData.category_id,
+      productData.product_id
+    );
+
     // Format response according to the specified structure
-    const formattedProduct = formatProductResponse(productData);
+    const formattedProduct = formatProductResponse(
+      productData,
+      relatedProducts
+    );
 
     return res.status(StatusCodes.OK).json({
       success: true,
@@ -270,11 +279,77 @@ const userProductByIdDetails = async (req, res, next) => {
 };
 
 /**
+ * Get related products from the same category
+ * @param {string} categoryId - Category ID
+ * @param {string} currentProductId - Current product ID to exclude
+ * @returns {Array} Related products
+ */
+const getRelatedProducts = async (categoryId, currentProductId) => {
+  try {
+    const relatedProducts = await Product.findAll({
+      where: {
+        category_id: categoryId,
+        product_id: { [Op.ne]: currentProductId },
+        is_active: true,
+      },
+      include: [
+        {
+          model: Brand,
+          as: "brand",
+          attributes: ["brand_id", "name"],
+        },
+        {
+          model: ProductMedia,
+          as: "media",
+          include: [
+            {
+              model: ProductMediaUrl,
+              as: "ProductMediaURLs",
+              attributes: ["product_media_url"],
+            },
+          ],
+          limit: 1,
+        },
+        {
+          model: ProductVariant,
+          as: "variants",
+          attributes: ["price"],
+          limit: 1,
+        },
+      ],
+      attributes: ["product_id", "name", "base_price"],
+      limit: 5,
+    });
+
+    return relatedProducts.map((product) => {
+      const plainProduct = product.get({ plain: true });
+      return {
+        id: plainProduct.product_id,
+        product_id: plainProduct.product_id,
+        title: plainProduct.name,
+        name: plainProduct.name,
+        price: `₹${
+          plainProduct.variants?.[0]?.price || plainProduct.base_price
+        }`,
+        image:
+          plainProduct.media?.[0]?.ProductMediaURLs?.[0]?.product_media_url ||
+          "",
+        brand: plainProduct.brand,
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching related products:", error);
+    return [];
+  }
+};
+
+/**
  * Format product data to match the required response structure
  * @param {Object} productData - Raw product data from database
+ * @param {Array} relatedProducts - Related products array
  * @returns {Object} Formatted product data
  */
-const formatProductResponse = (productData) => {
+const formatProductResponse = (productData, relatedProducts = []) => {
   // Process media to match the URL structure
   const mediaWithUrls =
     productData.media?.map((media) => ({
@@ -307,35 +382,87 @@ const formatProductResponse = (productData) => {
         })) || [],
     })) || [];
 
+  // Calculate pricing information
+  const firstVariant = productData.variants?.[0];
+  const basePrice = parseFloat(productData.base_price) || 0;
+  const variantPrice = firstVariant
+    ? parseFloat(firstVariant.price) || 0
+    : basePrice;
+  const discountPercentage = firstVariant?.discount_percentage || 0;
+
+  // Calculate final price and discount
+  const finalPrice = variantPrice;
+  const originalPrice = discountPercentage > 0 ? basePrice : variantPrice;
+  const discountAmount = originalPrice - finalPrice;
+  const actualDiscountPercentage =
+    originalPrice > 0 ? (discountAmount / originalPrice) * 100 : 0;
+
+  // Process reviews with proper user information and variant details
+  const processedReviews = Array.isArray(productData.reviews)
+    ? productData.reviews.map((review) => {
+        // Find the variant for this review
+        const reviewVariant = productData.variants?.find(
+          (v) => v.product_variant_id === review.product_variant_id
+        );
+
+        return {
+          ...review,
+          user: {
+            user_id: review.reviewer?.user_id || null,
+            name: review.reviewer?.name || "Anonymous User",
+            profileImage_url: review.reviewer?.profileImage_url || null,
+            verified_buyer: review.is_verified_purchase || false,
+            totalReviews: 0, // Could be enhanced with actual count
+            helpfulVotes: 0, // Could be enhanced with actual count
+          },
+          variant: reviewVariant?.description || "Standard",
+          helpfulCount: 0, // Could be enhanced with actual helpful votes
+          reportCount: 0, // Could be enhanced with actual reports
+        };
+      })
+    : [];
+
   // Format the final response
   return {
     ...productData,
     media: mediaWithUrls,
     variants: variantsWithAttributes,
-    // Legacy format for UI compatibility
+    reviews: processedReviews,
+
+    // Legacy format for UI compatibility - Frontend expects these fields
     title: productData.name,
-    rating:
-      productData.rating_average &&
-      typeof productData.rating_average === "number"
-        ? productData.rating_average.toFixed(1)
-        : "N/A",
-    reviews: Array.isArray(productData.reviews)
-      ? productData.reviews.map((review) => ({
-          ...review,
-          user: {
-            user_id: review.reviewer?.user_id || null,
-            name: review.reviewer?.name || "Anonymous",
-            profileImage_url: review.reviewer?.profileImage_url || null,
-            verified_buyer: review.is_verified_purchase || false,
-            totalReviews: 0, // Would need to query User model for actual count
-            helpfulVotes: 0, // Would need to query review interactions for actual count
-          },
-          variant: "Standard", // Would need to get from variant details
-          helpfulCount: review.helpful_count || 0,
-          reportCount: review.report_count || 0,
-        }))
-      : [],
-    rating_count: productData.rating_count || 0,
+    rating: productData.rating_average
+      ? parseFloat(productData.rating_average).toFixed(1)
+      : "N/A",
+    price: `₹${finalPrice.toFixed(2)}`,
+    originalPrice:
+      actualDiscountPercentage > 0 ? `₹${originalPrice.toFixed(2)}` : null,
+    discount:
+      actualDiscountPercentage > 0
+        ? `${Math.round(actualDiscountPercentage)}% off`
+        : null,
+
+    // Main image and thumbnails for frontend
+    mainImage: mediaWithUrls?.[0]?.urls?.[0]?.product_media_url || "",
+    thumbnails:
+      mediaWithUrls
+        ?.flatMap((media) => media.urls?.map((url) => url.product_media_url))
+        .filter(Boolean) || [],
+
+    // Variant names for frontend compatibility
+    variantNames:
+      variantsWithAttributes?.map(
+        (v) => v.description || `Variant ${v.product_variant_id}`
+      ) || [],
+
+    // Description formatting for frontend
+    description: productData.description
+      ? Array.isArray(productData.description)
+        ? productData.description
+        : [productData.description]
+      : ["No description available"],
+
+    // Wishlist information
     wishlistInfo:
       productData.wishlistItems && productData.wishlistItems.length > 0
         ? {
@@ -350,6 +477,8 @@ const formatProductResponse = (productData) => {
             })),
           }
         : null,
+
+    // Cart information
     cartInfo:
       productData.cartItems && productData.cartItems.length > 0
         ? {
@@ -368,19 +497,11 @@ const formatProductResponse = (productData) => {
             })),
           }
         : null,
-    personalizedCoupons: Array.isArray(productData.personalizedCoupons)
-      ? productData.personalizedCoupons.map((coupon) => ({
-          coupon_id: coupon.coupon_id,
-          code: coupon.code,
-          description: coupon.description,
-          type: coupon.type,
-          discount_value: coupon.discount_value,
-          user_eligibility: coupon.is_user_new ? "new_user" : "all",
-          applicable: true,
-          savings_amount:
-            (coupon.discount_value * productData.variants?.[0]?.price) / 100,
-        }))
-      : [],
+
+    // Personalized coupons (empty for now, can be enhanced)
+    personalizedCoupons: [],
+
+    // Enhanced stock alerts with proper formatting
     stockAlerts: productData.stockAlerts
       ? productData.stockAlerts.map((alert) => ({
           ...alert,
@@ -389,24 +510,9 @@ const formatProductResponse = (productData) => {
           urgency: alert.stock_level <= 5 ? "high" : "medium",
         }))
       : [],
-    price: `₹${productData.variants?.[0]?.price || productData.base_price}`,
-    originalPrice: `₹${productData.base_price}`,
-    discount: productData.variants?.[0]?.discount_percentage
-      ? `${Math.round(productData.variants[0].discount_percentage)}% off`
-      : "N/A",
-    mainImage: productData.media?.[0]?.urls?.[0]?.product_media_url || "",
-    thumbnails:
-      productData.media
-        ?.map((media) => media.urls?.[0]?.product_media_url || "")
-        .filter(Boolean) || [],
-    variantNames: productData.variants?.map(
-      (v) => v.description || `Variant ${v.product_variant_id}`
-    ),
-    description: productData.description
-      ? productData.description.split(". ").slice(0, 4)
-      : [],
-    // Related products (mocked, could be enhanced with real data)
-    relatedProducts: [],
+
+    // Related products
+    relatedProducts: relatedProducts || [],
   };
 };
 

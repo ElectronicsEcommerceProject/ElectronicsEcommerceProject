@@ -4,6 +4,11 @@ import { useParams } from "react-router-dom";
 import Footer from "../../../components/Footer/Footer";
 import Header from "../../../components/Header/Header";
 
+import {
+  getApiById,
+  userPanelProductByIdDetailsRoute,
+} from "../../../src/index.js";
+
 const BuyNowPage = () => {
   // Get product ID from URL parameters
   const { productId } = useParams();
@@ -30,848 +35,45 @@ const BuyNowPage = () => {
   const imageContainerRef = useRef(null);
 
   useEffect(() => {
-    // Show alert with product ID when component loads
-    if (productId) {
-      alert(
-        `🛍️ Product Details Page Loaded!\n\nProduct ID: ${productId}\n\nThis product will be displayed with all its details.`
-      );
-      console.log("🛍️ BuyNowPage loaded for Product ID:", productId);
-    }
+    // Fetch product data from API
+    const fetchProductData = async () => {
+      if (productId) {
+        try {
+          console.log("🛍️ BuyNowPage loaded for Product ID:", productId);
 
-    const mockApiResponse = {
-      mainProduct: {
-        // Product Model Fields
-        product_id: "550e8400-e29b-41d4-a716-446655440001",
-        name: "Premium Wireless Bluetooth Neckband - Pro Series",
-        slug: "premium-wireless-bluetooth-neckband-pro-series",
-        description:
-          "Experience premium audio quality with our latest Bluetooth neckband featuring advanced noise cancellation, 48-hour battery life, and IPX5 water resistance. Perfect for music lovers and professionals who demand the best in wireless audio technology.",
-        short_description:
-          "Premium Bluetooth neckband with 48hr battery, noise cancellation & IPX5 rating",
-        base_price: 2999.0,
-        rating_average: 4.3,
-        rating_count: 1247,
-        is_active: true,
-        is_featured: true,
+          // Call the API to get product details
+          const response = await getApiById(
+            userPanelProductByIdDetailsRoute,
+            productId
+          );
 
-        // Brand Information
-        brand: {
-          brand_id: "550e8400-e29b-41d4-a716-446655440010",
-          name: "AudioTech Pro",
-          slug: "audiotech-pro",
-        },
-
-        // Category Information
-        category: {
-          category_id: "550e8400-e29b-41d4-a716-446655440020",
-          name: "Audio & Headphones",
-          slug: "audio-headphones",
-          target_role: "both",
-        },
-
-        // Product Media with URLs
-        media: [
-          {
-            product_media_id: "550e8400-e29b-41d4-a716-446655440030",
-            media_type: "image",
-            urls: [
-              {
-                product_media_url_id: "550e8400-e29b-41d4-a716-446655440031",
-                product_media_url:
-                  "https://m.media-amazon.com/images/I/61bK6PMOC3L._AC_UF1000,1000_QL80_.jpg",
-                media_type: "image",
-              },
-            ],
-          },
-          {
-            product_media_id: "550e8400-e29b-41d4-a716-446655440032",
-            media_type: "image",
-            urls: [
-              {
-                product_media_url_id: "550e8400-e29b-41d4-a716-446655440033",
-                product_media_url:
-                  "https://m.media-amazon.com/images/I/61cwywLZR-L._AC_UF1000,1000_QL80_.jpg",
-                media_type: "image",
-              },
-            ],
-          },
-          {
-            product_media_id: "550e8400-e29b-41d4-a716-446655440034",
-            media_type: "video",
-            urls: [
-              {
-                product_media_url_id: "550e8400-e29b-41d4-a716-446655440035",
-                product_media_url:
-                  "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4",
-                media_type: "video",
-              },
-            ],
-          },
-        ],
-
-        // Product Level Attributes (not variant specific)
-        attributes: [
-          {
-            product_attribute_id: "550e8400-e29b-41d4-a716-446655440040",
-            name: "Brand",
-            data_type: "string",
-            is_variant_level: false,
-            value: "AudioTech Pro",
-          },
-          {
-            product_attribute_id: "550e8400-e29b-41d4-a716-446655440041",
-            name: "Warranty Period",
-            data_type: "string",
-            is_variant_level: false,
-            value: "1 Year Manufacturer Warranty",
-          },
-          {
-            product_attribute_id: "550e8400-e29b-41d4-a716-446655440042",
-            name: "Water Resistance",
-            data_type: "string",
-            is_variant_level: false,
-            value: "IPX5",
-          },
-        ],
-
-        // Product Variants with comprehensive data
-        variants: [
-          {
-            product_variant_id: "550e8400-e29b-41d4-a716-446655440050",
-            description: "Standard variant with essential features",
-            short_description: "Standard - Essential features",
-            price: 1999.0,
-            stock_quantity: 45,
-            sku: "ATP-NBP-STD-001",
-            base_variant_image_url:
-              "https://m.media-amazon.com/images/I/61bK6PMOC3L._AC_UF1000,1000_QL80_.jpg",
-            discount_quantity: 5,
-            discount_percentage: 10.0,
-            min_retailer_quantity: 20,
-            bulk_discount_quantity: 50,
-            bulk_discount_percentage: 15.0,
-
-            // Variant-specific attributes
-            variantAttributes: [
-              {
-                variant_attribute_value_id:
-                  "550e8400-e29b-41d4-a716-446655440051",
-                attribute: {
-                  product_attribute_id: "550e8400-e29b-41d4-a716-446655440052",
-                  name: "Color",
-                  data_type: "enum",
-                  is_variant_level: true,
-                },
-                attributeValue: {
-                  product_attribute_value_id:
-                    "550e8400-e29b-41d4-a716-446655440053",
-                  value: "Midnight Black",
-                },
-              },
-              {
-                variant_attribute_value_id:
-                  "550e8400-e29b-41d4-a716-446655440054",
-                attribute: {
-                  product_attribute_id: "550e8400-e29b-41d4-a716-446655440055",
-                  name: "Battery Life",
-                  data_type: "string",
-                  is_variant_level: true,
-                },
-                attributeValue: {
-                  product_attribute_value_id:
-                    "550e8400-e29b-41d4-a716-446655440056",
-                  value: "24 Hours",
-                },
-              },
-            ],
-          },
-          {
-            product_variant_id: "550e8400-e29b-41d4-a716-446655440060",
-            description: "Pro variant with advanced noise cancellation",
-            short_description: "Pro - Advanced features",
-            price: 2999.0,
-            stock_quantity: 32,
-            sku: "ATP-NBP-PRO-001",
-            base_variant_image_url:
-              "https://m.media-amazon.com/images/I/61cwywLZR-L._AC_UF1000,1000_QL80_.jpg",
-            discount_quantity: 3,
-            discount_percentage: 15.0,
-            min_retailer_quantity: 15,
-            bulk_discount_quantity: 30,
-            bulk_discount_percentage: 20.0,
-
-            variantAttributes: [
-              {
-                variant_attribute_value_id:
-                  "550e8400-e29b-41d4-a716-446655440061",
-                attribute: {
-                  product_attribute_id: "550e8400-e29b-41d4-a716-446655440052",
-                  name: "Color",
-                  data_type: "enum",
-                  is_variant_level: true,
-                },
-                attributeValue: {
-                  product_attribute_value_id:
-                    "550e8400-e29b-41d4-a716-446655440062",
-                  value: "Ocean Blue",
-                },
-              },
-            ],
-          },
-          {
-            product_variant_id: "550e8400-e29b-41d4-a716-446655440070",
-            description:
-              "Pro+ variant with premium features and extended warranty",
-            short_description: "Pro+ - Premium features",
-            price: 3999.0,
-            stock_quantity: 18,
-            sku: "ATP-NBP-PROPLUS-001",
-            base_variant_image_url:
-              "https://via.placeholder.com/400x400/FF6B6B/FFFFFF?text=Pro+",
-            discount_quantity: 2,
-            discount_percentage: 20.0,
-            min_retailer_quantity: 10,
-            bulk_discount_quantity: 20,
-            bulk_discount_percentage: 25.0,
-
-            variantAttributes: [
-              {
-                variant_attribute_value_id:
-                  "550e8400-e29b-41d4-a716-446655440071",
-                attribute: {
-                  product_attribute_id: "550e8400-e29b-41d4-a716-446655440052",
-                  name: "Color",
-                  data_type: "enum",
-                  is_variant_level: true,
-                },
-                attributeValue: {
-                  product_attribute_value_id:
-                    "550e8400-e29b-41d4-a716-446655440072",
-                  value: "Crimson Red",
-                },
-              },
-            ],
-          },
-        ],
-
-        // Enhanced Product Reviews with complete model data
-        reviews: [
-          {
-            product_review_id: "550e8400-e29b-41d4-a716-446655440080",
-            product_id: "550e8400-e29b-41d4-a716-446655440001",
-            product_variant_id: "550e8400-e29b-41d4-a716-446655440050",
-            user_id: "550e8400-e29b-41d4-a716-446655440081",
-            rating: 5,
-            title: "Outstanding audio quality and battery life!",
-            review:
-              "I've been using this neckband for 3 months now and I'm thoroughly impressed. The sound quality is crystal clear with deep bass. Battery easily lasts 2 days with moderate usage. The noise cancellation works great during calls. Highly recommend for anyone looking for reliable wireless audio.",
-            is_verified_purchase: true,
-            review_action: "approve",
-            created_by: "550e8400-e29b-41d4-a716-446655440081",
-            updated_by: null,
-            createdAt: "2024-01-15T10:30:00Z",
-            updatedAt: "2024-01-15T10:30:00Z",
-            user: {
-              user_id: "550e8400-e29b-41d4-a716-446655440081",
-              name: "Rajesh Kumar",
-              profileImage_url:
-                "https://via.placeholder.com/40x40/4F46E5/FFFFFF?text=RK",
-              verified_buyer: true,
-              totalReviews: 23,
-              helpfulVotes: 156,
-            },
-            variant: "Standard",
-            helpfulCount: 45,
-            reportCount: 0,
-          },
-          {
-            product_review_id: "550e8400-e29b-41d4-a716-446655440082",
-            product_id: "550e8400-e29b-41d4-a716-446655440001",
-            product_variant_id: "550e8400-e29b-41d4-a716-446655440060",
-            user_id: "550e8400-e29b-41d4-a716-446655440083",
-            rating: 4,
-            title: "Great value for money, minor connectivity issues",
-            review:
-              "Overall a solid product. Sound quality is good and the design is comfortable for long usage. Had some connectivity issues initially but they resolved after firmware update. The Pro variant has better noise cancellation than expected. Would buy again.",
-            is_verified_purchase: true,
-            review_action: "approve",
-            created_by: "550e8400-e29b-41d4-a716-446655440083",
-            updated_by: null,
-            createdAt: "2024-01-10T14:20:00Z",
-            updatedAt: "2024-01-10T14:20:00Z",
-            user: {
-              user_id: "550e8400-e29b-41d4-a716-446655440083",
-              name: "Priya Sharma",
-              profileImage_url:
-                "https://via.placeholder.com/40x40/EC4899/FFFFFF?text=PS",
-              verified_buyer: true,
-              totalReviews: 8,
-              helpfulVotes: 67,
-            },
-            variant: "Pro",
-            helpfulCount: 32,
-            reportCount: 0,
-          },
-          {
-            product_review_id: "550e8400-e29b-41d4-a716-446655440084",
-            product_id: "550e8400-e29b-41d4-a716-446655440001",
-            product_variant_id: "550e8400-e29b-41d4-a716-446655440070",
-            user_id: "550e8400-e29b-41d4-a716-446655440085",
-            rating: 3,
-            title: "Average performance, expected more from Pro+",
-            review:
-              "The Pro+ variant is decent but I expected more premium features for the price. Bass response could be better. Build quality is good though. Delivery was fast and packaging was excellent.",
-            is_verified_purchase: false,
-            review_action: "approve",
-            created_by: "550e8400-e29b-41d4-a716-446655440085",
-            updated_by: null,
-            createdAt: "2024-01-05T09:15:00Z",
-            updatedAt: "2024-01-05T09:15:00Z",
-            user: {
-              user_id: "550e8400-e29b-41d4-a716-446655440085",
-              name: "Amit Patel",
-              profileImage_url:
-                "https://via.placeholder.com/40x40/10B981/FFFFFF?text=AP",
-              verified_buyer: false,
-              totalReviews: 3,
-              helpfulVotes: 12,
-            },
-            variant: "Pro+",
-            helpfulCount: 18,
-            reportCount: 1,
-          },
-          {
-            product_review_id: "550e8400-e29b-41d4-a716-446655440086",
-            product_id: "550e8400-e29b-41d4-a716-446655440001",
-            product_variant_id: "550e8400-e29b-41d4-a716-446655440050",
-            user_id: "550e8400-e29b-41d4-a716-446655440087",
-            rating: 5,
-            title: "Perfect for workouts and daily commute",
-            review:
-              "Been using this for my daily gym sessions and office commute. Sweat resistant and stays in place during workouts. Call quality is excellent. The magnetic earbuds feature is very convenient. Definitely worth the investment!",
-            is_verified_purchase: true,
-            review_action: "approve",
-            created_by: "550e8400-e29b-41d4-a716-446655440087",
-            updated_by: null,
-            createdAt: "2024-01-20T16:45:00Z",
-            updatedAt: "2024-01-20T16:45:00Z",
-            user: {
-              user_id: "550e8400-e29b-41d4-a716-446655440087",
-              name: "Sneha Reddy",
-              profileImage_url:
-                "https://via.placeholder.com/40x40/F59E0B/FFFFFF?text=SR",
-              verified_buyer: true,
-              totalReviews: 15,
-              helpfulVotes: 89,
-            },
-            variant: "Standard",
-            helpfulCount: 67,
-            reportCount: 0,
-          },
-          {
-            product_review_id: "550e8400-e29b-41d4-a716-446655440088",
-            product_id: "550e8400-e29b-41d4-a716-446655440001",
-            product_variant_id: "550e8400-e29b-41d4-a716-446655440060",
-            user_id: "550e8400-e29b-41d4-a716-446655440089",
-            rating: 4,
-            title: "Impressive noise cancellation",
-            review:
-              "The active noise cancellation on the Pro variant is really impressive. Blocks out most of the ambient noise during flights. Battery life is as advertised. Only complaint is the charging cable could be longer.",
-            is_verified_purchase: true,
-            review_action: "approve",
-            created_by: "550e8400-e29b-41d4-a716-446655440089",
-            updated_by: null,
-            createdAt: "2024-01-18T11:30:00Z",
-            updatedAt: "2024-01-18T11:30:00Z",
-            user: {
-              user_id: "550e8400-e29b-41d4-a716-446655440089",
-              name: "Vikram Singh",
-              profileImage_url:
-                "https://via.placeholder.com/40x40/8B5CF6/FFFFFF?text=VS",
-              verified_buyer: true,
-              totalReviews: 31,
-              helpfulVotes: 234,
-            },
-            variant: "Pro",
-            helpfulCount: 89,
-            reportCount: 0,
-          },
-          {
-            product_review_id: "550e8400-e29b-41d4-a716-446655440090",
-            product_id: "550e8400-e29b-41d4-a716-446655440001",
-            product_variant_id: "550e8400-e29b-41d4-a716-446655440070",
-            user_id: "550e8400-e29b-41d4-a716-446655440091",
-            rating: 2,
-            title: "Disappointed with Pro+ features",
-            review:
-              "Expected much more from the Pro+ variant. The premium features don't justify the price difference. Sound quality is good but not exceptional. Customer service was helpful though.",
-            is_verified_purchase: true,
-            review_action: "approve",
-            created_by: "550e8400-e29b-41d4-a716-446655440091",
-            updated_by: null,
-            createdAt: "2024-01-12T08:20:00Z",
-            updatedAt: "2024-01-12T08:20:00Z",
-            user: {
-              user_id: "550e8400-e29b-41d4-a716-446655440091",
-              name: "Rohit Gupta",
-              profileImage_url:
-                "https://via.placeholder.com/40x40/EF4444/FFFFFF?text=RG",
-              verified_buyer: true,
-              totalReviews: 7,
-              helpfulVotes: 23,
-            },
-            variant: "Pro+",
-            helpfulCount: 34,
-            reportCount: 0,
-          },
-          {
-            product_review_id: "550e8400-e29b-41d4-a716-446655440092",
-            product_id: "550e8400-e29b-41d4-a716-446655440001",
-            product_variant_id: "550e8400-e29b-41d4-a716-446655440050",
-            user_id: "550e8400-e29b-41d4-a716-446655440093",
-            rating: 5,
-            title: "Excellent build quality and comfort",
-            review:
-              "The build quality is top-notch. Very comfortable to wear for extended periods. The magnetic earbuds are a nice touch. Fast charging works great - 15 minutes gives hours of playback. Highly satisfied with the purchase.",
-            is_verified_purchase: true,
-            review_action: "approve",
-            created_by: "550e8400-e29b-41d4-a716-446655440093",
-            updated_by: null,
-            createdAt: "2024-01-22T19:15:00Z",
-            updatedAt: "2024-01-22T19:15:00Z",
-            user: {
-              user_id: "550e8400-e29b-41d4-a716-446655440093",
-              name: "Kavya Nair",
-              profileImage_url:
-                "https://via.placeholder.com/40x40/06B6D4/FFFFFF?text=KN",
-              verified_buyer: true,
-              totalReviews: 12,
-              helpfulVotes: 78,
-            },
-            variant: "Standard",
-            helpfulCount: 56,
-            reportCount: 0,
-          },
-          {
-            product_review_id: "550e8400-e29b-41d4-a716-446655440094",
-            product_id: "550e8400-e29b-41d4-a716-446655440001",
-            product_variant_id: "550e8400-e29b-41d4-a716-446655440060",
-            user_id: "550e8400-e29b-41d4-a716-446655440095",
-            rating: 4,
-            title: "Good for the price range",
-            review:
-              "Solid performance in this price range. The Pro variant offers good value. Bluetooth connectivity is stable. Would recommend to friends and family. Packaging was premium and delivery was on time.",
-            is_verified_purchase: true,
-            review_action: "approve",
-            created_by: "550e8400-e29b-41d4-a716-446655440095",
-            updated_by: null,
-            createdAt: "2024-01-08T13:45:00Z",
-            updatedAt: "2024-01-08T13:45:00Z",
-            user: {
-              user_id: "550e8400-e29b-41d4-a716-446655440095",
-              name: "Arjun Mehta",
-              profileImage_url:
-                "https://via.placeholder.com/40x40/84CC16/FFFFFF?text=AM",
-              verified_buyer: true,
-              totalReviews: 19,
-              helpfulVotes: 134,
-            },
-            variant: "Pro",
-            helpfulCount: 43,
-            reportCount: 0,
-          },
-        ],
-
-        // Available Coupons
-        coupons: [
-          {
-            coupon_id: "550e8400-e29b-41d4-a716-446655440090",
-            code: "WELCOME20",
-            description: "Welcome discount for new users",
-            type: "percentage",
-            discount_value: 20.0,
-            target_type: "cart",
-            target_role: "customer",
-            min_cart_value: 1000.0,
-            max_discount_value: 500.0,
-            usage_limit: 1000,
-            usage_per_user: 1,
-            valid_from: "2024-01-01T00:00:00Z",
-            valid_to: "2024-12-31T23:59:59Z",
-            is_active: true,
-            is_user_new: true,
-          },
-          {
-            coupon_id: "550e8400-e29b-41d4-a716-446655440091",
-            code: "AUDIO50",
-            description: "Fixed discount on audio products",
-            type: "fixed",
-            discount_value: 50.0,
-            target_type: "category",
-            target_role: "both",
-            min_cart_value: 500.0,
-            max_discount_value: null,
-            usage_limit: 500,
-            usage_per_user: 3,
-            valid_from: "2024-01-01T00:00:00Z",
-            valid_to: "2024-06-30T23:59:59Z",
-            is_active: true,
-            is_user_new: false,
-            category_id: "550e8400-e29b-41d4-a716-446655440020",
-          },
-          {
-            coupon_id: "550e8400-e29b-41d4-a716-446655440092",
-            code: "BULK15",
-            description: "Bulk purchase discount",
-            type: "percentage",
-            discount_value: 15.0,
-            target_type: "product",
-            target_role: "retailer",
-            min_cart_value: 5000.0,
-            max_discount_value: 1000.0,
-            usage_limit: 100,
-            usage_per_user: 5,
-            valid_from: "2024-01-01T00:00:00Z",
-            valid_to: "2024-12-31T23:59:59Z",
-            is_active: true,
-            is_user_new: false,
-            product_id: "550e8400-e29b-41d4-a716-446655440001",
-          },
-        ],
-
-        // Discount Rules
-        discountRules: [
-          {
-            discount_rule_id: "550e8400-e29b-41d4-a716-446655440100",
-            rule_type: "bulk",
-            product_id: "550e8400-e29b-41d4-a716-446655440001",
-            min_retailer_quantity: 50,
-            bulk_discount_quantity: 100,
-            bulk_discount_percentage: 25.0,
-            discount_quantity: null,
-            discount_percentage: null,
-            is_active: true,
-          },
-          {
-            discount_rule_id: "550e8400-e29b-41d4-a716-446655440101",
-            rule_type: "quantity",
-            category_id: "550e8400-e29b-41d4-a716-446655440020",
-            min_retailer_quantity: null,
-            bulk_discount_quantity: null,
-            bulk_discount_percentage: null,
-            discount_quantity: 5,
-            discount_percentage: 10.0,
-            is_active: true,
-          },
-        ],
-
-        // Stock Alerts with enhanced data
-        stockAlerts: [
-          {
-            stock_alert_id: "550e8400-e29b-41d4-a716-446655440110",
-            product_id: "550e8400-e29b-41d4-a716-446655440001",
-            product_variant_id: "550e8400-e29b-41d4-a716-446655440070",
-            stock_level: 5,
-            status: "pending",
-            alert_threshold: 10,
-            message: "Only 5 left in stock!",
-            urgency: "high",
-          },
-          {
-            stock_alert_id: "550e8400-e29b-41d4-a716-446655440111",
-            product_id: "550e8400-e29b-41d4-a716-446655440001",
-            product_variant_id: "550e8400-e29b-41d4-a716-446655440060",
-            stock_level: 15,
-            status: "active",
-            alert_threshold: 20,
-            message: "Limited stock - 15 units remaining",
-            urgency: "medium",
-          },
-        ],
-
-        // Personalized Coupons for User
-        personalizedCoupons: [
-          {
-            coupon_id: "550e8400-e29b-41d4-a716-446655440200",
-            code: "FIRSTBUY15",
-            description: "First time buyer special discount",
-            type: "percentage",
-            discount_value: 15.0,
-            target_type: "cart",
-            min_cart_value: 999.0,
-            max_discount_value: 300.0,
-            valid_from: "2024-01-01T00:00:00Z",
-            valid_to: "2024-12-31T23:59:59Z",
-            is_active: true,
-            is_user_specific: true,
-            user_eligibility: "new_user",
-            usage_per_user: 1,
-            personalization_reason: "Welcome offer for new customers",
-            applicable: true,
-            savings_amount: 299.85, // calculated based on current cart
-          },
-          {
-            coupon_id: "550e8400-e29b-41d4-a716-446655440201",
-            code: "BIRTHDAY25",
-            description: "Birthday month special - 25% off",
-            type: "percentage",
-            discount_value: 25.0,
-            target_type: "cart",
-            min_cart_value: 1500.0,
-            max_discount_value: 500.0,
-            valid_from: "2024-06-01T00:00:00Z",
-            valid_to: "2024-06-30T23:59:59Z",
-            is_active: true,
-            is_user_specific: true,
-            user_eligibility: "birthday_month",
-            usage_per_user: 1,
-            personalization_reason: "Special birthday month offer",
-            applicable: false,
-            savings_amount: 499.75,
-            availability_note: "Available in your birthday month (June)",
-          },
-          {
-            coupon_id: "550e8400-e29b-41d4-a716-446655440202",
-            code: "LOYALTY10",
-            description: "Loyal customer appreciation discount",
-            type: "percentage",
-            discount_value: 10.0,
-            target_type: "product",
-            min_cart_value: 500.0,
-            max_discount_value: 200.0,
-            valid_from: "2024-01-01T00:00:00Z",
-            valid_to: "2024-12-31T23:59:59Z",
-            is_active: true,
-            is_user_specific: true,
-            user_eligibility: "returning_customer",
-            usage_per_user: 3,
-            personalization_reason: "Thank you for being a loyal customer",
-            applicable: true,
-            savings_amount: 199.9,
-            usage_count: 1, // user has used this 1 time out of 3
-          },
-          {
-            coupon_id: "550e8400-e29b-41d4-a716-446655440203",
-            code: "CART500",
-            description: "₹500 off on orders above ₹3000",
-            type: "fixed",
-            discount_value: 500.0,
-            target_type: "cart",
-            min_cart_value: 3000.0,
-            max_discount_value: null,
-            valid_from: "2024-01-01T00:00:00Z",
-            valid_to: "2024-12-31T23:59:59Z",
-            is_active: true,
-            is_user_specific: true,
-            user_eligibility: "high_value_customer",
-            usage_per_user: 2,
-            personalization_reason: "Exclusive offer for high-value customers",
-            applicable: false,
-            savings_amount: 500.0,
-            availability_note: "Add ₹1,001 more to unlock this offer",
-          },
-        ],
-
-        // Stock Alert Preferences for User
-        stockAlertPreferences: {
-          email_notifications: true,
-          sms_notifications: false,
-          in_app_notifications: true,
-          price_drop_alerts: true,
-          back_in_stock_alerts: true,
-          low_stock_warnings: true,
-        },
-
-        // Wishlist and Cart Information
-        wishlistInfo: {
-          wishlist_id: "550e8400-e29b-41d4-a716-446655440120",
-          user_id: "550e8400-e29b-41d4-a716-446655440121",
-          items: [
-            {
-              wish_list_item_id: "550e8400-e29b-41d4-a716-446655440122",
-              product_id: "550e8400-e29b-41d4-a716-446655440001",
-              product_variant_id: "550e8400-e29b-41d4-a716-446655440050",
-              createdAt: "2024-01-20T10:00:00Z",
-            },
-          ],
-        },
-
-        cartInfo: {
-          cart_id: "550e8400-e29b-41d4-a716-446655440130",
-          user_id: "550e8400-e29b-41d4-a716-446655440121",
-          items: [
-            {
-              cart_item_id: "550e8400-e29b-41d4-a716-446655440131",
-              product_id: "550e8400-e29b-41d4-a716-446655440001",
-              product_variant_id: "550e8400-e29b-41d4-a716-446655440050",
-              total_quantity: 2,
-              discount_quantity: 0,
-              price_at_time: 1999.0,
-              discount_applied: 0.0,
-              final_price: 3998.0,
-              createdAt: "2024-01-22T15:30:00Z",
-            },
-          ],
-        },
-
-        // Legacy format for UI compatibility - Only fields used in UI
-        title: "Premium Wireless Bluetooth Neckband - Pro Series",
-        rating: "4.3",
-        reviews: "1,247 Ratings & 156 Reviews",
-        price: "₹1,999",
-        originalPrice: "₹2,999",
-        discount: "33% off",
-        mainImage:
-          "https://m.media-amazon.com/images/I/61bK6PMOC3L._AC_UF1000,1000_QL80_.jpg",
-        thumbnails: [
-          "https://m.media-amazon.com/images/I/61bK6PMOC3L._AC_UF1000,1000_QL80_.jpg",
-          "https://m.media-amazon.com/images/I/61cwywLZR-L._AC_UF1000,1000_QL80_.jpg",
-          "https://via.placeholder.com/400x400/FF6B6B/FFFFFF?text=Pro+",
-          "https://via.placeholder.com/400x400/4ECDC4/FFFFFF?text=Audio",
-          "https://via.placeholder.com/400x400/45B7D1/FFFFFF?text=Tech",
-        ],
-        variantNames: ["Standard", "Pro", "Pro+"],
-        description: [
-          "Experience premium audio quality with our latest Bluetooth neckband featuring advanced noise cancellation technology.",
-          "Designed for music lovers and professionals who demand the best in wireless audio technology.",
-          "Features 48-hour battery life, IPX5 water resistance, and crystal-clear sound quality.",
-          "Compatible with all Bluetooth-enabled devices and supports multiple codec formats.",
-        ],
-      },
-      relatedProducts: [
-        {
-          product_id: "550e8400-e29b-41d4-a716-446655440200",
-          name: "AudioTech Pro Wireless Earbuds",
-          slug: "audiotech-pro-wireless-earbuds",
-          base_price: 1999.0,
-          rating_average: 4.1,
-          rating_count: 892,
-          is_featured: true,
-          brand: {
-            brand_id: "550e8400-e29b-41d4-a716-446655440010",
-            name: "AudioTech Pro",
-          },
-          category: {
-            category_id: "550e8400-e29b-41d4-a716-446655440020",
-            name: "Audio & Headphones",
-          },
-          mainImage:
-            "https://m.media-amazon.com/images/I/61bK6PMOC3L._AC_UF1000,1000_QL80_.jpg",
-          // Legacy format for UI
-          id: 1,
-          title: "AudioTech Pro Wireless Earbuds",
-          price: "₹1,999",
-          image:
-            "https://m.media-amazon.com/images/I/61bK6PMOC3L._AC_UF1000,1000_QL80_.jpg",
-        },
-        {
-          product_id: "550e8400-e29b-41d4-a716-446655440201",
-          name: "AudioTech Pro Bluetooth Headphones",
-          slug: "audiotech-pro-bluetooth-headphones",
-          base_price: 2499.0,
-          rating_average: 4.5,
-          rating_count: 1156,
-          is_featured: false,
-          brand: {
-            brand_id: "550e8400-e29b-41d4-a716-446655440010",
-            name: "AudioTech Pro",
-          },
-          category: {
-            category_id: "550e8400-e29b-41d4-a716-446655440020",
-            name: "Audio & Headphones",
-          },
-          mainImage:
-            "https://m.media-amazon.com/images/I/61cwywLZR-L._AC_UF1000,1000_QL80_.jpg",
-          // Legacy format for UI
-          id: 2,
-          title: "AudioTech Pro Bluetooth Headphones",
-          price: "₹2,499",
-          image:
-            "https://m.media-amazon.com/images/I/61cwywLZR-L._AC_UF1000,1000_QL80_.jpg",
-        },
-        {
-          product_id: "550e8400-e29b-41d4-a716-446655440202",
-          name: "Premium Noise Cancelling Headset",
-          slug: "premium-noise-cancelling-headset",
-          base_price: 3999.0,
-          rating_average: 4.7,
-          rating_count: 743,
-          is_featured: true,
-          brand: {
-            brand_id: "550e8400-e29b-41d4-a716-446655440011",
-            name: "SoundMax",
-          },
-          category: {
-            category_id: "550e8400-e29b-41d4-a716-446655440020",
-            name: "Audio & Headphones",
-          },
-          mainImage:
-            "https://via.placeholder.com/400x400/2C3E50/FFFFFF?text=Headset",
-          // Legacy format for UI
-          id: 3,
-          title: "Premium Noise Cancelling Headset",
-          price: "₹3,999",
-          image:
-            "https://via.placeholder.com/400x400/2C3E50/FFFFFF?text=Headset",
-        },
-        {
-          product_id: "550e8400-e29b-41d4-a716-446655440203",
-          name: "Bass Boost Wired Earphones",
-          slug: "bass-boost-wired-earphones",
-          base_price: 1599.0,
-          rating_average: 3.9,
-          rating_count: 567,
-          is_featured: false,
-          brand: {
-            brand_id: "550e8400-e29b-41d4-a716-446655440012",
-            name: "BassLine",
-          },
-          category: {
-            category_id: "550e8400-e29b-41d4-a716-446655440020",
-            name: "Audio & Headphones",
-          },
-          mainImage:
-            "https://via.placeholder.com/400x400/E74C3C/FFFFFF?text=Bass",
-          // Legacy format for UI
-          id: 4,
-          title: "Bass Boost Wired Earphones",
-          price: "₹1,599",
-          image: "https://via.placeholder.com/400x400/E74C3C/FFFFFF?text=Bass",
-        },
-        {
-          product_id: "550e8400-e29b-41d4-a716-446655440204",
-          name: "Premium Sports Neckband",
-          slug: "premium-sports-neckband",
-          base_price: 2299.0,
-          rating_average: 4.2,
-          rating_count: 423,
-          is_featured: false,
-          brand: {
-            brand_id: "550e8400-e29b-41d4-a716-446655440013",
-            name: "SportAudio",
-          },
-          category: {
-            category_id: "550e8400-e29b-41d4-a716-446655440020",
-            name: "Audio & Headphones",
-          },
-          mainImage:
-            "https://via.placeholder.com/400x400/27AE60/FFFFFF?text=Sport",
-          // Legacy format for UI
-          id: 5,
-          title: "Premium Sports Neckband",
-          price: "₹2,299",
-          image: "https://via.placeholder.com/400x400/27AE60/FFFFFF?text=Sport",
-        },
-      ],
+          if (response.success && response.data) {
+            setProductData(response.data);
+            // Set the main image from API response
+            const mainImage = response.data.mainProduct.mainImage || "";
+            setCurrentImage(mainImage);
+          } else {
+            console.error("Failed to fetch product data:", response);
+            // You could set an error state here if needed
+          }
+        } catch (error) {
+          console.error("Error fetching product data:", error);
+          // You could set an error state here if needed
+        }
+      }
     };
 
-    setProductData(mockApiResponse);
-    setCurrentImage(mockApiResponse.mainProduct.mainImage);
+    fetchProductData();
   }, [productId]); // Re-run when productId changes
 
   useEffect(() => {
     if (productData && productData.mainProduct) {
-      setSelectedVariant(productData.mainProduct.variantNames?.[0] || "");
+      // Use the first variant's description as the selected variant
+      const firstVariant =
+        productData.mainProduct.variants?.[0]?.description ||
+        productData.mainProduct.variantNames?.[0] ||
+        "";
+      setSelectedVariant(firstVariant);
     }
   }, [productData]);
 
@@ -961,13 +163,32 @@ const BuyNowPage = () => {
       ? (bgPosY / (zoomedImageHeight - zoomContainerHeight)) * 100
       : 0;
 
-  if (!productData) {
-    return <div>Loading...</div>;
+  if (!productData || !productData.mainProduct) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading product details...</p>
+        </div>
+      </div>
+    );
   }
 
-  const { mainProduct, relatedProducts } = productData;
+  const { mainProduct } = productData;
+  const relatedProducts = productData.relatedProducts || [];
 
-  // Function to get all valid available images
+  // Additional safety check for mainProduct properties
+  if (!mainProduct || typeof mainProduct !== "object") {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600">Error loading product data</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Function to get all valid available images from API response
   const getAvailableImages = () => {
     const images = [];
 
@@ -980,7 +201,7 @@ const BuyNowPage = () => {
       images.push(mainProduct.mainImage);
     }
 
-    // Add thumbnail images if valid (excluding placeholders and empty strings)
+    // Add thumbnail images if valid (from API response)
     if (mainProduct.thumbnails && Array.isArray(mainProduct.thumbnails)) {
       mainProduct.thumbnails.forEach((thumbnail) => {
         if (
@@ -990,7 +211,6 @@ const BuyNowPage = () => {
           !thumbnail.includes("via.placeholder.com") &&
           !images.includes(thumbnail)
         ) {
-          // Avoid duplicates
           images.push(thumbnail);
         }
       });
@@ -1000,28 +220,32 @@ const BuyNowPage = () => {
     if (mainProduct.variants && Array.isArray(mainProduct.variants)) {
       mainProduct.variants.forEach((variant) => {
         if (
-          variant.image_url &&
-          variant.image_url.trim() !== "" &&
-          !variant.image_url.includes("placeholder") &&
-          !variant.image_url.includes("via.placeholder.com") &&
-          !images.includes(variant.image_url)
+          variant.base_variant_image_url &&
+          variant.base_variant_image_url.trim() !== "" &&
+          !variant.base_variant_image_url.includes("placeholder") &&
+          !variant.base_variant_image_url.includes("via.placeholder.com") &&
+          !images.includes(variant.base_variant_image_url)
         ) {
-          images.push(variant.image_url);
+          images.push(variant.base_variant_image_url);
         }
       });
     }
 
     // Add product media images if available
-    if (mainProduct.productMedia && Array.isArray(mainProduct.productMedia)) {
-      mainProduct.productMedia.forEach((media) => {
-        if (
-          media.media_url &&
-          media.media_url.trim() !== "" &&
-          !media.media_url.includes("placeholder") &&
-          !media.media_url.includes("via.placeholder.com") &&
-          !images.includes(media.media_url)
-        ) {
-          images.push(media.media_url);
+    if (mainProduct.media && Array.isArray(mainProduct.media)) {
+      mainProduct.media.forEach((media) => {
+        if (media.urls && Array.isArray(media.urls)) {
+          media.urls.forEach((url) => {
+            if (
+              url.product_media_url &&
+              url.product_media_url.trim() !== "" &&
+              !url.product_media_url.includes("placeholder") &&
+              !url.product_media_url.includes("via.placeholder.com") &&
+              !images.includes(url.product_media_url)
+            ) {
+              images.push(url.product_media_url);
+            }
+          });
         }
       });
     }
@@ -1033,6 +257,7 @@ const BuyNowPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <Header />
       {/* Product Section */}
       <div className="max-w-7xl mx-auto p-3 sm:p-4 lg:p-6 flex flex-col lg:flex-row gap-4 lg:gap-6">
         {/* Product Image Section */}
@@ -1114,7 +339,11 @@ const BuyNowPage = () => {
               onMouseLeave={handleMouseLeave}
             >
               <img
-                src={currentImage || mainProduct.mainImage}
+                src={
+                  currentImage ||
+                  mainProduct.mainImage ||
+                  "https://via.placeholder.com/400x400/E5E7EB/9CA3AF?text=No+Image"
+                }
                 alt="Main Product"
                 className="max-w-full max-h-[220px] sm:max-h-[280px] lg:max-h-[340px] object-contain"
               />
@@ -1146,7 +375,7 @@ const BuyNowPage = () => {
               className="hidden xl:block absolute left-full top-0 ml-4 w-[900px] h-[700px] border-2 border-gray-200 bg-white shadow-xl z-50 overflow-hidden"
               style={{
                 backgroundImage: `url(${
-                  currentImage || mainProduct.mainImage
+                  currentImage || mainProduct.mainImage || ""
                 })`,
                 backgroundRepeat: "no-repeat",
                 backgroundSize: `${zoomLevel * 100}% ${zoomLevel * 100}%`,
@@ -1182,48 +411,53 @@ const BuyNowPage = () => {
           />
 
           <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold leading-tight">
-            {mainProduct.title}
+            {mainProduct.title || mainProduct.name}
           </h1>
           <div className="flex items-center gap-2 mt-2">
             <span className="bg-green-600 text-white text-xs sm:text-sm px-2 py-1 rounded">
               {mainProduct.rating} ★
             </span>
             <span className="text-gray-600 text-xs sm:text-sm">
-              {mainProduct.reviews}
+              {mainProduct.rating_count} reviews
             </span>
           </div>
           <div className="mt-4">
             <span className="text-xl sm:text-2xl lg:text-3xl font-semibold">
               {mainProduct.price}
             </span>
-            <span className="text-gray-500 line-through ml-2 text-sm sm:text-base">
-              {mainProduct.originalPrice}
-            </span>
-            <span className="text-green-600 ml-2 text-sm sm:text-base">
-              {mainProduct.discount}
-            </span>
+            {mainProduct.originalPrice && (
+              <span className="text-gray-500 line-through ml-2 text-sm sm:text-base">
+                {mainProduct.originalPrice}
+              </span>
+            )}
+            {mainProduct.discount && (
+              <span className="text-green-600 ml-2 text-sm sm:text-base">
+                {mainProduct.discount}
+              </span>
+            )}
           </div>
 
           <div className="mt-4">
             <h3 className="font-semibold text-sm sm:text-base">Variant</h3>
             <div className="flex flex-wrap gap-2 mt-2">
-              {mainProduct.variantNames &&
-              Array.isArray(mainProduct.variantNames) &&
-              mainProduct.variantNames.length > 0 ? (
-                mainProduct.variantNames.map((variant, index) => {
-                  const variantData = mainProduct.variants[index];
+              {mainProduct.variants &&
+              Array.isArray(mainProduct.variants) &&
+              mainProduct.variants.length > 0 ? (
+                mainProduct.variants.map((variantData, index) => {
+                  const variantName =
+                    variantData.description || `Variant ${index + 1}`;
                   return (
                     <button
-                      key={variant}
+                      key={variantData.product_variant_id}
                       className={`px-3 sm:px-4 py-2 border rounded-md text-xs sm:text-sm font-medium ${
-                        selectedVariant === variant
+                        selectedVariant === variantName
                           ? "bg-blue-500 text-white border-blue-500"
                           : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
                       } transition-colors`}
-                      onClick={() => setSelectedVariant(variant)}
+                      onClick={() => setSelectedVariant(variantName)}
                     >
                       <div className="text-center">
-                        <div>{variant}</div>
+                        <div>{variantName}</div>
                         <div className="text-xs opacity-75">
                           ₹{variantData?.price}
                         </div>
@@ -1241,83 +475,83 @@ const BuyNowPage = () => {
             <p className="text-sm mt-2">Selected Variant: {selectedVariant}</p>
 
             {/* Display selected variant details */}
-            {selectedVariant &&
-              mainProduct.variantNames &&
-              mainProduct.variants && (
-                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                  {(() => {
-                    const selectedIndex =
-                      mainProduct.variantNames.indexOf(selectedVariant);
-                    const variantData = mainProduct.variants[selectedIndex];
-                    if (!variantData) return null;
+            {selectedVariant && mainProduct.variants && (
+              <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                {(() => {
+                  const variantData = mainProduct.variants.find(
+                    (v) => v.description === selectedVariant
+                  );
+                  if (!variantData) return null;
 
-                    return (
-                      <div className="space-y-2">
+                  return (
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="font-medium">Price:</span>
+                        <span>₹{variantData.price}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-medium">Stock:</span>
+                        <span
+                          className={
+                            variantData.stock_quantity > 10
+                              ? "text-green-600"
+                              : "text-orange-600"
+                          }
+                        >
+                          {variantData.stock_quantity} units
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-medium">SKU:</span>
+                        <span className="text-gray-600">{variantData.sku}</span>
+                      </div>
+                      {variantData.discount_percentage > 0 && (
                         <div className="flex justify-between">
-                          <span className="font-medium">Price:</span>
-                          <span>₹{variantData.price}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="font-medium">Stock:</span>
-                          <span
-                            className={
-                              variantData.stock_quantity > 10
-                                ? "text-green-600"
-                                : "text-orange-600"
-                            }
-                          >
-                            {variantData.stock_quantity} units
+                          <span className="font-medium">Bulk Discount:</span>
+                          <span className="text-green-600">
+                            {variantData.discount_percentage}% off on{" "}
+                            {variantData.discount_quantity}+ units
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="font-medium">SKU:</span>
-                          <span className="text-gray-600">
-                            {variantData.sku}
-                          </span>
-                        </div>
-                        {variantData.discount_percentage > 0 && (
-                          <div className="flex justify-between">
-                            <span className="font-medium">Bulk Discount:</span>
-                            <span className="text-green-600">
-                              {variantData.discount_percentage}% off on{" "}
-                              {variantData.discount_quantity}+ units
-                            </span>
+                      )}
+                      {/* Display variant attributes */}
+                      {variantData.variantAttributes &&
+                        variantData.variantAttributes.length > 0 && (
+                          <div className="mt-2">
+                            <span className="font-medium">Specifications:</span>
+                            <div className="mt-1 space-y-1">
+                              {variantData.variantAttributes.map((attr) => (
+                                <div
+                                  key={attr.variant_attribute_value_id}
+                                  className="flex justify-between text-sm"
+                                >
+                                  <span>{attr.attribute.name}:</span>
+                                  <span>{attr.attributeValue.value}</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         )}
-                        {/* Display variant attributes */}
-                        {variantData.variantAttributes &&
-                          variantData.variantAttributes.length > 0 && (
-                            <div className="mt-2">
-                              <span className="font-medium">
-                                Specifications:
-                              </span>
-                              <div className="mt-1 space-y-1">
-                                {variantData.variantAttributes.map((attr) => (
-                                  <div
-                                    key={attr.variant_attribute_value_id}
-                                    className="flex justify-between text-sm"
-                                  >
-                                    <span>{attr.attribute.name}:</span>
-                                    <span>{attr.attributeValue.value}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
           </div>
 
           <div className="mt-4">
             <h3 className="font-semibold">Product Description</h3>
-            {mainProduct.description.map((line, index) => (
-              <p key={index} className="text-sm mt-2">
-                {line}
+            {Array.isArray(mainProduct.description) ? (
+              mainProduct.description.map((line, index) => (
+                <p key={index} className="text-sm mt-2">
+                  {line}
+                </p>
+              ))
+            ) : (
+              <p className="text-sm mt-2">
+                {mainProduct.description || "No description available."}
               </p>
-            ))}
+            )}
           </div>
 
           {/* Available Coupons Section */}
@@ -1352,12 +586,15 @@ const BuyNowPage = () => {
                           )}
                         </div>
                         <p className="text-sm text-gray-600 mt-1">
-                          {coupon.description}
+                          {coupon.description || "Special discount offer"}
                         </p>
                         <div className="text-xs text-gray-500 mt-1">
-                          Min. order: ₹{coupon.min_cart_value} | Valid till:{" "}
-                          {new Date(coupon.valid_to).toLocaleDateString()} |
-                          Usage limit: {coupon.usage_per_user} per user
+                          {coupon.min_cart_value &&
+                            `Min. order: ₹${coupon.min_cart_value} | `}
+                          Valid till:{" "}
+                          {new Date(coupon.valid_to).toLocaleDateString()}
+                          {coupon.usage_per_user &&
+                            ` | Usage limit: ${coupon.usage_per_user} per user`}
                         </div>
                       </div>
                       <button className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
@@ -1387,7 +624,7 @@ const BuyNowPage = () => {
                     className="border border-gray-200 p-3 rounded-lg"
                   >
                     <h4 className="font-medium">
-                      {mainProduct.variantNames[index]}
+                      {variant.description || `Variant ${index + 1}`}
                     </h4>
                     <div className="mt-2 space-y-1 text-sm">
                       <div className="flex justify-between">
@@ -1440,9 +677,7 @@ const BuyNowPage = () => {
                     (v) => v.product_variant_id === alert.product_variant_id
                   );
                   const variantName = variant
-                    ? mainProduct.variantNames[
-                        mainProduct.variants.indexOf(variant)
-                      ]
+                    ? variant.description || "Unknown Variant"
                     : "Unknown";
 
                   return (
@@ -1682,10 +917,11 @@ const BuyNowPage = () => {
                           </div>
 
                           <h4 className="font-medium text-gray-800">
-                            {coupon.description}
+                            {coupon.description || "Special offer"}
                           </h4>
                           <p className="text-sm text-gray-600 mt-1">
-                            {coupon.personalization_reason}
+                            {coupon.personalization_reason ||
+                              "Personalized for you"}
                           </p>
 
                           <div className="mt-2 text-xs text-gray-500">
@@ -1872,98 +1108,113 @@ const BuyNowPage = () => {
                 {mainProduct.reviews &&
                 Array.isArray(mainProduct.reviews) &&
                 mainProduct.reviews.length > 0 ? (
-                  mainProduct.reviews.map((review) => (
-                    <div
-                      key={review.product_review_id}
-                      className="flex-shrink-0 w-72 sm:w-80 lg:w-96 bg-white border border-gray-200 rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      {/* Review Header */}
-                      <div className="flex items-start gap-3 mb-4">
-                        <img
-                          src={review.user.profileImage_url}
-                          alt={review.user.name}
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-semibold text-gray-900 truncate">
-                              {review.user.name}
-                            </h4>
-                            {review.is_verified_purchase && (
-                              <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                                ✓ Verified
+                  mainProduct.reviews.map((review) => {
+                    // Safety check for review object
+                    if (
+                      !review ||
+                      typeof review !== "object" ||
+                      !review.product_review_id
+                    ) {
+                      return null;
+                    }
+                    return (
+                      <div
+                        key={review.product_review_id}
+                        className="flex-shrink-0 w-72 sm:w-80 lg:w-96 bg-white border border-gray-200 rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        {/* Review Header */}
+                        <div className="flex items-start gap-3 mb-4">
+                          <img
+                            src={
+                              review.user?.profileImage_url ||
+                              "https://via.placeholder.com/48x48/4F46E5/FFFFFF?text=U"
+                            }
+                            alt={review.user?.name || "User"}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold text-gray-900 truncate">
+                                {review.user?.name || "Anonymous User"}
+                              </h4>
+                              {review.is_verified_purchase && (
+                                <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                                  ✓ Verified
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                              <span>
+                                {review.user?.totalReviews || 0} reviews
                               </span>
-                            )}
+                              <span>•</span>
+                              <span>
+                                {review.user?.helpfulVotes || 0} helpful votes
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <span>{review.user.totalReviews} reviews</span>
-                            <span>•</span>
-                            <span>
-                              {review.user.helpfulVotes} helpful votes
+                        </div>
+
+                        {/* Rating and Variant */}
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="flex">
+                              {[...Array(5)].map((_, i) => (
+                                <span
+                                  key={i}
+                                  className={`text-sm ${
+                                    i < review.rating
+                                      ? "text-yellow-400"
+                                      : "text-gray-300"
+                                  }`}
+                                >
+                                  ★
+                                </span>
+                              ))}
+                            </div>
+                            <span className="text-sm font-medium">
+                              ({review.rating}/5)
                             </span>
                           </div>
+                          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                            {review.variant || "Standard"}
+                          </span>
                         </div>
-                      </div>
 
-                      {/* Rating and Variant */}
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <span
-                                key={i}
-                                className={`text-sm ${
-                                  i < review.rating
-                                    ? "text-yellow-400"
-                                    : "text-gray-300"
-                                }`}
-                              >
-                                ★
-                              </span>
-                            ))}
+                        {/* Review Title */}
+                        <h5 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                          {review.title || "No title"}
+                        </h5>
+
+                        {/* Review Content */}
+                        <p className="text-gray-700 text-sm leading-relaxed mb-4 line-clamp-4">
+                          {review.review || "No review content"}
+                        </p>
+
+                        {/* Review Footer */}
+                        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                            <span>
+                              {new Date(review.createdAt).toLocaleDateString()}
+                            </span>
+                            {review.helpfulCount > 0 && (
+                              <span>{review.helpfulCount} found helpful</span>
+                            )}
                           </div>
-                          <span className="text-sm font-medium">
-                            ({review.rating}/5)
-                          </span>
-                        </div>
-                        <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                          {review.variant}
-                        </span>
-                      </div>
-
-                      {/* Review Title */}
-                      <h5 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                        {review.title}
-                      </h5>
-
-                      {/* Review Content */}
-                      <p className="text-gray-700 text-sm leading-relaxed mb-4 line-clamp-4">
-                        {review.review}
-                      </p>
-
-                      {/* Review Footer */}
-                      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
-                          <span>
-                            {new Date(review.createdAt).toLocaleDateString()}
-                          </span>
-                          {review.helpfulCount > 0 && (
-                            <span>{review.helpfulCount} found helpful</span>
-                          )}
-                        </div>
-                        <div className="flex gap-2">
-                          <button className="text-xs text-blue-600 hover:text-blue-800 transition-colors">
-                            Helpful
-                          </button>
-                          {review.reportCount === 0 && (
-                            <button className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
-                              Report
+                          <div className="flex gap-2">
+                            <button className="text-xs text-blue-600 hover:text-blue-800 transition-colors">
+                              Helpful
                             </button>
-                          )}
+                            {review.reportCount === 0 && (
+                              <button className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
+                                Report
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="w-full text-center py-12 text-gray-500">
                     <div className="text-6xl mb-4">📝</div>
@@ -2042,7 +1293,13 @@ const BuyNowPage = () => {
                     Reviews by Variant
                   </h5>
                   <div className="space-y-2">
-                    {["Standard", "Pro", "Pro+"].map((variant) => {
+                    {(
+                      mainProduct.variants?.map((v) => v.description) || [
+                        "Standard",
+                        "Pro",
+                        "Pro+",
+                      ]
+                    ).map((variant) => {
                       const count =
                         mainProduct.reviews &&
                         Array.isArray(mainProduct.reviews)
