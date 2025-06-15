@@ -714,17 +714,7 @@ const BuyNowPage = () => {
           ],
         },
 
-        // Delivery Information
-        deliveryInfo: {
-          estimatedDelivery: "2024-01-28",
-          deliveryFee: 0,
-          freeDeliveryThreshold: 499,
-          expressDeliveryAvailable: true,
-          expressDeliveryFee: 99,
-          codAvailable: true,
-        },
-
-        // Legacy format for UI compatibility
+        // Legacy format for UI compatibility - Only fields used in UI
         title: "Premium Wireless Bluetooth Neckband - Pro Series",
         rating: "4.3",
         reviews: "1,247 Ratings & 156 Reviews",
@@ -740,87 +730,13 @@ const BuyNowPage = () => {
           "https://via.placeholder.com/400x400/4ECDC4/FFFFFF?text=Audio",
           "https://via.placeholder.com/400x400/45B7D1/FFFFFF?text=Tech",
         ],
-        colors: [
-          {
-            name: "Midnight Black",
-            thumbnail:
-              "https://via.placeholder.com/60x60/000000/FFFFFF?text=Black",
-            variantId: "550e8400-e29b-41d4-a716-446655440050",
-          },
-          {
-            name: "Ocean Blue",
-            thumbnail:
-              "https://via.placeholder.com/60x60/0066CC/FFFFFF?text=Blue",
-            variantId: "550e8400-e29b-41d4-a716-446655440060",
-          },
-          {
-            name: "Crimson Red",
-            thumbnail:
-              "https://via.placeholder.com/60x60/CC0000/FFFFFF?text=Red",
-            variantId: "550e8400-e29b-41d4-a716-446655440070",
-          },
-        ],
         variantNames: ["Standard", "Pro", "Pro+"],
-        offers: [
-          "Bank Offer: 5% Unlimited Cashback on AudioTech Credit Card",
-          "Coupon: Use WELCOME20 for 20% off (New users only)",
-          "Coupon: Use AUDIO50 for ₹50 off on orders above ₹500",
-          "Bulk Discount: 15% off on orders above 50 units (Retailers)",
-          "Special Price: Get extra discount on bulk orders",
-        ],
-        delivery: {
-          date: "28 Jan, Sunday",
-          fee: "Free",
-        },
-        highlights: [
-          "Battery Life: Up to 48 hours",
-          "Bluetooth Version: v5.0",
-          "Water Resistance: IPX5",
-          "Noise Cancellation: Active",
-          "Wireless Range: 10 meters",
-          "Fast Charging: 15 min = 3 hours playback",
-        ],
-        services: [
-          "1 Year Manufacturer Warranty",
-          "Cash on Delivery available",
-          "7 Days Return Policy",
-          "Free Installation Support",
-        ],
         description: [
           "Experience premium audio quality with our latest Bluetooth neckband featuring advanced noise cancellation technology.",
           "Designed for music lovers and professionals who demand the best in wireless audio technology.",
           "Features 48-hour battery life, IPX5 water resistance, and crystal-clear sound quality.",
           "Compatible with all Bluetooth-enabled devices and supports multiple codec formats.",
         ],
-        specifications: {
-          General: [
-            { key: "Model Name", value: "AudioTech Pro Neckband" },
-            { key: "Brand", value: "AudioTech Pro" },
-            { key: "Type", value: "Wireless Neckband" },
-            { key: "Water Resistance", value: "IPX5" },
-            { key: "Noise Cancellation", value: "Active" },
-            { key: "Warranty", value: "1 Year Manufacturer" },
-          ],
-          Connectivity: [
-            { key: "Bluetooth Version", value: "v5.0" },
-            { key: "Wireless Range", value: "10 meters" },
-            { key: "Supported Codecs", value: "SBC, AAC, aptX" },
-            { key: "Microphone", value: "Built-in with CVC" },
-          ],
-          "Battery & Charging": [
-            { key: "Battery Life", value: "Up to 48 hours" },
-            { key: "Charging Time", value: "2 hours (full charge)" },
-            { key: "Fast Charging", value: "15 min = 3 hours playback" },
-            { key: "Charging Port", value: "USB-C" },
-            { key: "Battery Capacity", value: "200mAh" },
-          ],
-          "Physical Specifications": [
-            { key: "Weight", value: "45 grams" },
-            { key: "Cable Length", value: "Adjustable neckband" },
-            { key: "Driver Size", value: "10mm dynamic drivers" },
-            { key: "Frequency Response", value: "20Hz - 20kHz" },
-          ],
-        },
       },
       relatedProducts: [
         {
