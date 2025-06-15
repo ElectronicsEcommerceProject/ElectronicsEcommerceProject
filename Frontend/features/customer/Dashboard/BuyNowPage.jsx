@@ -22,13 +22,11 @@ const BuyNowPage = () => {
   const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
   const [isWishlisted, setIsWishlisted] = useState(false);
 
-  // New state for Stock Alerts and Personalized Coupons
-  const [stockAlertEmail, setStockAlertEmail] = useState("");
-  const [stockAlertPhone, setStockAlertPhone] = useState("");
-  const [showStockAlertForm, setShowStockAlertForm] = useState(false);
+  // New state for Personalized Coupons and Quantity
   const [appliedCoupons, setAppliedCoupons] = useState([]);
   const [couponInput, setCouponInput] = useState("");
   const [showPersonalizedOffers, setShowPersonalizedOffers] = useState(true);
+  const [quantity, setQuantity] = useState(1);
 
   const rightScrollRef = useRef(null);
   const leftScrollRef = useRef(null);
@@ -386,11 +384,39 @@ const BuyNowPage = () => {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-2 mt-4">
-            <button className="flex-1 bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-700 transition-colors text-sm sm:text-base">
-              ADD TO CART
+            <button
+              onClick={() => {
+                const variantData = mainProduct.variants?.find(
+                  (v) => v.description === selectedVariant
+                );
+                console.log("Adding to cart:", {
+                  product_id: productId,
+                  variant_id: variantData?.product_variant_id,
+                  quantity: quantity,
+                  price: variantData?.price,
+                });
+                alert(`Added ${quantity} item(s) to cart!`);
+              }}
+              className="flex-1 bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-700 transition-colors text-sm sm:text-base"
+            >
+              ADD TO CART ({quantity})
             </button>
-            <button className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm sm:text-base">
-              BUY NOW
+            <button
+              onClick={() => {
+                const variantData = mainProduct.variants?.find(
+                  (v) => v.description === selectedVariant
+                );
+                console.log("Buy now:", {
+                  product_id: productId,
+                  variant_id: variantData?.product_variant_id,
+                  quantity: quantity,
+                  price: variantData?.price,
+                });
+                alert(`Proceeding to buy ${quantity} item(s)!`);
+              }}
+              className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm sm:text-base"
+            >
+              BUY NOW ({quantity})
             </button>
           </div>
         </div>
@@ -461,9 +487,6 @@ const BuyNowPage = () => {
                         <div className="text-xs opacity-75">
                           ₹{variantData?.price}
                         </div>
-                        <div className="text-xs opacity-75">
-                          Stock: {variantData?.stock_quantity}
-                        </div>
                       </div>
                     </button>
                   );
@@ -488,18 +511,6 @@ const BuyNowPage = () => {
                       <div className="flex justify-between">
                         <span className="font-medium">Price:</span>
                         <span>₹{variantData.price}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium">Stock:</span>
-                        <span
-                          className={
-                            variantData.stock_quantity > 10
-                              ? "text-green-600"
-                              : "text-orange-600"
-                          }
-                        >
-                          {variantData.stock_quantity} units
-                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="font-medium">SKU:</span>
@@ -537,6 +548,126 @@ const BuyNowPage = () => {
                 })()}
               </div>
             )}
+          </div>
+
+          {/* Quantity Selector */}
+          <div className="mt-6">
+            <h3 className="font-semibold text-sm sm:text-base">Quantity</h3>
+            <div className="flex items-center gap-4 mt-3">
+              <div className="flex items-center border border-gray-300 rounded-lg">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="px-3 py-2 text-gray-600 hover:bg-gray-100 transition-colors"
+                  disabled={quantity <= 1}
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  value={quantity}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 1;
+                    setQuantity(Math.max(1, value));
+                  }}
+                  className="w-16 px-2 py-2 text-center border-0 focus:outline-none"
+                  min="1"
+                />
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="px-3 py-2 text-gray-600 hover:bg-gray-100 transition-colors"
+                >
+                  +
+                </button>
+              </div>
+
+              {/* Show bulk discount info if applicable */}
+              {selectedVariant &&
+                mainProduct.variants &&
+                (() => {
+                  const variantData = mainProduct.variants.find(
+                    (v) => v.description === selectedVariant
+                  );
+                  if (
+                    variantData &&
+                    variantData.bulk_discount_quantity &&
+                    quantity >= variantData.bulk_discount_quantity
+                  ) {
+                    return (
+                      <div className="bg-green-50 border border-green-200 px-3 py-2 rounded-lg">
+                        <p className="text-green-700 text-sm font-medium">
+                          🎉 Bulk Discount Applied:{" "}
+                          {variantData.bulk_discount_percentage}% OFF
+                        </p>
+                      </div>
+                    );
+                  } else if (
+                    variantData &&
+                    variantData.bulk_discount_quantity
+                  ) {
+                    const remaining =
+                      variantData.bulk_discount_quantity - quantity;
+                    return (
+                      <div className="bg-blue-50 border border-blue-200 px-3 py-2 rounded-lg">
+                        <p className="text-blue-700 text-sm">
+                          💰 Add {remaining} more to get{" "}
+                          {variantData.bulk_discount_percentage}% OFF
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+            </div>
+
+            {/* Total Price Calculation */}
+            {selectedVariant &&
+              mainProduct.variants &&
+              (() => {
+                const variantData = mainProduct.variants.find(
+                  (v) => v.description === selectedVariant
+                );
+                if (variantData) {
+                  const basePrice = parseFloat(variantData.price);
+                  const isBulkDiscount =
+                    variantData.bulk_discount_quantity &&
+                    quantity >= variantData.bulk_discount_quantity;
+                  const discountPercent = isBulkDiscount
+                    ? variantData.bulk_discount_percentage
+                    : 0;
+                  const discountedPrice =
+                    basePrice * (1 - discountPercent / 100);
+                  const totalPrice = discountedPrice * quantity;
+                  const savings = (basePrice - discountedPrice) * quantity;
+
+                  return (
+                    <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">Total Price:</span>
+                        <div className="text-right">
+                          <span className="text-xl font-bold text-green-600">
+                            ₹{totalPrice.toFixed(2)}
+                          </span>
+                          {savings > 0 && (
+                            <div className="text-sm text-gray-500">
+                              <span className="line-through">
+                                ₹{(basePrice * quantity).toFixed(2)}
+                              </span>
+                              <span className="text-green-600 ml-2">
+                                Save ₹{savings.toFixed(2)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        ₹{discountedPrice.toFixed(2)} × {quantity}{" "}
+                        {quantity > 1 ? "items" : "item"}
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
           </div>
 
           <div className="mt-4">
@@ -607,203 +738,6 @@ const BuyNowPage = () => {
                 <p className="text-gray-500 text-sm">
                   No coupons available at the moment.
                 </p>
-              )}
-            </div>
-          </div>
-
-          {/* Stock Information */}
-          <div className="mt-6">
-            <h3 className="font-semibold text-lg">Stock Information</h3>
-            <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
-              {mainProduct.variants &&
-              Array.isArray(mainProduct.variants) &&
-              mainProduct.variants.length > 0 ? (
-                mainProduct.variants.map((variant, index) => (
-                  <div
-                    key={variant.product_variant_id}
-                    className="border border-gray-200 p-3 rounded-lg"
-                  >
-                    <h4 className="font-medium">
-                      {variant.description || `Variant ${index + 1}`}
-                    </h4>
-                    <div className="mt-2 space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span>Stock:</span>
-                        <span
-                          className={
-                            variant.stock_quantity > 10
-                              ? "text-green-600"
-                              : "text-orange-600"
-                          }
-                        >
-                          {variant.stock_quantity} units
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Price:</span>
-                        <span>₹{variant.price}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>SKU:</span>
-                        <span className="text-gray-600">{variant.sku}</span>
-                      </div>
-                      {variant.bulk_discount_percentage > 0 && (
-                        <div className="text-xs text-green-600 mt-1">
-                          Bulk: {variant.bulk_discount_percentage}% off on{" "}
-                          {variant.bulk_discount_quantity}+ units
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500 text-sm">
-                  No variant information available.
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Stock Alerts Section */}
-          <div className="mt-6">
-            <h3 className="font-semibold text-lg">📦 Stock Alerts</h3>
-            <div className="mt-3 space-y-3">
-              {/* Display current stock warnings */}
-              {mainProduct.stockAlerts &&
-              Array.isArray(mainProduct.stockAlerts) &&
-              mainProduct.stockAlerts.length > 0 ? (
-                mainProduct.stockAlerts.map((alert) => {
-                  const variant = mainProduct.variants.find(
-                    (v) => v.product_variant_id === alert.product_variant_id
-                  );
-                  const variantName = variant
-                    ? variant.description || "Unknown Variant"
-                    : "Unknown";
-
-                  return (
-                    <div
-                      key={alert.stock_alert_id}
-                      className={`p-3 rounded-lg border-l-4 ${
-                        alert.urgency === "high"
-                          ? "bg-red-50 border-red-400 text-red-800"
-                          : "bg-orange-50 border-orange-400 text-orange-800"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">
-                            {alert.urgency === "high" ? "🚨" : "⚠️"}{" "}
-                            {alert.message}
-                          </p>
-                          <p className="text-sm opacity-75">
-                            Variant: {variantName} | Stock Level:{" "}
-                            {alert.stock_level} units
-                          </p>
-                        </div>
-                        <button
-                          onClick={() =>
-                            setShowStockAlertForm(!showStockAlertForm)
-                          }
-                          className="bg-white px-3 py-1 rounded text-sm font-medium hover:bg-gray-100 transition-colors"
-                        >
-                          Get Notified
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="bg-green-50 border-l-4 border-green-400 p-3 rounded-lg">
-                  <p className="text-green-800">
-                    ✅ All variants are well stocked!
-                  </p>
-                </div>
-              )}
-
-              {/* Stock Alert Subscription Form */}
-              {showStockAlertForm && (
-                <div className="bg-white border border-gray-200 p-4 rounded-lg">
-                  <h4 className="font-medium mb-3">🔔 Get Stock Alerts</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        value={stockAlertEmail}
-                        onChange={(e) => setStockAlertEmail(e.target.value)}
-                        placeholder="Enter your email"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Phone Number (Optional)
-                      </label>
-                      <input
-                        type="tel"
-                        value={stockAlertPhone}
-                        onChange={(e) => setStockAlertPhone(e.target.value)}
-                        placeholder="Enter your phone number"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    {/* Alert Preferences */}
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-gray-700">
-                        Alert Preferences:
-                      </p>
-                      <div className="space-y-1">
-                        <label className="flex items-center">
-                          <input
-                            type="checkbox"
-                            defaultChecked
-                            className="mr-2"
-                          />
-                          <span className="text-sm">Back in stock alerts</span>
-                        </label>
-                        <label className="flex items-center">
-                          <input
-                            type="checkbox"
-                            defaultChecked
-                            className="mr-2"
-                          />
-                          <span className="text-sm">Low stock warnings</span>
-                        </label>
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span className="text-sm">
-                            Price drop notifications
-                          </span>
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          alert(
-                            `Stock alerts enabled for ${
-                              stockAlertEmail || "your account"
-                            }!`
-                          );
-                          setShowStockAlertForm(false);
-                        }}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-                      >
-                        Enable Alerts
-                      </button>
-                      <button
-                        onClick={() => setShowStockAlertForm(false)}
-                        className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                </div>
               )}
             </div>
           </div>

@@ -19,7 +19,6 @@ const {
   AttributeValue,
   Attribute,
   VariantAttributeValue,
-  StockAlert,
   Wishlist,
   WishListItem,
   Cart,
@@ -101,7 +100,6 @@ const userProductByIdDetails = async (req, res, next) => {
             "description",
             "short_description",
             "price",
-            "stock_quantity",
             "sku",
             "base_variant_image_url",
             "discount_quantity",
@@ -180,19 +178,6 @@ const userProductByIdDetails = async (req, res, next) => {
             "discount_quantity",
             "discount_percentage",
             "is_active",
-          ],
-        },
-        {
-          model: StockAlert,
-          as: "stockAlerts",
-          attributes: [
-            "stock_alert_id",
-            "product_id",
-            "product_variant_id",
-            "stock_level",
-            "status",
-            "created_by",
-            "updated_by",
           ],
         },
         {
@@ -500,16 +485,6 @@ const formatProductResponse = (productData, relatedProducts = []) => {
 
     // Personalized coupons (empty for now, can be enhanced)
     personalizedCoupons: [],
-
-    // Enhanced stock alerts with proper formatting
-    stockAlerts: productData.stockAlerts
-      ? productData.stockAlerts.map((alert) => ({
-          ...alert,
-          alert_threshold: 10,
-          message: `Only ${alert.stock_level} left in stock!`,
-          urgency: alert.stock_level <= 5 ? "high" : "medium",
-        }))
-      : [],
 
     // Related products
     relatedProducts: relatedProducts || [],
