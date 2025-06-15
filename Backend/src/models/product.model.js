@@ -125,6 +125,10 @@ export default (sequelize) => {
       foreignKey: "product_id",
       as: "discountRules",
     });
+    Product.hasMany(models.StockAlert, {
+      foreignKey: "product_id",
+      as: "stockAlerts",
+    });
   };
 
   return Product;

@@ -14,6 +14,7 @@ import orderRoutes from "./commonRoutes/order/order.routes.js";
 import orderItemRoutes from "./commonRoutes/order/orderItem.routes.js";
 import couponRedemptionRoutes from "./commonRoutes/coupon/couponRedemption.routes.js";
 import productReviewRoutes from "./commonRoutes/product/productReview/productReview.routes.js";
+import userProductByIdDetailsPageRoutes from "./commonRoutes/product/userProductByIdDetailsPage/userProductByIdDetails.routes.js";
 
 const app = express();
 
@@ -23,13 +24,15 @@ app.use("/user/auth", authRoutes);
 //this below user routes is for getAllCategory, brands, products, variants, attributes,values...
 app.use("/user", adminRoutes)
 
+app.use("/user/productById-Details-Page", userProductByIdDetailsPageRoutes)
+
 app.use("/user/profile", profileRoutes);
 
 app.use("/user/addresses", addressesRoutes);
 
 app.use("/user/product-Catalog", adminRoutes);
 
-// app.use("/user/product-variant", adminRoutes);
+
 
 app.use("/user/cart", cartRoutes);
 

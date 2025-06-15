@@ -967,6 +967,70 @@ const BuyNowPage = () => {
 
   const { mainProduct, relatedProducts } = productData;
 
+  // Function to get all valid available images
+  const getAvailableImages = () => {
+    const images = [];
+
+    // Add main product image if valid
+    if (
+      mainProduct.mainImage &&
+      mainProduct.mainImage.trim() !== "" &&
+      !mainProduct.mainImage.includes("placeholder")
+    ) {
+      images.push(mainProduct.mainImage);
+    }
+
+    // Add thumbnail images if valid (excluding placeholders and empty strings)
+    if (mainProduct.thumbnails && Array.isArray(mainProduct.thumbnails)) {
+      mainProduct.thumbnails.forEach((thumbnail) => {
+        if (
+          thumbnail &&
+          thumbnail.trim() !== "" &&
+          !thumbnail.includes("placeholder") &&
+          !thumbnail.includes("via.placeholder.com") &&
+          !images.includes(thumbnail)
+        ) {
+          // Avoid duplicates
+          images.push(thumbnail);
+        }
+      });
+    }
+
+    // Add variant images if available
+    if (mainProduct.variants && Array.isArray(mainProduct.variants)) {
+      mainProduct.variants.forEach((variant) => {
+        if (
+          variant.image_url &&
+          variant.image_url.trim() !== "" &&
+          !variant.image_url.includes("placeholder") &&
+          !variant.image_url.includes("via.placeholder.com") &&
+          !images.includes(variant.image_url)
+        ) {
+          images.push(variant.image_url);
+        }
+      });
+    }
+
+    // Add product media images if available
+    if (mainProduct.productMedia && Array.isArray(mainProduct.productMedia)) {
+      mainProduct.productMedia.forEach((media) => {
+        if (
+          media.media_url &&
+          media.media_url.trim() !== "" &&
+          !media.media_url.includes("placeholder") &&
+          !media.media_url.includes("via.placeholder.com") &&
+          !images.includes(media.media_url)
+        ) {
+          images.push(media.media_url);
+        }
+      });
+    }
+
+    return images;
+  };
+
+  const availableImages = getAvailableImages();
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Product Section */}
@@ -994,27 +1058,28 @@ const BuyNowPage = () => {
             </svg>
           </button>
 
-          {/* Main Image Container - Responsive height */}
+          {/* Main Image Container - Dynamic height based on available images */}
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm flex flex-col sm:flex-row h-[300px] sm:h-[360px] lg:h-[400px]">
-            {/* Thumbnails Row/Column - Responsive layout */}
+            {/* Thumbnails Row/Column - Shows only valid available images */}
             <div className="flex sm:flex-col overflow-x-auto sm:overflow-y-auto sm:overflow-x-hidden no-scrollbar w-full sm:w-[60px] h-[60px] sm:h-full border-b sm:border-b-0 sm:border-r border-gray-200">
-              {mainProduct.thumbnails.slice(0, 6).map((thumbnail, index) => (
-                <div
-                  key={index}
-                  className={`
+              {availableImages.length > 0 ? (
+                availableImages.map((imageUrl, index) => (
+                  <div
+                    key={index}
+                    className={`
                 relative flex-shrink-0 w-[60px] h-[60px]
                 border-r sm:border-r-0 sm:border-b border-gray-200 last:border-r-0 sm:last:border-b-0
                 cursor-pointer transition-all duration-100
                 ${hoveredThumbnail === index ? "bg-blue-50" : "bg-white"}
               `}
-                  onMouseEnter={() => {
-                    setHoveredThumbnail(index);
-                    setCurrentImage(thumbnail);
-                  }}
-                  onClick={() => setCurrentImage(thumbnail)}
-                >
-                  <div
-                    className={`
+                    onMouseEnter={() => {
+                      setHoveredThumbnail(index);
+                      setCurrentImage(imageUrl);
+                    }}
+                    onClick={() => setCurrentImage(imageUrl)}
+                  >
+                    <div
+                      className={`
                 absolute inset-0 border-2 pointer-events-none
                 ${
                   hoveredThumbnail === index
@@ -1022,18 +1087,23 @@ const BuyNowPage = () => {
                     : "border-transparent"
                 }
               `}
-                  ></div>
+                    ></div>
 
-                  <div className="absolute inset-0 flex items-center justify-center p-1 overflow-hidden">
-                    <img
-                      src={thumbnail}
-                      alt={`Thumbnail ${index + 1}`}
-                      className="h-full w-full object-contain hover:scale-105 transition-transform"
-                      loading="lazy"
-                    />
+                    <div className="absolute inset-0 flex items-center justify-center p-1 overflow-hidden">
+                      <img
+                        src={imageUrl}
+                        alt={`Product Image ${index + 1}`}
+                        className="h-full w-full object-contain hover:scale-105 transition-transform"
+                        loading="lazy"
+                      />
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="flex items-center justify-center w-full h-full text-gray-500 text-xs">
+                  No images available
                 </div>
-              ))}
+              )}
             </div>
 
             {/* Main Image Area with Magnifier */}
