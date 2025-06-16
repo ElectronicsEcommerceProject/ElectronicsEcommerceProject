@@ -14,6 +14,14 @@ router.post(
   cartItemController.addItemToCart
 );
 
+// FindOrCreate cart item - for BuyNowPage
+router.post(
+  "/findOrCreate",
+  verifyJwtToken,
+  validator(validators.cartItem.createCartItem, null),
+  cartItemController.findOrCreateCartItem
+);
+
 // Get all items in user's cart
 router.get("/", verifyJwtToken, cartItemController.getCartItems);
 

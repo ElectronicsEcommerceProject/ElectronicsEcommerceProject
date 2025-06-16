@@ -511,27 +511,36 @@ const BuyNowPage = () => {
                     variantData?.bulk_discount_percentage || 0
                   );
 
-                  // Determine which discount applies
-                  let discountPercent = 0;
+                  // Determine which discount applies (product variant discounts are always percentage)
+                  let discountValue = 0;
+                  let discountType = null;
                   let discountQuantity = null;
 
                   if (quantity >= bulkDiscountQty && bulkDiscountQty > 0) {
-                    discountPercent = bulkDiscountPercent;
+                    discountValue = bulkDiscountPercent;
+                    discountType = "percentage";
                     discountQuantity = bulkDiscountQty;
                   } else if (
                     quantity >= regularDiscountQty &&
                     regularDiscountQty > 0
                   ) {
-                    discountPercent = regularDiscountPercent;
+                    discountValue = regularDiscountPercent;
+                    discountType = "percentage";
                     discountQuantity = regularDiscountQty;
                   }
 
-                  const discountedPrice =
-                    basePrice * (1 - discountPercent / 100);
+                  // Calculate final price based on discount type
+                  let discountedPrice = basePrice;
+                  if (discountType === "percentage") {
+                    discountedPrice = basePrice * (1 - discountValue / 100);
+                  } else if (discountType === "fixed") {
+                    discountedPrice = Math.max(0, basePrice - discountValue);
+                  }
+
                   const finalPrice = discountedPrice * quantity;
 
-                  // Step 1: Use getApiById to check for existing cart
-                  console.log("Checking for existing cart for user:", user_id);
+                  // Step 1: Find or create cart for user
+                  console.log("Finding or creating cart for user:", user_id);
                   let cart_id;
 
                   try {
@@ -597,7 +606,7 @@ const BuyNowPage = () => {
                     }
                   }
 
-                  // Step 2: Add item to cart using cartItem controller
+                  // Step 2: Use findOrCreate for cart item
                   const cartItemData = {
                     cart_id: cart_id,
                     product_id: productId,
@@ -606,22 +615,30 @@ const BuyNowPage = () => {
                     price_at_time: basePrice,
                     final_price: finalPrice,
                     discount_quantity: discountQuantity,
-                    discount_applied:
-                      discountPercent > 0 ? discountPercent : null,
+                    discount_applied: discountValue > 0 ? discountValue : null,
+                    discount_type: discountType,
                   };
 
-                  console.log("Adding item to cart with data:", cartItemData);
-                  const cartItemResponse = await createApi(
-                    cartItemRoute,
+                  console.log(
+                    "Finding or creating cart item with data:",
                     cartItemData
                   );
-                  console.log("Cart item response:", cartItemResponse);
+                  const cartItemResponse = await createApi(
+                    `${cartItemRoute}/findOrCreate`,
+                    cartItemData
+                  );
+                  console.log(
+                    "Cart item findOrCreate response:",
+                    cartItemResponse
+                  );
 
-                  if (
-                    cartItemResponse.success ||
-                    cartItemResponse.message === "Item quantity updated in cart"
-                  ) {
-                    alert(`Added ${quantity} item(s) to cart successfully!`);
+                  if (cartItemResponse.success) {
+                    const action = cartItemResponse.created
+                      ? "Added"
+                      : "Updated";
+                    alert(
+                      `${action} ${quantity} item(s) in cart successfully!`
+                    );
                   } else {
                     throw new Error(
                       cartItemResponse.message || "Failed to add item to cart"
@@ -944,8 +961,6 @@ const BuyNowPage = () => {
                 );
                 if (variantData) {
                   const basePrice = parseFloat(variantData.price);
-
-                  // Get discount values
                   const regularDiscountQty = variantData.discount_quantity || 0;
                   const regularDiscountPercent = parseFloat(
                     variantData.discount_percentage || 0
@@ -956,23 +971,32 @@ const BuyNowPage = () => {
                     variantData.bulk_discount_percentage || 0
                   );
 
-                  // Determine which discount applies
-                  let discountPercent = 0;
-                  let discountType = "";
+                  // Determine which discount applies (same logic as in Add to Cart)
+                  let discountValue = 0;
+                  let discountType = null;
+                  let discountDisplayType = "";
 
                   if (quantity >= bulkDiscountQty && bulkDiscountQty > 0) {
-                    discountPercent = bulkDiscountPercent;
-                    discountType = "Bulk Discount";
+                    discountValue = bulkDiscountPercent;
+                    discountType = "percentage";
+                    discountDisplayType = "Bulk Discount";
                   } else if (
                     quantity >= regularDiscountQty &&
                     regularDiscountQty > 0
                   ) {
-                    discountPercent = regularDiscountPercent;
-                    discountType = "Quantity Discount";
+                    discountValue = regularDiscountPercent;
+                    discountType = "percentage";
+                    discountDisplayType = "Quantity Discount";
                   }
 
-                  const discountedPrice =
-                    basePrice * (1 - discountPercent / 100);
+                  // Calculate final price based on discount type
+                  let discountedPrice = basePrice;
+                  if (discountType === "percentage") {
+                    discountedPrice = basePrice * (1 - discountValue / 100);
+                  } else if (discountType === "fixed") {
+                    discountedPrice = Math.max(0, basePrice - discountValue);
+                  }
+
                   const totalPrice = discountedPrice * quantity;
                   const savings = (basePrice - discountedPrice) * quantity;
 
@@ -999,9 +1023,13 @@ const BuyNowPage = () => {
                       <div className="text-sm text-gray-600 mt-1">
                         ₹{discountedPrice.toFixed(2)} × {quantity}{" "}
                         {quantity > 1 ? "items" : "item"}
-                        {discountPercent > 0 && (
+                        {discountValue > 0 && (
                           <span className="text-green-600 ml-2">
-                            ({discountType}: {discountPercent}% OFF)
+                            ({discountDisplayType}:{" "}
+                            {discountType === "percentage"
+                              ? `${discountValue}%`
+                              : `₹${discountValue}`}{" "}
+                            OFF)
                           </span>
                         )}
                       </div>

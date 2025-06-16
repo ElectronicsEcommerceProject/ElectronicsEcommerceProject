@@ -35,8 +35,6 @@ const userProductByIdDetails = async (req, res, next) => {
   try {
     const { product_id } = req.params;
 
-    console.log("product_id", product_id);
-
     // Fetch product with all related data
     const product = await Product.findByPk(product_id, {
       include: [
@@ -212,11 +210,14 @@ const userProductByIdDetails = async (req, res, next) => {
     // Convert to plain object for response
     const productData = product.get({ plain: true });
 
-    // Fetch related products (same category, different products)
+    // Fetch related products (same brand + same category, different products)
     const relatedProducts = await getRelatedProducts(
       productData.category_id,
+      productData.brand_id,
       productData.product_id
     );
+
+    console.log("✅ Found related products:", relatedProducts.length);
 
     // Fetch relevant coupons for this product
     const relevantCoupons = await getRelevantCoupons(
@@ -249,66 +250,198 @@ const userProductByIdDetails = async (req, res, next) => {
 };
 
 /**
- * Get related products from the same category
+ * Get related products using intelligent algorithm
+ * Priority: Same brand > Same category > Featured products
  * @param {string} categoryId - Category ID
+ * @param {string} brandId - Brand ID
  * @param {string} currentProductId - Current product ID to exclude
  * @returns {Array} Related products
  */
-const getRelatedProducts = async (categoryId, currentProductId) => {
+const getRelatedProducts = async (categoryId, brandId, currentProductId) => {
   try {
-    const relatedProducts = await Product.findAll({
-      where: {
-        category_id: categoryId,
-        product_id: { [Op.ne]: currentProductId },
-        is_active: true,
-      },
-      include: [
-        {
-          model: Brand,
-          as: "brand",
-          attributes: ["brand_id", "name"],
-        },
-        {
-          model: ProductMedia,
-          as: "media",
-          include: [
-            {
-              model: ProductMediaUrl,
-              as: "ProductMediaURLs",
-              attributes: ["product_media_url"],
-            },
-          ],
-          limit: 1,
-        },
-        {
-          model: ProductVariant,
-          as: "variants",
-          attributes: ["price"],
-          limit: 1,
-        },
-      ],
-      attributes: ["product_id", "name", "base_price"],
-      limit: 5,
-    });
+    const relatedProducts = [];
+    const maxProducts = 8; // Total number of related products to return
 
+    // Common include configuration for all queries
+    const includeConfig = [
+      {
+        model: Brand,
+        as: "brand",
+        attributes: ["brand_id", "name"],
+      },
+      {
+        model: ProductMedia,
+        as: "media",
+        include: [
+          {
+            model: ProductMediaUrl,
+            as: "ProductMediaURLs",
+            attributes: ["product_media_url"],
+          },
+        ],
+        limit: 1,
+      },
+      {
+        model: ProductVariant,
+        as: "variants",
+        attributes: ["price", "discount_percentage"],
+        limit: 1,
+      },
+    ];
+
+    const baseAttributes = [
+      "product_id",
+      "name",
+      "base_price",
+      "rating_average",
+      "rating_count",
+      "is_featured",
+    ];
+
+    // 1. Priority 1: Same brand products (different category is OK)
+    if (brandId) {
+      const sameBrandProducts = await Product.findAll({
+        where: {
+          brand_id: brandId,
+          product_id: { [Op.ne]: currentProductId },
+          is_active: true,
+        },
+        include: includeConfig,
+        attributes: baseAttributes,
+        order: [
+          ["rating_average", "DESC"],
+          ["rating_count", "DESC"],
+          ["createdAt", "DESC"],
+        ],
+        limit: Math.min(5, maxProducts), // Get up to 5 same-brand products
+      });
+
+      relatedProducts.push(...sameBrandProducts);
+    }
+
+    // 2. Priority 2: Same category products (different brands)
+    if (relatedProducts.length < maxProducts && categoryId) {
+      const remainingSlots = maxProducts - relatedProducts.length;
+      const existingProductIds = relatedProducts.map((p) => p.product_id);
+
+      const sameCategoryProducts = await Product.findAll({
+        where: {
+          category_id: categoryId,
+          product_id: {
+            [Op.and]: [
+              { [Op.ne]: currentProductId },
+              { [Op.notIn]: existingProductIds },
+            ],
+          },
+          is_active: true,
+          // Prefer different brands if we already have same-brand products
+          ...(brandId && relatedProducts.length > 0
+            ? { brand_id: { [Op.ne]: brandId } }
+            : {}),
+        },
+        include: includeConfig,
+        attributes: baseAttributes,
+        order: [
+          ["rating_average", "DESC"],
+          ["rating_count", "DESC"],
+          ["is_featured", "DESC"],
+          ["createdAt", "DESC"],
+        ],
+        limit: remainingSlots,
+      });
+
+      relatedProducts.push(...sameCategoryProducts);
+    }
+
+    // 3. Priority 3: Featured products if still not enough
+    if (relatedProducts.length < maxProducts) {
+      const remainingSlots = maxProducts - relatedProducts.length;
+      const existingProductIds = relatedProducts.map((p) => p.product_id);
+
+      const featuredProducts = await Product.findAll({
+        where: {
+          product_id: {
+            [Op.and]: [
+              { [Op.ne]: currentProductId },
+              { [Op.notIn]: existingProductIds },
+            ],
+          },
+          is_active: true,
+          is_featured: true,
+        },
+        include: includeConfig,
+        attributes: baseAttributes,
+        order: [
+          ["rating_average", "DESC"],
+          ["rating_count", "DESC"],
+          ["createdAt", "DESC"],
+        ],
+        limit: remainingSlots,
+      });
+
+      relatedProducts.push(...featuredProducts);
+    }
+
+    // 4. Fallback: Any other active products if still not enough
+    if (relatedProducts.length < maxProducts) {
+      const remainingSlots = maxProducts - relatedProducts.length;
+      const existingProductIds = relatedProducts.map((p) => p.product_id);
+
+      const fallbackProducts = await Product.findAll({
+        where: {
+          product_id: {
+            [Op.and]: [
+              { [Op.ne]: currentProductId },
+              { [Op.notIn]: existingProductIds },
+            ],
+          },
+          is_active: true,
+        },
+        include: includeConfig,
+        attributes: baseAttributes,
+        order: [
+          ["rating_average", "DESC"],
+          ["rating_count", "DESC"],
+          ["createdAt", "DESC"],
+        ],
+        limit: remainingSlots,
+      });
+
+      relatedProducts.push(...fallbackProducts);
+    }
+
+    // Format the response
     return relatedProducts.map((product) => {
       const plainProduct = product.get({ plain: true });
+      const variantPrice = plainProduct.variants?.[0]?.price;
+      const basePrice = plainProduct.base_price;
+      const finalPrice = variantPrice || basePrice;
+      const discountPercentage =
+        plainProduct.variants?.[0]?.discount_percentage || 0;
+
       return {
         id: plainProduct.product_id,
         product_id: plainProduct.product_id,
         title: plainProduct.name,
         name: plainProduct.name,
-        price: `₹${
-          plainProduct.variants?.[0]?.price || plainProduct.base_price
-        }`,
+        price: `₹${parseFloat(finalPrice).toFixed(2)}`,
+        originalPrice:
+          discountPercentage > 0
+            ? `₹${parseFloat(basePrice).toFixed(2)}`
+            : null,
+        discount: discountPercentage > 0 ? `${discountPercentage}% off` : null,
+        rating: plainProduct.rating_average
+          ? parseFloat(plainProduct.rating_average).toFixed(1)
+          : "0.0",
+        ratingCount: plainProduct.rating_count || 0,
         image:
           plainProduct.media?.[0]?.ProductMediaURLs?.[0]?.product_media_url ||
           "",
         brand: plainProduct.brand,
+        isFeatured: plainProduct.is_featured || false,
       };
     });
   } catch (error) {
-    console.error("Error fetching related products:", error);
     return [];
   }
 };
@@ -365,7 +498,6 @@ const getRelevantCoupons = async (productId, brandId, categoryId) => {
 
     return relevantCoupons.map((coupon) => coupon.get({ plain: true }));
   } catch (error) {
-    console.error("Error fetching relevant coupons:", error);
     return [];
   }
 };

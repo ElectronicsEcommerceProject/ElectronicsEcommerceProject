@@ -37,6 +37,12 @@ export default (sequelize) => {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: true,
       },
+      discount_type: {
+        type: DataTypes.ENUM("fixed", "percentage"),
+        allowNull: true,
+        comment:
+          "Specifies whether discount_applied is a fixed amount or percentage",
+      },
       final_price: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,

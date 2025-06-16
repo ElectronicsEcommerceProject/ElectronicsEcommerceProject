@@ -73,6 +73,16 @@ export const createCartItemValidator = Joi.object({
       "number.base": MESSAGE.custom("Discount applied must be a number"),
       "number.min": MESSAGE.custom("Discount applied cannot be negative"),
     }),
+  discount_type: Joi.string()
+    .valid("fixed", "percentage")
+    .optional()
+    .allow(null)
+    .messages({
+      "string.base": MESSAGE.custom("Discount type must be a string"),
+      "any.only": MESSAGE.custom(
+        "Discount type must be either 'fixed' or 'percentage'"
+      ),
+    }),
 });
 
 // Validation for updating a cart item

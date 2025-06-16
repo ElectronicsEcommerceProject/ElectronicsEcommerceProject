@@ -17,6 +17,7 @@ const addItemToCart = async (req, res) => {
       final_price,
       discount_quantity,
       discount_applied,
+      discount_type,
     } = req.body;
 
     // Verify cart belongs to user
@@ -65,6 +66,7 @@ const addItemToCart = async (req, res) => {
       existingItem.discount_quantity = discount_quantity;
       existingItem.price_at_time = price_at_time;
       existingItem.discount_applied = discount_applied;
+      existingItem.discount_type = discount_type;
       existingItem.final_price = final_price;
       await existingItem.save();
 
@@ -84,6 +86,7 @@ const addItemToCart = async (req, res) => {
       final_price,
       discount_quantity,
       discount_applied,
+      discount_type,
     });
 
     res.status(StatusCodes.CREATED).json({
@@ -116,6 +119,16 @@ const updateCartItem = async (req, res) => {
           where: { user_id },
           required: true,
         },
+        {
+          model: Product,
+          as: "product",
+          required: true,
+        },
+        {
+          model: ProductVariant,
+          as: "variant",
+          required: false,
+        },
       ],
     });
 
@@ -128,12 +141,52 @@ const updateCartItem = async (req, res) => {
     // Update quantity
     cartItem.total_quantity = total_quantity;
 
-    // Recalculate final price if needed
-    if (cartItem.discount_applied) {
-      cartItem.final_price =
-        cartItem.price_at_time * total_quantity - cartItem.discount_applied;
+    // Get variant data for discount calculations
+    const variantData = cartItem.variant || cartItem.product;
+    const basePrice = parseFloat(cartItem.price_at_time);
+
+    // Get discount thresholds from variant/product
+    const regularDiscountQty = variantData?.discount_quantity || 0;
+    const regularDiscountPercent = parseFloat(
+      variantData?.discount_percentage || 0
+    );
+    const bulkDiscountQty = variantData?.bulk_discount_quantity || 0;
+    const bulkDiscountPercent = parseFloat(
+      variantData?.bulk_discount_percentage || 0
+    );
+
+    // Determine which discount applies (same logic as frontend)
+    let discountValue = 0;
+    let discountType = null;
+    let discountQuantity = null;
+
+    if (total_quantity >= bulkDiscountQty && bulkDiscountQty > 0) {
+      discountValue = bulkDiscountPercent;
+      discountType = "percentage";
+      discountQuantity = bulkDiscountQty;
+    } else if (total_quantity >= regularDiscountQty && regularDiscountQty > 0) {
+      discountValue = regularDiscountPercent;
+      discountType = "percentage";
+      discountQuantity = regularDiscountQty;
+    }
+
+    // Update cart item with new discount values
+    cartItem.discount_quantity = discountQuantity;
+    cartItem.discount_applied = discountValue;
+    cartItem.discount_type = discountType;
+
+    // Calculate final price based on discount
+    if (discountType === "percentage" && discountValue > 0) {
+      const discountedPrice = basePrice * (1 - discountValue / 100);
+      cartItem.final_price = discountedPrice * total_quantity;
+    } else if (discountType === "fixed" && discountValue > 0) {
+      cartItem.final_price = Math.max(
+        0,
+        basePrice * total_quantity - discountValue
+      );
     } else {
-      cartItem.final_price = cartItem.price_at_time * total_quantity;
+      // No discount applied
+      cartItem.final_price = basePrice * total_quantity;
     }
 
     await cartItem.save();
@@ -235,9 +288,112 @@ const getCartItems = async (req, res) => {
   }
 };
 
+// FindOrCreate cart item - dedicated method for BuyNowPage
+const findOrCreateCartItem = async (req, res) => {
+  try {
+    const { user_id } = req.user; // From JWT token
+    const {
+      cart_id,
+      product_id,
+      product_variant_id,
+      total_quantity,
+      price_at_time,
+      final_price,
+      discount_quantity,
+      discount_applied,
+      discount_type,
+    } = req.body;
+
+    // Verify cart belongs to user
+    const cart = await Cart.findOne({
+      where: { cart_id, user_id },
+    });
+
+    if (!cart) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: "Cart not found or does not belong to user",
+        success: false,
+      });
+    }
+
+    // Verify product exists
+    const product = await Product.findByPk(product_id);
+    if (!product) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: "Product not found",
+        success: false,
+      });
+    }
+
+    // Verify product variant if provided
+    if (product_variant_id) {
+      const variant = await ProductVariant.findOne({
+        where: { product_variant_id, product_id },
+      });
+      if (!variant) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          message: "Product variant not found or does not belong to product",
+          success: false,
+        });
+      }
+    }
+
+    // Use Sequelize findOrCreate method
+    const [cartItem, created] = await CartItem.findOrCreate({
+      where: {
+        cart_id,
+        product_id,
+        product_variant_id: product_variant_id || null,
+      },
+      defaults: {
+        total_quantity,
+        price_at_time,
+        final_price,
+        discount_quantity,
+        discount_applied,
+        discount_type,
+      },
+    });
+
+    if (!created) {
+      // Item already exists, update the quantity and other fields
+      cartItem.total_quantity += total_quantity;
+      cartItem.discount_quantity = discount_quantity;
+      cartItem.price_at_time = price_at_time;
+      cartItem.discount_applied = discount_applied;
+      cartItem.discount_type = discount_type;
+      cartItem.final_price = final_price;
+      await cartItem.save();
+
+      return res.status(StatusCodes.OK).json({
+        message: "Item quantity updated in cart",
+        success: true,
+        data: cartItem,
+        created: false,
+      });
+    }
+
+    // New item was created
+    res.status(StatusCodes.CREATED).json({
+      message: "Item added to cart successfully",
+      success: true,
+      data: cartItem,
+      created: true,
+    });
+  } catch (err) {
+    console.error("❌ Error in findOrCreateCartItem:", err);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Failed to add item to cart",
+      success: false,
+      error: err.message,
+    });
+  }
+};
+
 export default {
   addItemToCart,
   updateCartItem,
   removeCartItem,
   getCartItems,
+  findOrCreateCartItem,
 };
