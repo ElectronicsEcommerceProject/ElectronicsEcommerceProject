@@ -34,6 +34,10 @@ const BuyNowPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [minQuantity, setMinQuantity] = useState(1);
 
+  // New state for review filtering
+  const [selectedRatingFilter, setSelectedRatingFilter] = useState("all");
+  const [selectedSortFilter, setSelectedSortFilter] = useState("newest");
+
   const rightScrollRef = useRef(null);
   const leftScrollRef = useRef(null);
   const imageContainerRef = useRef(null);
@@ -281,6 +285,61 @@ const BuyNowPage = () => {
   };
 
   const availableImages = getAvailableImages();
+
+  // Helper function to filter reviews by rating
+  const filterReviewsByRating = (reviews, ratingFilter) => {
+    if (!reviews || !Array.isArray(reviews)) return [];
+
+    if (ratingFilter === "all") {
+      return reviews;
+    }
+
+    const targetRating = parseInt(ratingFilter);
+    return reviews.filter((review) => review.rating === targetRating);
+  };
+
+  // Helper function to sort reviews
+  const sortReviews = (reviews, sortFilter) => {
+    if (!reviews || !Array.isArray(reviews)) return [];
+
+    const sortedReviews = [...reviews];
+
+    switch (sortFilter) {
+      case "newest":
+        return sortedReviews.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+      case "oldest":
+        return sortedReviews.sort(
+          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+        );
+      case "helpful":
+        return sortedReviews.sort(
+          (a, b) => (b.helpfulCount || 0) - (a.helpfulCount || 0)
+        );
+      case "rating-high":
+        return sortedReviews.sort((a, b) => b.rating - a.rating);
+      case "rating-low":
+        return sortedReviews.sort((a, b) => a.rating - b.rating);
+      default:
+        return sortedReviews;
+    }
+  };
+
+  // Get filtered and sorted reviews
+  const getFilteredAndSortedReviews = () => {
+    if (!mainProduct.reviews) return [];
+
+    const filteredReviews = filterReviewsByRating(
+      mainProduct.reviews,
+      selectedRatingFilter
+    );
+    const sortedReviews = sortReviews(filteredReviews, selectedSortFilter);
+
+    return sortedReviews;
+  };
+
+  const filteredAndSortedReviews = getFilteredAndSortedReviews();
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -1293,12 +1352,25 @@ const BuyNowPage = () => {
                       : 0}{" "}
                     verified purchases
                   </div>
+                  {/* Filter Status */}
+                  {selectedRatingFilter !== "all" && (
+                    <div className="text-sm text-blue-600 font-medium">
+                      Showing {filteredAndSortedReviews.length} of{" "}
+                      {mainProduct.reviews?.length || 0} reviews (
+                      {selectedRatingFilter} star
+                      {selectedRatingFilter !== "1" ? "s" : ""})
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Review Filters */}
               <div className="flex flex-col sm:flex-row gap-2">
-                <select className="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select
+                  value={selectedRatingFilter}
+                  onChange={(e) => setSelectedRatingFilter(e.target.value)}
+                  className="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
                   <option value="all">All Reviews</option>
                   <option value="5">5 Stars</option>
                   <option value="4">4 Stars</option>
@@ -1306,13 +1378,29 @@ const BuyNowPage = () => {
                   <option value="2">2 Stars</option>
                   <option value="1">1 Star</option>
                 </select>
-                <select className="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select
+                  value={selectedSortFilter}
+                  onChange={(e) => setSelectedSortFilter(e.target.value)}
+                  className="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
                   <option value="newest">Newest First</option>
                   <option value="oldest">Oldest First</option>
                   <option value="helpful">Most Helpful</option>
                   <option value="rating-high">Highest Rating</option>
                   <option value="rating-low">Lowest Rating</option>
                 </select>
+                {(selectedRatingFilter !== "all" ||
+                  selectedSortFilter !== "newest") && (
+                  <button
+                    onClick={() => {
+                      setSelectedRatingFilter("all");
+                      setSelectedSortFilter("newest");
+                    }}
+                    className="px-3 py-1 text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 border border-blue-300 rounded-md transition-colors"
+                  >
+                    Clear Filters
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1322,10 +1410,8 @@ const BuyNowPage = () => {
                 className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
               >
-                {mainProduct.reviews &&
-                Array.isArray(mainProduct.reviews) &&
-                mainProduct.reviews.length > 0 ? (
-                  mainProduct.reviews.map((review) => {
+                {filteredAndSortedReviews.length > 0 ? (
+                  filteredAndSortedReviews.map((review) => {
                     // Safety check for review object
                     if (
                       !review ||
@@ -1434,27 +1520,37 @@ const BuyNowPage = () => {
                   })
                 ) : (
                   <div className="w-full text-center py-12 text-gray-500">
-                    <div className="text-6xl mb-4">📝</div>
-                    <h4 className="text-lg font-medium mb-2">No reviews yet</h4>
+                    <div className="text-6xl mb-4">
+                      {mainProduct.reviews && mainProduct.reviews.length > 0
+                        ? "🔍"
+                        : "📝"}
+                    </div>
+                    <h4 className="text-lg font-medium mb-2">
+                      {mainProduct.reviews && mainProduct.reviews.length > 0
+                        ? "No reviews match your filter"
+                        : "No reviews yet"}
+                    </h4>
                     <p className="text-sm">
-                      Be the first to review this product!
+                      {mainProduct.reviews && mainProduct.reviews.length > 0
+                        ? "Try adjusting your filter criteria to see more reviews."
+                        : "Be the first to review this product!"}
                     </p>
                   </div>
                 )}
               </div>
 
               {/* Scroll Indicators */}
-              {mainProduct.reviews && mainProduct.reviews.length > 3 && (
+              {filteredAndSortedReviews.length > 3 && (
                 <div className="flex justify-center mt-4">
                   <div className="flex gap-1">
-                    {[...Array(Math.ceil(mainProduct.reviews.length / 3))].map(
-                      (_, i) => (
-                        <div
-                          key={i}
-                          className="w-2 h-2 rounded-full bg-gray-300"
-                        ></div>
-                      )
-                    )}
+                    {[
+                      ...Array(Math.ceil(filteredAndSortedReviews.length / 3)),
+                    ].map((_, i) => (
+                      <div
+                        key={i}
+                        className="w-2 h-2 rounded-full bg-gray-300"
+                      ></div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -1488,12 +1584,28 @@ const BuyNowPage = () => {
                       return (
                         <div
                           key={rating}
-                          className="flex items-center gap-2 text-sm"
+                          className={`flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-100 p-1 rounded transition-colors ${
+                            selectedRatingFilter === rating.toString()
+                              ? "bg-blue-50 border border-blue-200"
+                              : ""
+                          }`}
+                          onClick={() => {
+                            if (selectedRatingFilter === rating.toString()) {
+                              setSelectedRatingFilter("all");
+                            } else {
+                              setSelectedRatingFilter(rating.toString());
+                            }
+                          }}
+                          title={`Click to filter ${rating} star reviews`}
                         >
                           <span className="w-8">{rating}★</span>
                           <div className="flex-1 bg-gray-200 rounded-full h-2">
                             <div
-                              className="bg-yellow-400 h-2 rounded-full"
+                              className={`h-2 rounded-full ${
+                                selectedRatingFilter === rating.toString()
+                                  ? "bg-blue-500"
+                                  : "bg-yellow-400"
+                              }`}
                               style={{ width: `${percentage}%` }}
                             ></div>
                           </div>
