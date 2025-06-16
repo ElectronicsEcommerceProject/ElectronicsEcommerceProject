@@ -561,6 +561,20 @@ const formatProductResponse = (
   const actualDiscountPercentage =
     originalPrice > 0 ? (discountAmount / originalPrice) * 100 : 0;
 
+  // Calculate review statistics
+  const approvedReviews = Array.isArray(productData.reviews)
+    ? productData.reviews.filter((review) => review.review_action === "approve")
+    : [];
+
+  const totalReviewCount = approvedReviews.length;
+  const averageRating =
+    totalReviewCount > 0
+      ? (
+          approvedReviews.reduce((sum, review) => sum + review.rating, 0) /
+          totalReviewCount
+        ).toFixed(1)
+      : "0.0";
+
   // Process reviews with proper user information and variant details
   const processedReviews = Array.isArray(productData.reviews)
     ? productData.reviews.map((review) => {
@@ -589,15 +603,16 @@ const formatProductResponse = (
   // Format the final response
   return {
     ...productData,
+    // Override rating fields with calculated values
+    rating_average: averageRating,
+    rating_count: totalReviewCount,
     media: mediaWithUrls,
     variants: variantsWithAttributes,
     reviews: processedReviews,
 
     // Legacy format for UI compatibility - Frontend expects these fields
     title: productData.name,
-    rating: productData.rating_average
-      ? parseFloat(productData.rating_average).toFixed(1)
-      : "N/A",
+    rating: averageRating,
     price: `₹${finalPrice.toFixed(2)}`,
     originalPrice:
       actualDiscountPercentage > 0 ? `₹${originalPrice.toFixed(2)}` : null,
