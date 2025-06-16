@@ -31,6 +31,7 @@ import StockManagement from "../features/admin/StockManagement/StockManagement.j
 
 // Components
 import AlertMessage from "../components/Alert/AlertMessage.jsx";
+import AddressForm from "../components/AddressForm/AddressForm.jsx";
 
 import {
   createApi,
@@ -162,6 +163,7 @@ export {
   AdminLayout,
   StockManagement,
   AlertMessage,
+  AddressForm,
   createApi,
   getApi,
   getApiById,
