@@ -104,7 +104,19 @@ const mockCartItems = [
     product_id: "550e8400-e29b-41d4-a716-446655440040",
     product_variant_id: "550e8400-e29b-41d4-a716-446655440050",
     total_quantity: 2,
-    discount_quantity: 5,
+    min_order_quantity: 2, // Minimum order quantity
+    quantity_discount: {
+      threshold: 3, // Add 3 or more to get discount
+      type: "percentage",
+      value: 10, // 10% off
+      message: "Add 1 more to get 10% off!",
+    },
+    bulk_discount: {
+      threshold: 5,
+      type: "fixed",
+      value: 100, // ₹100 off
+      message: "Add 3 more to get ₹100 off!",
+    },
     price_at_time: 2999.0,
     discount_applied: 10.0,
     discount_type: "percentage",
@@ -314,29 +326,57 @@ const CartPage = () => {
     setCartItems(
       cartItems.map((item) => {
         if (item.cart_item_id === id) {
-          const newQuantity = Math.max(1, item.total_quantity + delta);
+          const minQty = item.min_order_quantity || 1;
+          const newQuantity = Math.max(minQty, item.total_quantity + delta);
           const priceAtTime = parseFloat(item.price_at_time);
 
-          // Calculate new final price based on quantity and discounts
-          let finalPrice = priceAtTime * newQuantity;
+          // Discount logic
+          let discount = 0;
+          let discountType = null;
+          let discountMsg = null;
 
-          // Apply discount if applicable
-          if (item.discount_applied && item.discount_type) {
-            if (item.discount_type === "percentage") {
-              finalPrice =
-                finalPrice * (1 - parseFloat(item.discount_applied) / 100);
-            } else if (item.discount_type === "fixed") {
-              finalPrice = Math.max(
-                0,
-                finalPrice - parseFloat(item.discount_applied)
-              );
+          // Quantity discount
+          if (
+            item.quantity_discount &&
+            newQuantity >= item.quantity_discount.threshold
+          ) {
+            discountType = item.quantity_discount.type;
+            if (discountType === "percentage") {
+              discount =
+                priceAtTime *
+                newQuantity *
+                (item.quantity_discount.value / 100);
+              discountMsg = item.quantity_discount.message;
+            } else if (discountType === "fixed") {
+              discount = item.quantity_discount.value;
+              discountMsg = item.quantity_discount.message;
             }
           }
+          // Bulk discount
+          if (
+            item.bulk_discount &&
+            newQuantity >= item.bulk_discount.threshold
+          ) {
+            discountType = item.bulk_discount.type;
+            if (discountType === "percentage") {
+              discount =
+                priceAtTime * newQuantity * (item.bulk_discount.value / 100);
+              discountMsg = item.bulk_discount.message;
+            } else if (discountType === "fixed") {
+              discount = item.bulk_discount.value;
+              discountMsg = item.bulk_discount.message;
+            }
+          }
+
+          let finalPrice = priceAtTime * newQuantity - discount;
 
           return {
             ...item,
             total_quantity: newQuantity,
             final_price: finalPrice.toFixed(2),
+            discount_applied: discount,
+            discount_type: discountType,
+            discount_message: discountMsg,
           };
         }
         return item;
@@ -416,10 +456,29 @@ const CartPage = () => {
                 : 0;
               const discountType = item.discount_type;
               const stockQuantity = item.product.variant?.stock_quantity || 0;
+              const minQty = item.min_order_quantity || 1;
 
               // Calculate individual item price (final price / quantity)
               const itemPrice =
                 quantity > 0 ? finalPrice / quantity : priceAtTime;
+
+              // --- NEW: Show next discount message if available ---
+              let nextDiscountMsg = null;
+              if (item.quantity_discount && quantity < item.quantity_discount.threshold) {
+                const needed = item.quantity_discount.threshold - quantity;
+                if (item.quantity_discount.type === "percentage") {
+                  nextDiscountMsg = `Add ${needed} more to get ${item.quantity_discount.value}% off!`;
+                } else if (item.quantity_discount.type === "fixed") {
+                  nextDiscountMsg = `Add ${needed} more to get ₹${item.quantity_discount.value} off!`;
+                }
+              } else if (item.bulk_discount && quantity < item.bulk_discount.threshold) {
+                const needed = item.bulk_discount.threshold - quantity;
+                if (item.bulk_discount.type === "percentage") {
+                  nextDiscountMsg = `Add ${needed} more to get ${item.bulk_discount.value}% off!`;
+                } else if (item.bulk_discount.type === "fixed") {
+                  nextDiscountMsg = `Add ${needed} more to get ₹${item.bulk_discount.value} off!`;
+                }
+              }
 
               return (
                 <div
@@ -479,7 +538,7 @@ const CartPage = () => {
                           onClick={() =>
                             handleQuantityChange(item.cart_item_id, -1)
                           }
-                          disabled={quantity <= 1}
+                          disabled={quantity <= minQty}
                         >
                           −
                         </button>
@@ -528,6 +587,16 @@ const CartPage = () => {
                             )}
                         </div>
                       )}
+                    {nextDiscountMsg && (
+                      <div className="text-blue-600 text-xs mt-2">
+                        {nextDiscountMsg}
+                      </div>
+                    )}
+                    {item.discount_message && (
+                      <div className="text-blue-600 text-xs mt-2">
+                        {item.discount_message}
+                      </div>
+                    )}
                     <div className="flex gap-4 mt-3">
                       <button className="text-blue-600 text-sm">
                         Save for Later
