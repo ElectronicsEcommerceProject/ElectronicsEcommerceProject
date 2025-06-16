@@ -140,30 +140,7 @@ const userProductByIdDetails = async (req, res, next) => {
             "updatedAt",
           ],
         },
-        {
-          model: Coupon,
-          as: "coupons",
-          attributes: [
-            "coupon_id",
-            "code",
-            "description",
-            "type",
-            "discount_value",
-            "target_type",
-            "target_role",
-            "min_cart_value",
-            "max_discount_value",
-            "usage_limit",
-            "usage_per_user",
-            "valid_from",
-            "valid_to",
-            "is_active",
-            "is_user_new",
-            "category_id",
-            "brand_id",
-            "product_id",
-          ],
-        },
+
         {
           model: DiscountRule,
           as: "discountRules",
@@ -241,10 +218,18 @@ const userProductByIdDetails = async (req, res, next) => {
       productData.product_id
     );
 
+    // Fetch relevant coupons for this product
+    const relevantCoupons = await getRelevantCoupons(
+      productData.product_id,
+      productData.brand_id,
+      productData.category_id
+    );
+
     // Format response according to the specified structure
     const formattedProduct = formatProductResponse(
       productData,
-      relatedProducts
+      relatedProducts,
+      relevantCoupons
     );
 
     return res.status(StatusCodes.OK).json({
@@ -329,12 +314,74 @@ const getRelatedProducts = async (categoryId, currentProductId) => {
 };
 
 /**
+ * Get relevant coupons for the product
+ * Excludes coupons with target_type 'cart' and includes only those matching product_id, brand_id, or category_id
+ * @param {string} productId - Product ID
+ * @param {string} brandId - Brand ID
+ * @param {string} categoryId - Category ID
+ * @returns {Array} Relevant coupons
+ */
+const getRelevantCoupons = async (productId, brandId, categoryId) => {
+  try {
+    const relevantCoupons = await Coupon.findAll({
+      where: {
+        // Exclude cart-level coupons
+        target_type: { [Op.ne]: "cart" },
+        // Include only active coupons
+        is_active: true,
+        // Include coupons that match product, brand, or category
+        [Op.or]: [
+          { product_id: productId },
+          { brand_id: brandId },
+          { category_id: categoryId },
+        ],
+        // Ensure coupon is currently valid
+        valid_from: { [Op.lte]: new Date() },
+        valid_to: { [Op.gte]: new Date() },
+      },
+      attributes: [
+        "coupon_id",
+        "code",
+        "description",
+        "type",
+        "discount_value",
+        "target_type",
+        "target_role",
+        "min_cart_value",
+        "max_discount_value",
+        "usage_limit",
+        "usage_per_user",
+        "valid_from",
+        "valid_to",
+        "is_active",
+        "is_user_new",
+        "category_id",
+        "brand_id",
+        "product_id",
+        "createdAt",
+      ],
+      order: [["createdAt", "DESC"]], // Show newest coupons first
+    });
+
+    return relevantCoupons.map((coupon) => coupon.get({ plain: true }));
+  } catch (error) {
+    console.error("Error fetching relevant coupons:", error);
+    return [];
+  }
+};
+
+/**
  * Format product data to match the required response structure
  * @param {Object} productData - Raw product data from database
  * @param {Array} relatedProducts - Related products array
+ * @param {Array} coupons - Relevant coupons array
  * @returns {Object} Formatted product data
  */
-const formatProductResponse = (productData, relatedProducts = []) => {
+const formatProductResponse = (
+  productData,
+  relatedProducts = [],
+  coupons = []
+) => {
   // Process media to match the URL structure
   const mediaWithUrls =
     productData.media?.map((media) => ({
@@ -483,8 +530,8 @@ const formatProductResponse = (productData, relatedProducts = []) => {
           }
         : null,
 
-    // Personalized coupons (empty for now, can be enhanced)
-    personalizedCoupons: [],
+    // Relevant coupons for this product (excluding cart-level coupons)
+    coupons: coupons || [],
 
     // Related products
     relatedProducts: relatedProducts || [],

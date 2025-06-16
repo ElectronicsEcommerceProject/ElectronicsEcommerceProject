@@ -18,7 +18,7 @@ import userProductByIdDetailsPageRoutes from "./commonRoutes/product/userProduct
 
 const app = express();
 
-app.use("/user/auth", authRoutes);
+app.use("/auth", authRoutes);
 
 
 //this below user routes is for getAllCategory, brands, products, variants, attributes,values...
