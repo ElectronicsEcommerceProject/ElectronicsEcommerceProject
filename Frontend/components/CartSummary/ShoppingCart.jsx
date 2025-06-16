@@ -13,6 +13,8 @@ import {
   selectCartTotalPrice,
 } from "../Redux/cartSlice";
 
+import { getApi, cartItemRoute } from "../../src/index.js";
+
 const CartPage = () => {
   const { useState, useEffect } = React;
 
