@@ -58,6 +58,8 @@ const allRetailerRoute = import.meta.env.VITE_RETAILER_ENDPOINT;
 // Cart endpoints
 const cartRoute = import.meta.env.VITE_CART_ENDPOINT;
 const cartItemRoute = import.meta.env.VITE_CART_ITEM_ENDPOINT;
+const cartItemFindOrCreateRoute = import.meta.env
+  .VITE_CART_ITEM_FIND_OR_CREATE_ENDPOINT;
 
 const orderRoute = import.meta.env.VITE_ORDER_ENDPOINT;
 const latestOrderRoute = import.meta.env.VITE_LATEST_ORDER_ENDPOINT;
@@ -213,4 +215,5 @@ export {
   // Cart Routes
   cartRoute,
   cartItemRoute,
+  cartItemFindOrCreateRoute,
 };

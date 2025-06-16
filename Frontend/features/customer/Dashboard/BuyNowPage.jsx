@@ -9,7 +9,7 @@ import {
   getApiById,
   userPanelProductByIdDetailsRoute,
   cartRoute,
-  cartItemRoute,
+  cartItemFindOrCreateRoute,
   createApi,
 } from "../../../src/index.js";
 
@@ -624,7 +624,7 @@ const BuyNowPage = () => {
                     cartItemData
                   );
                   const cartItemResponse = await createApi(
-                    `${cartItemRoute}/findOrCreate`,
+                    cartItemFindOrCreateRoute,
                     cartItemData
                   );
                   console.log(
