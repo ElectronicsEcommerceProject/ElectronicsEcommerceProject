@@ -1,80 +1,59 @@
 import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchCartAsync,
+  updateCartItemAsync,
+  removeFromCartAsync,
+  selectCartItems,
+  selectCartLoading,
+  selectCartError,
+  selectUpdatingItem,
+  selectRemovingItem,
+  selectCartTotalItems,
+  selectCartTotalPrice,
+} from "../Redux/cartSlice";
 
 const CartPage = () => {
   const { useState, useEffect } = React;
+
+  // Redux hooks
+  const dispatch = useDispatch();
+  const cartItems = useSelector(selectCartItems);
+  const loading = useSelector(selectCartLoading);
+  const error = useSelector(selectCartError);
+  const updatingItem = useSelector(selectUpdatingItem);
+  const removingItem = useSelector(selectRemovingItem);
+  const totalItems = useSelector(selectCartTotalItems);
+  const totalPrice = useSelector(selectCartTotalPrice);
   const [pincode, setPincode] = useState("");
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      name: "Boult Astra Earbuds",
-      description: "Wireless, Noise-Cancelling, 20 Hours Battery",
-      image: "https://via.placeholder.com/100",
-      inStock: true,
-      delivery: "Delivery by: 18 May 2025 | Seller: TechTrend",
-      quantity: 2,
-      price: 2999,
-    },
-    {
-      id: 2,
-      name: "Titan Analog Watch",
-      description: "Stainless Steel, Water Resistant",
-      image: "https://via.placeholder.com/100",
-      inStock: true,
-      delivery: "Delivery by: 17 May 2025 | Seller: WatchHub",
-      quantity: 1,
-      price: 4999,
-    },
-    {
-      id: 3,
-      name: "Egate Atom 3X Projector",
-      description: "4K Support, 3000 Lumens",
-      image: "https://via.placeholder.com/100",
-      inStock: true,
-      delivery: "Delivery by: 19 May 2025 | Seller: TechTrend",
-      quantity: 1,
-      price: 25999,
-    },
-    {
-      id: 4,
-      name: "Sony Wireless Headphones",
-      description: "Bluetooth, 30 Hours Battery",
-      image: "https://via.placeholder.com/100",
-      inStock: false,
-      delivery: "Currently out of stock",
-      quantity: 1,
-      price: 8999,
-    },
-  ]);
   const [priceDetails, setPriceDetails] = useState({
-    price: 12999,
-    discount: 2000,
-    buyMoreSave: 500,
-    coupons: 200,
+    price: 0,
+    discount: 0,
+    buyMoreSave: 0,
+    coupons: 0,
     delivery: 0,
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
-  // Placeholder for API fetching
+  // Fetch cart data on component mount
   useEffect(() => {
-    const fetchCartData = async () => {
-      setLoading(true);
-      try {
-        // Simulate API call (replace with real endpoint)
-        // const response = await fetch('/api/cart');
-        // const data = await response.json();
-        // setProducts(data.products);
-        // setPriceDetails(data.priceDetails);
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to load cart data");
-        setLoading(false);
-      }
-    };
-    // Uncomment to enable API fetching
-    // fetchCartData();
-  }, []);
+    dispatch(fetchCartAsync());
+  }, [dispatch]);
+
+  // Update price details when cart items change
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      const calculatedPrice = cartItems.reduce((sum, item) => {
+        const price = item.Product?.price || 0;
+        return sum + price * item.quantity;
+      }, 0);
+
+      setPriceDetails((prev) => ({
+        ...prev,
+        price: calculatedPrice,
+      }));
+    }
+  }, [cartItems]);
 
   const total =
     priceDetails.price -
@@ -94,7 +73,10 @@ const CartPage = () => {
   };
 
   const handlePlaceOrder = () => {
-    if (products.some((product) => !product.inStock)) {
+    const inStockItems = cartItems.filter((item) => item.Product?.is_active);
+    if (cartItems.length === 0) {
+      alert("Your cart is empty");
+    } else if (inStockItems.length !== cartItems.length) {
       alert("Cannot place order with out-of-stock items");
     } else {
       alert("Order placed successfully!"); // Replace with API call
@@ -105,18 +87,27 @@ const CartPage = () => {
     alert(`Saved product ${productId} for later`); // Implement save logic
   };
 
-  const handleRemove = (productId) => {
-    setProducts(products.filter((p) => p.id !== productId));
-    alert(`Removed product ${productId}`); // Implement remove logic
+  const handleRemove = async (productId) => {
+    try {
+      await dispatch(removeFromCartAsync(productId)).unwrap();
+      alert(`Product removed from cart`);
+    } catch (error) {
+      console.error("Failed to remove item:", error);
+      alert(`Failed to remove item: ${error}`);
+    }
   };
 
-  const handleQuantityChange = (productId, newQuantity) => {
+  const handleQuantityChange = async (productId, newQuantity) => {
     if (newQuantity < 1) return;
-    setProducts(
-      products.map((p) =>
-        p.id === productId ? { ...p, quantity: newQuantity } : p
-      )
-    );
+
+    try {
+      await dispatch(
+        updateCartItemAsync({ productId, quantity: newQuantity })
+      ).unwrap();
+    } catch (error) {
+      console.error("Failed to update quantity:", error);
+      alert(`Failed to update quantity: ${error}`);
+    }
   };
 
   return (
@@ -171,97 +162,122 @@ const CartPage = () => {
             {error && (
               <div className="text-red-600 text-center py-4">{error}</div>
             )}
-            {!loading && !error && products.length === 0 && (
+            {!loading && !error && cartItems.length === 0 && (
               <div className="text-center py-4">Your cart is empty</div>
             )}
 
             {/* In-stock Products */}
-            {products
-              .filter((p) => p.inStock)
-              .map((product) => (
-                <div key={product.id} className="border-b py-4">
-                  <div className="flex gap-4">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-24 h-24 object-cover rounded"
-                    />
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold">{product.name}</h3>
-                      <p className="text-sm text-gray-600">
-                        {product.description}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {product.delivery}
-                      </p>
+            {cartItems
+              .filter((item) => item.Product?.is_active !== false)
+              .map((item) => {
+                const product = item.Product || {};
+                return (
+                  <div
+                    key={item.cart_id || item.product_id}
+                    className="border-b py-4"
+                  >
+                    <div className="flex gap-4">
+                      <img
+                        src={
+                          product.mainImage ||
+                          product.image ||
+                          "https://via.placeholder.com/100"
+                        }
+                        alt={product.name || product.title}
+                        className="w-24 h-24 object-cover rounded"
+                      />
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold">
+                          {product.name || product.title}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          {product.description || "No description available"}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Delivery by:{" "}
+                          {new Date(
+                            Date.now() + 3 * 24 * 60 * 60 * 1000
+                          ).toLocaleDateString()}{" "}
+                          | Seller: {product.brand?.name || "Store"}
+                        </p>
 
-                      {/* Price and Quantity */}
-                      <div className="mt-2 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <span className="font-semibold text-lg">
-                            ₹{product.price?.toLocaleString()}
-                          </span>
-
-                          {/* Quantity Selector */}
-                          <div className="flex items-center border border-gray-300 rounded">
-                            <button
-                              onClick={() =>
-                                handleQuantityChange(
-                                  product.id,
-                                  product.quantity - 1
-                                )
-                              }
-                              className="px-2 py-1 text-gray-600 hover:bg-gray-100"
-                              disabled={product.quantity <= 1}
-                            >
-                              −
-                            </button>
-                            <span className="px-3 py-1 text-center min-w-[40px]">
-                              {product.quantity}
+                        {/* Price and Quantity */}
+                        <div className="mt-2 flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <span className="font-semibold text-lg">
+                              ₹{product.price?.toLocaleString() || "0"}
                             </span>
-                            <button
-                              onClick={() =>
-                                handleQuantityChange(
-                                  product.id,
-                                  product.quantity + 1
-                                )
-                              }
-                              className="px-2 py-1 text-gray-600 hover:bg-gray-100"
-                            >
-                              +
-                            </button>
+
+                            {/* Quantity Selector */}
+                            <div className="flex items-center border border-gray-300 rounded">
+                              <button
+                                onClick={() =>
+                                  handleQuantityChange(
+                                    item.product_id,
+                                    item.quantity - 1
+                                  )
+                                }
+                                className="px-2 py-1 text-gray-600 hover:bg-gray-100"
+                                disabled={
+                                  item.quantity <= 1 ||
+                                  updatingItem === item.product_id
+                                }
+                              >
+                                −
+                              </button>
+                              <span className="px-3 py-1 text-center min-w-[40px]">
+                                {updatingItem === item.product_id
+                                  ? "..."
+                                  : item.quantity}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  handleQuantityChange(
+                                    item.product_id,
+                                    item.quantity + 1
+                                  )
+                                }
+                                className="px-2 py-1 text-gray-600 hover:bg-gray-100"
+                                disabled={updatingItem === item.product_id}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="text-right">
+                            <p className="font-semibold">
+                              ₹
+                              {(
+                                (product.price || 0) * item.quantity
+                              ).toLocaleString()}
+                            </p>
+                            <p className="text-xs text-gray-500">Total</p>
                           </div>
                         </div>
 
-                        <div className="text-right">
-                          <p className="font-semibold">
-                            ₹
-                            {(
-                              product.price * product.quantity
-                            ).toLocaleString()}
-                          </p>
-                          <p className="text-xs text-gray-500">Total</p>
+                        <div className="mt-2 flex space-x-4">
+                          <button
+                            className="text-blue-600 text-sm"
+                            onClick={() => handleSaveForLater(item.product_id)}
+                          >
+                            Save for Later
+                          </button>
+                          <button
+                            className="text-red-600 text-sm"
+                            onClick={() => handleRemove(item.product_id)}
+                            disabled={removingItem === item.product_id}
+                          >
+                            {removingItem === item.product_id
+                              ? "Removing..."
+                              : "Remove"}
+                          </button>
                         </div>
-                      </div>
-
-                      <div className="mt-2 flex space-x-4">
-                        <button
-                          className="text-blue-600 text-sm"
-                          onClick={() => handleSaveForLater(product.id)}
-                        >
-                          Save for Later
-                        </button>
-                        <button
-                          className="text-red-600 text-sm"
-                          onClick={() => handleRemove(product.id)}
-                        >
-                          Remove
-                        </button>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
             {/* Fixed Place Order Button */}
             <div
@@ -284,40 +300,52 @@ const CartPage = () => {
             </div>
 
             {/* Out of Stock Items */}
-            {products
-              .filter((p) => !p.inStock)
-              .map((product) => (
-                <div key={product.id} className="py-4">
-                  <div className="flex gap-4">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-24 h-24 object-cover rounded"
-                    />
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold">{product.name}</h3>
-                      <p className="text-sm text-gray-600">
-                        {product.description}
-                      </p>
-                      <p className="text-sm text-red-600">Out of Stock</p>
-                      <div className="mt-2 flex space-x-4">
-                        <button
-                          className="text-blue-600 text-sm"
-                          onClick={() => handleSaveForLater(product.id)}
-                        >
-                          Save for Later
-                        </button>
-                        <button
-                          className="text-red-600 text-sm"
-                          onClick={() => handleRemove(product.id)}
-                        >
-                          Remove
-                        </button>
+            {cartItems
+              .filter((item) => item.Product?.is_active === false)
+              .map((item) => {
+                const product = item.Product || {};
+                return (
+                  <div key={item.cart_id || item.product_id} className="py-4">
+                    <div className="flex gap-4">
+                      <img
+                        src={
+                          product.mainImage ||
+                          product.image ||
+                          "https://via.placeholder.com/100"
+                        }
+                        alt={product.name || product.title}
+                        className="w-24 h-24 object-cover rounded opacity-50"
+                      />
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-500">
+                          {product.name || product.title}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          {product.description || "No description available"}
+                        </p>
+                        <p className="text-sm text-red-600">Out of Stock</p>
+                        <div className="mt-2 flex space-x-4">
+                          <button
+                            className="text-blue-600 text-sm"
+                            onClick={() => handleSaveForLater(item.product_id)}
+                          >
+                            Save for Later
+                          </button>
+                          <button
+                            className="text-red-600 text-sm"
+                            onClick={() => handleRemove(item.product_id)}
+                            disabled={removingItem === item.product_id}
+                          >
+                            {removingItem === item.product_id
+                              ? "Removing..."
+                              : "Remove"}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
           </div>
         </section>
 
@@ -333,7 +361,13 @@ const CartPage = () => {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span>
-                  Price ({products.filter((p) => p.inStock).length} items)
+                  Price (
+                  {
+                    cartItems.filter(
+                      (item) => item.Product?.is_active !== false
+                    ).length
+                  }{" "}
+                  items)
                 </span>
                 <span>₹{priceDetails.price.toLocaleString()}</span>
               </div>

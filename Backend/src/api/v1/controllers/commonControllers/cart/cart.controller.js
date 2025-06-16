@@ -78,7 +78,7 @@ const getCartByUserId = async (req, res) => {
     const user = await User.findByPk(user_id);
     if (!user) {
       return res.status(StatusCodes.NOT_FOUND).json({
-        message: "User not found",
+        message: MESSAGE.get.none,
       });
     }
 
@@ -87,14 +87,15 @@ const getCartByUserId = async (req, res) => {
       include: [
         {
           model: CartItem,
-          include: [{ model: Product }],
+          as: "cartItems",
+          include: [{ model: Product, as: "product" }],
         },
       ],
     });
 
     if (!cart) {
       return res.status(StatusCodes.NOT_FOUND).json({
-        message: "Cart not found for this user",
+        message: MESSAGE.get.none,
       });
     }
 
@@ -150,7 +151,7 @@ const createCart = async (req, res) => {
     const user = await User.findByPk(user_id);
     if (!user) {
       return res.status(StatusCodes.NOT_FOUND).json({
-        message: "User not found",
+        message: MESSAGE.get.none,
       });
     }
 
@@ -158,7 +159,7 @@ const createCart = async (req, res) => {
     const existingCart = await Cart.findOne({ where: { user_id } });
     if (existingCart) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: "User already has a cart",
+        message: MESSAGE.post.fail,
       });
     }
 
@@ -179,10 +180,45 @@ const createCart = async (req, res) => {
   }
 };
 
+// Find or create cart by user_id
+const findOrCreateCartByUserId = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+
+    // Verify user exists
+    const user = await User.findByPk(user_id);
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: MESSAGE.get.none,
+      });
+    }
+
+    // Find or create cart for the user
+    const [cart, created] = await Cart.findOrCreate({
+      where: { user_id },
+      defaults: { user_id },
+    });
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: created ? MESSAGE.post.succ : MESSAGE.get.succ,
+      cart_id: cart.cart_id,
+      created: created,
+    });
+  } catch (err) {
+    console.error("❌ Error in findOrCreateCartByUserId:", err);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: MESSAGE.get.fail,
+      error: err.message,
+    });
+  }
+};
+
 export default {
   getAllCarts,
   getCartById,
   getCartByUserId,
   deleteCart,
   createCart,
+  findOrCreateCartByUserId,
 };

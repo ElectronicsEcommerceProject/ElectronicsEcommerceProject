@@ -55,6 +55,10 @@ const allUserRoute = import.meta.env.VITE_USER_ENDPOINT;
 const allCustomerRoute = import.meta.env.VITE_CUSTOMER_ENDPOINT;
 const allRetailerRoute = import.meta.env.VITE_RETAILER_ENDPOINT;
 
+// Cart endpoints
+const cartRoute = import.meta.env.VITE_CART_ENDPOINT;
+const cartItemRoute = import.meta.env.VITE_CART_ITEM_ENDPOINT;
+
 const orderRoute = import.meta.env.VITE_ORDER_ENDPOINT;
 const latestOrderRoute = import.meta.env.VITE_LATEST_ORDER_ENDPOINT;
 const userManagmentDashboardDataRoute = import.meta.env
@@ -205,4 +209,8 @@ export {
   userPanelLoginRoute,
   userPanelRegisterRoute,
   userPanelProductByIdDetailsRoute,
+
+  // Cart Routes
+  cartRoute,
+  cartItemRoute,
 };

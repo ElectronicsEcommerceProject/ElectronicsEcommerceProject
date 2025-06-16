@@ -17,6 +17,12 @@ router.post(
 // Get all items in user's cart
 router.get("/", verifyJwtToken, cartController.getAllCarts);
 
+router.get(
+  "/:user_id",
+  verifyJwtToken,
+  cartController.findOrCreateCartByUserId
+);
+
 // Remove item from cart
 router.delete(
   "/:cart_id",

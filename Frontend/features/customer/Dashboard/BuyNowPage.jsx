@@ -1,12 +1,16 @@
 import { useState, useRef, useEffect } from "react";
 import React from "react";
 import { useParams } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import Footer from "../../../components/Footer/Footer";
 import Header from "../../../components/Header/Header";
 
 import {
   getApiById,
   userPanelProductByIdDetailsRoute,
+  cartRoute,
+  cartItemRoute,
+  createApi,
 } from "../../../src/index.js";
 
 const BuyNowPage = () => {
@@ -14,6 +18,7 @@ const BuyNowPage = () => {
   const { productId } = useParams();
 
   const [productData, setProductData] = useState(null);
+  const [addingToCart, setAddingToCart] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [isRightScrollAtEnd, setIsRightScrollAtEnd] = useState(false);
   const [currentImage, setCurrentImage] = useState("");
@@ -385,21 +390,152 @@ const BuyNowPage = () => {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-2 mt-4">
             <button
-              onClick={() => {
+              onClick={async () => {
                 const variantData = mainProduct.variants?.find(
                   (v) => v.description === selectedVariant
                 );
-                console.log("Adding to cart:", {
-                  product_id: productId,
-                  variant_id: variantData?.product_variant_id,
-                  quantity: quantity,
-                  price: variantData?.price,
-                });
-                alert(`Added ${quantity} item(s) to cart!`);
+
+                // Get user_id from JWT token
+                const token = localStorage.getItem("token");
+                if (!token) {
+                  alert("Please login to add items to cart");
+                  return;
+                }
+
+                let user_id;
+                try {
+                  const decodedToken = jwtDecode(token);
+                  user_id = decodedToken.user_id;
+                } catch (error) {
+                  console.error("Error decoding token:", error);
+                  alert("Authentication error. Please login again.");
+                  return;
+                }
+
+                setAddingToCart(true);
+
+                try {
+                  // Calculate discount information
+                  const basePrice = parseFloat(variantData?.price || 0);
+                  const regularDiscountQty =
+                    variantData?.discount_quantity || 0;
+                  const regularDiscountPercent = parseFloat(
+                    variantData?.discount_percentage || 0
+                  );
+                  const bulkDiscountQty =
+                    variantData?.bulk_discount_quantity || 0;
+                  const bulkDiscountPercent = parseFloat(
+                    variantData?.bulk_discount_percentage || 0
+                  );
+
+                  // Determine which discount applies
+                  let discountPercent = 0;
+                  let discountQuantity = null;
+
+                  if (quantity >= bulkDiscountQty && bulkDiscountQty > 0) {
+                    discountPercent = bulkDiscountPercent;
+                    discountQuantity = bulkDiscountQty;
+                  } else if (
+                    quantity >= regularDiscountQty &&
+                    regularDiscountQty > 0
+                  ) {
+                    discountPercent = regularDiscountPercent;
+                    discountQuantity = regularDiscountQty;
+                  }
+
+                  const discountedPrice =
+                    basePrice * (1 - discountPercent / 100);
+                  const finalPrice = discountedPrice * quantity;
+
+                  // Step 1: Use getApiById to check for existing cart
+                  console.log("Checking for existing cart for user:", user_id);
+                  let cart_id;
+
+                  try {
+                    // Use getApiById to get cart by user_id
+                    const cartResponse = await getApiById(cartRoute, user_id);
+                    console.log("Cart response:", cartResponse);
+
+                    if (cartResponse.success && cartResponse.cart_id) {
+                      // Cart exists, use existing cart_id
+                      cart_id = cartResponse.cart_id;
+                      console.log("Using existing cart:", cart_id);
+                    } else if (cartResponse.success && cartResponse.data && cartResponse.data.cart_id) {
+                      // Alternative response structure
+                      cart_id = cartResponse.data.cart_id;
+                      console.log("Using existing cart (alt structure):", cart_id);
+                    } else {
+                      throw new Error("Cart not found");
+                    }
+                  } catch (cartError) {
+                    // Cart doesn't exist, create a new one
+                    console.log("Cart not found, creating new cart:", cartError.message);
+                    
+                    try {
+                      const createCartResponse = await createApi(cartRoute, {
+                        user_id,
+                      });
+                      console.log("Create cart response:", createCartResponse);
+
+                      if (createCartResponse.success && createCartResponse.data && createCartResponse.data.cart_id) {
+                        cart_id = createCartResponse.data.cart_id;
+                        console.log("Created new cart:", cart_id);
+                      } else if (createCartResponse.success && createCartResponse.cart_id) {
+                        cart_id = createCartResponse.cart_id;
+                        console.log("Created new cart (alt structure):", cart_id);
+                      } else {
+                        throw new Error(
+                          createCartResponse.message || "Failed to create cart"
+                        );
+                      }
+                    } catch (createError) {
+                      console.error("Failed to create cart:", createError);
+                      throw new Error("Unable to create or access cart");
+                    }
+                  }
+
+                  // Step 2: Add item to cart using cartItem controller
+                  const cartItemData = {
+                    cart_id: cart_id,
+                    product_id: productId,
+                    product_variant_id: variantData?.product_variant_id,
+                    total_quantity: quantity,
+                    price_at_time: basePrice,
+                    final_price: finalPrice,
+                    discount_quantity: discountQuantity,
+                    discount_applied:
+                      discountPercent > 0 ? discountPercent : null,
+                  };
+
+                  console.log("Adding item to cart with data:", cartItemData);
+                  const cartItemResponse = await createApi(
+                    cartItemRoute,
+                    cartItemData
+                  );
+                  console.log("Cart item response:", cartItemResponse);
+
+                  if (cartItemResponse.success || cartItemResponse.message === "Item quantity updated in cart") {
+                    alert(`Added ${quantity} item(s) to cart successfully!`);
+                  } else {
+                    throw new Error(
+                      cartItemResponse.message || "Failed to add item to cart"
+                    );
+                  }
+                } catch (error) {
+                  console.error("Error adding to cart:", error);
+                  alert(`Failed to add to cart: ${error.message}`);
+                } finally {
+                  setAddingToCart(false);
+                }
               }}
-              className="flex-1 bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-700 transition-colors text-sm sm:text-base"
+              disabled={addingToCart}
+              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-colors text-sm sm:text-base ${
+                addingToCart
+                  ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                  : "bg-orange-600 text-white hover:bg-orange-700"
+              }`}
             >
-              ADD TO CART ({quantity})
+              {addingToCart ? "ADDING..." : `ADD TO CART (${quantity})`}
             </button>
             <button
               onClick={() => {
@@ -516,12 +652,24 @@ const BuyNowPage = () => {
                         <span className="font-medium">SKU:</span>
                         <span className="text-gray-600">{variantData.sku}</span>
                       </div>
+                      {/* Show both discount tiers */}
                       {variantData.discount_percentage > 0 && (
                         <div className="flex justify-between">
-                          <span className="font-medium">Bulk Discount:</span>
+                          <span className="font-medium">
+                            Quantity Discount:
+                          </span>
                           <span className="text-green-600">
                             {variantData.discount_percentage}% off on{" "}
                             {variantData.discount_quantity}+ units
+                          </span>
+                        </div>
+                      )}
+                      {variantData.bulk_discount_percentage > 0 && (
+                        <div className="flex justify-between">
+                          <span className="font-medium">Bulk Discount:</span>
+                          <span className="text-orange-600">
+                            {variantData.bulk_discount_percentage}% off on{" "}
+                            {variantData.bulk_discount_quantity}+ units
                           </span>
                         </div>
                       )}
@@ -580,42 +728,87 @@ const BuyNowPage = () => {
                 </button>
               </div>
 
-              {/* Show bulk discount info if applicable */}
+              {/* Show discount info if applicable */}
               {selectedVariant &&
                 mainProduct.variants &&
                 (() => {
                   const variantData = mainProduct.variants.find(
                     (v) => v.description === selectedVariant
                   );
-                  if (
-                    variantData &&
-                    variantData.bulk_discount_quantity &&
-                    quantity >= variantData.bulk_discount_quantity
-                  ) {
+                  if (!variantData) return null;
+
+                  const regularDiscountQty = variantData.discount_quantity || 0;
+                  const regularDiscountPercent = parseFloat(
+                    variantData.discount_percentage || 0
+                  );
+                  const bulkDiscountQty =
+                    variantData.bulk_discount_quantity || 0;
+                  const bulkDiscountPercent = parseFloat(
+                    variantData.bulk_discount_percentage || 0
+                  );
+
+                  // Check which discount applies
+                  if (quantity >= bulkDiscountQty && bulkDiscountQty > 0) {
+                    // 20% bulk discount applies
                     return (
                       <div className="bg-green-50 border border-green-200 px-3 py-2 rounded-lg">
                         <p className="text-green-700 text-sm font-medium">
-                          🎉 Bulk Discount Applied:{" "}
-                          {variantData.bulk_discount_percentage}% OFF
+                          🎉 Bulk Discount Applied: {bulkDiscountPercent}% OFF
+                        </p>
+                        <p className="text-green-600 text-xs mt-1">
+                          You're getting the maximum discount!
                         </p>
                       </div>
                     );
                   } else if (
-                    variantData &&
-                    variantData.bulk_discount_quantity
+                    quantity >= regularDiscountQty &&
+                    regularDiscountQty > 0
                   ) {
-                    const remaining =
-                      variantData.bulk_discount_quantity - quantity;
+                    // 10% regular discount applies
+                    const remainingForBulk = bulkDiscountQty - quantity;
                     return (
-                      <div className="bg-blue-50 border border-blue-200 px-3 py-2 rounded-lg">
-                        <p className="text-blue-700 text-sm">
-                          💰 Add {remaining} more to get{" "}
-                          {variantData.bulk_discount_percentage}% OFF
-                        </p>
+                      <div className="space-y-2">
+                        <div className="bg-green-50 border border-green-200 px-3 py-2 rounded-lg">
+                          <p className="text-green-700 text-sm font-medium">
+                            🎉 Discount Applied: {regularDiscountPercent}% OFF
+                          </p>
+                        </div>
+                        {bulkDiscountQty > 0 && (
+                          <div className="bg-blue-50 border border-blue-200 px-3 py-2 rounded-lg">
+                            <p className="text-blue-700 text-sm">
+                              💰 Add {remainingForBulk} more to get{" "}
+                              {bulkDiscountPercent}% OFF
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  } else {
+                    // No discount yet, show what's needed
+                    const remainingForRegular = regularDiscountQty - quantity;
+                    const remainingForBulk = bulkDiscountQty - quantity;
+
+                    return (
+                      <div className="space-y-2">
+                        {regularDiscountQty > 0 && (
+                          <div className="bg-blue-50 border border-blue-200 px-3 py-2 rounded-lg">
+                            <p className="text-blue-700 text-sm">
+                              💰 Add {remainingForRegular} more to get{" "}
+                              {regularDiscountPercent}% OFF
+                            </p>
+                          </div>
+                        )}
+                        {bulkDiscountQty > 0 && (
+                          <div className="bg-purple-50 border border-purple-200 px-3 py-2 rounded-lg">
+                            <p className="text-purple-700 text-sm">
+                              🚀 Add {remainingForBulk} more to get{" "}
+                              {bulkDiscountPercent}% OFF (Best Deal!)
+                            </p>
+                          </div>
+                        )}
                       </div>
                     );
                   }
-                  return null;
                 })()}
             </div>
 
@@ -628,12 +821,33 @@ const BuyNowPage = () => {
                 );
                 if (variantData) {
                   const basePrice = parseFloat(variantData.price);
-                  const isBulkDiscount =
-                    variantData.bulk_discount_quantity &&
-                    quantity >= variantData.bulk_discount_quantity;
-                  const discountPercent = isBulkDiscount
-                    ? variantData.bulk_discount_percentage
-                    : 0;
+
+                  // Get discount values
+                  const regularDiscountQty = variantData.discount_quantity || 0;
+                  const regularDiscountPercent = parseFloat(
+                    variantData.discount_percentage || 0
+                  );
+                  const bulkDiscountQty =
+                    variantData.bulk_discount_quantity || 0;
+                  const bulkDiscountPercent = parseFloat(
+                    variantData.bulk_discount_percentage || 0
+                  );
+
+                  // Determine which discount applies
+                  let discountPercent = 0;
+                  let discountType = "";
+
+                  if (quantity >= bulkDiscountQty && bulkDiscountQty > 0) {
+                    discountPercent = bulkDiscountPercent;
+                    discountType = "Bulk Discount";
+                  } else if (
+                    quantity >= regularDiscountQty &&
+                    regularDiscountQty > 0
+                  ) {
+                    discountPercent = regularDiscountPercent;
+                    discountType = "Quantity Discount";
+                  }
+
                   const discountedPrice =
                     basePrice * (1 - discountPercent / 100);
                   const totalPrice = discountedPrice * quantity;
@@ -662,6 +876,11 @@ const BuyNowPage = () => {
                       <div className="text-sm text-gray-600 mt-1">
                         ₹{discountedPrice.toFixed(2)} × {quantity}{" "}
                         {quantity > 1 ? "items" : "item"}
+                        {discountPercent > 0 && (
+                          <span className="text-green-600 ml-2">
+                            ({discountType}: {discountPercent}% OFF)
+                          </span>
+                        )}
                       </div>
                     </div>
                   );
