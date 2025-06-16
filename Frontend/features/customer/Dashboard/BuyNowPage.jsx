@@ -32,6 +32,7 @@ const BuyNowPage = () => {
   const [couponInput, setCouponInput] = useState("");
   const [showPersonalizedOffers, setShowPersonalizedOffers] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [minQuantity, setMinQuantity] = useState(1);
 
   const rightScrollRef = useRef(null);
   const leftScrollRef = useRef(null);
@@ -77,8 +78,31 @@ const BuyNowPage = () => {
         productData.mainProduct.variantNames?.[0] ||
         "";
       setSelectedVariant(firstVariant);
+
+      // Set minimum quantity from the first variant's min_retailer_quantity
+      const firstVariantData = productData.mainProduct.variants?.[0];
+      const minRetailerQty = firstVariantData?.min_retailer_quantity || 1;
+      setMinQuantity(minRetailerQty);
+      setQuantity(minRetailerQty); // Start quantity from minimum required
     }
   }, [productData]);
+
+  // Update minimum quantity when selected variant changes
+  useEffect(() => {
+    if (selectedVariant && productData?.mainProduct?.variants) {
+      const variantData = productData.mainProduct.variants.find(
+        (v) => v.description === selectedVariant
+      );
+      if (variantData) {
+        const minRetailerQty = variantData.min_retailer_quantity || 1;
+        setMinQuantity(minRetailerQty);
+        // Update quantity to minimum if current quantity is less than minimum
+        if (quantity < minRetailerQty) {
+          setQuantity(minRetailerQty);
+        }
+      }
+    }
+  }, [selectedVariant, productData, quantity]);
 
   useEffect(() => {
     const handleRightScroll = () => {
@@ -460,29 +484,49 @@ const BuyNowPage = () => {
                       // Cart exists, use existing cart_id
                       cart_id = cartResponse.cart_id;
                       console.log("Using existing cart:", cart_id);
-                    } else if (cartResponse.success && cartResponse.data && cartResponse.data.cart_id) {
+                    } else if (
+                      cartResponse.success &&
+                      cartResponse.data &&
+                      cartResponse.data.cart_id
+                    ) {
                       // Alternative response structure
                       cart_id = cartResponse.data.cart_id;
-                      console.log("Using existing cart (alt structure):", cart_id);
+                      console.log(
+                        "Using existing cart (alt structure):",
+                        cart_id
+                      );
                     } else {
                       throw new Error("Cart not found");
                     }
                   } catch (cartError) {
                     // Cart doesn't exist, create a new one
-                    console.log("Cart not found, creating new cart:", cartError.message);
-                    
+                    console.log(
+                      "Cart not found, creating new cart:",
+                      cartError.message
+                    );
+
                     try {
                       const createCartResponse = await createApi(cartRoute, {
                         user_id,
                       });
                       console.log("Create cart response:", createCartResponse);
 
-                      if (createCartResponse.success && createCartResponse.data && createCartResponse.data.cart_id) {
+                      if (
+                        createCartResponse.success &&
+                        createCartResponse.data &&
+                        createCartResponse.data.cart_id
+                      ) {
                         cart_id = createCartResponse.data.cart_id;
                         console.log("Created new cart:", cart_id);
-                      } else if (createCartResponse.success && createCartResponse.cart_id) {
+                      } else if (
+                        createCartResponse.success &&
+                        createCartResponse.cart_id
+                      ) {
                         cart_id = createCartResponse.cart_id;
-                        console.log("Created new cart (alt structure):", cart_id);
+                        console.log(
+                          "Created new cart (alt structure):",
+                          cart_id
+                        );
                       } else {
                         throw new Error(
                           createCartResponse.message || "Failed to create cart"
@@ -514,7 +558,10 @@ const BuyNowPage = () => {
                   );
                   console.log("Cart item response:", cartItemResponse);
 
-                  if (cartItemResponse.success || cartItemResponse.message === "Item quantity updated in cart") {
+                  if (
+                    cartItemResponse.success ||
+                    cartItemResponse.message === "Item quantity updated in cart"
+                  ) {
                     alert(`Added ${quantity} item(s) to cart successfully!`);
                   } else {
                     throw new Error(
@@ -652,6 +699,12 @@ const BuyNowPage = () => {
                         <span className="font-medium">SKU:</span>
                         <span className="text-gray-600">{variantData.sku}</span>
                       </div>
+                      <div className="flex justify-between">
+                        <span className="font-medium">Min. Order Qty:</span>
+                        <span className="text-blue-600 font-semibold">
+                          {variantData.min_retailer_quantity || 1} units
+                        </span>
+                      </div>
                       {/* Show both discount tiers */}
                       {variantData.discount_percentage > 0 && (
                         <div className="flex justify-between">
@@ -704,9 +757,11 @@ const BuyNowPage = () => {
             <div className="flex items-center gap-4 mt-3">
               <div className="flex items-center border border-gray-300 rounded-lg">
                 <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  onClick={() =>
+                    setQuantity(Math.max(minQuantity, quantity - 1))
+                  }
                   className="px-3 py-2 text-gray-600 hover:bg-gray-100 transition-colors"
-                  disabled={quantity <= 1}
+                  disabled={quantity <= minQuantity}
                 >
                   −
                 </button>
@@ -714,11 +769,11 @@ const BuyNowPage = () => {
                   type="number"
                   value={quantity}
                   onChange={(e) => {
-                    const value = parseInt(e.target.value) || 1;
-                    setQuantity(Math.max(1, value));
+                    const value = parseInt(e.target.value) || minQuantity;
+                    setQuantity(Math.max(minQuantity, value));
                   }}
                   className="w-16 px-2 py-2 text-center border-0 focus:outline-none"
-                  min="1"
+                  min={minQuantity}
                 />
                 <button
                   onClick={() => setQuantity(quantity + 1)}
@@ -727,6 +782,15 @@ const BuyNowPage = () => {
                   +
                 </button>
               </div>
+
+              {/* Show minimum quantity info */}
+              {minQuantity > 1 && (
+                <div className="text-sm text-gray-600 mt-2">
+                  <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                    ℹ️ Minimum order quantity: {minQuantity}
+                  </span>
+                </div>
+              )}
 
               {/* Show discount info if applicable */}
               {selectedVariant &&
