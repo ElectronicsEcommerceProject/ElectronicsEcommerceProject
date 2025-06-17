@@ -15,9 +15,6 @@ const CartPage = () => {
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
-  const [savedForLater, setSavedForLater] = useState([]);
-  const [showWishlistPopup, setShowWishlistPopup] = useState(false);
-  const [selectedItemForWishlist, setSelectedItemForWishlist] = useState(null);
   const [estimatedDelivery, setEstimatedDelivery] =
     useState("3-5 business days");
   const [loading, setLoading] = useState(true);
@@ -26,6 +23,8 @@ const CartPage = () => {
   const [availableAddresses, setAvailableAddresses] = useState([]);
   const [availableCoupons, setAvailableCoupons] = useState([]);
   const [cart, setCart] = useState(null);
+  const [showWishlistPopup, setShowWishlistPopup] = useState(false);
+  const [selectedItemForWishlist, setSelectedItemForWishlist] = useState(null);
 
   // Fetch cart data from API
   useEffect(() => {
@@ -91,24 +90,6 @@ const CartPage = () => {
   // Handlers
   const handleRemove = (id) => {
     setCartItems(cartItems.filter((item) => item.cart_item_id !== id));
-  };
-
-  const handleSaveForLater = (item) => {
-    setSavedForLater([...savedForLater, item]);
-    setCartItems(
-      cartItems.filter(
-        (cartItem) => cartItem.cart_item_id !== item.cart_item_id
-      )
-    );
-  };
-
-  const handleMoveToCart = (item) => {
-    setCartItems([...cartItems, item]);
-    setSavedForLater(
-      savedForLater.filter(
-        (savedItem) => savedItem.cart_item_id !== item.cart_item_id
-      )
-    );
   };
 
   const handleAddToWishlist = (item) => {
@@ -637,12 +618,6 @@ const CartPage = () => {
                     )}
                     <div className="flex gap-4 mt-3">
                       <button
-                        className="text-blue-600 text-sm hover:underline"
-                        onClick={() => handleSaveForLater(item)}
-                      >
-                        Save for Later
-                      </button>
-                      <button
                         className="text-purple-600 text-sm hover:underline"
                         onClick={() => handleAddToWishlist(item)}
                       >
@@ -660,62 +635,6 @@ const CartPage = () => {
               );
             })}
           </div>
-
-          {/* Saved for Later Section */}
-          {savedForLater.length > 0 && (
-            <div className="mt-8 border-t pt-6">
-              <h2 className="text-lg font-semibold mb-4">
-                Saved for Later ({savedForLater.length})
-              </h2>
-              <div className="divide-y">
-                {savedForLater.map((item) => (
-                  <div key={item.cart_item_id} className="flex gap-4 py-4">
-                    <img
-                      src={
-                        item.variant?.base_variant_image_url ||
-                        item.product.mainImage ||
-                        item.product.media?.[0]?.ProductMediaURLs?.[0]
-                          ?.product_media_url ||
-                        "/assets/placeholder.jpg"
-                      }
-                      alt={item.product.name}
-                      className="w-20 h-20 object-cover rounded border"
-                    />
-                    <div className="flex-1">
-                      <h3 className="font-medium">{item.product.name}</h3>
-                      <p className="text-sm text-gray-600">
-                        {item.product.short_description}
-                      </p>
-                      <div className="flex items-center gap-4 mt-2">
-                        <span className="font-semibold">
-                          ₹{parseFloat(item.price_at_time).toLocaleString()}
-                        </span>
-                        <button
-                          onClick={() => handleMoveToCart(item)}
-                          className="text-blue-600 text-sm hover:underline"
-                        >
-                          Move to Cart
-                        </button>
-                        <button
-                          onClick={() =>
-                            setSavedForLater(
-                              savedForLater.filter(
-                                (savedItem) =>
-                                  savedItem.cart_item_id !== item.cart_item_id
-                              )
-                            )
-                          }
-                          className="text-red-600 text-sm hover:underline"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </section>
 
         {/* Right: Price Details & Coupon */}
@@ -913,7 +832,7 @@ const CartPage = () => {
       )}
 
       {/* Empty Cart State */}
-      {cartItems.length === 0 && savedForLater.length === 0 && (
+      {cartItems.length === 0 && (
         <div className="fixed inset-0 bg-white flex flex-col items-center justify-center">
           <div className="text-center">
             <div className="text-6xl mb-4">🛒</div>
