@@ -700,11 +700,6 @@ const CartPage = () => {
                         {nextDiscountMsg}
                       </div>
                     )}
-                    {item.discount_message && (
-                      <div className="text-blue-600 text-xs mt-2">
-                        {item.discount_message}
-                      </div>
-                    )}
                     <div className="flex gap-4 mt-3">
                       <button
                         className="text-purple-600 text-sm hover:underline"

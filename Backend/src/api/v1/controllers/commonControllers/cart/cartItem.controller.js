@@ -504,17 +504,13 @@ const getCartItemsByUserId = async (req, res) => {
         });
       }
 
-      // Calculate discount thresholds and messages based on variant data
+      // Calculate discount thresholds based on variant data
       const quantityDiscount =
         variant?.discount_quantity && variant?.discount_percentage
           ? {
               threshold: variant.discount_quantity,
               type: "percentage",
               value: parseFloat(variant.discount_percentage),
-              message: `Add ${Math.max(
-                0,
-                variant.discount_quantity - item.total_quantity
-              )} more to get ${variant.discount_percentage}% off!`,
             }
           : null;
 
@@ -524,10 +520,6 @@ const getCartItemsByUserId = async (req, res) => {
               threshold: variant.bulk_discount_quantity,
               type: "percentage",
               value: parseFloat(variant.bulk_discount_percentage),
-              message: `Add ${Math.max(
-                0,
-                variant.bulk_discount_quantity - item.total_quantity
-              )} more to get ${variant.bulk_discount_percentage}% off!`,
             }
           : null;
 
