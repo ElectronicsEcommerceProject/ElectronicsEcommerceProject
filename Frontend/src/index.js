@@ -44,6 +44,12 @@ import {
   deleteApiByCondition,
 } from "../src/api/api.js";
 import MESSAGE from "./api/message.js";
+import {
+  getUserFromToken,
+  getUserIdFromToken,
+  isAuthenticated,
+  getUserRole,
+} from "./utils/auth.js";
 
 //import .env routes
 const adminDashboardDataRoute = import.meta.env
@@ -218,4 +224,10 @@ export {
   cartRoute,
   cartItemRoute,
   cartItemFindOrCreateRoute,
+
+  // Auth utilities
+  getUserFromToken,
+  getUserIdFromToken,
+  isAuthenticated,
+  getUserRole,
 };

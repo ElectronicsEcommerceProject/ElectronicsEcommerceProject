@@ -1,317 +1,81 @@
-import React, { useState } from "react";
-import { AddressForm } from "../../src/index.js";
-
-// Hardcoded mock data based on backend models
-const mockUser = {
-  user_id: "550e8400-e29b-41d4-a716-446655440001",
-  name: "Satyam Kumar",
-  email: "satyam@example.com",
-  phone_number: "+91-9876543210",
-  profileImage_url: "/assets/profile.jpg",
-  role: "customer",
-  status: "active",
-};
-
-// Import address from AddressForm's mockAddresses (first address which is default)
-const mockAddress = {
-  address_id: "550e8400-e29b-41d4-a716-446655440002",
-  user_id: "550e8400-e29b-41d4-a716-446655440001",
-  address_line1: "123 Main Street",
-  address_line2: "Apt 4B",
-  city: "Delhi",
-  state: "Delhi",
-  postal_code: "110001",
-  country: "India",
-  is_default: true,
-  is_active: true,
-};
-
-const mockCoupons = [
-  {
-    coupon_id: "550e8400-e29b-41d4-a716-446655440010",
-    code: "SAVE10",
-    description: "10% off on electronics",
-    type: "percentage",
-    discount_value: 10,
-    target_type: "cart",
-    target_role: "customer",
-    min_cart_value: 1000,
-    max_discount_value: 500,
-    usage_limit: 100,
-    usage_per_user: 1,
-    valid_from: "2024-01-01",
-    valid_to: "2024-12-31",
-    is_active: true,
-    is_user_new: false,
-  },
-  {
-    coupon_id: "550e8400-e29b-41d4-a716-446655440011",
-    code: "WELCOME10",
-    description: "₹500 off on your first order",
-    type: "fixed",
-    discount_value: 500,
-    target_type: "cart",
-    target_role: "customer",
-    min_cart_value: 2000,
-    max_discount_value: 500,
-    usage_limit: 1000,
-    usage_per_user: 1,
-    valid_from: "2024-01-01",
-    valid_to: "2024-12-31",
-    is_active: true,
-    is_user_new: true,
-  },
-  {
-    coupon_id: "550e8400-e29b-41d4-a716-446655440012",
-    code: "SUMMER25",
-    description: "₹1000 off on orders above ₹10000",
-    type: "fixed",
-    discount_value: 1000,
-    target_type: "cart",
-    target_role: "both",
-    min_cart_value: 10000,
-    max_discount_value: 1000,
-    usage_limit: 500,
-    usage_per_user: 2,
-    valid_from: "2024-06-01",
-    valid_to: "2024-08-31",
-    is_active: true,
-    is_user_new: false,
-  },
-  {
-    coupon_id: "550e8400-e29b-41d4-a716-446655440013",
-    code: "FREESHIP",
-    description: "Free shipping on all orders",
-    type: "fixed",
-    discount_value: 99,
-    target_type: "cart",
-    target_role: "both",
-    min_cart_value: 500,
-    max_discount_value: 99,
-    usage_limit: null,
-    usage_per_user: null,
-    valid_from: "2024-01-01",
-    valid_to: "2024-12-31",
-    is_active: true,
-    is_user_new: false,
-  },
-];
-
-const mockCartItems = [
-  {
-    cart_item_id: "550e8400-e29b-41d4-a716-446655440020",
-    cart_id: "550e8400-e29b-41d4-a716-446655440030",
-    product_id: "550e8400-e29b-41d4-a716-446655440040",
-    product_variant_id: "550e8400-e29b-41d4-a716-446655440050",
-    total_quantity: 2,
-    min_order_quantity: 2, // Minimum order quantity
-    quantity_discount: {
-      threshold: 3, // Add 3 or more to get discount
-      type: "percentage",
-      value: 10, // 10% off
-      message: "Add 1 more to get 10% off!",
-    },
-    bulk_discount: {
-      threshold: 5,
-      type: "fixed",
-      value: 100, // ₹100 off
-      message: "Add 3 more to get ₹100 off!",
-    },
-    price_at_time: 2999.0,
-    discount_applied: 10.0,
-    discount_type: "percentage",
-    final_price: 5398.2,
-    product: {
-      product_id: "550e8400-e29b-41d4-a716-446655440040",
-      name: "Wireless Headphones",
-      slug: "wireless-headphones-sony",
-      description:
-        "Premium Noise Cancelling Wireless Headphones with Bluetooth 5.0, 30-hour battery life, and superior sound quality",
-      short_description: "Noise Cancelling, Bluetooth 5.0",
-      base_price: 2999.0,
-      rating_average: 4.5,
-      rating_count: 128,
-      is_active: true,
-      is_featured: true,
-      category_id: "550e8400-e29b-41d4-a716-446655440060",
-      brand_id: "550e8400-e29b-41d4-a716-446655440070",
-      brand: {
-        brand_id: "550e8400-e29b-41d4-a716-446655440070",
-        name: "Sony",
-        slug: "sony",
-      },
-      category: {
-        category_id: "550e8400-e29b-41d4-a716-446655440060",
-        name: "Audio & Headphones",
-        slug: "audio-headphones",
-        target_role: "both",
-      },
-      mainImage: "/assets/shop.jpg",
-      price: 2999.0,
-      variant: {
-        product_variant_id: "550e8400-e29b-41d4-a716-446655440050",
-        description: "Black Color, Standard Size",
-        short_description: "Black Standard",
-        price: 2999.0,
-        stock_quantity: 25,
-        sku: "SONY-WH-1000XM4-BLK",
-        base_variant_image_url: "/assets/shop.jpg",
-        discount_quantity: 5,
-        discount_percentage: 10.0,
-        min_retailer_quantity: 10,
-        bulk_discount_quantity: 20,
-        bulk_discount_percentage: 15.0,
-        attributes: {
-          color: "Black",
-          size: "Standard",
-          connectivity: "Bluetooth 5.0",
-          battery_life: "30 hours",
-        },
-      },
-    },
-    createdAt: "2024-01-15T10:30:00Z",
-    updatedAt: "2024-01-15T10:30:00Z",
-  },
-  {
-    cart_item_id: "550e8400-e29b-41d4-a716-446655440021",
-    cart_id: "550e8400-e29b-41d4-a716-446655440030",
-    product_id: "550e8400-e29b-41d4-a716-446655440041",
-    product_variant_id: "550e8400-e29b-41d4-a716-446655440051",
-    total_quantity: 1,
-    discount_quantity: null,
-    price_at_time: 15999.0,
-    discount_applied: null,
-    discount_type: null,
-    final_price: 15999.0,
-    product: {
-      product_id: "550e8400-e29b-41d4-a716-446655440041",
-      name: "Smart Watch Series 7",
-      slug: "smart-watch-apple-series-7",
-      description:
-        "Apple Watch Series 7 with 44mm case, GPS, Always-On Retina display, and comprehensive health tracking features",
-      short_description: "Series 7, 44mm, GPS",
-      base_price: 15999.0,
-      rating_average: 4.8,
-      rating_count: 89,
-      is_active: false, // Out of stock
-      is_featured: true,
-      category_id: "550e8400-e29b-41d4-a716-446655440061",
-      brand_id: "550e8400-e29b-41d4-a716-446655440071",
-      brand: {
-        brand_id: "550e8400-e29b-41d4-a716-446655440071",
-        name: "Apple",
-        slug: "apple",
-      },
-      category: {
-        category_id: "550e8400-e29b-41d4-a716-446655440061",
-        name: "Wearables & Smart Watches",
-        slug: "wearables-smart-watches",
-        target_role: "both",
-      },
-      mainImage: "/assets/logo.png",
-      price: 15999.0,
-      variant: {
-        product_variant_id: "550e8400-e29b-41d4-a716-446655440051",
-        description: "Silver Aluminum Case with White Sport Band",
-        short_description: "Silver 44mm",
-        price: 15999.0,
-        stock_quantity: 0, // Out of stock
-        sku: "APPLE-WATCH-S7-44-SLV",
-        base_variant_image_url: "/assets/logo.png",
-        discount_quantity: null,
-        discount_percentage: null,
-        min_retailer_quantity: 5,
-        bulk_discount_quantity: null,
-        bulk_discount_percentage: null,
-        attributes: {
-          color: "Silver",
-          size: "44mm",
-          case_material: "Aluminum",
-          band_color: "White",
-          connectivity: "GPS",
-        },
-      },
-    },
-    createdAt: "2024-01-14T15:45:00Z",
-    updatedAt: "2024-01-14T15:45:00Z",
-  },
-  {
-    cart_item_id: "550e8400-e29b-41d4-a716-446655440022",
-    cart_id: "550e8400-e29b-41d4-a716-446655440030",
-    product_id: "550e8400-e29b-41d4-a716-446655440042",
-    product_variant_id: "550e8400-e29b-41d4-a716-446655440052",
-    total_quantity: 3,
-    discount_quantity: 2,
-    price_at_time: 1299.0,
-    discount_applied: 5.0,
-    discount_type: "percentage",
-    final_price: 3703.05,
-    product: {
-      product_id: "550e8400-e29b-41d4-a716-446655440042",
-      name: "USB-C Fast Charging Cable",
-      slug: "usb-c-fast-charging-cable",
-      description:
-        "High-quality USB-C to USB-C fast charging cable, 6ft length, supports up to 100W power delivery and data transfer speeds up to 480 Mbps",
-      short_description: "6ft, 100W Power Delivery",
-      base_price: 1299.0,
-      rating_average: 4.2,
-      rating_count: 45,
-      is_active: true,
-      is_featured: false,
-      category_id: "550e8400-e29b-41d4-a716-446655440062",
-      brand_id: "550e8400-e29b-41d4-a716-446655440072",
-      brand: {
-        brand_id: "550e8400-e29b-41d4-a716-446655440072",
-        name: "Anker",
-        slug: "anker",
-      },
-      category: {
-        category_id: "550e8400-e29b-41d4-a716-446655440062",
-        name: "Cables & Accessories",
-        slug: "cables-accessories",
-        target_role: "both",
-      },
-      mainImage: "/assets/shop.jpg",
-      price: 1299.0,
-      variant: {
-        product_variant_id: "550e8400-e29b-41d4-a716-446655440052",
-        description: "Black 6ft USB-C to USB-C Cable",
-        short_description: "Black 6ft",
-        price: 1299.0,
-        stock_quantity: 150,
-        sku: "ANKER-USBC-6FT-BLK",
-        base_variant_image_url: "/assets/shop.jpg",
-        discount_quantity: 2,
-        discount_percentage: 5.0,
-        min_retailer_quantity: 50,
-        bulk_discount_quantity: 10,
-        bulk_discount_percentage: 12.0,
-        attributes: {
-          color: "Black",
-          length: "6ft",
-          connector_type: "USB-C to USB-C",
-          power_delivery: "100W",
-          data_speed: "480 Mbps",
-        },
-      },
-    },
-    createdAt: "2024-01-16T09:15:00Z",
-    updatedAt: "2024-01-16T09:15:00Z",
-  },
-];
+import React, { useState, useEffect } from "react";
+import {
+  AddressForm,
+  cartItemRoute,
+  getApiById,
+  getUserIdFromToken,
+  isAuthenticated,
+} from "../../src/index.js";
+// Note: Mock data removed - now using real API data
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState(mockCartItems);
+  const [cartItems, setCartItems] = useState([]);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
   const [showAddressForm, setShowAddressForm] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState(mockAddress);
+  const [selectedAddress, setSelectedAddress] = useState(null);
   const [savedForLater, setSavedForLater] = useState([]);
   const [showWishlistPopup, setShowWishlistPopup] = useState(false);
   const [selectedItemForWishlist, setSelectedItemForWishlist] = useState(null);
   const [estimatedDelivery, setEstimatedDelivery] =
     useState("3-5 business days");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
+  const [availableAddresses, setAvailableAddresses] = useState([]);
+  const [availableCoupons, setAvailableCoupons] = useState([]);
+  const [cart, setCart] = useState(null);
+
+  // Fetch cart data from API
+  useEffect(() => {
+    const fetchCartData = async () => {
+      try {
+        if (!isAuthenticated()) {
+          setError("Please login to view your cart");
+          setLoading(false);
+          return;
+        }
+
+        const userId = getUserIdFromToken();
+
+        if (!userId) {
+          setError("Invalid user session");
+          setLoading(false);
+          return;
+        }
+
+        const response = await getApiById(cartItemRoute, userId);
+
+        if (response && response.success && response.data) {
+          const {
+            cartItems,
+            user,
+            selectedAddress,
+            availableAddresses,
+            availableCoupons,
+            cart,
+          } = response.data;
+
+          setCartItems(cartItems || []);
+          setUser(user);
+          setSelectedAddress(selectedAddress);
+          setAvailableAddresses(availableAddresses || []);
+          setAvailableCoupons(availableCoupons || []);
+          setCart(cart);
+        } else {
+          setError(response?.message || "Failed to fetch cart data");
+        }
+      } catch (err) {
+        console.error("Error fetching cart data:", err);
+        setError(err.message || "Failed to load cart data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCartData();
+  }, []);
 
   // Calculate price details based on backend model structure
   const subtotal = cartItems.reduce(
@@ -319,7 +83,7 @@ const CartPage = () => {
       item.product.is_active ? sum + parseFloat(item.final_price) : sum,
     0
   );
-  const discount = appliedCoupon ? appliedCoupon.discount_value : 0;
+  const discount = appliedCoupon ? parseFloat(appliedCoupon.discount_value) : 0;
   const delivery = subtotal > 5000 ? 0 : 99;
   const tax = subtotal * 0.18; // 18% GST
   const total = subtotal - discount + delivery + tax;
@@ -413,10 +177,10 @@ const CartPage = () => {
     );
   };
   const handleApplyCoupon = () => {
-    const found = mockCoupons.find((c) => c.code === couponInput.trim());
+    const found = availableCoupons.find((c) => c.code === couponInput.trim());
     if (found) {
       // Check if coupon is valid for current cart value
-      if (found.min_cart_value && subtotal < found.min_cart_value) {
+      if (found.min_cart_value && subtotal < parseFloat(found.min_cart_value)) {
         alert(
           `Minimum cart value of ₹${found.min_cart_value} required for this coupon`
         );
@@ -427,6 +191,37 @@ const CartPage = () => {
       alert("Invalid coupon code");
     }
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your cart...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold mb-2 text-red-600">Error</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
@@ -518,27 +313,38 @@ const CartPage = () => {
             <h2 className="text-lg font-semibold mb-1">Deliver to:</h2>
             <div className="bg-gray-50 p-3 rounded border flex flex-col md:flex-row md:items-center md:justify-between">
               <div>
-                <span className="font-semibold">{mockUser.name}</span> |{" "}
-                {mockUser.phone_number}
+                <span className="font-semibold">{user?.name || "User"}</span>
+                {user?.phone_number && (
+                  <>
+                    {" | "}
+                    {user.phone_number}
+                  </>
+                )}
                 <div className="text-sm text-gray-700">
-                  {selectedAddress.address_line1},{" "}
-                  {selectedAddress.address_line2}, {selectedAddress.city},{" "}
-                  {selectedAddress.state} - {selectedAddress.postal_code},{" "}
-                  {selectedAddress.country}
+                  {selectedAddress ? (
+                    <>
+                      {selectedAddress.address_line1}
+                      {selectedAddress.address_line2 &&
+                        `, ${selectedAddress.address_line2}`}
+                      {`, ${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.postal_code}, ${selectedAddress.country}`}
+                    </>
+                  ) : (
+                    <span className="text-gray-500">No address selected</span>
+                  )}
                 </div>
               </div>
               <button
                 className="text-blue-600 text-sm mt-2 md:mt-0"
                 onClick={() => setShowAddressForm(true)}
               >
-                Change
+                {selectedAddress ? "Change" : "Add Address"}
               </button>
             </div>
           </div>
 
           {/* Cart Items */}
           <div className="divide-y">
-            {cartItems.length === 0 && (
+            {cartItems.length === 0 && !loading && (
               <div className="py-8 text-center text-gray-500">
                 Your cart is empty
               </div>
@@ -553,7 +359,10 @@ const CartPage = () => {
                 ? parseFloat(item.discount_applied)
                 : 0;
               const discountType = item.discount_type;
-              const stockQuantity = item.product.variant?.stock_quantity || 0;
+              const stockQuantity =
+                item.variant?.stock_quantity ||
+                item.product.variant?.stock_quantity ||
+                0;
               const minQty = item.min_order_quantity || 1;
 
               // Calculate individual item price (final price / quantity)
@@ -590,7 +399,13 @@ const CartPage = () => {
                   className={`flex gap-4 py-6 ${!isActive ? "opacity-60" : ""}`}
                 >
                   <img
-                    src={item.product.mainImage}
+                    src={
+                      item.variant?.base_variant_image_url ||
+                      item.product.mainImage ||
+                      item.product.media?.[0]?.ProductMediaURLs?.[0]
+                        ?.product_media_url ||
+                      "/assets/placeholder.jpg"
+                    }
                     alt={item.product.name}
                     className="w-24 h-24 object-cover rounded border"
                   />
@@ -610,19 +425,138 @@ const CartPage = () => {
                       Category: {item.product.category?.name}
                     </div>
                     <div className="text-xs text-gray-500 mb-2">
-                      Variant: {item.product.variant?.short_description}
-                      {item.product.variant?.sku && (
+                      Variant:{" "}
+                      {item.variant?.short_description ||
+                        item.product.variant?.short_description}
+                      {(item.variant?.sku || item.product.variant?.sku) && (
                         <span className="ml-2">
-                          SKU: {item.product.variant.sku}
+                          SKU: {item.variant?.sku || item.product.variant?.sku}
                         </span>
                       )}
                     </div>
-                    {item.product.rating_average && (
+                    {/* Display variant attributes */}
+                    {item.variant?.attributes && (
                       <div className="text-xs text-gray-500 mb-2">
-                        ⭐ {item.product.rating_average} (
-                        {item.product.rating_count} reviews)
+                        {Object.entries(item.variant.attributes).map(
+                          ([key, value]) => (
+                            <span key={key} className="mr-2">
+                              {key}: {value}
+                            </span>
+                          )
+                        )}
                       </div>
                     )}
+                    {/* Product and Variant Reviews */}
+                    <div className="text-xs text-gray-500 mb-2">
+                      {(item.product.rating_average > 0 ||
+                        item.product.rating_count > 0) && (
+                        <div className="flex items-center gap-2 mb-1">
+                          <span>⭐ {item.product.rating_average || "0.0"}</span>
+                          <span>
+                            ({item.product.rating_count} total reviews)
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Show recent product reviews */}
+                      {item.product.reviews &&
+                        item.product.reviews.length > 0 && (
+                          <div className="mt-1">
+                            <details className="cursor-pointer">
+                              <summary className="text-blue-600 hover:underline">
+                                View {item.product.reviews.length} recent
+                                product reviews
+                              </summary>
+                              <div className="mt-2 space-y-2 max-h-32 overflow-y-auto">
+                                {item.product.reviews.map((review) => (
+                                  <div
+                                    key={review.product_review_id}
+                                    className="bg-gray-50 p-2 rounded text-xs"
+                                  >
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span>⭐ {review.rating}/5</span>
+                                      <span className="font-medium">
+                                        {review.reviewer?.name}
+                                      </span>
+                                      {review.is_verified_purchase && (
+                                        <span className="bg-green-100 text-green-800 px-1 rounded">
+                                          Verified
+                                        </span>
+                                      )}
+                                    </div>
+                                    {review.title && (
+                                      <div className="font-medium mb-1">
+                                        {review.title}
+                                      </div>
+                                    )}
+                                    {review.review && (
+                                      <div className="text-gray-600">
+                                        {review.review}
+                                      </div>
+                                    )}
+                                    <div className="text-gray-400 mt-1">
+                                      {new Date(
+                                        review.createdAt
+                                      ).toLocaleDateString()}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </details>
+                          </div>
+                        )}
+
+                      {/* Show variant-specific reviews */}
+                      {item.variant?.ProductReviews &&
+                        item.variant.ProductReviews.length > 0 && (
+                          <div className="mt-2">
+                            <details className="cursor-pointer">
+                              <summary className="text-purple-600 hover:underline">
+                                View {item.variant.ProductReviews.length}{" "}
+                                variant-specific reviews
+                              </summary>
+                              <div className="mt-2 space-y-2 max-h-32 overflow-y-auto">
+                                {item.variant.ProductReviews.map((review) => (
+                                  <div
+                                    key={review.product_review_id}
+                                    className="bg-purple-50 p-2 rounded text-xs"
+                                  >
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span>⭐ {review.rating}/5</span>
+                                      <span className="font-medium">
+                                        {review.reviewer?.name}
+                                      </span>
+                                      <span className="bg-purple-100 text-purple-800 px-1 rounded">
+                                        Variant
+                                      </span>
+                                      {review.is_verified_purchase && (
+                                        <span className="bg-green-100 text-green-800 px-1 rounded">
+                                          Verified
+                                        </span>
+                                      )}
+                                    </div>
+                                    {review.title && (
+                                      <div className="font-medium mb-1">
+                                        {review.title}
+                                      </div>
+                                    )}
+                                    {review.review && (
+                                      <div className="text-gray-600">
+                                        {review.review}
+                                      </div>
+                                    )}
+                                    <div className="text-gray-400 mt-1">
+                                      {new Date(
+                                        review.createdAt
+                                      ).toLocaleDateString()}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </details>
+                          </div>
+                        )}
+                    </div>
                     <div className="flex items-center gap-4 mt-2">
                       <div className="flex flex-col">
                         <span className="font-semibold text-lg">
@@ -737,7 +671,13 @@ const CartPage = () => {
                 {savedForLater.map((item) => (
                   <div key={item.cart_item_id} className="flex gap-4 py-4">
                     <img
-                      src={item.product.mainImage}
+                      src={
+                        item.variant?.base_variant_image_url ||
+                        item.product.mainImage ||
+                        item.product.media?.[0]?.ProductMediaURLs?.[0]
+                          ?.product_media_url ||
+                        "/assets/placeholder.jpg"
+                      }
                       alt={item.product.name}
                       className="w-20 h-20 object-cover rounded border"
                     />
@@ -922,7 +862,13 @@ const CartPage = () => {
             <h3 className="text-lg font-semibold mb-4">Add to Wishlist</h3>
             <div className="flex gap-3 mb-4">
               <img
-                src={selectedItemForWishlist.product.mainImage}
+                src={
+                  selectedItemForWishlist.variant?.base_variant_image_url ||
+                  selectedItemForWishlist.product.mainImage ||
+                  selectedItemForWishlist.product.media?.[0]
+                    ?.ProductMediaURLs?.[0]?.product_media_url ||
+                  "/assets/placeholder.jpg"
+                }
                 alt={selectedItemForWishlist.product.name}
                 className="w-16 h-16 object-cover rounded"
               />

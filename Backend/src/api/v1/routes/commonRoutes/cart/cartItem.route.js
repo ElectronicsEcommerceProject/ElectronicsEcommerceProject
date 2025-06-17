@@ -22,8 +22,12 @@ router.post(
   cartItemController.findOrCreateCartItem
 );
 
-// Get all items in user's cart
-router.get("/", verifyJwtToken, cartItemController.getCartItems);
+// Get all items in user's cart by user_id
+router.get(
+  "/:user_id",
+  verifyJwtToken,
+  cartItemController.getCartItemsByUserId
+);
 
 // Update cart item quantity
 router.put(

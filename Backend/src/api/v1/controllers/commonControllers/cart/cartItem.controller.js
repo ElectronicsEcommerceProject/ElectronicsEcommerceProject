@@ -1,8 +1,25 @@
 import db from "../../../../../models/index.js";
 import { StatusCodes } from "http-status-codes";
 import MESSAGE from "../../../../../constants/message.js";
+import { Op } from "sequelize";
 
-const { Cart, CartItem, Product, ProductVariant } = db;
+const {
+  Cart,
+  CartItem,
+  Product,
+  ProductVariant,
+  Brand,
+  Category,
+  ProductMedia,
+  ProductMediaUrl,
+  VariantAttributeValue,
+  AttributeValue,
+  Attribute,
+  User,
+  Address,
+  Coupon,
+  ProductReview,
+} = db;
 
 // Add item to cart
 const addItemToCart = async (req, res) => {
@@ -245,24 +262,162 @@ const removeCartItem = async (req, res) => {
 };
 
 // Get all items in user's cart
-const getCartItems = async (req, res) => {
+const getCartItemsByUserId = async (req, res) => {
   try {
-    const { user_id } = req.user; // From JWT token
+    const { user_id } = req.params;
 
-    // Find user's cart
+    // Find user's cart with comprehensive includes
     const cart = await Cart.findOne({
       where: { user_id },
       include: [
         {
+          model: User,
+          as: "user",
+          attributes: [
+            "user_id",
+            "name",
+            "phone_number",
+            "email",
+            "profileImage_url",
+            "role",
+            "status",
+            "current_address_id",
+          ],
+          include: [
+            {
+              model: Address,
+              as: "addresses",
+              attributes: [
+                "address_id",
+                "address_line1",
+                "address_line2",
+                "city",
+                "state",
+                "postal_code",
+                "country",
+                "is_default",
+                "is_active",
+              ],
+              where: { is_active: true },
+              required: false,
+            },
+          ],
+        },
+        {
           model: CartItem,
+          as: "cartItems",
           include: [
             {
               model: Product,
               as: "product",
+              include: [
+                {
+                  model: Brand,
+                  as: "brand",
+                  attributes: ["brand_id", "name", "slug"],
+                },
+                {
+                  model: Category,
+                  as: "category",
+                  attributes: ["category_id", "name", "slug", "target_role"],
+                },
+                {
+                  model: ProductMedia,
+                  as: "media",
+                  attributes: ["product_media_id", "media_type"],
+                  include: [
+                    {
+                      model: ProductMediaUrl,
+                      attributes: ["product_media_url"],
+                    },
+                  ],
+                  limit: 1,
+                  required: false,
+                },
+                {
+                  model: ProductReview,
+                  as: "reviews",
+                  attributes: [
+                    "product_review_id",
+                    "rating",
+                    "title",
+                    "review",
+                    "is_verified_purchase",
+                    "createdAt",
+                  ],
+                  where: {
+                    review_action: "approve",
+                  },
+                  include: [
+                    {
+                      model: User,
+                      as: "reviewer",
+                      attributes: ["user_id", "name"],
+                    },
+                  ],
+                  required: false,
+                  limit: 5, // Limit to recent 5 reviews
+                  order: [["createdAt", "DESC"]],
+                },
+              ],
             },
             {
               model: ProductVariant,
               as: "variant",
+              include: [
+                {
+                  model: ProductMedia,
+                  attributes: ["product_media_id", "media_type"],
+                  include: [
+                    {
+                      model: ProductMediaUrl,
+                      attributes: ["product_media_url"],
+                    },
+                  ],
+                  limit: 1,
+                  required: false,
+                },
+                {
+                  model: VariantAttributeValue,
+                  as: "variantAttributeValues",
+                  include: [
+                    {
+                      model: AttributeValue,
+                      include: [
+                        {
+                          model: Attribute,
+                          attributes: ["name", "data_type"],
+                        },
+                      ],
+                    },
+                  ],
+                  required: false,
+                },
+                {
+                  model: ProductReview,
+                  attributes: [
+                    "product_review_id",
+                    "rating",
+                    "title",
+                    "review",
+                    "is_verified_purchase",
+                    "createdAt",
+                  ],
+                  where: {
+                    review_action: "approve",
+                  },
+                  include: [
+                    {
+                      model: User,
+                      as: "reviewer",
+                      attributes: ["user_id", "name"],
+                    },
+                  ],
+                  required: false,
+                  limit: 3, // Limit to recent 3 variant reviews
+                  order: [["createdAt", "DESC"]],
+                },
+              ],
             },
           ],
         },
@@ -275,9 +430,191 @@ const getCartItems = async (req, res) => {
       });
     }
 
+    // Get available coupons for the user
+    const availableCoupons = await Coupon.findAll({
+      where: {
+        is_active: true,
+        valid_from: { [Op.lte]: new Date() },
+        valid_to: { [Op.gte]: new Date() },
+        target_role: {
+          [Op.in]: ["both", cart.user.role],
+        },
+      },
+      attributes: [
+        "coupon_id",
+        "code",
+        "description",
+        "type",
+        "discount_value",
+        "target_type",
+        "target_role",
+        "min_cart_value",
+        "max_discount_value",
+        "usage_limit",
+        "usage_per_user",
+        "valid_from",
+        "valid_to",
+        "is_active",
+        "is_user_new",
+      ],
+      limit: 10, // Limit to prevent too many coupons
+    });
+
+    // Transform the data to match frontend expectations
+    const transformedCartItems = cart.cartItems.map((item) => {
+      const product = item.product;
+      const variant = item.variant;
+
+      // Get main image - priority: variant base_variant_image_url > variant ProductMedia > product ProductMedia > default
+      let mainImage = "/assets/shop.jpg"; // default fallback
+
+      if (variant?.base_variant_image_url) {
+        // First priority: variant's base_variant_image_url field
+        mainImage = variant.base_variant_image_url;
+      } else if (
+        variant?.ProductMedia?.[0]?.ProductMediaURLs?.[0]?.product_media_url
+      ) {
+        // Second priority: variant's ProductMedia URL
+        mainImage =
+          variant.ProductMedia[0].ProductMediaURLs[0].product_media_url;
+      } else if (
+        product?.media?.[0]?.ProductMediaURLs?.[0]?.product_media_url
+      ) {
+        // Third priority: product's ProductMedia URL
+        mainImage = product.media[0].ProductMediaURLs[0].product_media_url;
+      }
+
+      // Parse variant attributes from VariantAttributeValue
+      let variantAttributes = {};
+      if (variant?.variantAttributeValues) {
+        variant.variantAttributeValues.forEach((attrValue) => {
+          if (attrValue.AttributeValue?.Attribute) {
+            const attrName =
+              attrValue.AttributeValue.Attribute.name.toLowerCase();
+            const attrVal = attrValue.AttributeValue.value;
+            variantAttributes[attrName] = attrVal;
+          }
+        });
+      }
+
+      // Calculate discount thresholds and messages based on variant data
+      const quantityDiscount =
+        variant?.discount_quantity && variant?.discount_percentage
+          ? {
+              threshold: variant.discount_quantity,
+              type: "percentage",
+              value: parseFloat(variant.discount_percentage),
+              message: `Add ${Math.max(
+                0,
+                variant.discount_quantity - item.total_quantity
+              )} more to get ${variant.discount_percentage}% off!`,
+            }
+          : null;
+
+      const bulkDiscount =
+        variant?.bulk_discount_quantity && variant?.bulk_discount_percentage
+          ? {
+              threshold: variant.bulk_discount_quantity,
+              type: "percentage",
+              value: parseFloat(variant.bulk_discount_percentage),
+              message: `Add ${Math.max(
+                0,
+                variant.bulk_discount_quantity - item.total_quantity
+              )} more to get ${variant.bulk_discount_percentage}% off!`,
+            }
+          : null;
+
+      // Calculate combined review count (product + variant reviews)
+      const productReviewCount = product.reviews ? product.reviews.length : 0;
+      const variantReviewCount = variant?.ProductReviews
+        ? variant.ProductReviews.length
+        : 0;
+      const totalReviewCount = productReviewCount + variantReviewCount;
+
+      // Calculate combined average rating
+      let combinedRating = 0;
+      if (totalReviewCount > 0) {
+        const productRatingSum = product.reviews
+          ? product.reviews.reduce((sum, review) => sum + review.rating, 0)
+          : 0;
+        const variantRatingSum = variant?.ProductReviews
+          ? variant.ProductReviews.reduce(
+              (sum, review) => sum + review.rating,
+              0
+            )
+          : 0;
+        combinedRating =
+          (productRatingSum + variantRatingSum) / totalReviewCount;
+      }
+
+      return {
+        ...item.toJSON(),
+        // Add missing fields that frontend expects
+        min_order_quantity: variant?.min_retailer_quantity || 1,
+        quantity_discount: quantityDiscount,
+        bulk_discount: bulkDiscount,
+        product: {
+          ...product.toJSON(),
+          mainImage,
+          price: variant?.price || product.base_price,
+          // Override rating_count with combined count
+          rating_count: totalReviewCount,
+          // Override rating_average with combined average
+          rating_average: combinedRating.toFixed(1),
+          variant: variant
+            ? {
+                ...variant.toJSON(),
+                base_variant_image_url: (() => {
+                  // Use same priority logic for variant image
+                  if (variant.base_variant_image_url) {
+                    return variant.base_variant_image_url;
+                  } else if (
+                    variant?.ProductMedia?.[0]?.ProductMediaURLs?.[0]
+                      ?.product_media_url
+                  ) {
+                    return variant.ProductMedia[0].ProductMediaURLs[0]
+                      .product_media_url;
+                  } else {
+                    return mainImage;
+                  }
+                })(),
+                attributes: variantAttributes,
+              }
+            : null,
+        },
+      };
+    });
+
+    // Get user's default address or first active address
+    const defaultAddress =
+      cart.user.addresses?.find((addr) => addr.is_default) ||
+      cart.user.addresses?.[0] ||
+      null;
+
     res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.get.succ,
-      data: cart.CartItems,
+      data: {
+        cartItems: transformedCartItems,
+        user: {
+          user_id: cart.user.user_id,
+          name: cart.user.name,
+          email: cart.user.email,
+          phone_number: cart.user.phone_number,
+          profileImage_url: cart.user.profileImage_url,
+          role: cart.user.role,
+          status: cart.user.status,
+        },
+        selectedAddress: defaultAddress,
+        availableAddresses: cart.user.addresses || [],
+        availableCoupons: availableCoupons,
+        cart: {
+          cart_id: cart.cart_id,
+          user_id: cart.user_id,
+          createdAt: cart.createdAt,
+          updatedAt: cart.updatedAt,
+        },
+      },
     });
   } catch (err) {
     console.error("❌ Error in getCartItems:", err);
@@ -394,6 +731,6 @@ export default {
   addItemToCart,
   updateCartItem,
   removeCartItem,
-  getCartItems,
+  getCartItemsByUserId,
   findOrCreateCartItem,
 };
