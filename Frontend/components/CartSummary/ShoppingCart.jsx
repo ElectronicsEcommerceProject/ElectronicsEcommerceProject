@@ -4,6 +4,7 @@ import {
   cartItemRoute,
   getApiById,
   updateApiById,
+  deleteApiById,
   getUserIdFromToken,
   isAuthenticated,
 } from "../../src/index.js";
@@ -90,8 +91,47 @@ const CartPage = () => {
   const total = subtotal - discount + delivery + tax;
 
   // Handlers
-  const handleRemove = (id) => {
-    setCartItems(cartItems.filter((item) => item.cart_item_id !== id));
+  const handleRemove = async (id) => {
+    try {
+      // Set loading state for the specific item being removed
+      setUpdatingItemId(id);
+
+      // Make API call to remove cart item
+      const response = await deleteApiById(cartItemRoute, id);
+
+      if (response && response.success) {
+        // Remove item from local state
+        setCartItems(cartItems.filter((item) => item.cart_item_id !== id));
+
+        // Check if applied coupon is still valid after item removal
+        if (appliedCoupon) {
+          // Calculate new subtotal after removal
+          const newSubtotal = cartItems
+            .filter((item) => item.cart_item_id !== id)
+            .reduce((sum, item) => sum + parseFloat(item.final_price), 0);
+
+          // Check if coupon minimum cart value is still met
+          if (
+            appliedCoupon.min_cart_value &&
+            newSubtotal < parseFloat(appliedCoupon.min_cart_value)
+          ) {
+            setAppliedCoupon(null);
+            alert(
+              `Coupon "${appliedCoupon.code}" has been removed as the cart value is now below the minimum requirement of ₹${appliedCoupon.min_cart_value}`
+            );
+          }
+        }
+      } else {
+        console.error("Failed to remove cart item:", response?.message);
+        alert("Failed to remove item. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error removing cart item:", error);
+      alert("Failed to remove item. Please try again.");
+    } finally {
+      // Clear loading state
+      setUpdatingItemId(null);
+    }
   };
 
   const handleAddToWishlist = (item) => {
@@ -673,10 +713,13 @@ const CartPage = () => {
                         Add to Wishlist
                       </button>
                       <button
-                        className="text-red-600 text-sm hover:underline"
+                        className="text-red-600 text-sm hover:underline disabled:opacity-50"
                         onClick={() => handleRemove(item.cart_item_id)}
+                        disabled={updatingItemId === item.cart_item_id}
                       >
-                        Remove
+                        {updatingItemId === item.cart_item_id
+                          ? "Removing..."
+                          : "Remove"}
                       </button>
                     </div>
                   </div>

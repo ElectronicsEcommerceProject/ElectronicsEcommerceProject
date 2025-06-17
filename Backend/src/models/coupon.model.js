@@ -75,6 +75,9 @@ export default (sequelize) => {
     });
     Coupon.hasMany(models.Order, { foreignKey: "coupon_id" });
     Coupon.hasMany(models.CouponRedemption, { foreignKey: "coupon_id" });
+    Coupon.hasMany(models.CartItem, {
+      foreignKey: "coupon_id",
+    }); // Links coupon to cart items where it's applied
   };
 
   return Coupon;

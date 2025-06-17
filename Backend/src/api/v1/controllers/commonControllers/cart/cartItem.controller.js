@@ -246,6 +246,7 @@ const removeCartItem = async (req, res) => {
 
     if (!cartItem) {
       return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
         message: "Cart item not found or does not belong to user",
       });
     }
@@ -254,11 +255,13 @@ const removeCartItem = async (req, res) => {
     await cartItem.destroy();
 
     res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.delete.succ,
     });
   } catch (err) {
     console.error("❌ Error in removeCartItem:", err);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
       message: MESSAGE.delete.fail,
       error: err.message,
     });
