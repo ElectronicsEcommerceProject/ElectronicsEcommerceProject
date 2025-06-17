@@ -11,6 +11,8 @@ import {
   cartRoute,
   cartItemFindOrCreateRoute,
   createApi,
+  userCouponUserRoute,
+  getUserIdFromToken,
 } from "../../../src/index.js";
 
 const BuyNowPage = () => {
@@ -1098,7 +1100,54 @@ const BuyNowPage = () => {
                             ` | Usage limit: ${coupon.usage_per_user} per user`}
                         </div>
                       </div>
-                      <button className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                      <button
+                        onClick={async () => {
+                          try {
+                            // Get user ID from token
+                            const user_id = getUserIdFromToken();
+                            if (!user_id) {
+                              alert("Please login to apply coupons");
+                              return;
+                            }
+
+                            // Make API call to apply coupon
+                            const couponData = {
+                              coupon_id: coupon.coupon_id,
+                              user_id: user_id,
+                            };
+
+                            console.log(
+                              "Applying coupon with data:",
+                              couponData
+                            );
+
+                            const response = await createApi(
+                              userCouponUserRoute,
+                              couponData
+                            );
+
+                            if (response.success) {
+                              alert(
+                                `Coupon applied successfully! Code: ${coupon.code}`
+                              );
+                            } else {
+                              alert(
+                                `Failed to apply coupon: ${
+                                  response.message || "Unknown error"
+                                }`
+                              );
+                            }
+                          } catch (error) {
+                            console.error("Error applying coupon:", error);
+                            alert(
+                              `An error occurred while applying the coupon: ${
+                                error.message || "Unknown error"
+                              }`
+                            );
+                          }
+                        }}
+                        className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors"
+                      >
                         Apply
                       </button>
                     </div>

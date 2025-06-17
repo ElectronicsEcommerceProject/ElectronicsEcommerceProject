@@ -147,6 +147,9 @@ const userPanelRegisterRoute = import.meta.env.VITE_AUTH_SIGNUP_ENDPOINT;
 const userPanelProductByIdDetailsRoute = import.meta.env
   .VITE_USER_PRODUCT_BY_ID_DETAILS_ENDPOINT;
 
+//user coupon realted routes
+const userCouponUserRoute = import.meta.env.VITE_USER_COUPON_ENDPOINT;
+
 export {
   FaEye,
   FaEyeSlash,
@@ -224,6 +227,9 @@ export {
   cartRoute,
   cartItemRoute,
   cartItemFindOrCreateRoute,
+
+  //coupon related routes
+  userCouponUserRoute,
 
   // Auth utilities
   getUserFromToken,

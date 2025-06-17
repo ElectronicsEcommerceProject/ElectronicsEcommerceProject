@@ -13,7 +13,6 @@ import productVariantRoutes from "./productVariant.routes.js";
 import productVariantAttributeValuesRoutes from "./productVariantAttributeValues.routes.js";
 import productMediaRoutes from "./productMedia.routes.js";
 import productMediaUrlRoutes from "./productMediaUrl.routes.js";
-import couponUserRoutes from "./couponUser.routes.js";
 import discountRuleRoutes from "./discountRule.routes.js";
 import orderRoutes from "./order.routes.js";
 import usersManagmentDashboardDataRoutes from "./userManagmentDashboardData.routes.js";
@@ -60,8 +59,6 @@ app.use("/product-Management-Dashboard-Data", adminProductManagmentDataRoutes);
 app.use("/reports-Analytics-Dashboard-Data", adminAnalyticsDashboardDataRoutes);
 
 app.use("/users-Management-Dashboard-Data", usersManagmentDashboardDataRoutes);
-
-app.use("/coupon-User", couponUserRoutes);
 
 app.use("/discount-Rule", discountRuleRoutes);
 
