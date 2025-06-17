@@ -755,7 +755,10 @@ const CartPage = () => {
                 Estimated delivery: {estimatedDelivery}
               </div>
             </div>
-            <button className="w-full mt-6 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+            <button
+              className="w-full mt-6 bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+              onClick={() => alert("Order placed successfully!")}
+            >
               PLACE ORDER
             </button>
             {discount > 0 && (

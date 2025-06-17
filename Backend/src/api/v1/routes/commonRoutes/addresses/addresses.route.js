@@ -7,32 +7,38 @@ import { addressController } from "../../../controllers/index.js";
 const router = express.Router();
 
 router.post(
-  "/:id",
+  "/",
   verifyJwtToken,
   validator(validators.address.addressValidator, null),
-  validator(validators.address.id, "params"), // Add params validation
   addressController.addAddress
 );
 
 router.get("/", verifyJwtToken, addressController.getAddresses);
 router.get(
-  "/:id",
-  validator(validators.address.id, "params"), // Pass "params" as the property to validate
+  "/:address_id",
+  validator(validators.address.address_id, "params"), // Pass "params" as the property to validate
   verifyJwtToken,
   addressController.getAddressById
 );
-router.put(
-  "/:id",
+router.patch(
+  "/:address_id",
   validator(validators.address.updateAddressValidator, null),
-  validator(validators.address.id, "params"), // Add params validation
   verifyJwtToken,
   addressController.updateAddress
 );
 router.delete(
-  "/:id",
-  validator(validators.address.id, "params"), // Pass "params" as the property to validate
+  "/:address_id",
+  validator(validators.address.address_id, "params"), // Pass "params" as the property to validate
   verifyJwtToken,
   addressController.deleteAddress
+);
+
+// Set address as default
+router.put(
+  "/:address_id/default",
+  validator(validators.address.address_id, "params"),
+  verifyJwtToken,
+  addressController.setDefaultAddress
 );
 
 export default router;

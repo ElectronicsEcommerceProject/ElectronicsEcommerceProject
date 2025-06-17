@@ -24,7 +24,10 @@ const addAddress = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: MESSAGE.none });
+      return res.status(StatusCodes.NOT_FOUND).json({ 
+        success: false, 
+        message: MESSAGE.none 
+      });
     }
 
     // If this is a default address, update any existing default addresses
@@ -54,6 +57,7 @@ const addAddress = async (req, res) => {
     });
 
     res.status(StatusCodes.CREATED).json({
+      success: true,
       message: MESSAGE.post.succ,
       address: newAddress,
     });
@@ -61,7 +65,11 @@ const addAddress = async (req, res) => {
     console.error("Error adding address:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: MESSAGE.post.fail, error: error.message });
+      .json({ 
+        success: false, 
+        message: MESSAGE.post.fail, 
+        error: error.message 
+      });
   }
 };
 
@@ -73,7 +81,10 @@ const getAddresses = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: MESSAGE.none });
+      return res.status(StatusCodes.NOT_FOUND).json({ 
+        success: false, 
+        message: MESSAGE.none 
+      });
     }
 
     const addresses = await Address.findAll({
@@ -89,12 +100,14 @@ const getAddresses = async (req, res) => {
 
     if (!addresses || addresses.length === 0) {
       return res.status(StatusCodes.OK).json({
+        success: true,
         message: MESSAGE.get.empty,
         addresses: [],
       });
     }
 
     res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.get.succ,
       addresses,
     });
@@ -102,24 +115,32 @@ const getAddresses = async (req, res) => {
     console.error("Error fetching addresses:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: MESSAGE.get.fail, error: error.message });
+      .json({ 
+        success: false, 
+        message: MESSAGE.get.fail, 
+        error: error.message 
+      });
   }
 };
 
 // Get a specific address by ID
 const getAddressById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { address_id } = req.params;
     const user = await User.findOne({
       where: { email: req.user.email },
     });
 
     if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: MESSAGE.none });
+      return res.status(StatusCodes.NOT_FOUND).json({ 
+        success: false, 
+        message: MESSAGE.none 
+      });
     }
 
     const address = await Address.findOne({
       where: {
+        address_id,
         user_id: user.user_id,
         is_active: true,
       },
@@ -128,10 +149,14 @@ const getAddressById = async (req, res) => {
     if (!address) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: MESSAGE.get.empty });
+        .json({ 
+          success: false, 
+          message: MESSAGE.get.empty 
+        });
     }
 
     res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.get.succ,
       address,
     });
@@ -139,14 +164,18 @@ const getAddressById = async (req, res) => {
     console.error("Error fetching address:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: MESSAGE.get.fail, error: error.message });
+      .json({ 
+        success: false, 
+        message: MESSAGE.get.fail, 
+        error: error.message 
+      });
   }
 };
 
 // Update an address
 const updateAddress = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { address_id } = req.params;
     const {
       address_line1,
       address_line2,
@@ -163,12 +192,16 @@ const updateAddress = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: MESSAGE.none });
+      return res.status(StatusCodes.NOT_FOUND).json({ 
+        success: false, 
+        message: MESSAGE.none 
+      });
     }
 
     // Find the address to update
     const addressToUpdate = await Address.findOne({
       where: {
+        address_id,
         user_id: user.user_id,
       },
     });
@@ -176,7 +209,10 @@ const updateAddress = async (req, res) => {
     if (!addressToUpdate) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: MESSAGE.get.empty });
+        .json({ 
+          success: false, 
+          message: MESSAGE.get.empty 
+        });
     }
 
     // If changing to default, update other addresses
@@ -208,6 +244,7 @@ const updateAddress = async (req, res) => {
     await addressToUpdate.update(updatedFields);
 
     res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.put.succ,
       address: await addressToUpdate.reload(),
     });
@@ -215,25 +252,33 @@ const updateAddress = async (req, res) => {
     console.error("Error updating address:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: MESSAGE.put.fail, error: error.message });
+      .json({ 
+        success: false, 
+        message: MESSAGE.put.fail, 
+        error: error.message 
+      });
   }
 };
 
 // Delete an address (soft delete)
 const deleteAddress = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { address_id } = req.params;
 
     const user = await User.findOne({
       where: { email: req.user.email },
     });
 
     if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: MESSAGE.none });
+      return res.status(StatusCodes.NOT_FOUND).json({ 
+        success: false, 
+        message: MESSAGE.none 
+      });
     }
 
     const address = await Address.findOne({
       where: {
+        address_id,
         user_id: user.user_id,
       },
     });
@@ -241,40 +286,51 @@ const deleteAddress = async (req, res) => {
     if (!address) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: MESSAGE.get.empty });
+        .json({ 
+          success: false, 
+          message: MESSAGE.get.empty 
+        });
     }
 
     // Soft delete by setting is_active to false
     await address.update({ is_active: false });
 
     res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.delete.succ,
     });
   } catch (error) {
     console.error("Error deleting address:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: MESSAGE.delete.fail, error: error.message });
+      .json({ 
+        success: false, 
+        message: MESSAGE.delete.fail, 
+        error: error.message 
+      });
   }
 };
 
 // Set an address as default
 const setDefaultAddress = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { address_id } = req.params;
 
     const user = await User.findOne({
       where: { email: req.user.email },
     });
 
     if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: MESSAGE.none });
+      return res.status(StatusCodes.NOT_FOUND).json({ 
+        success: false, 
+        message: MESSAGE.none 
+      });
     }
 
     // Find the address to set as default
     const address = await Address.findOne({
       where: {
-        id: id,
+        address_id,
         user_id: user.user_id,
         is_active: true,
       },
@@ -283,7 +339,10 @@ const setDefaultAddress = async (req, res) => {
     if (!address) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: MESSAGE.get.empty });
+        .json({ 
+          success: false, 
+          message: MESSAGE.get.empty 
+        });
     }
 
     // Update all addresses to non-default
@@ -301,6 +360,7 @@ const setDefaultAddress = async (req, res) => {
     await address.update({ is_default: true });
 
     res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.put.succ,
       address: await address.reload(),
     });
@@ -308,7 +368,11 @@ const setDefaultAddress = async (req, res) => {
     console.error("Error setting default address:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: MESSAGE.put.fail, error: error.message });
+      .json({ 
+        success: false, 
+        message: MESSAGE.put.fail, 
+        error: error.message 
+      });
   }
 };
 

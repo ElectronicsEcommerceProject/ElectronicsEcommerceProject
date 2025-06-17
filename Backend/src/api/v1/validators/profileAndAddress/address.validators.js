@@ -102,8 +102,8 @@ export const updateAddressValidator = Joi.object({
     }),
 });
 
-export const id = Joi.object({
-  id: Joi.string()
+export const address_id = Joi.object({
+  address_id: Joi.string()
     .uuid()
     .required()
     .messages({

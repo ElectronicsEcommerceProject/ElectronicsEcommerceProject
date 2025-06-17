@@ -147,6 +147,8 @@ const userPanelRegisterRoute = import.meta.env.VITE_AUTH_SIGNUP_ENDPOINT;
 const userPanelProductByIdDetailsRoute = import.meta.env
   .VITE_USER_PRODUCT_BY_ID_DETAILS_ENDPOINT;
 
+const userAddressesRoute = import.meta.env.VITE_ADDRESSES_ENDPOINT;
+
 //user coupon realted routes
 const userCouponUserRoute = import.meta.env.VITE_USER_COUPON_ENDPOINT;
 
@@ -222,6 +224,7 @@ export {
   userPanelLoginRoute,
   userPanelRegisterRoute,
   userPanelProductByIdDetailsRoute,
+  userAddressesRoute,
 
   // Cart Routes
   cartRoute,

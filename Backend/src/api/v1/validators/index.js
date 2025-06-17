@@ -17,7 +17,7 @@ import {
 import { profileValidator } from "./profileAndAddress/profile.validators.js";
 import {
   addressValidator,
-  id,
+  address_id,
   updateAddressValidator,
 } from "./profileAndAddress/address.validators.js";
 import {
@@ -137,22 +137,22 @@ export const validators = {
   product: {
     createProduct: productValidationSchema,
     updateProduct: productUpdateValidationSchema,
-    id: id,
+    id: address_id,
   },
   productVariant: {
     createVariant: productVariantValidator,
     updateVariant: productVariantUpdateValidator,
     updateStockValidator: updateStockValidator,
-    id: id,
+    id: address_id,
   },
   profile: {
     profile: profileValidator,
-    id: id,
+    id: address_id,
   },
   address: {
     addressValidator: addressValidator,
     updateAddressValidator: updateAddressValidator,
-    id: id,
+    address_id: address_id,
   },
   category: {
     categoryValidator: categoryValidator,
@@ -168,27 +168,27 @@ export const validators = {
   attribute: {
     attributeValidator: attributeValidator,
     attributeUpdateValidator: attributeUpdateValidator,
-    id: id,
+    id: address_id,
   },
   attributeValue: {
     attributeValueValidator: attributeValueValidator,
     attributeValueUpdateValidator: attributeValueUpdateValidator,
-    id: id,
+    id: address_id,
   },
   productVariantAttributeValues: {
     variantAttributeValueValidator: variantAttributeValueValidator,
     variantAttributeValueUpdateValidator: variantAttributeValueUpdateValidator,
-    id: id,
+    id: address_id,
   },
   productMedia: {
     productMediaValidator: productMediaValidator,
     productMediaUpdateValidator: productMediaUpdateValidator,
-    id: id,
+    id: address_id,
   },
   productMediaUrl: {
     productMediaUrlValidator: productMediaURLValidator,
     productMediaUrlUpdateValidator: productMediaURLUpdateValidator,
-    id: id,
+    id: address_id,
   },
   stockAlert: {
     stockAlertValidator,
