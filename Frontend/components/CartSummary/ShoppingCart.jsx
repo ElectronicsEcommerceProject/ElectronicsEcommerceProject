@@ -307,6 +307,11 @@ const CartPage = () => {
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(mockAddress);
+  const [savedForLater, setSavedForLater] = useState([]);
+  const [showWishlistPopup, setShowWishlistPopup] = useState(false);
+  const [selectedItemForWishlist, setSelectedItemForWishlist] = useState(null);
+  const [estimatedDelivery, setEstimatedDelivery] =
+    useState("3-5 business days");
 
   // Calculate price details based on backend model structure
   const subtotal = cartItems.reduce(
@@ -316,11 +321,35 @@ const CartPage = () => {
   );
   const discount = appliedCoupon ? appliedCoupon.discount_value : 0;
   const delivery = subtotal > 5000 ? 0 : 99;
-  const total = subtotal - discount + delivery;
+  const tax = subtotal * 0.18; // 18% GST
+  const total = subtotal - discount + delivery + tax;
 
   // Handlers
   const handleRemove = (id) => {
     setCartItems(cartItems.filter((item) => item.cart_item_id !== id));
+  };
+
+  const handleSaveForLater = (item) => {
+    setSavedForLater([...savedForLater, item]);
+    setCartItems(
+      cartItems.filter(
+        (cartItem) => cartItem.cart_item_id !== item.cart_item_id
+      )
+    );
+  };
+
+  const handleMoveToCart = (item) => {
+    setCartItems([...cartItems, item]);
+    setSavedForLater(
+      savedForLater.filter(
+        (savedItem) => savedItem.cart_item_id !== item.cart_item_id
+      )
+    );
+  };
+
+  const handleAddToWishlist = (item) => {
+    setSelectedItemForWishlist(item);
+    setShowWishlistPopup(true);
   };
   const handleQuantityChange = (id, delta) => {
     setCartItems(
@@ -402,14 +431,83 @@ const CartPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
       {/* Header */}
-      <header className="bg-white shadow-md p-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Shopping Cart</h1>
-        <button
-          className="text-blue-600 text-sm"
-          onClick={() => setShowLogoutPopup(true)}
-        >
-          Logout
-        </button>
+      <header className="bg-white shadow-md p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold text-gray-800">Shopping Cart</h1>
+          <button
+            className="text-blue-600 text-sm hover:underline"
+            onClick={() => setShowLogoutPopup(true)}
+          >
+            Logout
+          </button>
+        </div>
+
+        {/* Cart Summary Bar */}
+        {cartItems.length > 0 && (
+          <div className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">
+                {cartItems.length} item{cartItems.length !== 1 ? "s" : ""} in
+                cart
+              </span>
+              <span className="text-sm text-gray-600">•</span>
+              <span className="text-sm font-medium">
+                Subtotal: ₹{subtotal.toLocaleString()}
+              </span>
+            </div>
+            <div className="text-sm text-gray-600">
+              {delivery === 0 ? "Free delivery" : `+₹${delivery} delivery`}
+            </div>
+          </div>
+        )}
+
+        {/* Progress Indicator */}
+        <div className="mt-4 flex items-center justify-center">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center">
+              <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                1
+              </div>
+              <span className="ml-2 text-sm font-medium text-blue-600">
+                Cart
+              </span>
+            </div>
+            <div
+              className={`w-16 h-1 ${
+                selectedAddress ? "bg-blue-600" : "bg-gray-200"
+              }`}
+            ></div>
+            <div className="flex items-center">
+              <div
+                className={`w-8 h-8 ${
+                  selectedAddress
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-500"
+                } rounded-full flex items-center justify-center text-sm ${
+                  selectedAddress ? "font-medium" : ""
+                }`}
+              >
+                2
+              </div>
+              <span
+                className={`ml-2 text-sm ${
+                  selectedAddress
+                    ? "font-medium text-blue-600"
+                    : "text-gray-500"
+                }`}
+              >
+                Address
+              </span>
+            </div>
+            <div className="w-16 h-1 bg-gray-200"></div>
+            <div className="flex items-center">
+              <div className="w-8 h-8 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center text-sm">
+                3
+              </div>
+              <span className="ml-2 text-sm text-gray-500">Payment</span>
+            </div>
+          </div>
+        </div>
       </header>
 
       <main className="container mx-auto px-4 py-6 flex flex-col md:flex-row gap-6 flex-1">
@@ -464,14 +562,20 @@ const CartPage = () => {
 
               // --- NEW: Show next discount message if available ---
               let nextDiscountMsg = null;
-              if (item.quantity_discount && quantity < item.quantity_discount.threshold) {
+              if (
+                item.quantity_discount &&
+                quantity < item.quantity_discount.threshold
+              ) {
                 const needed = item.quantity_discount.threshold - quantity;
                 if (item.quantity_discount.type === "percentage") {
                   nextDiscountMsg = `Add ${needed} more to get ${item.quantity_discount.value}% off!`;
                 } else if (item.quantity_discount.type === "fixed") {
                   nextDiscountMsg = `Add ${needed} more to get ₹${item.quantity_discount.value} off!`;
                 }
-              } else if (item.bulk_discount && quantity < item.bulk_discount.threshold) {
+              } else if (
+                item.bulk_discount &&
+                quantity < item.bulk_discount.threshold
+              ) {
                 const needed = item.bulk_discount.threshold - quantity;
                 if (item.bulk_discount.type === "percentage") {
                   nextDiscountMsg = `Add ${needed} more to get ${item.bulk_discount.value}% off!`;
@@ -598,11 +702,20 @@ const CartPage = () => {
                       </div>
                     )}
                     <div className="flex gap-4 mt-3">
-                      <button className="text-blue-600 text-sm">
+                      <button
+                        className="text-blue-600 text-sm hover:underline"
+                        onClick={() => handleSaveForLater(item)}
+                      >
                         Save for Later
                       </button>
                       <button
-                        className="text-red-600 text-sm"
+                        className="text-purple-600 text-sm hover:underline"
+                        onClick={() => handleAddToWishlist(item)}
+                      >
+                        Add to Wishlist
+                      </button>
+                      <button
+                        className="text-red-600 text-sm hover:underline"
                         onClick={() => handleRemove(item.cart_item_id)}
                       >
                         Remove
@@ -613,6 +726,56 @@ const CartPage = () => {
               );
             })}
           </div>
+
+          {/* Saved for Later Section */}
+          {savedForLater.length > 0 && (
+            <div className="mt-8 border-t pt-6">
+              <h2 className="text-lg font-semibold mb-4">
+                Saved for Later ({savedForLater.length})
+              </h2>
+              <div className="divide-y">
+                {savedForLater.map((item) => (
+                  <div key={item.cart_item_id} className="flex gap-4 py-4">
+                    <img
+                      src={item.product.mainImage}
+                      alt={item.product.name}
+                      className="w-20 h-20 object-cover rounded border"
+                    />
+                    <div className="flex-1">
+                      <h3 className="font-medium">{item.product.name}</h3>
+                      <p className="text-sm text-gray-600">
+                        {item.product.short_description}
+                      </p>
+                      <div className="flex items-center gap-4 mt-2">
+                        <span className="font-semibold">
+                          ₹{parseFloat(item.price_at_time).toLocaleString()}
+                        </span>
+                        <button
+                          onClick={() => handleMoveToCart(item)}
+                          className="text-blue-600 text-sm hover:underline"
+                        >
+                          Move to Cart
+                        </button>
+                        <button
+                          onClick={() =>
+                            setSavedForLater(
+                              savedForLater.filter(
+                                (savedItem) =>
+                                  savedItem.cart_item_id !== item.cart_item_id
+                              )
+                            )
+                          }
+                          className="text-red-600 text-sm hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Right: Price Details & Coupon */}
@@ -621,20 +784,29 @@ const CartPage = () => {
             <h2 className="text-xl font-bold mb-4">Price Details</h2>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span>Subtotal</span>
+                <span>Subtotal ({cartItems.length} items)</span>
                 <span>₹{subtotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span>Discount</span>
-                <span>-₹{discount.toLocaleString()}</span>
+                <span className="text-green-600">
+                  -₹{discount.toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Delivery</span>
                 <span>{delivery === 0 ? "Free" : `₹${delivery}`}</span>
               </div>
-              <div className="flex justify-between font-bold border-t pt-2">
+              <div className="flex justify-between">
+                <span>Tax (GST 18%)</span>
+                <span>₹{tax.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between font-bold border-t pt-2 text-lg">
                 <span>Total</span>
                 <span>₹{total.toLocaleString()}</span>
+              </div>
+              <div className="text-xs text-gray-500">
+                Estimated delivery: {estimatedDelivery}
               </div>
             </div>
             <button className="w-full mt-6 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
@@ -649,6 +821,7 @@ const CartPage = () => {
             {/* Coupon Section */}
             <div className="mt-6 border-t pt-4">
               <h3 className="font-semibold mb-2">Apply Coupon</h3>
+
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -687,9 +860,9 @@ const CartPage = () => {
 
           {/* Secure Info */}
           <div className="text-sm text-gray-600 mt-2 flex flex-col gap-1 items-center">
-            <span>Safe & secure payments</span>
-            <span>Easy returns</span>
-            <span>100% Authentic products</span>
+            <span>🔒 Safe & secure payments</span>
+            <span>↩️ Easy returns</span>
+            <span>✅ 100% Authentic products</span>
           </div>
         </section>
       </main>
@@ -741,6 +914,73 @@ const CartPage = () => {
         selectedAddressId={selectedAddress?.address_id}
         mode="select"
       />
+
+      {/* Wishlist Confirmation Popup */}
+      {showWishlistPopup && selectedItemForWishlist && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+            <h3 className="text-lg font-semibold mb-4">Add to Wishlist</h3>
+            <div className="flex gap-3 mb-4">
+              <img
+                src={selectedItemForWishlist.product.mainImage}
+                alt={selectedItemForWishlist.product.name}
+                className="w-16 h-16 object-cover rounded"
+              />
+              <div>
+                <h4 className="font-medium">
+                  {selectedItemForWishlist.product.name}
+                </h4>
+                <p className="text-sm text-gray-600">
+                  {selectedItemForWishlist.product.short_description}
+                </p>
+              </div>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Do you want to add this item to your wishlist and remove it from
+              cart?
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-100"
+                onClick={() => {
+                  setShowWishlistPopup(false);
+                  setSelectedItemForWishlist(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                onClick={() => {
+                  // Add to wishlist logic would go here
+                  handleRemove(selectedItemForWishlist.cart_item_id);
+                  setShowWishlistPopup(false);
+                  setSelectedItemForWishlist(null);
+                  alert("Item added to wishlist!");
+                }}
+              >
+                Add to Wishlist
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Empty Cart State */}
+      {cartItems.length === 0 && savedForLater.length === 0 && (
+        <div className="fixed inset-0 bg-white flex flex-col items-center justify-center">
+          <div className="text-center">
+            <div className="text-6xl mb-4">🛒</div>
+            <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
+            <p className="text-gray-600 mb-6">
+              Looks like you haven't added anything to your cart yet
+            </p>
+            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+              Continue Shopping
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
