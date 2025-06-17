@@ -3,6 +3,7 @@ import {
   AddressForm,
   cartItemRoute,
   getApiById,
+  updateApiById,
   getUserIdFromToken,
   isAuthenticated,
 } from "../../src/index.js";
@@ -25,6 +26,7 @@ const CartPage = () => {
   const [cart, setCart] = useState(null);
   const [showWishlistPopup, setShowWishlistPopup] = useState(false);
   const [selectedItemForWishlist, setSelectedItemForWishlist] = useState(null);
+  const [updatingItemId, setUpdatingItemId] = useState(null);
 
   // Fetch cart data from API
   useEffect(() => {
@@ -96,66 +98,97 @@ const CartPage = () => {
     setSelectedItemForWishlist(item);
     setShowWishlistPopup(true);
   };
-  const handleQuantityChange = (id, delta) => {
-    setCartItems(
-      cartItems.map((item) => {
-        if (item.cart_item_id === id) {
-          const minQty = item.min_order_quantity || 1;
-          const newQuantity = Math.max(minQty, item.total_quantity + delta);
-          const priceAtTime = parseFloat(item.price_at_time);
 
-          // Discount logic
-          let discount = 0;
-          let discountType = null;
-          let discountMsg = null;
+  const handleQuantityChange = async (id, delta) => {
+    try {
+      // Prevent multiple simultaneous updates for the same item
+      if (updatingItemId === id) {
+        return;
+      }
 
-          // Quantity discount
-          if (
-            item.quantity_discount &&
-            newQuantity >= item.quantity_discount.threshold
-          ) {
-            discountType = item.quantity_discount.type;
-            if (discountType === "percentage") {
-              discount =
-                priceAtTime *
-                newQuantity *
-                (item.quantity_discount.value / 100);
-              discountMsg = item.quantity_discount.message;
-            } else if (discountType === "fixed") {
-              discount = item.quantity_discount.value;
-              discountMsg = item.quantity_discount.message;
+      // Find the current item to get current quantity
+      const currentItem = cartItems.find((item) => item.cart_item_id === id);
+      if (!currentItem) {
+        console.error("Cart item not found");
+        return;
+      }
+
+      const minQty = currentItem.min_order_quantity || 1;
+      const newQuantity = Math.max(minQty, currentItem.total_quantity + delta);
+
+      // Don't make API call if quantity hasn't changed
+      if (newQuantity === currentItem.total_quantity) {
+        return;
+      }
+
+      // Check stock limits
+      const stockQuantity =
+        currentItem.variant?.stock_quantity ||
+        currentItem.product.variant?.stock_quantity ||
+        0;
+      if (stockQuantity > 0 && newQuantity > stockQuantity) {
+        alert(`Only ${stockQuantity} items available in stock`);
+        return;
+      }
+
+      // Set loading state
+      setUpdatingItemId(id);
+
+      // Make API call to update cart item
+      const response = await updateApiById(cartItemRoute, id, {
+        total_quantity: newQuantity,
+      });
+
+      if (response && response.success) {
+        // Update local state with the response from backend
+        setCartItems((prevItems) =>
+          prevItems.map((item) => {
+            if (item.cart_item_id === id) {
+              return {
+                ...item,
+                total_quantity: newQuantity,
+                final_price: response.data.final_price,
+                discount_applied: response.data.discount_applied,
+                discount_type: response.data.discount_type,
+                discount_quantity: response.data.discount_quantity,
+              };
             }
-          }
-          // Bulk discount
-          if (
-            item.bulk_discount &&
-            newQuantity >= item.bulk_discount.threshold
-          ) {
-            discountType = item.bulk_discount.type;
-            if (discountType === "percentage") {
-              discount =
-                priceAtTime * newQuantity * (item.bulk_discount.value / 100);
-              discountMsg = item.bulk_discount.message;
-            } else if (discountType === "fixed") {
-              discount = item.bulk_discount.value;
-              discountMsg = item.bulk_discount.message;
+            return item;
+          })
+        );
+
+        // Check if applied coupon is still valid after cart update
+        if (appliedCoupon) {
+          // Calculate new subtotal after the update
+          const newSubtotal = cartItems.reduce((sum, item) => {
+            if (item.cart_item_id === id) {
+              return sum + parseFloat(response.data.final_price);
             }
+            return sum + parseFloat(item.final_price);
+          }, 0);
+
+          // Check if coupon minimum cart value is still met
+          if (
+            appliedCoupon.min_cart_value &&
+            newSubtotal < parseFloat(appliedCoupon.min_cart_value)
+          ) {
+            setAppliedCoupon(null);
+            alert(
+              `Coupon "${appliedCoupon.code}" has been removed as the cart value is now below the minimum requirement of ₹${appliedCoupon.min_cart_value}`
+            );
           }
-
-          let finalPrice = priceAtTime * newQuantity - discount;
-
-          return {
-            ...item,
-            total_quantity: newQuantity,
-            final_price: finalPrice.toFixed(2),
-            discount_applied: discount,
-            discount_type: discountType,
-            discount_message: discountMsg,
-          };
         }
-        return item;
-      })
-    );
+      } else {
+        console.error("Failed to update cart item:", response?.message);
+        alert("Failed to update cart item. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error updating cart item:", error);
+      alert("Failed to update cart item. Please try again.");
+    } finally {
+      // Clear loading state
+      setUpdatingItemId(null);
+    }
   };
   const handleApplyCoupon = () => {
     const found = availableCoupons.find((c) => c.code === couponInput.trim());
@@ -553,28 +586,44 @@ const CartPage = () => {
                       </div>
                       <div className="flex items-center border rounded">
                         <button
-                          className="px-2 py-1 text-gray-600 hover:bg-gray-100"
+                          className={`px-2 py-1 text-gray-600 hover:bg-gray-100 ${
+                            updatingItemId === item.cart_item_id
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                          }`}
                           onClick={() =>
                             handleQuantityChange(item.cart_item_id, -1)
                           }
-                          disabled={quantity <= minQty}
+                          disabled={
+                            quantity <= minQty ||
+                            updatingItemId === item.cart_item_id
+                          }
                         >
-                          −
+                          {updatingItemId === item.cart_item_id ? "..." : "−"}
                         </button>
                         <span className="px-3 py-1 min-w-[40px] text-center">
-                          {quantity}
+                          {updatingItemId === item.cart_item_id ? (
+                            <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full mx-auto"></div>
+                          ) : (
+                            quantity
+                          )}
                         </span>
                         <button
-                          className="px-2 py-1 text-gray-600 hover:bg-gray-100"
+                          className={`px-2 py-1 text-gray-600 hover:bg-gray-100 ${
+                            updatingItemId === item.cart_item_id
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                          }`}
                           onClick={() =>
                             handleQuantityChange(item.cart_item_id, 1)
                           }
                           disabled={
                             !isActive ||
-                            (stockQuantity > 0 && quantity >= stockQuantity)
+                            (stockQuantity > 0 && quantity >= stockQuantity) ||
+                            updatingItemId === item.cart_item_id
                           }
                         >
-                          +
+                          {updatingItemId === item.cart_item_id ? "..." : "+"}
                         </button>
                       </div>
                       <span className="ml-auto font-semibold">

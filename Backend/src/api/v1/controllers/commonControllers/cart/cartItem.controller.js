@@ -173,42 +173,46 @@ const updateCartItem = async (req, res) => {
     );
 
     // Determine which discount applies (same logic as frontend)
-    let discountValue = 0;
+    let discountPercent = 0;
     let discountType = null;
     let discountQuantity = null;
+    let actualDiscountAmount = 0;
 
     if (total_quantity >= bulkDiscountQty && bulkDiscountQty > 0) {
-      discountValue = bulkDiscountPercent;
+      discountPercent = bulkDiscountPercent;
       discountType = "percentage";
       discountQuantity = bulkDiscountQty;
     } else if (total_quantity >= regularDiscountQty && regularDiscountQty > 0) {
-      discountValue = regularDiscountPercent;
+      discountPercent = regularDiscountPercent;
       discountType = "percentage";
       discountQuantity = regularDiscountQty;
     }
 
-    // Update cart item with new discount values
-    cartItem.discount_quantity = discountQuantity;
-    cartItem.discount_applied = discountValue;
-    cartItem.discount_type = discountType;
-
-    // Calculate final price based on discount
-    if (discountType === "percentage" && discountValue > 0) {
-      const discountedPrice = basePrice * (1 - discountValue / 100);
+    // Calculate final price and actual discount amount
+    if (discountType === "percentage" && discountPercent > 0) {
+      const originalTotal = basePrice * total_quantity;
+      const discountedPrice = basePrice * (1 - discountPercent / 100);
       cartItem.final_price = discountedPrice * total_quantity;
-    } else if (discountType === "fixed" && discountValue > 0) {
-      cartItem.final_price = Math.max(
-        0,
-        basePrice * total_quantity - discountValue
-      );
+      actualDiscountAmount = originalTotal - cartItem.final_price;
+    } else if (discountType === "fixed" && discountPercent > 0) {
+      const originalTotal = basePrice * total_quantity;
+      cartItem.final_price = Math.max(0, originalTotal - discountPercent);
+      actualDiscountAmount = originalTotal - cartItem.final_price;
     } else {
       // No discount applied
       cartItem.final_price = basePrice * total_quantity;
+      actualDiscountAmount = 0;
     }
+
+    // Update cart item with new discount values
+    cartItem.discount_quantity = discountQuantity;
+    cartItem.discount_applied = actualDiscountAmount; // Store actual discount amount, not percentage
+    cartItem.discount_type = discountType;
 
     await cartItem.save();
 
     res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.post.succ,
       data: cartItem,
     });

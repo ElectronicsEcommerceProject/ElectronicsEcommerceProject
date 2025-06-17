@@ -30,7 +30,7 @@ router.get(
 );
 
 // Update cart item quantity
-router.put(
+router.patch(
   "/:cart_item_id",
   verifyJwtToken,
   validator(validators.cartItem.cartItemId, "params"),
