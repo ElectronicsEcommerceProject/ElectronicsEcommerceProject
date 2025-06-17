@@ -26,6 +26,13 @@ export const createCartItemValidator = Joi.object({
     .messages({
       "string.uuid": MESSAGE.custom("Product variant ID must be a valid UUID"),
     }),
+  coupon_id: Joi.string()
+    .uuid()
+    .allow(null)
+    .optional()
+    .messages({
+      "string.uuid": MESSAGE.custom("Coupon ID must be a valid UUID"),
+    }),
   total_quantity: Joi.number()
     .integer()
     .min(1)

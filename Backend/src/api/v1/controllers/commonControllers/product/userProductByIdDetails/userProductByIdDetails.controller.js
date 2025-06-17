@@ -11,6 +11,7 @@ const {
   User,
   ProductVariant,
   Coupon,
+  CouponUser,
   DiscountRule,
   ProductReview,
   OrderItem,
@@ -226,11 +227,15 @@ const userProductByIdDetails = async (req, res, next) => {
       productData.category_id
     );
 
+    // Fetch applied coupons for the current user
+    const appliedCoupons = await getAppliedCouponsForUser(req.user.user_id);
+
     // Format response according to the specified structure
     const formattedProduct = formatProductResponse(
       productData,
       relatedProducts,
-      relevantCoupons
+      relevantCoupons,
+      appliedCoupons
     );
 
     return res.status(StatusCodes.OK).json({
@@ -447,6 +452,52 @@ const getRelatedProducts = async (categoryId, brandId, currentProductId) => {
 };
 
 /**
+ * Get applied coupons for a specific user
+ * @param {string} userId - User ID
+ * @returns {Array} Applied coupons with coupon details
+ */
+const getAppliedCouponsForUser = async (userId) => {
+  try {
+    const appliedCoupons = await CouponUser.findAll({
+      where: { user_id: userId },
+      include: [
+        {
+          model: Coupon,
+          attributes: [
+            "coupon_id",
+            "code",
+            "description",
+            "type",
+            "discount_value",
+            "target_type",
+            "min_cart_value",
+            "max_discount_value",
+            "valid_from",
+            "valid_to",
+            "is_active",
+            "category_id",
+            "brand_id",
+            "product_id",
+          ],
+        },
+      ],
+      attributes: ["coupon_user_id", "createdAt"],
+    });
+
+    return appliedCoupons.map((couponUser) => {
+      const couponData = couponUser.get({ plain: true });
+      return {
+        ...couponData.Coupon,
+        applied_at: couponData.createdAt,
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching applied coupons:", error);
+    return [];
+  }
+};
+
+/**
  * Get relevant coupons for the product
  * Excludes coupons with target_type 'cart' and includes only those matching product_id, brand_id, or category_id
  * @param {string} productId - Product ID
@@ -507,12 +558,14 @@ const getRelevantCoupons = async (productId, brandId, categoryId) => {
  * @param {Object} productData - Raw product data from database
  * @param {Array} relatedProducts - Related products array
  * @param {Array} coupons - Relevant coupons array
+ * @param {Array} appliedCoupons - Applied coupons for the user
  * @returns {Object} Formatted product data
  */
 const formatProductResponse = (
   productData,
   relatedProducts = [],
-  coupons = []
+  coupons = [],
+  appliedCoupons = []
 ) => {
   // Process media to match the URL structure
   const mediaWithUrls =
@@ -679,6 +732,9 @@ const formatProductResponse = (
 
     // Relevant coupons for this product (excluding cart-level coupons)
     coupons: coupons || [],
+
+    // Applied coupons for the current user
+    appliedCoupons: appliedCoupons || [],
 
     // Related products
     relatedProducts: relatedProducts || [],

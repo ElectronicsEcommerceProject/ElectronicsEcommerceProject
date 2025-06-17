@@ -21,6 +21,121 @@ const {
   ProductReview,
 } = db;
 
+// Helper function to calculate the best discount (quantity vs coupon)
+const calculateBestDiscount = async (
+  variantData,
+  quantity,
+  couponId = null
+) => {
+  const basePrice = parseFloat(variantData?.price || 0);
+
+  // Validate inputs
+  if (!variantData || isNaN(basePrice) || basePrice <= 0) {
+    console.warn("Invalid variant data or price for discount calculation");
+    return {
+      discountValue: 0,
+      discountType: null,
+      discountSource: null,
+      actualDiscountAmount: 0,
+    };
+  }
+
+  if (!quantity || quantity <= 0) {
+    console.warn("Invalid quantity for discount calculation:", quantity);
+    return {
+      discountValue: 0,
+      discountType: null,
+      discountSource: null,
+      actualDiscountAmount: 0,
+    };
+  }
+
+  // Calculate quantity-based discount
+  const regularDiscountQty = variantData?.discount_quantity || 0;
+  const regularDiscountPercent = parseFloat(
+    variantData?.discount_percentage || 0
+  );
+  const bulkDiscountQty = variantData?.bulk_discount_quantity || 0;
+  const bulkDiscountPercent = parseFloat(
+    variantData?.bulk_discount_percentage || 0
+  );
+
+  let quantityDiscountValue = 0;
+  let quantityDiscountType = null;
+
+  if (quantity >= bulkDiscountQty && bulkDiscountQty > 0) {
+    quantityDiscountValue = bulkDiscountPercent;
+    quantityDiscountType = "percentage";
+  } else if (quantity >= regularDiscountQty && regularDiscountQty > 0) {
+    quantityDiscountValue = regularDiscountPercent;
+    quantityDiscountType = "percentage";
+  }
+
+  // Calculate coupon discount if applied
+  let couponDiscountValue = 0;
+  let couponDiscountType = null;
+  let couponData = null;
+
+  if (couponId) {
+    try {
+      couponData = await Coupon.findByPk(couponId);
+      if (couponData && couponData.is_active) {
+        const discountValue = parseFloat(couponData.discount_value);
+        if (!isNaN(discountValue) && discountValue > 0) {
+          couponDiscountValue = discountValue;
+          couponDiscountType = couponData.type; // "percentage" or "fixed"
+        } else {
+          console.warn(
+            "Invalid coupon discount value:",
+            couponData.discount_value
+          );
+        }
+      } else {
+        console.warn("Coupon not found or inactive:", couponId);
+      }
+    } catch (error) {
+      console.error("Error fetching coupon:", error);
+    }
+  }
+
+  // Calculate actual discount amounts to compare
+  let quantityDiscountAmount = 0;
+  if (quantityDiscountType === "percentage") {
+    quantityDiscountAmount = (basePrice * quantityDiscountValue) / 100;
+  }
+
+  let couponDiscountAmount = 0;
+  if (couponDiscountType === "percentage") {
+    couponDiscountAmount = (basePrice * couponDiscountValue) / 100;
+  } else if (couponDiscountType === "fixed") {
+    couponDiscountAmount = couponDiscountValue;
+  }
+
+  // Return the better discount
+  if (couponDiscountAmount > quantityDiscountAmount) {
+    return {
+      discountValue: couponDiscountValue,
+      discountType: couponDiscountType,
+      discountSource: "coupon",
+      actualDiscountAmount: couponDiscountAmount,
+    };
+  } else if (quantityDiscountAmount > 0) {
+    return {
+      discountValue: quantityDiscountValue,
+      discountType: quantityDiscountType,
+      discountSource: "quantity",
+      actualDiscountAmount: quantityDiscountAmount,
+    };
+  }
+
+  return {
+    discountValue: 0,
+    discountType: null,
+    discountSource: null,
+    actualDiscountAmount: 0,
+  };
+};
+
 // Add item to cart
 const addItemToCart = async (req, res) => {
   try {
@@ -35,6 +150,7 @@ const addItemToCart = async (req, res) => {
       discount_quantity,
       discount_applied,
       discount_type,
+      coupon_id,
     } = req.body;
 
     // Verify cart belongs to user
@@ -85,6 +201,7 @@ const addItemToCart = async (req, res) => {
       existingItem.discount_applied = discount_applied;
       existingItem.discount_type = discount_type;
       existingItem.final_price = final_price;
+      existingItem.coupon_id = coupon_id || null;
       await existingItem.save();
 
       return res.status(StatusCodes.OK).json({
@@ -104,6 +221,7 @@ const addItemToCart = async (req, res) => {
       discount_quantity,
       discount_applied,
       discount_type,
+      coupon_id: coupon_id || null,
     });
 
     res.status(StatusCodes.CREATED).json({
@@ -162,52 +280,33 @@ const updateCartItem = async (req, res) => {
     const variantData = cartItem.variant || cartItem.product;
     const basePrice = parseFloat(cartItem.price_at_time);
 
-    // Get discount thresholds from variant/product
-    const regularDiscountQty = variantData?.discount_quantity || 0;
-    const regularDiscountPercent = parseFloat(
-      variantData?.discount_percentage || 0
-    );
-    const bulkDiscountQty = variantData?.bulk_discount_quantity || 0;
-    const bulkDiscountPercent = parseFloat(
-      variantData?.bulk_discount_percentage || 0
+    // Use the calculateBestDiscount function to get the best available discount
+    const bestDiscount = await calculateBestDiscount(
+      variantData,
+      total_quantity,
+      cartItem.coupon_id
     );
 
-    // Determine which discount applies (same logic as frontend)
-    let discountPercent = 0;
-    let discountType = null;
-    let discountQuantity = null;
-    let actualDiscountAmount = 0;
-
-    if (total_quantity >= bulkDiscountQty && bulkDiscountQty > 0) {
-      discountPercent = bulkDiscountPercent;
-      discountType = "percentage";
-      discountQuantity = bulkDiscountQty;
-    } else if (total_quantity >= regularDiscountQty && regularDiscountQty > 0) {
-      discountPercent = regularDiscountPercent;
-      discountType = "percentage";
-      discountQuantity = regularDiscountQty;
+    // Calculate final price based on best discount
+    let discountedPrice = basePrice;
+    if (bestDiscount.discountType === "percentage") {
+      discountedPrice = basePrice * (1 - bestDiscount.discountValue / 100);
+    } else if (bestDiscount.discountType === "fixed") {
+      discountedPrice = Math.max(0, basePrice - bestDiscount.discountValue);
     }
 
-    // Calculate final price and actual discount amount
-    if (discountType === "percentage" && discountPercent > 0) {
-      const originalTotal = basePrice * total_quantity;
-      const discountedPrice = basePrice * (1 - discountPercent / 100);
-      cartItem.final_price = discountedPrice * total_quantity;
-      actualDiscountAmount = originalTotal - cartItem.final_price;
-    } else if (discountType === "fixed" && discountPercent > 0) {
-      const originalTotal = basePrice * total_quantity;
-      cartItem.final_price = Math.max(0, originalTotal - discountPercent);
-      actualDiscountAmount = originalTotal - cartItem.final_price;
-    } else {
-      // No discount applied
-      cartItem.final_price = basePrice * total_quantity;
-      actualDiscountAmount = 0;
-    }
+    cartItem.final_price = discountedPrice * total_quantity;
+    const actualDiscountAmount = (basePrice - discountedPrice) * total_quantity;
 
     // Update cart item with new discount values
-    cartItem.discount_quantity = discountQuantity;
-    cartItem.discount_applied = actualDiscountAmount; // Store actual discount amount, not percentage
-    cartItem.discount_type = discountType;
+    cartItem.discount_quantity =
+      bestDiscount.discountSource === "quantity"
+        ? bestDiscount.discountSource === "bulk_discount"
+          ? variantData?.bulk_discount_quantity
+          : variantData?.discount_quantity
+        : null;
+    cartItem.discount_applied = actualDiscountAmount; // Store actual discount amount
+    cartItem.discount_type = bestDiscount.discountType;
 
     await cartItem.save();
 
@@ -638,6 +737,7 @@ const findOrCreateCartItem = async (req, res) => {
       discount_quantity,
       discount_applied,
       discount_type,
+      coupon_id,
     } = req.body;
 
     // Verify cart belongs to user
@@ -688,6 +788,7 @@ const findOrCreateCartItem = async (req, res) => {
         discount_quantity,
         discount_applied,
         discount_type,
+        coupon_id: coupon_id || null,
       },
     });
 
@@ -699,6 +800,7 @@ const findOrCreateCartItem = async (req, res) => {
       cartItem.discount_applied = discount_applied;
       cartItem.discount_type = discount_type;
       cartItem.final_price = final_price;
+      cartItem.coupon_id = coupon_id || null;
       await cartItem.save();
 
       return res.status(StatusCodes.OK).json({
