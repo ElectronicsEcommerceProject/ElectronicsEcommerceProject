@@ -619,7 +619,7 @@ const CartPage = () => {
                         {discountApplied > 0 && (
                           <span className="text-xs text-green-600">
                             {discountType === "percentage"
-                              ? `${discountApplied}% off`
+                              ? `₹${discountApplied} off`
                               : `₹${discountApplied} off`}
                           </span>
                         )}
