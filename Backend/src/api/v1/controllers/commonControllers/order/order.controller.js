@@ -20,85 +20,62 @@ export const createOrder = async (req, res) => {
       discount_amount,
       total_amount,
       notes,
-      items,
+      coupon_id,
     } = req.body;
 
-    // Verify user exists
-    const user = await User.findByPk(user_id);
-    if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        message: "User not found",
-      });
-    }
+    // Find or create user
+    const [user] = await User.findOrCreate({
+      where: { user_id }
+    });
 
-    // Verify address exists
-    const address = await Address.findByPk(address_id);
-    if (!address) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        message: "Address not found",
-      });
-    }
+    // Find or create address
+    const [address] = await Address.findOrCreate({
+      where: { address_id }
+    });
 
     // Generate unique order number
     const order_number = await generateOrderNumber();
 
-    // Create order
+    // Create order with all required fields from the model
     const order = await Order.create({
       user_id,
       address_id,
-      payment_method,
+      payment_id: null,
       order_number,
+      order_date: new Date(),
+      order_status: "pending",
+      payment_status: "pending",
+      payment_method: payment_method || "cod",
       subtotal,
       shipping_cost: shipping_cost || 0,
       tax_amount: tax_amount || 0,
       discount_amount: discount_amount || 0,
       total_amount,
-      notes,
-      order_status: "pending",
-      payment_status: "pending",
+      notes: notes || "",
+      tracking_number: null
     });
 
-    // Create order items if provided
-    if (items && items.length > 0) {
-      const orderItems = await Promise.all(
-        items.map(async (item) => {
-          // Verify product exists
-          const product = await Product.findByPk(item.product_id);
-          if (!product) {
-            throw new Error(`Product with ID ${item.product_id} not found`);
-          }
-
-          // Verify product variant if provided
-          if (item.product_variant_id) {
-            const variant = await ProductVariant.findByPk(
-              item.product_variant_id
-            );
-            if (!variant) {
-              throw new Error(
-                `Product variant with ID ${item.product_variant_id} not found`
-              );
-            }
-          }
-
-          return OrderItem.create({
-            order_id: order.order_id,
-            product_id: item.product_id,
-            product_variant_id: item.product_variant_id || null,
-            quantity: item.quantity,
-            price: item.price,
-            discount: item.discount || 0,
-            total: item.total,
-          });
-        })
-      );
-
-      order.dataValues.items = orderItems;
+    // If coupon_id is provided, create coupon redemption
+    if (coupon_id) {
+      try {
+        await db.CouponRedemption.create({
+          user_id,
+          coupon_id,
+          order_id: order.order_id,
+          discount_amount: discount_amount || 0,
+        });
+      } catch (couponErr) {
+        console.error("Error creating coupon redemption:", couponErr);
+        // Continue with order creation even if coupon redemption fails
+      }
     }
 
     return res.status(StatusCodes.CREATED).json({
       success: true,
       message: MESSAGE.post.succ,
-      data: order,
+      data: {
+        order
+      }
     });
   } catch (err) {
     console.error("❌ Error in createOrder:", err);

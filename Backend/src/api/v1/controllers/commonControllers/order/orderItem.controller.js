@@ -2,7 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import MESSAGE from "../../../../../constants/message.js";
 import db from "../../../../../models/index.js";
 
-const { OrderItem, Order, Product, ProductVariant } = db;
+const { OrderItem, Order, Product, ProductVariant, Cart, CartItem } = db;
 
 // Create a new order item
 export const createOrderItem = async (req, res) => {
@@ -22,6 +22,7 @@ export const createOrderItem = async (req, res) => {
     const order = await Order.findByPk(order_id);
     if (!order) {
       return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
         message: "Order not found",
       });
     }
@@ -30,6 +31,7 @@ export const createOrderItem = async (req, res) => {
     const product = await Product.findByPk(product_id);
     if (!product) {
       return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
         message: "Product not found",
       });
     }
@@ -39,6 +41,7 @@ export const createOrderItem = async (req, res) => {
       const variant = await ProductVariant.findByPk(product_variant_id);
       if (!variant) {
         return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
           message: "Product variant not found",
         });
       }
@@ -56,13 +59,27 @@ export const createOrderItem = async (req, res) => {
       final_price,
     });
 
+    // Delete all cart items for the user
+    try {
+      const user_id = order.user_id;
+      const cart = await Cart.findOne({ where: { user_id } });
+      if (cart) {
+        await CartItem.destroy({ where: { cart_id: cart.cart_id } });
+      }
+    } catch (cartError) {
+      console.error("Error deleting cart items:", cartError);
+      // Continue with the response even if cart deletion fails
+    }
+
     return res.status(StatusCodes.CREATED).json({
+      success: true,
       message: MESSAGE.post.succ,
       data: orderItem,
     });
   } catch (err) {
     console.error("❌ Error in createOrderItem:", err);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
       message: MESSAGE.post.fail,
       error: err.message,
     });

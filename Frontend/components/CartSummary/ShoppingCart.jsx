@@ -307,44 +307,61 @@ const CartPage = () => {
       // Set loading state
       setLoading(true);
 
-      // Make API call to create order
+      // Step 1: Create order
       const orderResponse = await createApi(orderRoute, orderData);
 
       if (orderResponse && orderResponse.success) {
-        // Order created successfully, now create order items
-        const orderId = orderResponse.data.order_id;
+        const orderId = orderResponse.data.order.order_id;
         let allOrderItemsCreated = true;
         
-        // Create order items for each cart item
+        // Step 2: Create order items for each cart item
         for (const item of cartItems) {
-          const orderItemData = {
-            order_id: orderId,
-            product_id: item.product.product_id,
-            product_variant_id: item.variant?.product_variant_id || null,
-            total_quantity: item.total_quantity,
-            discount_quantity: item.discount_quantity || 0,
-            price_at_time: item.price_at_time,
-            discount_applied: item.discount_applied || 0,
-            final_price: item.final_price
-          };
-          
-          const orderItemResponse = await createApi(orderItemRoute, orderItemData);
-          
-          if (!orderItemResponse || !orderItemResponse.success) {
-            console.error("Failed to create order item:", orderItemResponse?.message);
+          try {
+            const orderItemData = {
+              order_id: orderId,
+              product_id: item.product.product_id,
+              product_variant_id: item.variant?.product_variant_id || null,
+              total_quantity: item.total_quantity,
+              discount_quantity: item.discount_quantity || 0,
+              price_at_time: item.price_at_time,
+              discount_applied: item.discount_applied || 0,
+              final_price: item.final_price
+            };
+            
+            const orderItemResponse = await createApi(orderItemRoute, orderItemData);
+            
+            if (!orderItemResponse || !orderItemResponse.success) {
+              console.error("Failed to create order item:", orderItemResponse?.message);
+              allOrderItemsCreated = false;
+              break;
+            }
+          } catch (itemError) {
+            console.error("Error creating order item:", itemError);
             allOrderItemsCreated = false;
             break;
           }
         }
         
-        if (allOrderItemsCreated) {
+        if (!allOrderItemsCreated) {
+          alert("Order created but some items could not be processed. Please contact support.");
+          setLoading(false);
+          return;
+        }
+        
+        try {
+          // Step 3: Clear the cart after all order items are created
+          await createApi(`${orderRoute}/clear-cart`, {});
+          
           // Clear cart items from local state
           setCartItems([]);
           alert("Order placed successfully!");
+          
           // Redirect to orders page or show confirmation
           window.location.href = "/orders";
-        } else {
-          alert("Order created but some items could not be processed. Please contact support.");
+        } catch (clearCartError) {
+          console.error("Error clearing cart:", clearCartError);
+          alert("Order placed successfully, but there was an issue clearing your cart.");
+          window.location.href = "/orders";
         }
       } else {
         alert(orderResponse?.message || "Failed to place order. Please try again.");
