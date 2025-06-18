@@ -7,6 +7,9 @@ import {
   deleteApiById,
   getUserIdFromToken,
   isAuthenticated,
+  orderRoute,
+  createApi,
+  orderItemRoute,
 } from "../../src/index.js";
 // Note: Mock data removed - now using real API data
 
@@ -243,6 +246,114 @@ const CartPage = () => {
       setAppliedCoupon(found);
     } else {
       alert("Invalid coupon code");
+    }
+  };
+
+  const handlePlaceOrder = async () => {
+    try {
+      // Check if user is authenticated
+      if (!isAuthenticated()) {
+        alert("Please login to place an order");
+        return;
+      }
+
+      // Get user ID from token
+      const userId = getUserIdFromToken();
+      if (!userId) {
+        alert("Invalid user session. Please login again.");
+        return;
+      }
+
+      // Check if address is selected
+      if (!selectedAddress) {
+        alert("Please select a delivery address");
+        setShowAddressForm(true);
+        return;
+      }
+
+      // Check if cart has items
+      if (cartItems.length === 0) {
+        alert("Your cart is empty");
+        return;
+      }
+
+      // Check if any item is out of stock
+      const outOfStockItems = cartItems.filter(
+        (item) => !item.product.is_active
+      );
+      if (outOfStockItems.length > 0) {
+        alert("Please remove out of stock items from your cart");
+        return;
+      }
+
+      // Prepare order data
+      const orderData = {
+        user_id: userId,
+        address_id: selectedAddress.address_id,
+        payment_method: "cod", // Default to Cash on Delivery
+        subtotal: subtotal,
+        shipping_cost: delivery,
+        tax_amount: tax,
+        discount_amount: discount,
+        total_amount: total,
+        notes: appliedCoupon ? `Coupon applied: ${appliedCoupon.code}` : "",
+      };
+
+      // Add coupon_id if a coupon is applied
+      if (appliedCoupon && appliedCoupon.coupon_id) {
+        orderData.coupon_id = appliedCoupon.coupon_id;
+      }
+
+      // Set loading state
+      setLoading(true);
+
+      // Make API call to create order
+      const orderResponse = await createApi(orderRoute, orderData);
+
+      if (orderResponse && orderResponse.success) {
+        // Order created successfully, now create order items
+        const orderId = orderResponse.data.order_id;
+        let allOrderItemsCreated = true;
+        
+        // Create order items for each cart item
+        for (const item of cartItems) {
+          const orderItemData = {
+            order_id: orderId,
+            product_id: item.product.product_id,
+            product_variant_id: item.variant?.product_variant_id || null,
+            total_quantity: item.total_quantity,
+            discount_quantity: item.discount_quantity || 0,
+            price_at_time: item.price_at_time,
+            discount_applied: item.discount_applied || 0,
+            final_price: item.final_price
+          };
+          
+          const orderItemResponse = await createApi(orderItemRoute, orderItemData);
+          
+          if (!orderItemResponse || !orderItemResponse.success) {
+            console.error("Failed to create order item:", orderItemResponse?.message);
+            allOrderItemsCreated = false;
+            break;
+          }
+        }
+        
+        if (allOrderItemsCreated) {
+          // Clear cart items from local state
+          setCartItems([]);
+          alert("Order placed successfully!");
+          // Redirect to orders page or show confirmation
+          window.location.href = "/orders";
+        } else {
+          alert("Order created but some items could not be processed. Please contact support.");
+        }
+      } else {
+        alert(orderResponse?.message || "Failed to place order. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error placing order:", error);
+      alert("Failed to place order. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -757,9 +868,10 @@ const CartPage = () => {
             </div>
             <button
               className="w-full mt-6 bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-              onClick={() => alert("Order placed successfully!")}
+              onClick={handlePlaceOrder}
+              disabled={loading || cartItems.length === 0 || !selectedAddress}
             >
-              PLACE ORDER
+              {loading ? "PROCESSING..." : "PLACE ORDER"}
             </button>
             {discount > 0 && (
               <p className="text-green-600 text-sm mt-4">

@@ -70,6 +70,9 @@ export const createOrderValidator = Joi.object({
       "any.required": MESSAGE.custom("Total amount is required"),
     }),
   notes: Joi.string().allow(null, "").optional(),
+  coupon_id: Joi.string().uuid().allow(null).optional().messages({
+    "string.uuid": MESSAGE.custom("Coupon ID must be a valid UUID"),
+  }),
 });
 
 // Validation for updating an order

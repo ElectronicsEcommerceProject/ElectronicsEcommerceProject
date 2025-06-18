@@ -6,7 +6,7 @@ import { customerOrderController } from "../../controllers/index.js";
 const router = express.Router();
 
 // 📦 Place new order
-router.post("/", verifyJwtToken, customerOrderController.createOrder);
+router.post("/", verifyJwtToken, customerOrderController.findOrCreateOrder);
 
 // 📄 Get all orders for logged-in user
 router.get("/", verifyJwtToken, customerOrderController.getOrders);

@@ -96,12 +96,14 @@ export const createOrder = async (req, res) => {
     }
 
     return res.status(StatusCodes.CREATED).json({
+      success: true,
       message: MESSAGE.post.succ,
       data: order,
     });
   } catch (err) {
     console.error("❌ Error in createOrder:", err);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
       message: MESSAGE.post.fail,
       error: err.message,
     });
@@ -144,12 +146,14 @@ export const getAllOrders = async (req, res) => {
     });
 
     return res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.get.succ,
       data: orders,
     });
   } catch (err) {
     console.error("❌ Error in getAllOrders:", err);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
       message: MESSAGE.get.fail,
       error: err.message,
     });
@@ -195,17 +199,20 @@ export const getOrderById = async (req, res) => {
 
     if (!order) {
       return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
         message: "Order not found",
       });
     }
 
     return res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.get.succ,
       data: order,
     });
   } catch (err) {
     console.error("❌ Error in getOrderById:", err);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
       message: MESSAGE.get.fail,
       error: err.message,
     });
@@ -234,12 +241,14 @@ export const updateOrderById = async (req, res) => {
     await order.save();
 
     return res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.put.succ,
       data: order,
     });
   } catch (err) {
     console.error("❌ Error in updateOrder:", err);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
       message: MESSAGE.put.fail,
       error: err.message,
     });
@@ -270,12 +279,14 @@ export const cancelOrderById = async (req, res) => {
     await order.save();
 
     return res.status(StatusCodes.OK).json({
+      success: true,
       message: "Order cancelled successfully",
       data: order,
     });
   } catch (err) {
     console.error("❌ Error in cancelOrderById:", err);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
       message: "Failed to cancel order",
       error: err.message,
     });
@@ -313,17 +324,20 @@ export const getLatestOrder = async (req, res) => {
 
     if (!order) {
       return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
         message: "No orders found in the last 2 days",
       });
     }
 
     return res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.get.succ,
       data: order,
     });
   } catch (error) {
     console.error("❌ Error fetching recent orders:", error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
       message: MESSAGE.get.fail,
       error: error.message,
     });
