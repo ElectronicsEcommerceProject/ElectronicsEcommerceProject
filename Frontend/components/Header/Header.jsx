@@ -312,7 +312,7 @@ const Header = () => {
           {/* LOGO */}
           <div className="flex-shrink-0 text-xl md:text-2xl font-bold flex items-center md:mr-8">
             <span className="w-6 h-6 bg-white mr-2 rounded-sm"></span>
-            ShopEase
+            MAA LAXMI STORE
           </div>
 
           {/* DESKTOP SEARCH */}
