@@ -828,10 +828,51 @@ const findOrCreateCartItem = async (req, res) => {
   }
 };
 
+const getCartItemsByNumberByUserId = async (req, res) => {
+  try {
+    const { user_id } = req.user; // From JWT token
+
+    // Find user's cart
+    const cart = await Cart.findOne({
+      where: { user_id },
+      include: [
+        {
+          model: CartItem,
+          as: "cartItems",
+        },
+      ],
+    });
+
+    if (!cart) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: "Cart not found",
+        success: false,
+      });
+    }
+
+    // Return the number of items in the cart
+    const itemCount = cart.cartItems.length;
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: MESSAGE.get.succ,
+      data: { itemCount },
+    });
+  } catch (err) {
+    console.error("❌ Error in getCartItemsByNumberByUserId:", err);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: MESSAGE.get.fail,
+      success: false,
+      error: err.message,
+    });
+  }
+};
+
 export default {
   addItemToCart,
   updateCartItem,
   removeCartItem,
   getCartItemsByUserId,
   findOrCreateCartItem,
+  getCartItemsByNumberByUserId,
 };

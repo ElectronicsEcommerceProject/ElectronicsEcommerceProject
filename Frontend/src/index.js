@@ -67,6 +67,8 @@ const cartRoute = import.meta.env.VITE_CART_ENDPOINT;
 const cartItemRoute = import.meta.env.VITE_CART_ITEM_ENDPOINT;
 const cartItemFindOrCreateRoute = import.meta.env
   .VITE_CART_ITEM_FIND_OR_CREATE_ENDPOINT;
+const totalCartItemNumberRoute = import.meta.env
+  .VITE_TOTAL_CART_ITEM_NUMBER_ENDPOINT;
 
 const orderRoute = import.meta.env.VITE_ORDER_ENDPOINT;
 const latestOrderRoute = import.meta.env.VITE_LATEST_ORDER_ENDPOINT;
@@ -233,6 +235,7 @@ export {
   cartRoute,
   cartItemRoute,
   cartItemFindOrCreateRoute,
+  totalCartItemNumberRoute,
 
   //coupon related routes
   userCouponUserRoute,

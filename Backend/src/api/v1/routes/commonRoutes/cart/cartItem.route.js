@@ -29,6 +29,14 @@ router.get(
   cartItemController.getCartItemsByUserId
 );
 
+// get  cart items  number by user_id,
+
+router.get(
+  "/totalCartItemNumber/:user_id",
+  verifyJwtToken,
+  cartItemController.getCartItemsByNumberByUserId
+);
+
 // Update cart item quantity
 router.patch(
   "/:cart_item_id",

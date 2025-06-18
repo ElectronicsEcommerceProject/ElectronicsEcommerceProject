@@ -24,7 +24,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { setSearchTerm } from "../Redux/filterSlice";
 import HoverMenu from "../../features/common/HoverMenu"; // Import HoverMenu as specified
 
-import { getApi, getAllCategoryRoute } from "../../src/index.js";
+import {
+  getApi,
+  getAllCategoryRoute,
+  totalCartItemNumberRoute,
+  getApiById,
+  getUserIdFromToken,
+} from "../../src/index.js";
 
 // Function to map category names to appropriate icons
 const getCategoryIcon = (categoryName) => {
@@ -85,8 +91,35 @@ const Header = () => {
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [categoriesError, setCategoriesError] = useState(null);
 
-  const cartCount = 3;
+  const [cartCount, setCartCount] = useState(0);
   const navigate = useNavigate();
+
+  // Fetch cart count from API
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      try {
+        const user_id = getUserIdFromToken();
+        if (!user_id) {
+          setCartCount(0);
+          return;
+        }
+
+        const response = await getApiById(totalCartItemNumberRoute, user_id);
+
+        if (response.success && response.data) {
+          setCartCount(response.data.itemCount || 0);
+        } else {
+          console.error("Failed to fetch cart count:", response);
+          setCartCount(0);
+        }
+      } catch (error) {
+        console.error("Error fetching cart count:", error);
+        setCartCount(0);
+      }
+    };
+
+    fetchCartCount();
+  }, []);
 
   // Fetch categories from API
   useEffect(() => {
