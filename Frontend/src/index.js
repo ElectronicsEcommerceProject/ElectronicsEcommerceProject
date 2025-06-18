@@ -152,6 +152,9 @@ const userAddressesRoute = import.meta.env.VITE_ADDRESSES_ENDPOINT;
 //user coupon realted routes
 const userCouponUserRoute = import.meta.env.VITE_USER_COUPON_ENDPOINT;
 
+// user review related routes
+const userProductReviewRoute = import.meta.env.VITE_PRODUCT_REVIEW_ENDPOINT;
+
 export {
   FaEye,
   FaEyeSlash,
@@ -239,4 +242,7 @@ export {
   getUserIdFromToken,
   isAuthenticated,
   getUserRole,
+
+  //user review
+  userProductReviewRoute,
 };

@@ -13,6 +13,7 @@ import {
   createApi,
   userCouponUserRoute,
   getUserIdFromToken,
+  userProductReviewRoute,
 } from "../../../src/index.js";
 
 const BuyNowPage = () => {
@@ -42,40 +43,65 @@ const BuyNowPage = () => {
   // New state for review filtering
   const [selectedRatingFilter, setSelectedRatingFilter] = useState("all");
   const [selectedSortFilter, setSelectedSortFilter] = useState("newest");
+  
+  // Review form state
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewFormData, setReviewFormData] = useState({
+    rating: 5,
+    title: "",
+    review: "",
+    product_variant_id: null,
+  });
+  const [submittingReview, setSubmittingReview] = useState(false);
+  
+  // Update review form data when selected variant changes
+  useEffect(() => {
+    if (selectedVariant && productData?.mainProduct?.variants) {
+      const variantData = productData.mainProduct.variants.find(
+        (v) => v.description === selectedVariant
+      );
+      if (variantData) {
+        setReviewFormData(prev => ({
+          ...prev,
+          product_variant_id: variantData.product_variant_id
+        }));
+      }
+    }
+  }, [selectedVariant, productData]);
 
   const rightScrollRef = useRef(null);
   const leftScrollRef = useRef(null);
   const imageContainerRef = useRef(null);
 
-  useEffect(() => {
-    // Fetch product data from API
-    const fetchProductData = async () => {
-      if (productId) {
-        try {
-          console.log("🛍️ BuyNowPage loaded for Product ID:", productId);
+  // Fetch product data from API
+  const fetchProductData = async () => {
+    if (productId) {
+      try {
+        console.log("🛍️ BuyNowPage loaded for Product ID:", productId);
 
-          // Call the API to get product details
-          const response = await getApiById(
-            userPanelProductByIdDetailsRoute,
-            productId
-          );
+        // Call the API to get product details
+        const response = await getApiById(
+          userPanelProductByIdDetailsRoute,
+          productId
+        );
 
-          if (response.success && response.data) {
-            setProductData(response.data);
-            // Set the main image from API response
-            const mainImage = response.data.mainProduct.mainImage || "";
-            setCurrentImage(mainImage);
-          } else {
-            console.error("Failed to fetch product data:", response);
-            // You could set an error state here if needed
-          }
-        } catch (error) {
-          console.error("Error fetching product data:", error);
+        if (response.success && response.data) {
+          setProductData(response.data);
+          // Set the main image from API response
+          const mainImage = response.data.mainProduct.mainImage || "";
+          setCurrentImage(mainImage);
+        } else {
+          console.error("Failed to fetch product data:", response);
           // You could set an error state here if needed
         }
+      } catch (error) {
+        console.error("Error fetching product data:", error);
+        // You could set an error state here if needed
       }
-    };
+    }
+  };
 
+  useEffect(() => {
     fetchProductData();
   }, [productId]); // Re-run when productId changes
 
@@ -1903,10 +1929,215 @@ const BuyNowPage = () => {
 
             {/* Write Review Button */}
             <div className="mt-6 text-center">
-              <button className="bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm sm:text-base">
+              <button 
+                onClick={() => {
+                  // Set the selected variant ID if available
+                  if (selectedVariant && mainProduct.variants) {
+                    const variantData = mainProduct.variants.find(
+                      (v) => v.description === selectedVariant
+                    );
+                    if (variantData) {
+                      setReviewFormData(prev => ({
+                        ...prev,
+                        product_variant_id: variantData.product_variant_id
+                      }));
+                    }
+                  }
+                  setShowReviewForm(true);
+                }}
+                className="bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm sm:text-base">
                 Write a Review
               </button>
             </div>
+            
+            {/* Review Form Modal */}
+            {showReviewForm && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                  <div className="flex justify-between items-center p-6 border-b">
+                    <h2 className="text-xl font-semibold">Write a Review</h2>
+                    <button
+                      onClick={() => setShowReviewForm(false)}
+                      className="text-gray-500 hover:text-gray-700 text-2xl"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  
+                  <div className="p-6">
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      
+                      // Get user_id from JWT token
+                      const token = localStorage.getItem("token");
+                      if (!token) {
+                        alert("Please login to submit a review");
+                        return;
+                      }
+                      
+                      let user_id;
+                      try {
+                        const decodedToken = jwtDecode(token);
+                        user_id = decodedToken.user_id;
+                      } catch (error) {
+                        console.error("Error decoding token:", error);
+                        alert("Authentication error. Please login again.");
+                        return;
+                      }
+                      
+                      setSubmittingReview(true);
+                      
+                      try {
+                        const reviewData = {
+                          product_id: productId,
+                          product_variant_id: reviewFormData.product_variant_id,
+                          user_id: user_id,
+                          rating: reviewFormData.rating,
+                          title: reviewFormData.title,
+                          review: reviewFormData.review,
+                          is_verified_purchase: false, // This would be determined by the backend
+                          created_by: user_id
+                        };
+                        
+                        console.log("Submitting review:", reviewData);
+                        
+                        const response = await createApi(userProductReviewRoute, reviewData);
+                        
+                        if (response.success) {
+                          alert("Thank you! Your review has been submitted successfully.");
+                          setShowReviewForm(false);
+                          // Reset form data
+                          setReviewFormData({
+                            rating: 5,
+                            title: "",
+                            review: "",
+                            product_variant_id: null,
+                          });
+                          // Refresh product data to show the new review
+                          fetchProductData();
+                        } else {
+                          throw new Error(response.message || "Failed to submit review");
+                        }
+                      } catch (error) {
+                        console.error("Error submitting review:", error);
+                        alert(`Failed to submit review: ${error.message}`);
+                      } finally {
+                        setSubmittingReview(false);
+                      }
+                    }} className="space-y-4">
+                      {/* Rating Selection */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Rating *
+                        </label>
+                        <div className="flex gap-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setReviewFormData(prev => ({ ...prev, rating: star }))}
+                              className="text-2xl focus:outline-none"
+                            >
+                              <span className={star <= reviewFormData.rating ? "text-yellow-400" : "text-gray-300"}>
+                                ★
+                              </span>
+                            </button>
+                          ))}
+                          <span className="ml-2 text-sm text-gray-600">
+                            ({reviewFormData.rating} out of 5 stars)
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Review Title */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Review Title *
+                        </label>
+                        <input
+                          type="text"
+                          value={reviewFormData.title}
+                          onChange={(e) => setReviewFormData(prev => ({ ...prev, title: e.target.value }))}
+                          className="w-full p-2 border border-gray-300 rounded"
+                          placeholder="Summarize your experience"
+                          required
+                        />
+                      </div>
+                      
+                      {/* Review Content */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Review *
+                        </label>
+                        <textarea
+                          value={reviewFormData.review}
+                          onChange={(e) => setReviewFormData(prev => ({ ...prev, review: e.target.value }))}
+                          className="w-full p-2 border border-gray-300 rounded h-32"
+                          placeholder="Share your experience with this product"
+                          required
+                        />
+                      </div>
+                      
+                      {/* Variant Selection - Show all product variants */}
+                      {mainProduct.variants && mainProduct.variants.length > 0 && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Product Variant
+                          </label>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                              Currently reviewing: {selectedVariant || "Standard variant"}
+                            </span>
+                          </div>
+                          <select
+                            value={reviewFormData.product_variant_id || ""}
+                            onChange={(e) => setReviewFormData(prev => ({ ...prev, product_variant_id: e.target.value || null }))}
+                            className="w-full p-2 border border-gray-300 rounded"
+                          >
+                            <option value="">Select a variant</option>
+                            {mainProduct.variants.map((variant) => {
+                              const isCurrentVariant = variant.description === selectedVariant;
+                              return (
+                                <option 
+                                  key={variant.product_variant_id} 
+                                  value={variant.product_variant_id}
+                                  selected={isCurrentVariant}
+                                >
+                                  {variant.description || `Variant ${variant.product_variant_id}`}
+                                  {isCurrentVariant ? " (Currently Selected)" : ""}
+                                </option>
+                              );
+                            })}
+                          </select>
+                        </div>
+                      )}
+                      
+                      {/* Submit Button */}
+                      <div className="flex justify-end pt-4">
+                        <button
+                          type="button"
+                          onClick={() => setShowReviewForm(false)}
+                          className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 mr-2"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={submittingReview}
+                          className={`px-4 py-2 bg-blue-600 text-white rounded ${
+                            submittingReview
+                              ? "opacity-70 cursor-not-allowed"
+                              : "hover:bg-blue-700"
+                          }`}
+                        >
+                          {submittingReview ? "Submitting..." : "Submit Review"}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
