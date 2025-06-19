@@ -21,7 +21,9 @@ export const profileValidator = Joi.object({
     .pattern(/^[0-9]{10}$/)
     .required()
     .messages({
-      "string.pattern.base": MESSAGE.custom("Phone number must be a valid 10-digit number"),
+      "string.pattern.base": MESSAGE.custom(
+        "Phone number must be a valid 10-digit number"
+      ),
       "any.required": MESSAGE.custom("Phone number is required"),
     }),
   profileImage_url: Joi.string()
@@ -31,22 +33,17 @@ export const profileValidator = Joi.object({
     .messages({
       "string.uri": MESSAGE.custom("Profile image URL must be a valid URI"),
     }),
-  address: Joi.string()
+
+  status: Joi.string()
+    .valid("active", "inactive")
     .optional()
-    .allow(null, "")
     .messages({
-      "string.base": MESSAGE.custom("Address must be a string"),
+      "any.only": MESSAGE.custom("Status must be either active or inactive"),
     }),
-  city: Joi.string()
+  role: Joi.string()
+    .valid("customer", "admin")
     .optional()
-    .allow(null, "")
     .messages({
-      "string.base": MESSAGE.custom("City must be a string"),
-    }),
-  postal_code: Joi.string()
-    .optional()
-    .allow(null, "")
-    .messages({
-      "string.base": MESSAGE.custom("Postal code must be a string"),
+      "any.only": MESSAGE.custom("Role must be either customer or admin"),
     }),
 });

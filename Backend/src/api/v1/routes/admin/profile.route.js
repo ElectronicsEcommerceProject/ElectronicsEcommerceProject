@@ -6,11 +6,11 @@ import profileController from "../../controllers/commonControllers/profile/profi
 const router = express.Router();
 
 // Route to get user profile
-router.get("/", verifyJwtToken, profileController.getProfile);
+router.get("/user_id", verifyJwtToken, profileController.getProfileByUserId);
 
 // Route to update user profile with profile image upload
 router.put(
-  "/",
+  "/user_id",
   verifyJwtToken,
   upload.single("profileImage"),
   profileController.updateProfile

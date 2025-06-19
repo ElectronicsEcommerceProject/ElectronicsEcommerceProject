@@ -2,20 +2,16 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import React from "react";
 import { OrderSummary } from "../../customer/index.js";
-import { AddressForm, UserNotification } from "../../../src/index.js";
+import {
+  AddressForm,
+  UserNotification,
+  userProfileRoute,
+  getApiById,
+  getUserIdFromToken,
+} from "../../../src/index.js";
 
 const Profile = () => {
-  // User data based on actual User model
-  const [user, setUser] = useState({
-    user_id: "123e4567-e89b-12d3-a456-426614174000",
-    name: "Sunil Kumar",
-    email: "rohitsweetdream@gmail.com",
-    phone_number: "+916202670526",
-    profileImage_url: "https://via.placeholder.com/48",
-    current_address_id: null,
-    status: "active",
-    role: "customer",
-  });
+  const [user, setUser] = useState({});
 
   const [activeSection, setActiveSection] = useState("Profile Information");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -27,6 +23,22 @@ const Profile = () => {
       <UserNotification />
     </div>
   );
+
+  // Fetch user profile data
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const userId = getUserIdFromToken();
+        if (userId) {
+          const response = await getApiById(userProfileRoute, userId);
+          setUser(response);
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+    fetchUserProfile();
+  }, []);
 
   // Handle query params to set active section
   useEffect(() => {
@@ -176,7 +188,11 @@ const Profile = () => {
   // Personal Information component based on User model
   const PersonalInformation = () => {
     const [isEditing, setIsEditing] = useState(false);
-    const [formData, setFormData] = useState(user);
+    const [formData, setFormData] = useState({});
+
+    useEffect(() => {
+      setFormData(user);
+    }, [user]);
 
     const handleEdit = () => setIsEditing(true);
     const handleCancel = () => {

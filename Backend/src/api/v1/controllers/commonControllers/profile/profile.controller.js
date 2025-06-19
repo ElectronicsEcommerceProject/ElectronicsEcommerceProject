@@ -16,10 +16,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ✅ GET /api/profile
-const getProfile = async (req, res) => {
+const getProfileByUserId = async (req, res) => {
   try {
+    const { user_id } = req.params;
+
     const user = await User.findOne({
-      where: { email: req.user.email },
+      where: { user_id: user_id },
       attributes: { exclude: ["password"] },
     });
 
@@ -29,14 +31,23 @@ const getProfile = async (req, res) => {
         .json({ message: MESSAGE.get.none });
     }
 
-    // Convert stored relative path to full URL for frontend
-    if (user.profileImage_url && !user.profileImage_url.startsWith("http")) {
-      user.profileImage_url = `${req.protocol}://${req.get(
+    // Format profile image URL
+    let profileImage_url = user.profileImage_url;
+    if (profileImage_url && !profileImage_url.startsWith("http")) {
+      profileImage_url = `${req.protocol}://${req.get(
         "host"
-      )}/${user.profileImage_url.replace(/\\/g, "/")}`;
+      )}/${profileImage_url.replace(/\\/g, "/")}`;
     }
 
-    res.status(StatusCodes.OK).json(user);
+    res.status(StatusCodes.OK).json({
+      user_id: user.id,
+      name: user.name,
+      email: user.email,
+      phone_number: user.phone_number,
+      profileImage_url,
+      status: user.status,
+      role: user.role,
+    });
   } catch (error) {
     console.error("Error fetching profile:", error);
     res
@@ -105,6 +116,6 @@ const updateProfile = async (req, res) => {
 };
 
 export default {
-  getProfile,
+  getProfileByUserId,
   updateProfile,
 };

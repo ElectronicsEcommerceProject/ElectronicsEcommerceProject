@@ -153,7 +153,7 @@ export const validators = {
   },
   profile: {
     profile: profileValidator,
-    id: address_id,
+    user_id: address_id,
   },
   address: {
     addressValidator: addressValidator,

@@ -12,19 +12,19 @@ const router = express.Router();
 
 // Use multer middleware for file upload in the update profile route
 router.put(
-  "/:id",
+  "/:user_id",
   upload.single("profileImage"), // Handle single file upload with field name 'profileImage'
   validator(validators.profile.profile, null),
-  validator(validators.profile.id, "params"),
+  validator(validators.profile.user_id, "params"),
   verifyJwtToken,
   profileController.updateProfile
 );
 
 router.get(
-  "/:id",
+  "/:user_id",
   verifyJwtToken,
-  validator(validators.profile.id, "params"),
-  profileController.getProfile
+  // validator(validators.profile.user_id, "params"),
+  profileController.getProfileByUserId
 );
 
 export default router;
