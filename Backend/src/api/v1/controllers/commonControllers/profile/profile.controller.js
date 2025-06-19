@@ -59,12 +59,28 @@ const getProfileByUserId = async (req, res) => {
 // ✅ PUT /api/profile
 const updateProfile = async (req, res) => {
   try {
-    const { name, address, city, postal_code, email } = req.body;
-
-    const user = await User.findOne({
-      where: { email: email },
-      attributes: { exclude: ["password"] },
+    console.log("Update profile request received:", {
+      body: req.body,
+      file: req.file ? "File received" : "No file",
+      params: req.params,
     });
+
+    const { name, email } = req.body;
+    const { user_id } = req.params;
+
+    // Find user by ID or email
+    let user;
+    if (user_id) {
+      user = await User.findOne({
+        where: { user_id: user_id },
+        attributes: { exclude: ["password"] },
+      });
+    } else if (email) {
+      user = await User.findOne({
+        where: { email: email },
+        attributes: { exclude: ["password"] },
+      });
+    }
 
     if (!user) {
       return res
@@ -73,13 +89,14 @@ const updateProfile = async (req, res) => {
     }
 
     // ✅ Update text fields
-    user.name = name || user.name;
-    user.address = address || user.address;
-    user.city = city || user.city;
-    user.postal_code = postal_code || user.postal_code;
+    if (name) {
+      user.name = name;
+    }
 
     // ✅ Handle profile image
     if (req.file) {
+      console.log("Processing uploaded file:", req.file.filename);
+
       // Delete old image if stored as relative path
       if (user.profileImage_url && !user.profileImage_url.startsWith("http")) {
         const oldImagePath = path.join(
@@ -98,6 +115,7 @@ const updateProfile = async (req, res) => {
     }
 
     await user.save();
+    console.log("User profile updated successfully");
 
     // ✅ Convert path to full public URL before sending response
     if (user.profileImage_url && !user.profileImage_url.startsWith("http")) {

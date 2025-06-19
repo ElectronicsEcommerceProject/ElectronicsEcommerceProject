@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import React from "react";
+import axios from "axios";
 import { OrderSummary } from "../../customer/index.js";
 import {
   AddressForm,
@@ -8,6 +9,7 @@ import {
   userProfileRoute,
   getApiById,
   getUserIdFromToken,
+  updateApiById,
 } from "../../../src/index.js";
 
 const Profile = () => {
@@ -74,14 +76,53 @@ const Profile = () => {
       },
     ];
 
-    const handleImageUpload = (e) => {
+    const handleImageUpload = async (e) => {
       const file = e.target.files[0];
       if (file && file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          setUser((prev) => ({ ...prev, profileImage_url: reader.result }));
-        };
-        reader.readAsDataURL(file);
+        try {
+          // Show preview immediately
+          const reader = new FileReader();
+          reader.onload = () => {
+            setUser((prev) => ({ ...prev, profileImage_url: reader.result }));
+          };
+          reader.readAsDataURL(file);
+
+          // Upload to server
+          const userId = getUserIdFromToken();
+          if (userId) {
+            // Create FormData for file upload
+            const formData = new FormData();
+            formData.append("profileImage", file);
+            formData.append("name", user.name || "");
+            formData.append("email", user.email || "");
+
+            // Get token for authorization
+            const token = localStorage.getItem("token");
+
+            // Use axios directly for FormData upload since updateApiById doesn't support FormData
+            const BASE_URL =
+              import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+            const response = await axios.patch(
+              `${BASE_URL}user/profile/${userId}`,
+              formData,
+              {
+                headers: {
+                  Authorization: `Bearer ${token || ""}`,
+                  // Don't set Content-Type for FormData
+                },
+              }
+            );
+
+            console.log("Profile image updated successfully", response.data);
+
+            // Refresh user data after successful upload
+            const updatedUser = await getApiById(userProfileRoute, userId);
+            setUser(updatedUser);
+          }
+        } catch (error) {
+          console.error("Error uploading profile image:", error);
+          alert("Failed to upload image. Please try again.");
+        }
       } else {
         alert("Please upload a valid image file (PNG/JPG).");
       }
@@ -199,7 +240,7 @@ const Profile = () => {
       setFormData(user);
       setIsEditing(false);
     };
-    const handleSave = () => {
+    const handleSave = async () => {
       if (!formData.name.trim()) {
         alert("Name is required.");
         return;
@@ -212,9 +253,32 @@ const Profile = () => {
         alert("Phone number is required.");
         return;
       }
-      setUser(formData);
-      setIsEditing(false);
-      alert("Profile updated successfully!");
+
+      try {
+        const userId = getUserIdFromToken();
+        if (userId) {
+          // Prepare data to send to API - exclude profileImage_url to avoid payload too large error
+          const updateData = {
+            name: formData.name,
+            email: formData.email,
+          };
+
+          // Update profile via API
+          const response = await updateApiById(
+            userProfileRoute,
+            userId,
+            updateData
+          );
+
+          // Update local state with response data
+          setUser(response.user || formData);
+          setIsEditing(false);
+          alert("Profile updated successfully!");
+        }
+      } catch (error) {
+        console.error("Error updating profile:", error);
+        alert("Failed to update profile. Please try again.");
+      }
     };
     const handleChange = (e) => {
       const { name, value } = e.target;
