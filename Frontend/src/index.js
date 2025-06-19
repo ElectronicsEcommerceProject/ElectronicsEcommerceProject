@@ -32,6 +32,7 @@ import StockManagement from "../features/admin/StockManagement/StockManagement.j
 // Components
 import AlertMessage from "../components/Alert/AlertMessage.jsx";
 import AddressForm from "../components/AddressForm/AddressForm.jsx";
+import UserNotification from "../components/UserNotification/UserNotification.jsx";
 
 import {
   createApi,
@@ -251,4 +252,7 @@ export {
 
   //user review
   userProductReviewRoute,
+
+  //components
+  UserNotification,
 };

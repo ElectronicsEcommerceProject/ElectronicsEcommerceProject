@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import React from "react";
 import { OrderSummary } from "../../customer/index.js";
-import { AddressForm } from "../../../src/index.js";
+import { AddressForm, UserNotification } from "../../../src/index.js";
 
 const Profile = () => {
   // User data based on actual User model
@@ -21,71 +21,10 @@ const Profile = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
 
-  // Sample notifications based on Notification model
-  const inAppNotificationsSample = [
-    {
-      notification_id: "1",
-      title: "Order Shipped",
-      message: "Your order #1234 has been shipped!",
-      is_read: false,
-      createdAt: "2025-06-18T10:00:00Z",
-      channel: "in_app",
-      status: "sent",
-    },
-    {
-      notification_id: "2",
-      title: "Welcome!",
-      message: "Thank you for registering with us.",
-      is_read: true,
-      createdAt: "2025-06-15T09:00:00Z",
-      channel: "in_app",
-      status: "sent",
-    },
-  ];
-  const [notifications, setNotifications] = useState(inAppNotificationsSample);
-
-  const handleMarkAsRead = (id) => {
-    setNotifications(
-      notifications.map((n) =>
-        n.notification_id === id ? { ...n, is_read: true } : n
-      )
-    );
-  };
-
+  // Use the UserNotification component instead of hardcoded notifications
   const InAppNotifications = () => (
-    <div className="mb-6 p-4 sm:p-6 bg-white border border-gray-200 rounded-lg hover:shadow-lg transition-all duration-300">
-      <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">
-        In-App Notifications
-      </h2>
-      <ul className="space-y-3">
-        {notifications.length === 0 && (
-          <li className="text-gray-500">No notifications.</li>
-        )}
-        {notifications.map((n) => (
-          <li
-            key={n.notification_id}
-            className={`p-3 rounded border flex flex-col sm:flex-row sm:justify-between sm:items-center ${
-              n.is_read ? "bg-gray-50" : "bg-blue-50"
-            }`}
-          >
-            <div>
-              <div className="font-medium text-gray-800">{n.title}</div>
-              <div className="text-gray-600 text-sm">{n.message}</div>
-              <div className="text-xs text-gray-400 mt-1">
-                {new Date(n.createdAt).toLocaleString()}
-              </div>
-            </div>
-            {!n.is_read && (
-              <button
-                className="mt-2 sm:mt-0 bg-blue-600 text-white px-3 py-1 rounded text-xs"
-                onClick={() => handleMarkAsRead(n.notification_id)}
-              >
-                Mark as read
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+    <div className="mb-6">
+      <UserNotification />
     </div>
   );
 
@@ -460,14 +399,18 @@ const Profile = () => {
   const ManageAddresses = () => {
     const [showAddressForm, setShowAddressForm] = useState(true);
     const [showPlaceholder, setShowPlaceholder] = useState(false);
-    
+
     // If close button is clicked, show a placeholder with button to reopen the form
     if (showPlaceholder) {
       return (
         <div className="mb-6 p-8 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300">
           <div className="text-center">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Manage Your Addresses</h2>
-            <p className="text-gray-600 mb-6">Add, edit, or remove your delivery addresses</p>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Manage Your Addresses
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Add, edit, or remove your delivery addresses
+            </p>
             <button
               onClick={() => {
                 setShowAddressForm(true);
@@ -481,15 +424,15 @@ const Profile = () => {
         </div>
       );
     }
-    
+
     return (
-      <AddressForm 
-        isOpen={showAddressForm} 
+      <AddressForm
+        isOpen={showAddressForm}
         onClose={() => {
           setShowAddressForm(false);
           setShowPlaceholder(true);
-        }} 
-        mode="select" 
+        }}
+        mode="select"
       />
     );
   };
