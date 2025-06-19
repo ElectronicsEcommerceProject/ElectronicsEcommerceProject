@@ -12,6 +12,8 @@ import {
 
 import { AdminLayout, ProductForm } from "../features/admin/index.js";
 
+import { UserNotification } from "../src/index.js";
+
 const App = () => {
   return (
     <Routes>
@@ -23,6 +25,7 @@ const App = () => {
       <Route path="/cart" element={<ShoppingCart />} />
       <Route path="/orderCheckout" element={<OrderCheckoutPage />} />
       <Route path="/OrderStatus" element={<OrderStatus />} />
+      <Route path="/notifications" element={<UserNotification />} />
       //AdminRoutes
       <Route path="/adminDashboard" element={<AdminLayout />} />
       <Route path="/admin/product-Form" element={<ProductForm />} />

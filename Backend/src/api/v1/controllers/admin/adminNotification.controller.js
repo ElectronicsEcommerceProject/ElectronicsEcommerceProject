@@ -609,16 +609,16 @@ export const deleteTemplate = async (req, res) => {
 export const getInAppNotificationByUserId = async (req, res) => {
   try {
     const { user_id } = req.params;
-    
+
     // Get all unread notifications
     const notifications = await Notification.findAll({
       where: {
         user_id,
         channel: "in_app",
         is_read: false,
-        deletedAt: null
+        deletedAt: null,
       },
-      order: [["createdAt", "DESC"]]
+      order: [["createdAt", "DESC"]],
     });
 
     const unreadCount = notifications.length;
@@ -627,21 +627,57 @@ export const getInAppNotificationByUserId = async (req, res) => {
       return res.status(StatusCodes.OK).json({
         success: true,
         message: MESSAGE.get.empty,
-        data: { notifications: [], unreadCount: 0 }
+        data: { notifications: [], unreadCount: 0 },
       });
     }
 
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
-      data: { notifications, unreadCount }
+      data: { notifications, unreadCount },
     });
   } catch (error) {
     console.error("Get user notifications error:", error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: MESSAGE.get.fail,
-      error: error.message
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Get total number of unread in-app notifications for a user
+ * @route GET /api/v1/admin/notifications/inAppTotalNumberOfNotifications/:user_id
+ */
+export const getInAppTotalNumberOfUnReadNotificationByUserId = async (
+  req,
+  res
+) => {
+  try {
+    const { user_id } = req.params;
+
+    // Count unread in-app notifications
+    const unreadCount = await Notification.count({
+      where: {
+        user_id,
+        channel: "in_app",
+        is_read: false,
+        deletedAt: null,
+      },
+    });
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: MESSAGE.get.succ,
+      data: { unreadCount },
+    });
+  } catch (error) {
+    console.error("Get notification count error:", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: MESSAGE.get.fail,
+      error: error.message,
     });
   }
 };
@@ -653,39 +689,41 @@ export const getInAppNotificationByUserId = async (req, res) => {
 export const markAsRead = async (req, res) => {
   try {
     const { notification_id } = req.params;
-    
+
     // Find the notification
     const notification = await Notification.findByPk(notification_id);
-    
+
     if (!notification) {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
-        message: MESSAGE.none
+        message: MESSAGE.none,
       });
     }
-    
+
     // Check if user has permission to mark this notification as read
     if (notification.user_id !== req.user.user_id) {
       return res.status(StatusCodes.FORBIDDEN).json({
         success: false,
-        message: MESSAGE.custom("You don't have permission to mark this notification as read")
+        message: MESSAGE.custom(
+          "You don't have permission to mark this notification as read"
+        ),
       });
     }
-    
+
     // Update the notification
     await notification.update({ is_read: true });
-    
+
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.put.succ,
-      data: { notification }
+      data: { notification },
     });
   } catch (error) {
     console.error("Mark notification as read error:", error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: MESSAGE.put.fail,
-      error: error.message
+      error: error.message,
     });
   }
 };

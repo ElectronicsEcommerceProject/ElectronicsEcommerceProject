@@ -17,6 +17,7 @@ import {
   FiHome,
   FiShoppingBag,
   FiBookOpen,
+  FiBell,
 } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -30,6 +31,7 @@ import {
   totalCartItemNumberRoute,
   getApiById,
   getUserIdFromToken,
+  userTotalNumberOfUnReadNotificationsRoute,
 } from "../../src/index.js";
 
 // Function to map category names to appropriate icons
@@ -92,33 +94,45 @@ const Header = () => {
   const [categoriesError, setCategoriesError] = useState(null);
 
   const [cartCount, setCartCount] = useState(0);
+  const [notificationCount, setNotificationCount] = useState(0);
   const navigate = useNavigate();
 
-  // Fetch cart count from API
+  // Fetch cart count and notification count from API
   useEffect(() => {
-    const fetchCartCount = async () => {
+    const fetchCounts = async () => {
       try {
         const user_id = getUserIdFromToken();
         if (!user_id) {
           setCartCount(0);
+          setNotificationCount(0);
           return;
         }
 
-        const response = await getApiById(totalCartItemNumberRoute, user_id);
-
-        if (response.success && response.data) {
-          setCartCount(response.data.itemCount || 0);
+        // Fetch cart count
+        const cartResponse = await getApiById(totalCartItemNumberRoute, user_id);
+        if (cartResponse.success && cartResponse.data) {
+          setCartCount(cartResponse.data.itemCount || 0);
         } else {
-          console.error("Failed to fetch cart count:", response);
+          console.error("Failed to fetch cart count:", cartResponse);
           setCartCount(0);
         }
+
+        // Fetch notification count
+        const notificationResponse = await getApiById(userTotalNumberOfUnReadNotificationsRoute, user_id);
+        if (notificationResponse.success && notificationResponse.data) {
+          setNotificationCount(notificationResponse.data.unreadCount || 0);
+        } else {
+          console.error("Failed to fetch notification count:", notificationResponse);
+          setNotificationCount(0);
+        }
       } catch (error) {
-        console.error("Error fetching cart count:", error);
+        console.error("Error fetching counts:", error);
         setCartCount(0);
+        setNotificationCount(0);
       }
     };
 
-    fetchCartCount();
+    fetchCounts();
   }, []);
 
   // Fetch categories from API
@@ -365,6 +379,16 @@ const Header = () => {
               </AnimatePresence>
             </div>
 
+            <Link to="/notifications" className="flex items-center relative">
+              <FiBell className="w-5 h-5 mr-2" />
+
+              {notificationCount > 0 && (
+                <span className="absolute top-0 left-3 transform -translate-y-1/2 bg-red-500 text-white text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full animate-pulse">
+                  {notificationCount}
+                </span>
+              )}
+            </Link>
+
             <Link to="/cart" className="flex items-center relative">
               <FiShoppingCart className="w-5 h-5 mr-2" />
               <span>Cart</span>
@@ -394,6 +418,13 @@ const Header = () => {
               <a href="#" className="flex items-center">
                 <FiUser className="w-5 h-5 mr-2" />
                 <span>Login</span>
+              </a>
+              <a href="#" className="flex items-center relative">
+                <FiBell className="w-5 h-5 mr-2" />
+                <span>Notifications</span>
+                <span className="ml-auto bg-red-500 text-white text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full animate-pulse">
+                  {notificationCount}
+                </span>
               </a>
               <a href="#" className="flex items-center relative">
                 <FiShoppingCart className="w-5 h-5 mr-2" />

@@ -9,6 +9,7 @@ import {
   addNotification,
   getInAppNotificationByUserId,
   markAsRead,
+  getInAppTotalNumberOfUnReadNotificationByUserId,
 } from "../../controllers/admin/adminNotification.controller.js";
 import {
   verifyJwtToken,
@@ -57,6 +58,12 @@ router.get("/logs", verifyJwtToken, isAdmin, getNotificationLogs);
  * @params  user_id: string
  */
 router.get("/:user_id", verifyJwtToken, getInAppNotificationByUserId);
+
+router.get(
+  "/total-Number-Of-Un-Read-Notifications/:user_id",
+  verifyJwtToken,
+  getInAppTotalNumberOfUnReadNotificationByUserId
+);
 
 /**
  * @route   PATCH /api/v1/admin/notifications/:notification_id/mark-as-read
