@@ -57,7 +57,9 @@ const ForgotPassword = ({ setModalContent, setMessage }) => {
             aria-label="Email"
           />
           {errors.forgotPasswordEmail && (
-            <p className="text-red-500 text-xs mt-1">{errors.forgotPasswordEmail}</p>
+            <p className="text-red-500 text-xs mt-1">
+              {errors.forgotPasswordEmail}
+            </p>
           )}
         </div>
         <button
@@ -90,7 +92,7 @@ const ForgotPassword = ({ setModalContent, setMessage }) => {
               ></path>
             </svg>
           ) : (
-            "Send Reset Link"
+            "Send Reset Token"
           )}
         </button>
       </form>

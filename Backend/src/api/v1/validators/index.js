@@ -128,11 +128,17 @@ import {
   updateStockValidator,
   variantIdValidator as stockVariantIdValidator,
 } from "./stockManagement.validator.js";
+import {
+  resetPasswordValidator,
+  forgotPasswordValidator,
+} from "./auth/resetPassword.validators.js";
 
 export const validators = {
   auth: {
     register: registerValidator,
     login: loginValidator,
+    resetPasswordValidator,
+    forgotPasswordValidator,
   },
   product: {
     createProduct: productValidationSchema,

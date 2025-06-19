@@ -5,6 +5,7 @@ import { validators } from "../../../validators/index.js";
 import {
   loginController,
   registerController,
+  resetPasswordController,
 } from "../../../controllers/index.js";
 
 const router = express.Router();
@@ -16,5 +17,16 @@ router.post(
   registerController
 );
 router.post("/login", validator(validators.auth.login, null), loginController);
+
+router.post(
+  "/forgot-Password",
+  validator(validators.auth.forgotPasswordValidator, null),
+  resetPasswordController.forgotPassword
+);
+router.post(
+  "/reset-Password",
+  validator(validators.auth.resetPasswordValidator, null),
+  resetPasswordController.resetPassword
+);
 
 export default router;

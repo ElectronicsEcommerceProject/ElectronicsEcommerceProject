@@ -15,6 +15,8 @@ export { default as couponRedemptionController } from "./commonControllers/coupo
 export { default as productReviewController } from "./commonControllers/product/productReview/productReview.controller.js";
 export { default as userProductByIdDetailsController } from "./commonControllers/product/userProductByIdDetails/userProductByIdDetails.controller.js";
 export { default as userCouponUserController } from "./commonControllers/coupon/couponUser.controller.js";
+export { default as resetPasswordController } from "./auth/resetPassword.controller.js";
+
 //     admin controller
 export { default as adminCategoryController } from "./admin/category.controller.js";
 export { default as adminCouponController } from "./admin/coupon.controller.js";
