@@ -69,8 +69,6 @@ const forgotPassword = async (req, res) => {
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Password reset token has been sent to your email",
-      // In development only, return the token for testing (remove in production)
-      token: resetToken,
     });
   } catch (error) {
     console.error("Error in forgotPassword:", error);

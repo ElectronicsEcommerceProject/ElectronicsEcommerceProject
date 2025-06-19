@@ -155,6 +155,9 @@ const userPanelLoginRoute = import.meta.env.VITE_AUTH_LOGIN_ENDPOINT;
 const userPanelRegisterRoute = import.meta.env.VITE_AUTH_SIGNUP_ENDPOINT;
 const userPanelProductByIdDetailsRoute = import.meta.env
   .VITE_USER_PRODUCT_BY_ID_DETAILS_ENDPOINT;
+const userPanelForgotPasswordRoute = import.meta.env
+  .VITE_USER_FORGOT_PASSWORD_ENDPOINT;
+const resetPasswordRoute = import.meta.env.VITE_RESET_PASSWORD_ENDPOINT;
 
 const userAddressesRoute = import.meta.env.VITE_ADDRESSES_ENDPOINT;
 
@@ -240,6 +243,10 @@ export {
   userPanelRegisterRoute,
   userPanelProductByIdDetailsRoute,
   userAddressesRoute,
+
+  //Auth Routes
+  userPanelForgotPasswordRoute,
+  resetPasswordRoute,
 
   // Cart Routes
   cartRoute,
