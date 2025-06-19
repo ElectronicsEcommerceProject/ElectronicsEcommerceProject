@@ -645,3 +645,47 @@ export const getInAppNotificationByUserId = async (req, res) => {
     });
   }
 };
+
+/**
+ * Mark a notification as read
+ * @route PATCH /api/v1/admin/notifications/:notification_id/mark-as-read
+ */
+export const markAsRead = async (req, res) => {
+  try {
+    const { notification_id } = req.params;
+    
+    // Find the notification
+    const notification = await Notification.findByPk(notification_id);
+    
+    if (!notification) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: MESSAGE.none
+      });
+    }
+    
+    // Check if user has permission to mark this notification as read
+    if (notification.user_id !== req.user.user_id) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        success: false,
+        message: MESSAGE.custom("You don't have permission to mark this notification as read")
+      });
+    }
+    
+    // Update the notification
+    await notification.update({ is_read: true });
+    
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: MESSAGE.put.succ,
+      data: { notification }
+    });
+  } catch (error) {
+    console.error("Mark notification as read error:", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: MESSAGE.put.fail,
+      error: error.message
+    });
+  }
+};

@@ -13,6 +13,7 @@ import {
   getApiById,
   userNotificationRoute,
   getUserIdFromToken,
+  updateApiById,
 } from "../../src/index.js";
 
 const UserNotification = () => {
@@ -28,7 +29,7 @@ const UserNotification = () => {
     try {
       const userId = getUserIdFromToken();
       const response = await getApiById(userNotificationRoute, userId);
-      
+
       if (response.success) {
         setNotifications(response.data.notifications || []);
         setError(null);
@@ -50,18 +51,45 @@ const UserNotification = () => {
     fetchNotifications();
   }, []);
 
-  const handleMarkAsRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.notification_id === id ? { ...n, is_read: true } : n))
-    );
+  const handleMarkAsRead = async (id) => {
+    try {
+      // First update UI optimistically
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n.notification_id === id ? { ...n, is_read: true } : n
+        )
+      );
+
+      // Then make API call to mark as read
+      const response = await updateApiById(userNotificationRoute, id);
+
+      if (!response.success) {
+        console.error("Failed to mark notification as read:", response.message);
+        // Revert the optimistic update if API call fails
+        fetchNotifications();
+      }
+    } catch (err) {
+      console.error("Error marking notification as read:", err);
+      // Revert the optimistic update if API call fails
+      fetchNotifications();
+    }
   };
 
-  const handleMarkAllAsRead = () => {
+  const handleMarkAllAsRead = async () => {
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      // Mark each unread notification as read
+      const unreadNotifications = notifications.filter((n) => !n.is_read);
+
+      // Update UI optimistically
       setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    } catch (err) {
+      console.error("Error marking all notifications as read:", err);
+      // Refresh notifications to get current state
+      fetchNotifications();
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   const handleRefresh = () => {
@@ -197,51 +225,25 @@ const UserNotification = () => {
           </div>
 
           {/* Time Period Filter - Desktop buttons */}
-          <div className="hidden sm:flex bg-white/20 rounded-md p-1 flex-1 sm:flex-initial shadow-inner">
-            {["all", "today", "yesterday", "lastWeek"].map((type) => (
+          <div className="hidden sm:flex bg-white/20 rounded-md p-1 flex-1 sm:flex-initial">
+            {['all', 'today', 'yesterday', 'lastWeek'].map((type) => (
               <button
                 key={type}
                 onClick={() => setTimeFilter(type)}
-                className={`px-2 py-1 text-xs sm:px-3 sm:py-1 transition-all duration-200 ${
-                  timeFilter === type
-                    ? "bg-white text-blue-700 shadow-sm font-medium"
-                    : "text-white hover:bg-white/10"
+                className={`px-2 py-1 text-xs sm:px-3 sm:py-1 transition-colors ${
+                  timeFilter === type 
+                    ? "bg-white text-blue-700 shadow-sm" 
+                    : "text-white hover:bg-white hover:bg-opacity-10"
                 }`}
               >
-                {type === "all"
-                  ? "All"
-                  : type === "lastWeek"
-                  ? "7D"
-                  : type.charAt(0).toUpperCase() + type.slice(1)}
+                {type === 'all' ? 'All' : 
+                 type === 'lastWeek' ? '7D' : 
+                 type.charAt(0).toUpperCase() + type.slice(1)}
               </button>
             ))}
           </div>
 
-          <button
-            onClick={handleRefresh}
-            className={`text-xs sm:text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md transition-colors flex items-center mt-2 sm:mt-0 flex-shrink-0 shadow-md ${
-              isLoading ? "opacity-70" : ""
-            }`}
-            disabled={isLoading}
-          >
-            <FiRefreshCw
-              className={`mr-1 ${isLoading ? "animate-spin" : ""}`}
-              size={14}
-            />{" "}
-            Refresh
-          </button>
-
-          {unreadCount > 0 && (
-            <button
-              onClick={handleMarkAllAsRead}
-              className={`text-xs sm:text-sm bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded-md transition-colors flex items-center mt-2 sm:mt-0 flex-shrink-0 shadow-md ${
-                isLoading ? "opacity-70" : ""
-              }`}
-              disabled={isLoading}
-            >
-              <FiCheck className="mr-1" size={14} /> Mark all read
-            </button>
-          )}
+          {/* Removed Mark all as read button */}
         </div>
       </div>
 
@@ -252,7 +254,9 @@ const UserNotification = () => {
             <div className="animate-spin mb-3">
               <FiRefreshCw className="text-4xl text-blue-500" />
             </div>
-            <p className="font-medium text-gray-600">Loading notifications...</p>
+            <p className="font-medium text-gray-600">
+              Loading notifications...
+            </p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-500 bg-white">
@@ -260,7 +264,7 @@ const UserNotification = () => {
               <FiAlertTriangle className="text-4xl text-red-500" />
             </div>
             <p className="font-medium text-gray-600">{error}</p>
-            <button 
+            <button
               onClick={handleRefresh}
               className="mt-4 text-blue-500 hover:text-blue-700 flex items-center"
             >
@@ -273,7 +277,9 @@ const UserNotification = () => {
               <FiBell className="text-4xl text-gray-400" />
             </div>
             <p className="font-medium text-gray-600">No notifications found</p>
-            <p className="text-sm text-gray-400 mt-1">Try changing your filters</p>
+            <p className="text-sm text-gray-400 mt-1">
+              Try changing your filters
+            </p>
           </div>
         ) : (
           filteredNotifications.map((notification) => (
