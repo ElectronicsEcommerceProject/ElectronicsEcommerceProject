@@ -7,6 +7,7 @@ import {
   updateTemplate,
   deleteTemplate,
   addNotification,
+  getInAppNotificationByUserId,
 } from "../../controllers/admin/adminNotification.controller.js";
 import {
   verifyJwtToken,
@@ -47,6 +48,8 @@ router.post("/add-Notification", verifyJwtToken, isAdmin, addNotification);
  * }
  */
 router.get("/logs", verifyJwtToken, isAdmin, getNotificationLogs);
+
+router.get("/:user_id", verifyJwtToken, getInAppNotificationByUserId);
 
 /**
  * @route   GET /api/v1/admin/notifications/stats

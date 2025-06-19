@@ -145,6 +145,8 @@ const adminNotificationStatsRoute = import.meta.env
 const adminNotificationTemplatesRoute = import.meta.env
   .VITE_ADMIN_NOTIFICATION_TEMPLATES_ENDPOINT;
 
+const userNotificationRoute = import.meta.env.VITE_USER_NOTIFICATION_ENDPOINT;
+
 //user Panel Routes
 
 const userPanelLoginRoute = import.meta.env.VITE_AUTH_LOGIN_ENDPOINT;
@@ -228,6 +230,7 @@ export {
   adminNotificationLogsRoute,
   adminNotificationStatsRoute,
   adminNotificationTemplatesRoute,
+  userNotificationRoute,
 
   //User Panel Routes
   userPanelLoginRoute,

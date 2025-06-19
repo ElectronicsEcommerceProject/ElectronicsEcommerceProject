@@ -21,7 +21,7 @@ const app = express();
 
 app.use("/auth", authRoutes);
 
-//this below user routes is for getAllCategory, brands, products, variants, attributes,values...
+//this below user routes is for getAllCategory, brands, products, variants, attributes,values, notification...
 app.use("/user", adminRoutes);
 
 app.use("/user/productById-Details-Page", userProductByIdDetailsPageRoutes);

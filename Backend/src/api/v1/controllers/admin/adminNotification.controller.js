@@ -599,3 +599,49 @@ export const deleteTemplate = async (req, res) => {
     });
   }
 };
+
+/**
+ * @route   GET /api/v1/admin/notifications/:user_id
+ * @desc    Get in-app notifications for a specific user
+ * @access  User
+ * @params  user_id: string
+ */
+export const getInAppNotificationByUserId = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    
+    // Get all unread notifications
+    const notifications = await Notification.findAll({
+      where: {
+        user_id,
+        channel: "in_app",
+        is_read: false,
+        deletedAt: null
+      },
+      order: [["createdAt", "DESC"]]
+    });
+
+    const unreadCount = notifications.length;
+
+    if (unreadCount === 0) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: MESSAGE.get.empty,
+        data: { notifications: [], unreadCount: 0 }
+      });
+    }
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: MESSAGE.get.succ,
+      data: { notifications, unreadCount }
+    });
+  } catch (error) {
+    console.error("Get user notifications error:", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: MESSAGE.get.fail,
+      error: error.message
+    });
+  }
+};
