@@ -28,10 +28,6 @@ const Profile = () => {
     </div>
   );
 
-  // Password change functionality (simplified since no session tracking in models)
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
   // Handle query params to set active section
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -62,7 +58,7 @@ const Profile = () => {
       {
         name: "SETTINGS",
         icon: "⚙️",
-        subItems: ["Change Password", "In-App Notifications"],
+        subItems: [/* "Change Password", */ "In-App Notifications"],
       },
     ];
 
@@ -323,63 +319,6 @@ const Profile = () => {
     );
   };
 
-  // Simplified Change Password component (since no session tracking in models)
-  const ChangePassword = () => {
-    const handleChangePassword = () => {
-      if (newPassword.length < 8) {
-        alert("Password must be at least 8 characters long.");
-        return;
-      }
-      if (newPassword !== confirmPassword) {
-        alert("Passwords do not match.");
-        return;
-      }
-      alert("Password changed successfully!");
-      setNewPassword("");
-      setConfirmPassword("");
-    };
-
-    return (
-      <div className="mb-6 p-4 sm:p-6 bg-white border border-gray-200 rounded-lg hover:shadow-lg transition-all duration-300">
-        <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">
-          Change Password
-        </h2>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              New Password
-            </label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-              placeholder="Enter new password"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-              placeholder="Confirm new password"
-            />
-          </div>
-          <button
-            onClick={handleChangePassword}
-            className="bg-blue-600 hover:bg-blue-700 px-4 py-2 text-white rounded-lg text-sm font-medium"
-          >
-            Change Password
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   // Wishlist component placeholder (would need to fetch from API)
   const Wishlist = () => (
     <div className="mb-6 p-4 sm:p-6 bg-white border border-gray-200 rounded-lg hover:shadow-lg transition-all duration-300">
@@ -447,8 +386,6 @@ const Profile = () => {
         return <OrderSummary />;
       case "Wishlist":
         return <Wishlist />;
-      case "Change Password":
-        return <ChangePassword />;
       case "In-App Notifications":
         return <InAppNotifications />;
       default:
