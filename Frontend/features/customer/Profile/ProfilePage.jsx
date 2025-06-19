@@ -282,12 +282,8 @@ const Profile = () => {
                 name="phone_number"
                 value={isEditing ? formData.phone_number : user.phone_number}
                 onChange={handleChange}
-                disabled={!isEditing}
-                className={`w-full p-2 border border-gray-300 rounded-lg ${
-                  isEditing
-                    ? "focus:outline-none focus:ring-2 focus:ring-blue-600"
-                    : "bg-gray-100"
-                }`}
+                disabled={true}
+                className={`w-full p-2 border border-gray-300 rounded-lg bg-gray-100`}
                 placeholder="Enter your phone number"
               />
             </div>
