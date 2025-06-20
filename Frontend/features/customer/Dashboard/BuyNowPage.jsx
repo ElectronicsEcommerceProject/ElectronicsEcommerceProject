@@ -800,23 +800,7 @@ const BuyNowPage = () => {
             >
               {addingToCart ? "ADDING..." : `ADD TO CART (${quantity})`}
             </button>
-            <button
-              onClick={() => {
-                const variantData = mainProduct.variants?.find(
-                  (v) => v.description === selectedVariant
-                );
-                console.log("Buy now:", {
-                  product_id: productId,
-                  variant_id: variantData?.product_variant_id,
-                  quantity: quantity,
-                  price: variantData?.price,
-                });
-                alert(`Proceeding to buy ${quantity} item(s)!`);
-              }}
-              className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm sm:text-base"
-            >
-              BUY NOW ({quantity})
-            </button>
+
           </div>
         </div>
 
