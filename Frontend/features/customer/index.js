@@ -10,7 +10,7 @@ import ProfilePage from "../../features/customer/Profile/ProfilePage";
 import ShoppingCart from "../../components/CartSummary/ShoppingCart";
 
 import OrderCheckoutPage from "../../features/Order/OrderCheckoutPage.jsx";
-import OrderSummary from "../../features/Order/OrderSummary.jsx";
+import OrderDetails from "../Order/OrderDetail.jsx";
 import OrderStatus from "../../features/Order/OrderStatus.jsx";
 
 // 🧭 Common UI
@@ -49,7 +49,7 @@ export {
   ProfilePage,
   ShoppingCart,
   OrderCheckoutPage,
-  OrderSummary,
+  OrderDetails,
   OrderStatus,
   Header,
   Footer,
