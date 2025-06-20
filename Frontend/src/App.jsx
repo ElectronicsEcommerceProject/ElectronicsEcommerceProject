@@ -27,8 +27,6 @@ const App = () => {
         <Route path="/profile/wishlist" element={<ProfilePage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/cart" element={<ShoppingCart />} />
-        <Route path="/orderCheckout" element={<OrderCheckoutPage />} />
-        <Route path="/OrderStatus" element={<OrderStatus />} />
         <Route path="/notifications" element={<UserNotification />} />
 
         {/* Admin Routes */}
