@@ -79,7 +79,11 @@ const Signup = ({ setModalContent, setUser }) => {
       }
     }
     if (!signupData.email) newErrors.email = 'Please enter your email';
-    if (!signupData.password) newErrors.password = 'Please enter your password';
+    if (!signupData.password) {
+      newErrors.password = 'Please enter your password';
+    } else if (signupData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters long';
+    }
     if (!signupData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
     if (signupData.password && signupData.confirmPassword && signupData.password !== signupData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
