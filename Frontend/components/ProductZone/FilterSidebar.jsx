@@ -41,18 +41,7 @@ const FilterSidebar = ({
   const [brandsLoading, setBrandsLoading] = useState(true);
   const [brandsError, setBrandsError] = useState(null);
 
-  // Hardcoded discounts data
-  const hardcodedDiscounts = [
-    "10% Off",
-    "20% Off",
-    "30% Off",
-    "50% Off",
-    "Buy 1 Get 1 Free",
-    "Flash Sale",
-    "Today's Deal",
-    "Clearance Sale",
-    "Special Offer",
-  ];
+
 
   // Fetch brands from API
   useEffect(() => {
@@ -85,30 +74,7 @@ const FilterSidebar = ({
         console.error("Error fetching brands:", error);
         setBrandsError(error.message || "Failed to fetch brands");
 
-        // Fallback to hardcoded data if API fails
-        const fallbackBrands = [
-          { id: 1, name: "Apple" },
-          { id: 2, name: "Samsung" },
-          { id: 3, name: "Sony" },
-          { id: 4, name: "LG" },
-          { id: 5, name: "Dell" },
-          { id: 6, name: "HP" },
-          { id: 7, name: "Lenovo" },
-          { id: 8, name: "Asus" },
-          { id: 9, name: "Acer" },
-          { id: 10, name: "Microsoft" },
-          { id: 11, name: "Google" },
-          { id: 12, name: "OnePlus" },
-          { id: 13, name: "Xiaomi" },
-          { id: 14, name: "Huawei" },
-          { id: 15, name: "Canon" },
-          { id: 16, name: "Nikon" },
-          { id: 17, name: "JBL" },
-          { id: 18, name: "Bose" },
-          { id: 19, name: "Sennheiser" },
-          { id: 20, name: "Logitech" },
-        ];
-        setBrands(fallbackBrands);
+        setBrands([]);
       } finally {
         setBrandsLoading(false);
       }
@@ -327,26 +293,7 @@ const FilterSidebar = ({
           </button>
         )}
       </div>
-      {/* Discounts */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Deals & Discounts</h2>
-        {hardcodedDiscounts.map((discount) => (
-          <label
-            key={discount}
-            className="flex items-center mb-1 hover:bg-gray-50 p-1 rounded"
-          >
-            <input
-              type="checkbox"
-              checked={
-                selectedDiscounts && selectedDiscounts.includes(discount)
-              }
-              onChange={() => handleDiscount && handleDiscount(discount)}
-              className="mr-2"
-            />
-            {discount}
-          </label>
-        ))}
-      </div>
+
       {/* Availability */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-2">Availability</h2>
