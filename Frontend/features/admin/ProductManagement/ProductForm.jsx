@@ -476,14 +476,23 @@ const ProductCatalogManagement = () => {
     );
 
     useEffect(() => {
-      setLocalData(stepFormData[step]);
+      const currentStepData = { ...stepFormData[step] };
+      
+      // Set default values for fields that have them
+      fields.forEach(field => {
+        if (field.defaultValue && !currentStepData[field.name]) {
+          currentStepData[field.name] = field.defaultValue;
+        }
+      });
+      
+      setLocalData(currentStepData);
       setFilledFields(
-        Object.keys(stepFormData[step]).reduce(
-          (acc, key) => ({ ...acc, [key]: !!stepFormData[step][key] }),
+        Object.keys(currentStepData).reduce(
+          (acc, key) => ({ ...acc, [key]: !!currentStepData[key] }),
           {}
         )
       );
-    }, [step]);
+    }, [step, fields]);
 
     const handleChange = (e) => {
       const { name, value, type, files, newItem } = e.target;
@@ -1012,7 +1021,7 @@ const ProductCatalogManagement = () => {
         },
         {
           name: "min_retailer_quantity",
-          label: "Min Retailer Quantity",
+          label: "Minimum Order Quantity for Retailers",
           type: "number",
           placeholder: "e.g., 5",
           required: false,
@@ -1052,9 +1061,10 @@ const ProductCatalogManagement = () => {
           type: "select",
           placeholder: "Select attribute type",
           required: true,
+          defaultValue: "string",
           options: [
-            { id: "select", name: "Select" },
             { id: "string", name: "String" },
+            { id: "select", name: "Select" },
             { id: "integer", name: "int" },
             { id: "float", name: "float" },
             { id: "enum", name: "enum" },
@@ -1081,6 +1091,7 @@ const ProductCatalogManagement = () => {
           type: "select",
           placeholder: "Select media type",
           required: true,
+          defaultValue: "image",
           options: [
             { id: "image", name: "Image" },
             { id: "video", name: "Video" },
