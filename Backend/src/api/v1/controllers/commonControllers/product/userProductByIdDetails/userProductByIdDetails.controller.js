@@ -215,7 +215,8 @@ const userProductByIdDetails = async (req, res, next) => {
     const relatedProducts = await getRelatedProducts(
       productData.category_id,
       productData.brand_id,
-      productData.product_id
+      productData.product_id,
+      req
     );
 
     console.log("✅ Found related products:", relatedProducts.length);
@@ -235,7 +236,8 @@ const userProductByIdDetails = async (req, res, next) => {
       productData,
       relatedProducts,
       relevantCoupons,
-      appliedCoupons
+      appliedCoupons,
+      req
     );
 
     return res.status(StatusCodes.OK).json({
@@ -260,9 +262,10 @@ const userProductByIdDetails = async (req, res, next) => {
  * @param {string} categoryId - Category ID
  * @param {string} brandId - Brand ID
  * @param {string} currentProductId - Current product ID to exclude
+ * @param {Object} req - Express request object
  * @returns {Array} Related products
  */
-const getRelatedProducts = async (categoryId, brandId, currentProductId) => {
+const getRelatedProducts = async (categoryId, brandId, currentProductId, req) => {
   try {
     const relatedProducts = [];
     const maxProducts = 8; // Total number of related products to return
@@ -439,9 +442,10 @@ const getRelatedProducts = async (categoryId, brandId, currentProductId) => {
           ? parseFloat(plainProduct.rating_average).toFixed(1)
           : "0.0",
         ratingCount: plainProduct.rating_count || 0,
-        image:
-          plainProduct.media?.[0]?.ProductMediaURLs?.[0]?.product_media_url ||
-          "",
+        image: convertToFullUrl(
+          plainProduct.media?.[0]?.ProductMediaURLs?.[0]?.product_media_url,
+          req
+        ),
         brand: plainProduct.brand,
         isFeatured: plainProduct.is_featured || false,
       };
@@ -554,30 +558,49 @@ const getRelevantCoupons = async (productId, brandId, categoryId) => {
 };
 
 /**
+ * Convert relative path to full URL for response
+ * @param {string} imagePath - Image path
+ * @param {Object} req - Express request object
+ * @returns {string} Full URL
+ */
+const convertToFullUrl = (imagePath, req) => {
+  if (imagePath && !imagePath.startsWith("http")) {
+    return `${req.protocol}://${req.get("host")}/${imagePath.replace(/\\/g, "/")}`;
+  }
+  return imagePath || "";
+};
+
+/**
  * Format product data to match the required response structure
  * @param {Object} productData - Raw product data from database
  * @param {Array} relatedProducts - Related products array
  * @param {Array} coupons - Relevant coupons array
  * @param {Array} appliedCoupons - Applied coupons for the user
+ * @param {Object} req - Express request object
  * @returns {Object} Formatted product data
  */
 const formatProductResponse = (
   productData,
   relatedProducts = [],
   coupons = [],
-  appliedCoupons = []
+  appliedCoupons = [],
+  req
 ) => {
   // Process media to match the URL structure
   const mediaWithUrls =
     productData.media?.map((media) => ({
       ...media,
-      urls: media.ProductMediaURLs || [],
+      urls: media.ProductMediaURLs?.map((url) => ({
+        ...url,
+        product_media_url: convertToFullUrl(url.product_media_url, req),
+      })) || [],
     })) || [];
 
   // Process variants with their attributes
   const variantsWithAttributes =
     productData.variants?.map((variant) => ({
       ...variant,
+      base_variant_image_url: convertToFullUrl(variant.base_variant_image_url, req),
       variantAttributes:
         variant.variantAttributeValues?.map((varAttrVal) => ({
           variant_attribute_value_id: varAttrVal.variant_attribute_value_id,
@@ -675,10 +698,10 @@ const formatProductResponse = (
         : null,
 
     // Main image and thumbnails for frontend
-    mainImage: mediaWithUrls?.[0]?.urls?.[0]?.product_media_url || "",
+    mainImage: convertToFullUrl(mediaWithUrls?.[0]?.urls?.[0]?.product_media_url, req),
     thumbnails:
       mediaWithUrls
-        ?.flatMap((media) => media.urls?.map((url) => url.product_media_url))
+        ?.flatMap((media) => media.urls?.map((url) => convertToFullUrl(url.product_media_url, req)))
         .filter(Boolean) || [],
 
     // Variant names for frontend compatibility
