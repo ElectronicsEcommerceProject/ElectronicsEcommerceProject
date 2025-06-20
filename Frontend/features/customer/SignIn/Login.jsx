@@ -90,6 +90,11 @@ const Login = ({ setModalContent, setUser, setMessage }) => {
         setModalContent('success');
         setMessage('Login successful!');
         setLoginData({ email: "", password: "" });
+        
+        // Refresh page after 2 seconds
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
       } else {
         setErrors({ general: response.message || 'Login failed. Please try again.' });
       }
