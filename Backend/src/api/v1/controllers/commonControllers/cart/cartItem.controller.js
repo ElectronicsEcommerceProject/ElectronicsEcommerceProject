@@ -3,6 +3,14 @@ import { StatusCodes } from "http-status-codes";
 import MESSAGE from "../../../../../constants/message.js";
 import { Op } from "sequelize";
 
+// Convert relative path to full URL for response
+const convertToFullUrl = (imagePath, req) => {
+  if (imagePath && !imagePath.startsWith("http")) {
+    return `${req.protocol}://${req.get("host")}/${imagePath.replace(/\\/g, "/")}`;
+  }
+  return imagePath || "";
+};
+
 const {
   Cart,
   CartItem,
@@ -578,18 +586,23 @@ const getCartItemsByUserId = async (req, res) => {
 
       if (variant?.base_variant_image_url) {
         // First priority: variant's base_variant_image_url field
-        mainImage = variant.base_variant_image_url;
+        mainImage = convertToFullUrl(variant.base_variant_image_url, req);
       } else if (
         variant?.ProductMedia?.[0]?.ProductMediaURLs?.[0]?.product_media_url
       ) {
         // Second priority: variant's ProductMedia URL
-        mainImage =
-          variant.ProductMedia[0].ProductMediaURLs[0].product_media_url;
+        mainImage = convertToFullUrl(
+          variant.ProductMedia[0].ProductMediaURLs[0].product_media_url,
+          req
+        );
       } else if (
         product?.media?.[0]?.ProductMediaURLs?.[0]?.product_media_url
       ) {
         // Third priority: product's ProductMedia URL
-        mainImage = product.media[0].ProductMediaURLs[0].product_media_url;
+        mainImage = convertToFullUrl(
+          product.media[0].ProductMediaURLs[0].product_media_url,
+          req
+        );
       }
 
       // Parse variant attributes from VariantAttributeValue
@@ -667,13 +680,15 @@ const getCartItemsByUserId = async (req, res) => {
                 base_variant_image_url: (() => {
                   // Use same priority logic for variant image
                   if (variant.base_variant_image_url) {
-                    return variant.base_variant_image_url;
+                    return convertToFullUrl(variant.base_variant_image_url, req);
                   } else if (
                     variant?.ProductMedia?.[0]?.ProductMediaURLs?.[0]
                       ?.product_media_url
                   ) {
-                    return variant.ProductMedia[0].ProductMediaURLs[0]
-                      .product_media_url;
+                    return convertToFullUrl(
+                      variant.ProductMedia[0].ProductMediaURLs[0].product_media_url,
+                      req
+                    );
                   } else {
                     return mainImage;
                   }
