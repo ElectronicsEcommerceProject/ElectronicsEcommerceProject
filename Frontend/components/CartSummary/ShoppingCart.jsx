@@ -994,7 +994,13 @@ const CartPage = () => {
       {/* Address Form Popup */}
       <AddressForm
         isOpen={showAddressForm}
-        onClose={() => setShowAddressForm(false)}
+        onClose={() => {
+          setShowAddressForm(false);
+          // Alert if no address is selected when closing the form
+          if (!selectedAddress) {
+            alert("Please select an address to continue with your order.");
+          }
+        }}
         onAddressSelect={(address) => {
           setSelectedAddress(address);
           setShowAddressForm(false);
