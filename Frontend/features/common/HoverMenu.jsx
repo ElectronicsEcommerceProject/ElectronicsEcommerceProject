@@ -10,6 +10,7 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import Login from "../customer/SignIn/Login";
 import Signup from "../customer/SignIn/Signup";
@@ -186,25 +187,24 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
   }, [modalContent, showLogoutModal, onModalStateChange]);
 
   const menuItems = [
-    { id: "orders", label: "My Orders", icon: FaShoppingBag, path: "/profilepage?section=orders" },
-    { id: "wishlist", label: "Wishlist", icon: FaHeart, path: "/profilepage?section=wishlist" },
-    { id: "profile", label: "Profile", icon: FaUser, path: "/profilepage" },
-    
+    { id: "orders", label: "My Orders", icon: FaShoppingBag, path: "/profile/orders" },
+    { id: "wishlist", label: "Wishlist", icon: FaHeart, path: "/profile/wishlist" },
+    { id: "profile", label: "Profile", icon: FaUser, path: "/profile" },
   ];
 
   const renderMenuItem = (item) => (
-    <motion.a
-      key={item.id}
-      href={item.path}
-      whileHover={{ x: 5 }}
-      className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-md transition-colors duration-150"
-    >
-      <div className="flex items-center">
-        <item.icon className="text-gray-600 mr-2 text-base" />
-        <span className="text-gray-800 text-sm font-medium">{item.label}</span>
-      </div>
-      <FaChevronRight className="text-gray-400 text-[10px]" />
-    </motion.a>
+    <motion.div key={item.id} whileHover={{ x: 5 }}>
+      <Link
+        to={item.path}
+        className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-md transition-colors duration-150"
+      >
+        <div className="flex items-center">
+          <item.icon className="text-gray-600 mr-2 text-base" />
+          <span className="text-gray-800 text-sm font-medium">{item.label}</span>
+        </div>
+        <FaChevronRight className="text-gray-400 text-[10px]" />
+      </Link>
+    </motion.div>
   );
 
   return (

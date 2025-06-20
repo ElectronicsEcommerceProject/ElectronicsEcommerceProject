@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import OrderStatus from "../Order/OrderStatus.jsx";
+import OrderStatus from "./OrderStatus.jsx";
 import { useNavigate } from "react-router-dom";
 
 const dummyOrders = [
@@ -206,7 +206,7 @@ const SearchBar = ({ searchQuery, setSearchQuery, handleSearch }) => (
   </div>
 );
 
-const OrderSummary = () => {
+const OrderDetails = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [orderStatusFilters, setOrderStatusFilters] = useState({
     onTheWay: false,
@@ -300,4 +300,4 @@ const OrderSummary = () => {
   );
 };
 
-export default OrderSummary;
+export default OrderDetails;

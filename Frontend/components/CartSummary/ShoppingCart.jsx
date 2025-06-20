@@ -315,7 +315,7 @@ const CartPage = () => {
       if (orderResponse && orderResponse.success) {
         const orderId = orderResponse.data.order.order_id;
         let allOrderItemsCreated = true;
-        
+
         // Step 2: Create order items for each cart item
         for (const item of cartItems) {
           try {
@@ -327,13 +327,19 @@ const CartPage = () => {
               discount_quantity: item.discount_quantity || 0,
               price_at_time: item.price_at_time,
               discount_applied: item.discount_applied || 0,
-              final_price: item.final_price
+              final_price: item.final_price,
             };
-            
-            const orderItemResponse = await createApi(orderItemRoute, orderItemData);
-            
+
+            const orderItemResponse = await createApi(
+              orderItemRoute,
+              orderItemData
+            );
+
             if (!orderItemResponse || !orderItemResponse.success) {
-              console.error("Failed to create order item:", orderItemResponse?.message);
+              console.error(
+                "Failed to create order item:",
+                orderItemResponse?.message
+              );
               allOrderItemsCreated = false;
               break;
             }
@@ -343,30 +349,32 @@ const CartPage = () => {
             break;
           }
         }
-        
+
         if (!allOrderItemsCreated) {
-          alert("Order created but some items could not be processed. Please contact support.");
+          alert(
+            "Order created but some items could not be processed. Please contact support."
+          );
           setLoading(false);
           return;
         }
-        
+
         try {
-          // Step 3: Clear the cart after all order items are created
-          await createApi(`${orderRoute}/clear-cart`, {});
-          
           // Clear cart items from local state
           setCartItems([]);
           alert("Order placed successfully!");
-          
+
           // Redirect to orders page or show confirmation
-          window.location.href = "/orders";
+          window.location.href = "profile/orders";
         } catch (clearCartError) {
           console.error("Error clearing cart:", clearCartError);
-          alert("Order placed successfully, but there was an issue clearing your cart.");
-          window.location.href = "/orders";
+          alert("Order placed successfully");
+          // Redirect to orders page or show confirmation
+          window.location.href = "profile/orders";
         }
       } else {
-        alert(orderResponse?.message || "Failed to place order. Please try again.");
+        alert(
+          orderResponse?.message || "Failed to place order. Please try again."
+        );
       }
     } catch (error) {
       console.error("Error placing order:", error);
@@ -1061,9 +1069,10 @@ const CartPage = () => {
             <p className="text-gray-600 mb-6">
               Looks like you haven't added anything to your cart yet
             </p>
-            <button 
+            <button
               onClick={() => navigate("/")}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+            >
               Continue Shopping
             </button>
           </div>

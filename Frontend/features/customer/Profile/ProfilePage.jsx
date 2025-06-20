@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import React from "react";
 import axios from "axios";
-import { OrderSummary } from "../../customer/index.js";
+import { OrderDetails } from "../../customer/index.js";
 import {
   AddressForm,
   UserNotification,
@@ -46,8 +46,8 @@ const Profile = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const section = params.get("section");
-    if (section === "OrderSummary") {
-      setActiveSection("OrderSummary");
+    if (section === "OrderDetails") {
+      setActiveSection("OrderDetails");
     } else if (section === "wishlist") {
       setActiveSection("Wishlist");
     } else {
@@ -130,8 +130,8 @@ const Profile = () => {
 
     const handleMenuClick = (item, subItem) => {
       if (item === "MY ORDERS") {
-        setActiveSection("OrderSummary");
-        setActiveMenu("OrderSummary");
+        setActiveSection("OrderDetails");
+        setActiveMenu("OrderDetails");
       } else if (item === "WISHLIST") {
         setActiveSection("Wishlist");
         setActiveMenu("Wishlist");
@@ -458,8 +458,8 @@ const Profile = () => {
         return <PersonalInformation />;
       case "Manage Addresses":
         return <ManageAddresses />;
-      case "OrderSummary":
-        return <OrderSummary />;
+      case "OrderDetails":
+        return <OrderDetails />;
       case "Wishlist":
         return <Wishlist />;
       case "In-App Notifications":

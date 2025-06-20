@@ -23,9 +23,10 @@ const App = () => {
         <Route path="/buynow" element={<BuyNowPage />} />
         <Route path="/product/:productId" element={<BuyNowPage />} />
         <Route path="/profilepage" element={<ProfilePage />} />
+        <Route path="/profile/orders" element={<ProfilePage />} />
+        <Route path="/profile/wishlist" element={<ProfilePage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/cart" element={<ShoppingCart />} />
-        <Route path="/orderCheckout" element={<OrderCheckoutPage />} />
-        <Route path="/OrderStatus" element={<OrderStatus />} />
         <Route path="/notifications" element={<UserNotification />} />
 
         {/* Admin Routes */}
