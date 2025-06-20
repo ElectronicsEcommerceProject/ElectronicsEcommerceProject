@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   AddressForm,
   cartItemRoute,
@@ -14,6 +15,7 @@ import {
 // Note: Mock data removed - now using real API data
 
 const CartPage = () => {
+  const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -1059,7 +1061,9 @@ const CartPage = () => {
             <p className="text-gray-600 mb-6">
               Looks like you haven't added anything to your cart yet
             </p>
-            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+            <button 
+              onClick={() => navigate("/")}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
               Continue Shopping
             </button>
           </div>

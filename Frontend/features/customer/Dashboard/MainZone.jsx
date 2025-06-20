@@ -255,7 +255,7 @@ const MainZone = () => {
     const brandId = searchParams.get("brand_id");
 
     if (categoryId) {
-      alert(`Category selected with ID: ${categoryId}`);
+      // alert(`Category selected with ID: ${categoryId}`);
       setCurrentCategoryId(categoryId); // Set the category ID state
     } else {
       setCurrentCategoryId(null); // Clear category ID if not present

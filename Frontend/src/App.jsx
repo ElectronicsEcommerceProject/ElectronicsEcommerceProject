@@ -27,7 +27,7 @@ const App = () => {
       <Route path="/OrderStatus" element={<OrderStatus />} />
       <Route path="/notifications" element={<UserNotification />} />
       //AdminRoutes
-      <Route path="/adminDashboard" element={<AdminLayout />} />
+      <Route path="/admin" element={<AdminLayout />} />
       <Route path="/admin/product-Form" element={<ProductForm />} />
     </Routes>
   );

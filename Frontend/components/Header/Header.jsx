@@ -109,7 +109,10 @@ const Header = () => {
         }
 
         // Fetch cart count
-        const cartResponse = await getApiById(totalCartItemNumberRoute, user_id);
+        const cartResponse = await getApiById(
+          totalCartItemNumberRoute,
+          user_id
+        );
         if (cartResponse.success && cartResponse.data) {
           setCartCount(cartResponse.data.itemCount || 0);
         } else {
@@ -118,11 +121,17 @@ const Header = () => {
         }
 
         // Fetch notification count
-        const notificationResponse = await getApiById(userTotalNumberOfUnReadNotificationsRoute, user_id);
+        const notificationResponse = await getApiById(
+          userTotalNumberOfUnReadNotificationsRoute,
+          user_id
+        );
         if (notificationResponse.success && notificationResponse.data) {
           setNotificationCount(notificationResponse.data.unreadCount || 0);
         } else {
-          console.error("Failed to fetch notification count:", notificationResponse);
+          console.error(
+            "Failed to fetch notification count:",
+            notificationResponse
+          );
           setNotificationCount(0);
         }
       } catch (error) {
@@ -267,12 +276,12 @@ const Header = () => {
   const handleCategoryClick = (category) => {
     setSelectedCategoryId(category.category_id);
     navigate(`/mainzone?category_id=${category.category_id}`);
-    console.log(
-      "🏷️ Category selected:",
-      category.label,
-      "ID:",
-      category.category_id
-    );
+    // console.log(
+    //   "🏷️ Category selected:",
+    //   category.label,
+    //   "ID:",
+    //   category.category_id
+    // );
   };
 
   // Clear category selection
