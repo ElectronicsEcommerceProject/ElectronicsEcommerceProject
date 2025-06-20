@@ -487,6 +487,28 @@ const ProductCatalogManagement = () => {
 
     const handleChange = (e) => {
       const { name, value, type, files, newItem } = e.target;
+      
+      if (type === "file" && files[0]) {
+        const file = files[0];
+        const maxSize = 2 * 1024 * 1024; // 2MB
+        const allowedExtensions = ['jpeg', 'jpg', 'png'];
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        
+        // Check file size
+        if (file.size > maxSize) {
+          alert(`Image size is ${(file.size / (1024 * 1024)).toFixed(2)}MB. Maximum allowed size is 2MB.`);
+          e.target.value = ''; // Clear the input
+          return;
+        }
+        
+        // Check file extension
+        if (!allowedExtensions.includes(fileExtension)) {
+          alert(`File extension '${fileExtension}' is not allowed. Only jpeg, jpg, png are allowed.`);
+          e.target.value = ''; // Clear the input
+          return;
+        }
+      }
+      
       const newValue = type === "file" ? files[0] : value;
       setLocalData((prev) => ({ ...prev, [name]: newValue }));
       setFilledFields((prev) => ({ ...prev, [name]: !!newValue }));
@@ -935,7 +957,7 @@ const ProductCatalogManagement = () => {
           name: "average_rating",
           label: "Average Rating",
           type: "number",
-          placeholder: "e.g., 4.5",
+          placeholder: "Give rating from range 1-5 e.g., 4.5",
           required: false,
         },
       ],
@@ -948,7 +970,7 @@ const ProductCatalogManagement = () => {
       fields: [
         {
           name: "sku",
-          label: "Product Variant SKU",
+          label: "Product Variant Name",
           type: "text",
           placeholder: "e.g., IPH15-128-BLK",
           required: true,
@@ -976,14 +998,14 @@ const ProductCatalogManagement = () => {
         },
         {
           name: "discount_percentage",
-          label: "Discount Percentage (%)",
+          label: "Discount Percentage (%) for (Customer)",
           type: "number",
           placeholder: "e.g., 10",
           required: false,
         },
         {
           name: "discount_quantity",
-          label: "Discount Quantity",
+          label: "Discount Quantity for (Customer)",
           type: "number",
           placeholder: "e.g., 3",
           required: false,
