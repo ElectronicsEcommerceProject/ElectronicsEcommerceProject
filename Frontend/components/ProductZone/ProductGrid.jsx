@@ -8,14 +8,16 @@ const ProductGrid = ({
   onProductHover,
   onProductLeave,
   hoveredProduct,
+  wishlist,
+  toggleWishlist,
 }) => {
   return (
     <section aria-label="Product Grid">
       <div
-        className={`grid gap-4 ${
+        className={`grid gap-6 ${
           mobileView
-            ? "grid-cols-2"
-            : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5"
+            ? "grid-cols-1"
+            : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
         }`}
       >
         {products.length === 0 ? (
@@ -31,6 +33,8 @@ const ProductGrid = ({
               onProductHover={onProductHover}
               onProductLeave={onProductLeave}
               isHovered={hoveredProduct === product.id}
+              wishlist={wishlist}
+              toggleWishlist={toggleWishlist}
             />
           ))
         )}

@@ -1,13 +1,13 @@
-import db from '../../../../models/index.js'; // Import the database models
+import db from "../../../../models/index.js"; // Import the database models
 const { Order, OrderItem, Cart, Product, User } = db;
 
 // 📦 Place Order
-const createOrder = async (req, res) => {
+const findOrCreateOrder = async (req, res) => {
   const userEmail = req.user.email;
 
   try {
     const user = await User.findOne({ where: { email: userEmail } });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     const cartItems = await Cart.findAll({
       where: { user_id: user.user_id },
@@ -15,7 +15,7 @@ const createOrder = async (req, res) => {
     });
 
     if (cartItems.length === 0) {
-      return res.status(400).json({ message: 'Cart is empty' });
+      return res.status(400).json({ message: "Cart is empty" });
     }
 
     let totalAmount = 0;
@@ -30,7 +30,7 @@ const createOrder = async (req, res) => {
       let discount = 0;
 
       // Retailer logic
-      if (user.role === 'retailer') {
+      if (user.role === "retailer") {
         if (quantity < product.min_retailer_quantity) {
           return res.status(400).json({
             message: `Retailers must order at least ${product.min_retailer_quantity} units of "${product.name}"`,
@@ -61,7 +61,7 @@ const createOrder = async (req, res) => {
     const newOrder = await Order.create({
       user_id: user.user_id,
       total_amount: totalAmount,
-      status: 'pending',
+      status: "pending",
       address: req.body.address,
       mobile_number: req.body.mobile_number,
     });
@@ -76,13 +76,15 @@ const createOrder = async (req, res) => {
     await Cart.destroy({ where: { user_id: user.user_id } });
 
     res.status(201).json({
-      message: 'Order placed successfully',
+      message: "Order placed successfully",
       order: newOrder,
       items: orderItems,
     });
   } catch (error) {
-    console.error('❌ Error placing order:', error);
-    res.status(500).json({ message: 'Something went wrong while placing order' });
+    console.error("❌ Error placing order:", error);
+    res
+      .status(500)
+      .json({ message: "Something went wrong while placing order" });
   }
 };
 
@@ -90,7 +92,7 @@ const createOrder = async (req, res) => {
 const getOrders = async (req, res) => {
   try {
     const user = await User.findOne({ where: { email: req.user.email } });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     const orders = await Order.findAll({
       where: { user_id: user.user_id },
@@ -99,8 +101,8 @@ const getOrders = async (req, res) => {
 
     res.status(200).json(orders);
   } catch (error) {
-    console.error('❌ Error fetching orders:', error);
-    res.status(500).json({ message: 'Something went wrong' });
+    console.error("❌ Error fetching orders:", error);
+    res.status(500).json({ message: "Something went wrong" });
   }
 };
 
@@ -108,19 +110,19 @@ const getOrders = async (req, res) => {
 const getOrderById = async (req, res) => {
   try {
     const user = await User.findOne({ where: { email: req.user.email } });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     const order = await Order.findOne({
       where: { order_id: req.params.id, user_id: user.user_id },
       include: [{ model: OrderItem, include: [Product] }],
     });
 
-    if (!order) return res.status(404).json({ message: 'Order not found' });
+    if (!order) return res.status(404).json({ message: "Order not found" });
 
     res.status(200).json(order);
   } catch (error) {
-    console.error('❌ Error fetching order by ID:', error);
-    res.status(500).json({ message: 'Something went wrong' });
+    console.error("❌ Error fetching order by ID:", error);
+    res.status(500).json({ message: "Something went wrong" });
   }
 };
 
@@ -128,25 +130,27 @@ const getOrderById = async (req, res) => {
 const requestOrderCancellation = async (req, res) => {
   try {
     const user = await User.findOne({ where: { email: req.user.email } });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     const order = await Order.findOne({
       where: { order_id: req.params.id, user_id: user.user_id },
     });
 
-    if (!order) return res.status(404).json({ message: 'Order not found' });
+    if (!order) return res.status(404).json({ message: "Order not found" });
 
-    if (order.status !== 'pending') {
-      return res.status(400).json({ message: 'Only pending orders can be cancelled' });
+    if (order.status !== "pending") {
+      return res
+        .status(400)
+        .json({ message: "Only pending orders can be cancelled" });
     }
 
-    order.status = 'cancel_requested';
+    order.status = "cancel_requested";
     await order.save();
 
-    res.status(200).json({ message: 'Order cancellation requested', order });
+    res.status(200).json({ message: "Order cancellation requested", order });
   } catch (error) {
-    console.error('❌ Error requesting cancellation:', error);
-    res.status(500).json({ message: 'Something went wrong' });
+    console.error("❌ Error requesting cancellation:", error);
+    res.status(500).json({ message: "Something went wrong" });
   }
 };
 
@@ -155,24 +159,23 @@ const getAllOrdersForAdmin = async (req, res) => {
   try {
     const orders = await Order.findAll({
       include: [
-        { model: User, attributes: ['name', 'email', 'role'] },
-        { model: OrderItem, include: [Product] }
+        { model: User, attributes: ["name", "email", "role"] },
+        { model: OrderItem, include: [Product] },
       ],
-      order: [['created_at', 'DESC']]
+      order: [["created_at", "DESC"]],
     });
 
     res.status(200).json(orders);
   } catch (err) {
     console.error("❌ Error fetching all orders:", err.message);
-    res.status(500).json({ message: 'Something went wrong' });
+    res.status(500).json({ message: "Something went wrong" });
   }
 };
 
-
 export default {
-  createOrder,
+  findOrCreateOrder,
   getOrders,
   getOrderById,
   requestOrderCancellation,
-  getAllOrdersForAdmin
+  getAllOrdersForAdmin,
 };

@@ -26,6 +26,13 @@ export const createCartItemValidator = Joi.object({
     .messages({
       "string.uuid": MESSAGE.custom("Product variant ID must be a valid UUID"),
     }),
+  coupon_id: Joi.string()
+    .uuid()
+    .allow(null)
+    .optional()
+    .messages({
+      "string.uuid": MESSAGE.custom("Coupon ID must be a valid UUID"),
+    }),
   total_quantity: Joi.number()
     .integer()
     .min(1)
@@ -72,6 +79,16 @@ export const createCartItemValidator = Joi.object({
     .messages({
       "number.base": MESSAGE.custom("Discount applied must be a number"),
       "number.min": MESSAGE.custom("Discount applied cannot be negative"),
+    }),
+  discount_type: Joi.string()
+    .valid("fixed", "percentage")
+    .optional()
+    .allow(null)
+    .messages({
+      "string.base": MESSAGE.custom("Discount type must be a string"),
+      "any.only": MESSAGE.custom(
+        "Discount type must be either 'fixed' or 'percentage'"
+      ),
     }),
 });
 

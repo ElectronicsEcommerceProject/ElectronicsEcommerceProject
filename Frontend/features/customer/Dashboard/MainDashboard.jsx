@@ -1,37 +1,33 @@
 import React, { useState, useEffect } from "react";
-import {
-  FaSearch,
-  FaUser,
-  FaShoppingCart,
-  FaMobileAlt,
-  FaDesktop,
-  FaHeadphones,
-  FaCamera,
-  FaBriefcase,
-  FaMapMarkerAlt,
-  FaBars,
-  FaFacebookF,
-  FaTwitter,
-  FaInstagram,
-  FaLinkedinIn,
-  FaEnvelope,
-} from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
-import HoverMenu from "../../common/HoverMenu";
-import { useDispatch } from "react-redux";
-import { setSearchTerm } from "../../../components/Redux/filterSlice";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
-import Footer from "../../../components/Footer/Footer";
+import { FiUser, FiShoppingBag, FiStar, FiShield } from "react-icons/fi";
+
+import Footer from "../../../components/Footer/Footer.jsx";
+import Header from "../../../components/Header/Header.jsx";
+import { isAuthenticated } from "../../../src/index.js";
 
 const MainDashboard = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isHoveringLogin, setIsHoveringLogin] = useState(false);
   const [activeBanner, setActiveBanner] = useState(0);
-  const [searchInput, setSearchInput] = useState("");
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const cartCount = 3; // 🔧 Hardcoded for now (replace with dynamic count later)
+  const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = () => {
+      setIsUserAuthenticated(isAuthenticated());
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const handleAuthChange = () => {
+      checkAuth();
+    };
+
+    window.addEventListener("tokenChanged", handleAuthChange);
+
+    return () => {
+      window.removeEventListener("tokenChanged", handleAuthChange);
+    };
+  }, []);
 
   const banners = [
     {
@@ -59,15 +55,6 @@ const MainDashboard = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
-
-  const navItems = [
-    { icon: FaMobileAlt, label: "Mobiles" },
-    { icon: FaDesktop, label: "Electronics" },
-    { icon: FaHeadphones, label: "Audio" },
-    { icon: FaCamera, label: "Cameras" },
-    { icon: FaBriefcase, label: "Travel" },
-    { icon: FaMapMarkerAlt, label: "Navigation" },
-  ];
 
   const mobiles = [
     {
@@ -179,142 +166,67 @@ const MainDashboard = () => {
     },
   ];
 
-  const handleSearch = () => {
-    dispatch(setSearchTerm(searchInput));
-    navigate("/mainzone");
-  };
+  // If user is not authenticated, show login prompt
+  if (!isUserAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex flex-col font-sans">
+        <Header />
+
+        <div className="flex-1 flex items-center justify-center px-4 py-12">
+          <div className="max-w-md w-full">
+            <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FiUser className="w-10 h-10 text-white" />
+              </div>
+
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                Welcome to MAA LAXMI STORE
+              </h2>
+
+              <p className="text-gray-600 mb-8 leading-relaxed">
+                Please login first to explore our amazing collection of products
+                and enjoy exclusive deals!
+              </p>
+
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center text-sm text-gray-600">
+                  <FiShoppingBag className="w-5 h-5 mr-3 text-blue-500" />
+                  <span>Access thousands of products</span>
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <FiStar className="w-5 h-5 mr-3 text-yellow-500" />
+                  <span>Exclusive member discounts</span>
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <FiShield className="w-5 h-5 mr-3 text-green-500" />
+                  <span>Secure shopping experience</span>
+                </div>
+              </div>
+
+              <div className="text-sm text-gray-500">
+                Click on "Sign In" in the header to get started
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       {/* Header */}
-      <header className="bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600 text-white py-2 md:py-3 px-4 md:px-6 sticky top-0 z-50 shadow-lg">
-        <div className="flex items-center justify-between md:justify-start">
-          <div className="text-xl md:text-2xl font-bold flex items-center md:mr-8">
-            <span className="w-6 h-6 bg-white mr-2 rounded-sm"></span>
-            ShopEase
-          </div>
-
-          <div className="hidden md:flex flex-1 justify-center">
-            <div className="relative w-full max-w-2xl">
-              <FaSearch
-                onClick={handleSearch}
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-lg cursor-pointer hover:text-indigo-600 hover:scale-110 transition duration-200"
-              />
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                placeholder="Search for products..."
-                className="w-full pl-10 pr-4 py-2 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-40 shadow-sm text-sm"
-              />
-            </div>
-          </div>
-
-          <div className="hidden md:flex items-center space-x-6 ml-auto">
-            <div
-              className="relative group"
-              onMouseEnter={() => setIsHoveringLogin(true)}
-              onMouseLeave={() => setIsHoveringLogin(false)}
-            >
-              <div className="flex items-center cursor-pointer px-3 py-2">
-                <FaUser className="w-5 h-5 mr-1" />
-                <span className="text-sm">Sign In</span>
-              </div>
-              <AnimatePresence>
-                {isHoveringLogin && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute top-full mt-2 left-0 z-50"
-                  >
-                    <div className="w-3 h-3 bg-white rotate-45 absolute -top-1 left-5 shadow-sm" />
-                    <HoverMenu />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-            <Link
-              to="/cart"
-              className="relative flex items-center px-3 py-2 rounded-md hover:bg-indigo-800 transition-colors"
-            >
-              <FaShoppingCart className="w-6 h-6 text-white" />
-              <span className="ml-1 text-white hidden md:inline">Cart</span>
-              {cartCount > 0 && (
-                <span className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-amber-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full shadow-md">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-          </div>
-
-          <div className="flex md:hidden items-center ml-auto">
-            <button
-              className="text-white text-2xl"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              <FaBars />
-            </button>
-          </div>
-        </div>
-
-        {isMenuOpen && (
-          <div className="md:hidden mt-2 bg-indigo-700 px-4 pb-4 rounded-b shadow-lg">
-            <div className="flex flex-col space-y-4 pt-2">
-              <div className="flex items-center cursor-pointer">
-                <FaUser className="w-5 h-5 mr-2" />
-                <span>Login</span>
-              </div>
-              <a href="#" className="flex items-center relative">
-                <FaShoppingCart className="w-5 h-5 mr-2" />
-                <span>Cart</span>
-                <span className="ml-auto bg-amber-500 text-white text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full">
-                  3
-                </span>
-              </a>
-            </div>
-          </div>
-        )}
-
-        <div className="md:hidden w-full flex justify-center mt-4">
-          <div className="relative w-10/12 max-w-sm">
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-base" />
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              placeholder="Search for products, brands and more..."
-              className="w-full pl-10 pr-4 py-2 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-40 shadow-sm text-base"
-            />
-          </div>
-        </div>
-      </header>
-
-      <nav className="bg-white shadow-sm py-2 md:py-3 sticky top-16 md:top-12 z-40">
-        <div className="flex justify-center overflow-x-auto scrollbar-hide px-2">
-          <div className="flex space-x-4 md:space-x-8">
-            {navItems.map((item, index) => (
-              <a
-                key={index}
-                href="#"
-                className="text-xs md:text-sm font-medium text-gray-700 hover:text-indigo-600 whitespace-nowrap flex items-center px-1 py-1"
-              >
-                <item.icon className="mr-1 md:mr-2 text-base md:text-lg" />
-                {item.label}
-              </a>
-            ))}
-          </div>
-        </div>
-      </nav>
+      <Header />
 
       <div className="relative h-64 sm:h-80 md:h-96 overflow-hidden">
         {banners.map((banner, index) => (
           <div
             key={index}
-            className={`absolute inset-0 ${banner.bgClass} text-white transition-opacity duration-1000 flex items-center px-4 md:px-8 lg:px-16 ${
+            className={`absolute inset-0 ${
+              banner.bgClass
+            } text-white transition-opacity duration-1000 flex items-center px-4 md:px-8 lg:px-16 ${
               activeBanner === index ? "opacity-100 z-10" : "opacity-0 z-0"
             }`}
           >

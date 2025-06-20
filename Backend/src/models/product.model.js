@@ -119,6 +119,15 @@ export default (sequelize) => {
     });
     Product.hasMany(models.Coupon, {
       foreignKey: "product_id",
+      as: "coupons",
+    });
+    Product.hasMany(models.DiscountRule, {
+      foreignKey: "product_id",
+      as: "discountRules",
+    });
+    Product.hasMany(models.StockAlert, {
+      foreignKey: "product_id",
+      as: "stockAlerts",
     });
   };
 

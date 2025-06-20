@@ -46,6 +46,14 @@ export default (sequelize) => {
         type: DataTypes.ENUM("retailer", "customer", "admin"),
         allowNull: false,
       },
+      reset_token: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
+      reset_token_expires: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
     },
     {
       paranoid: true, // enable soft delete

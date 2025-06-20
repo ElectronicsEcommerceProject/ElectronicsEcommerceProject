@@ -31,6 +31,8 @@ import StockManagement from "../features/admin/StockManagement/StockManagement.j
 
 // Components
 import AlertMessage from "../components/Alert/AlertMessage.jsx";
+import AddressForm from "../components/AddressForm/AddressForm.jsx";
+import UserNotification from "../components/UserNotification/UserNotification.jsx";
 
 import {
   createApi,
@@ -43,6 +45,12 @@ import {
   deleteApiByCondition,
 } from "../src/api/api.js";
 import MESSAGE from "./api/message.js";
+import {
+  getUserFromToken,
+  getUserIdFromToken,
+  isAuthenticated,
+  getUserRole,
+} from "./utils/auth.js";
 
 //import .env routes
 const adminDashboardDataRoute = import.meta.env
@@ -55,8 +63,17 @@ const allUserRoute = import.meta.env.VITE_USER_ENDPOINT;
 const allCustomerRoute = import.meta.env.VITE_CUSTOMER_ENDPOINT;
 const allRetailerRoute = import.meta.env.VITE_RETAILER_ENDPOINT;
 
+// Cart endpoints
+const cartRoute = import.meta.env.VITE_CART_ENDPOINT;
+const cartItemRoute = import.meta.env.VITE_CART_ITEM_ENDPOINT;
+const cartItemFindOrCreateRoute = import.meta.env
+  .VITE_CART_ITEM_FIND_OR_CREATE_ENDPOINT;
+const totalCartItemNumberRoute = import.meta.env
+  .VITE_TOTAL_CART_ITEM_NUMBER_ENDPOINT;
 
 const orderRoute = import.meta.env.VITE_ORDER_ENDPOINT;
+const orderItemRoute = import.meta.env.VITE_ORDER_ITEM_ENDPOINT;
+
 const latestOrderRoute = import.meta.env.VITE_LATEST_ORDER_ENDPOINT;
 const userManagmentDashboardDataRoute = import.meta.env
   .VITE_USER_MANAGMENT_DASHBOARD_DATA_ENDPOINT;
@@ -88,6 +105,8 @@ const couponAndOffersDashboardChangeStatusRoute = import.meta.env
 const getAllProductsRoute = import.meta.env.VITE_PRODUCT_ENDPOINT;
 const getAllCategoryRoute = import.meta.env.VITE_CATEGORIES_ENDPOINT;
 const getAllBrandsRoute = import.meta.env.VITE_BRANDS_ENDPOINT;
+const getBrandsByCategoryRoute = import.meta.env.VITE_BRANDS_ENDPOINT; // Will use with getApiById
+const getProductsByBrandRoute = import.meta.env.VITE_PRODUCT_BY_BRAND_ENDPOINT;
 
 const adminProductCatalogByCategoryAndBrandIdRoute = import.meta.env
   .VITE_ADMIN_PRODUCT_CATALOG_BY_CATEGORY_AND_BRAND_ID_ENDPOINT;
@@ -116,8 +135,7 @@ const stockManagementAnalyticsRoute = import.meta.env
   .VITE_STOCK_MANAGEMENT_ANALYTICS_ENDPOINT;
 
 // Notification Management Routes
-const adminNotificationRoute = import.meta.env
-  .VITE_ADMIN_NOTIFICATION_ENDPOINT;
+const adminNotificationRoute = import.meta.env.VITE_ADMIN_NOTIFICATION_ENDPOINT;
 const adminNotificationAddRoute = import.meta.env
   .VITE_ADMIN_NOTIFICATION_ADD_ENDPOINT;
 const adminNotificationLogsRoute = import.meta.env
@@ -126,6 +144,29 @@ const adminNotificationStatsRoute = import.meta.env
   .VITE_ADMIN_NOTIFICATION_STATS_ENDPOINT;
 const adminNotificationTemplatesRoute = import.meta.env
   .VITE_ADMIN_NOTIFICATION_TEMPLATES_ENDPOINT;
+
+const userNotificationRoute = import.meta.env.VITE_USER_NOTIFICATION_ENDPOINT;
+const userTotalNumberOfUnReadNotificationsRoute = import.meta.env
+  .VITE_USER_TOTAL_NUMBER_OF_UNREAD_NOTIFICATIONS_ENDPOINT;
+
+//user Panel Routes
+
+const userPanelLoginRoute = import.meta.env.VITE_AUTH_LOGIN_ENDPOINT;
+const userPanelRegisterRoute = import.meta.env.VITE_AUTH_SIGNUP_ENDPOINT;
+const userPanelProductByIdDetailsRoute = import.meta.env
+  .VITE_USER_PRODUCT_BY_ID_DETAILS_ENDPOINT;
+const userPanelForgotPasswordRoute = import.meta.env
+  .VITE_USER_FORGOT_PASSWORD_ENDPOINT;
+const resetPasswordRoute = import.meta.env.VITE_RESET_PASSWORD_ENDPOINT;
+
+const userAddressesRoute = import.meta.env.VITE_ADDRESSES_ENDPOINT;
+const userProfileRoute = import.meta.env.VITE_PROFILE_ENDPOINT;
+
+//user coupon realted routes
+const userCouponUserRoute = import.meta.env.VITE_USER_COUPON_ENDPOINT;
+
+// user review related routes
+const userProductReviewRoute = import.meta.env.VITE_PRODUCT_REVIEW_ENDPOINT;
 
 export {
   FaEye,
@@ -149,6 +190,7 @@ export {
   AdminLayout,
   StockManagement,
   AlertMessage,
+  AddressForm,
   createApi,
   getApi,
   getApiById,
@@ -164,6 +206,7 @@ export {
   allCustomerRoute,
   allRetailerRoute,
   orderRoute,
+  orderItemRoute,
   latestOrderRoute,
   userManagmentDashboardDataRoute,
   userManagmentDashboardUsersOrdersDataRoute,
@@ -177,6 +220,8 @@ export {
   getAllCategoryRoute,
   getAllProductsRoute,
   getAllBrandsRoute,
+  getBrandsByCategoryRoute,
+  getProductsByBrandRoute,
   adminProductCatalogByCategoryAndBrandIdRoute,
   productVariantByProductIdRoute,
   couponAndOffersDashboardAnalyticsDataRoute,
@@ -191,4 +236,40 @@ export {
   adminNotificationLogsRoute,
   adminNotificationStatsRoute,
   adminNotificationTemplatesRoute,
+  userNotificationRoute,
+  userTotalNumberOfUnReadNotificationsRoute,
+
+  //User Panel Routes
+  userPanelLoginRoute,
+  userPanelRegisterRoute,
+  userPanelProductByIdDetailsRoute,
+  userAddressesRoute,
+
+  //Auth Routes
+  userPanelForgotPasswordRoute,
+  resetPasswordRoute,
+
+  //profile Routes
+  userProfileRoute,
+
+  // Cart Routes
+  cartRoute,
+  cartItemRoute,
+  cartItemFindOrCreateRoute,
+  totalCartItemNumberRoute,
+
+  //coupon related routes
+  userCouponUserRoute,
+
+  // Auth utilities
+  getUserFromToken,
+  getUserIdFromToken,
+  isAuthenticated,
+  getUserRole,
+
+  //user review
+  userProductReviewRoute,
+
+  //components
+  UserNotification,
 };

@@ -48,13 +48,18 @@ export default (sequelize) => {
     // Relationship with Product
     ProductVariant.belongsTo(models.Product, { foreignKey: "product_id" });
 
-    // Now we can add the correct association
-    // The model is called 'AttributeValue' (confirmed from the logs)
+    // Add hasMany association with VariantAttributeValue for proper includes
+    ProductVariant.hasMany(models.VariantAttributeValue, {
+      foreignKey: "product_variant_id",
+      as: "variantAttributeValues",
+    });
+
+    // Many-to-many relationship with AttributeValue through VariantAttributeValue
     ProductVariant.belongsToMany(models.AttributeValue, {
       through: models.VariantAttributeValue,
       foreignKey: "product_variant_id",
       otherKey: "product_attribute_value_id",
-      uniqueKey: "var_attr_val", // Match the same uniqueKey name
+      uniqueKey: "var_attr_val",
     });
 
     // Relationship with ProductMedia
@@ -88,6 +93,16 @@ export default (sequelize) => {
     ProductVariant.hasMany(models.OrderItem, {
       foreignKey: "product_variant_id",
       as: "orderItems",
+    });
+
+    // Relationship with DiscountRule
+    ProductVariant.hasMany(models.DiscountRule, {
+      foreignKey: "product_variant_id",
+      as: "discountRules",
+    });
+    ProductVariant.hasMany(models.StockAlert, {
+      foreignKey: "product_variant_id",
+      as: "stockAlerts",
     });
   };
 

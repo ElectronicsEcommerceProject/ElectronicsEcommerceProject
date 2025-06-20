@@ -80,11 +80,21 @@ export default (sequelize) => {
   );
 
   DiscountRule.associate = (models) => {
-    DiscountRule.belongsTo(models.Product, { foreignKey: "product_id" });
-    DiscountRule.belongsTo(models.Category, { foreignKey: "category_id" });
-    DiscountRule.belongsTo(models.Brand, { foreignKey: "brand_id" });
+    DiscountRule.belongsTo(models.Product, {
+      foreignKey: "product_id",
+      as: "product",
+    });
+    DiscountRule.belongsTo(models.Category, {
+      foreignKey: "category_id",
+      as: "category",
+    });
+    DiscountRule.belongsTo(models.Brand, {
+      foreignKey: "brand_id",
+      as: "brand",
+    });
     DiscountRule.belongsTo(models.ProductVariant, {
       foreignKey: "product_variant_id",
+      as: "productVariant",
     });
     DiscountRule.belongsTo(models.User, {
       foreignKey: "created_by",

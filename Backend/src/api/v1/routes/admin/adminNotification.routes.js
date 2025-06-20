@@ -7,6 +7,9 @@ import {
   updateTemplate,
   deleteTemplate,
   addNotification,
+  getInAppNotificationByUserId,
+  markAsRead,
+  getInAppTotalNumberOfUnReadNotificationByUserId,
 } from "../../controllers/admin/adminNotification.controller.js";
 import {
   verifyJwtToken,
@@ -47,6 +50,28 @@ router.post("/add-Notification", verifyJwtToken, isAdmin, addNotification);
  * }
  */
 router.get("/logs", verifyJwtToken, isAdmin, getNotificationLogs);
+
+/**
+ * @route   GET /api/v1/admin/notifications/:user_id
+ * @desc    Get in-app notifications for a specific user
+ * @access  User
+ * @params  user_id: string
+ */
+router.get("/:user_id", verifyJwtToken, getInAppNotificationByUserId);
+
+router.get(
+  "/total-Number-Of-Un-Read-Notifications/:user_id",
+  verifyJwtToken,
+  getInAppTotalNumberOfUnReadNotificationByUserId
+);
+
+/**
+ * @route   PATCH /api/v1/admin/notifications/:notification_id/mark-as-read
+ * @desc    Mark a notification as read
+ * @access  User
+ * @params  notification_id: string
+ */
+router.patch("/:notification_id", verifyJwtToken, markAsRead);
 
 /**
  * @route   GET /api/v1/admin/notifications/stats

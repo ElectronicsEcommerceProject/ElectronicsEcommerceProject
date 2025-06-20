@@ -45,6 +45,7 @@ const register = async (req, res) => {
     delete userResponse.password;
 
     res.status(StatusCodes.CREATED).json({
+      success: true,
       message: MESSAGE.post.succ,
       user: userResponse,
     });

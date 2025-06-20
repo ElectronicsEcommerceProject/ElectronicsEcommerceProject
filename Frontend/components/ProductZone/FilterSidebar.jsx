@@ -1,20 +1,20 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react"; // professional dropdown icon
+import {
+  getApi,
+  getAllBrandsRoute,
+  getApiById,
+  getBrandsByCategoryRoute,
+} from "../../src/index.js";
 
 const FilterSidebar = ({
-  categoriesData,
+  categoriesData = [],
   expandedCategories,
   toggleCategory,
   selectedCategories,
   handleCategoryCheckbox,
-  brandsData,
-  searchBrand,
-  setSearchBrand,
-  displayedBrands,
   selectedBrands,
   handleBrandCheckbox,
-  showMoreBrands,
-  setShowMoreBrands,
   priceRanges,
   selectedPriceRange,
   handlePriceRange,
@@ -24,93 +24,180 @@ const FilterSidebar = ({
   ratings,
   selectedRating,
   handleRating,
-  discounts,
   selectedDiscounts,
   handleDiscount,
   inStockOnly,
   setInStockOnly,
   newArrivals,
-  setNewArrivals
+  setNewArrivals,
+  categoryId, // New prop for category ID
 }) => {
-  return (
-    <div className="w-full sm:w-56 md:w-64 bg-white p-4 shadow-lg overflow-y-auto custom-scrollbar sm:mr-4 max-h-screen mr-4"> {/* Added mr-4 here to create space */}
-      {/* Categories */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Categories</h2>
-        {categoriesData.map(category => (
-          <div key={category.name} className="mb-2">
-            <div
-              className="flex items-center justify-between cursor-pointer hover:bg-gray-100 p-1 rounded"
-              onClick={() => toggleCategory(category.name)}
-            >
-              <span className="font-medium">{category.name}</span>
-              <ChevronDown
-                className={`w-4 h-4 transition-transform duration-300 ${
-                  expandedCategories[category.name] ? "rotate-180" : ""
-                }`}
-              />
-            </div>
-            {expandedCategories[category.name] && (
-              <div className="ml-4 mt-2">
-                {category.subcategories.map(sub => (
-                  <label key={sub} className="flex items-center mb-1 hover:bg-gray-50 p-1 rounded">
-                    <input
-                      type="checkbox"
-                      checked={selectedCategories.includes(sub)}
-                      onChange={() => handleCategoryCheckbox(sub)}
-                      className="mr-2"
-                    />
-                    {sub}
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+  // Internal state for brand filtering
+  const [searchBrand, setSearchBrand] = useState("");
+  const [showMoreBrands, setShowMoreBrands] = useState(false);
 
+  // State for brands from API
+  const [brands, setBrands] = useState([]); // Now stores array of { id, name }
+  const [brandsLoading, setBrandsLoading] = useState(true);
+  const [brandsError, setBrandsError] = useState(null);
+
+
+
+  // Fetch brands from API
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        setBrandsLoading(true);
+        setBrandsError(null);
+
+        let response;
+
+        // If categoryId is provided, fetch brands for that category
+        if (categoryId) {
+          console.log("🔥 Fetching brands for category ID:", categoryId);
+          response = await getApiById(getBrandsByCategoryRoute, categoryId);
+          console.log("🔥 Brands by category response:", response);
+        } else {
+          // Otherwise, fetch all brands
+          console.log("🔥 Fetching all brands");
+          response = await getApi(getAllBrandsRoute);
+          console.log("🔥 All brands response:", response);
+        }
+
+        if (response.success && response.data) {
+          // Store full brand objects (id and name)
+          setBrands(response.data);
+        } else {
+          throw new Error("Invalid response format");
+        }
+      } catch (error) {
+        console.error("Error fetching brands:", error);
+        setBrandsError(error.message || "Failed to fetch brands");
+
+        setBrands([]);
+      } finally {
+        setBrandsLoading(false);
+      }
+    };
+
+    fetchBrands();
+  }, [categoryId]); // Add categoryId as dependency
+
+  // Filter brands based on search
+  const filteredBrands = brands.filter((brand) =>
+    brand.name.toLowerCase().includes(searchBrand.toLowerCase())
+  );
+  const displayedBrands = showMoreBrands
+    ? filteredBrands
+    : filteredBrands.slice(0, 10);
+
+  // Handler to show alert with brand id and call parent handler
+  const handleBrandClick = (brand) => {
+    // Pass both brand name and brand ID to parent handler
+    handleBrandCheckbox(brand.name, brand.brand_id);
+  };
+
+  return (
+    <div className="w-full sm:w-56 md:w-64 bg-white p-4 shadow-lg overflow-y-auto custom-scrollbar sm:mr-4 max-h-screen mr-4">
+      {" "}
+      {/* Added mr-4 here to create space */}
+      {/* Categories */}
+      {categoriesData && categoriesData.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold mb-2">Categories</h2>
+          {categoriesData.map((category) => (
+            <div key={category.name} className="mb-2">
+              <div
+                className="flex items-center justify-between cursor-pointer hover:bg-gray-100 p-1 rounded"
+                onClick={() => toggleCategory(category.name)}
+              >
+                <span className="font-medium">{category.name}</span>
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-300 ${
+                    expandedCategories[category.name] ? "rotate-180" : ""
+                  }`}
+                />
+              </div>
+              {expandedCategories[category.name] && (
+                <div className="ml-4 mt-2">
+                  {category.subcategories.map((sub) => (
+                    <label
+                      key={sub}
+                      className="flex items-center mb-1 hover:bg-gray-50 p-1 rounded"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedCategories.includes(sub)}
+                        onChange={() => handleCategoryCheckbox(sub)}
+                        className="mr-2"
+                      />
+                      {sub}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
       {/* Brands */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-2">Brands</h2>
-        <input
-          type="text"
-          placeholder="Search brands..."
-          value={searchBrand}
-          onChange={(e) => setSearchBrand(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded mb-2 text-sm"
-        />
-        <div className="max-h-40 overflow-y-auto custom-scrollbar">
-          {displayedBrands.map(brand => (
-            <label key={brand} className="flex items-center mb-1 hover:bg-gray-50 p-1 rounded">
-              <input
-                type="checkbox"
-                checked={selectedBrands.includes(brand)}
-                onChange={() => handleBrandCheckbox(brand)}
-                className="mr-2"
-              />
-              {brand}
-            </label>
-          ))}
-        </div>
-        {brandsData.length > 10 && (
-          <button
-            onClick={() => setShowMoreBrands(!showMoreBrands)}
-            className="text-sm text-blue-600 mt-2 hover:underline"
-          >
-            {showMoreBrands ? "Show Less" : "Show More"}
-          </button>
+        {brandsLoading ? (
+          <div className="text-center py-4">
+            <span className="text-sm text-gray-500">Loading brands...</span>
+          </div>
+        ) : brandsError ? (
+          <div className="text-center py-4">
+            <span className="text-sm text-red-500">Failed to load brands</span>
+          </div>
+        ) : (
+          <>
+            <input
+              type="text"
+              placeholder="Search brands..."
+              value={searchBrand}
+              onChange={(e) => setSearchBrand(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded mb-2 text-sm"
+            />
+            <div className="max-h-40 overflow-y-auto custom-scrollbar">
+              {displayedBrands.map((brand) => (
+                <label
+                  key={brand.id || brand.name}
+                  className="flex items-center mb-1 hover:bg-gray-50 p-1 rounded"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedBrands.includes(brand.name)}
+                    onChange={() => handleBrandClick(brand)}
+                    className="mr-2"
+                  />
+                  {brand.name}
+                </label>
+              ))}
+            </div>
+            {brands.length > 10 && (
+              <button
+                onClick={() => setShowMoreBrands(!showMoreBrands)}
+                className="text-sm text-blue-600 mt-2 hover:underline"
+              >
+                {showMoreBrands ? "Show Less" : "Show More"}
+              </button>
+            )}
+          </>
         )}
       </div>
-
       {/* Price */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-2">Price</h2>
         <input
           type="range"
           min="100"
-          max="20000"
+          max="500000"
           value={customMaxPrice}
-          onChange={(e) => handlePriceInput(customMinPrice, Number(e.target.value))}
+          onChange={(e) =>
+            handlePriceInput(customMinPrice, Number(e.target.value))
+          }
           className="w-full"
         />
         <div className="flex justify-between mt-2 gap-2">
@@ -120,7 +207,9 @@ const FilterSidebar = ({
               type="number"
               placeholder="Min ₹"
               value={customMinPrice}
-              onChange={(e) => handlePriceInput(Number(e.target.value) || 100, customMaxPrice)}
+              onChange={(e) =>
+                handlePriceInput(Number(e.target.value) || 100, customMaxPrice)
+              }
               className="w-20 p-1 border border-gray-300 rounded text-sm"
             />
           </div>
@@ -130,14 +219,22 @@ const FilterSidebar = ({
               type="number"
               placeholder="Max ₹"
               value={customMaxPrice}
-              onChange={(e) => handlePriceInput(customMinPrice, Number(e.target.value) || 20000)}
+              onChange={(e) =>
+                handlePriceInput(
+                  customMinPrice,
+                  Number(e.target.value) || 500000
+                )
+              }
               className="w-20 p-1 border border-gray-300 rounded text-sm"
             />
           </div>
         </div>
         <div className="mt-2">
-          {priceRanges.map(range => (
-            <label key={range} className="flex items-center mb-1 hover:bg-gray-50 p-1 rounded">
+          {priceRanges.map((range) => (
+            <label
+              key={range}
+              className="flex items-center mb-1 hover:bg-gray-50 p-1 rounded"
+            >
               <input
                 type="checkbox"
                 checked={selectedPriceRange === range}
@@ -149,37 +246,52 @@ const FilterSidebar = ({
           ))}
         </div>
       </div>
-
       {/* Ratings */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Customer Ratings</h2>
-        {ratings.map(rating => (
-          <label key={rating} className="flex items-center mb-1 hover:bg-gray-50 p-1 rounded">
+        <h2 className="text-lg font-semibold mb-2 flex items-center">
+          <span>Customer Ratings</span>
+          {selectedRating && (
+            <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+              Active
+            </span>
+          )}
+        </h2>
+        {ratings.map((rating) => (
+          <label
+            key={rating}
+            className={`flex items-center mb-2 hover:bg-gray-50 p-2 rounded cursor-pointer transition-colors duration-200 ${
+              selectedRating === rating
+                ? "bg-blue-50 border border-blue-200"
+                : "border border-transparent"
+            }`}
+          >
             <input
-              type="checkbox"
+              type="radio"
+              name="rating"
               checked={selectedRating === rating}
               onChange={() => handleRating(rating)}
-              className="mr-2"
+              className="mr-3 text-blue-600 focus:ring-blue-500"
             />
-            {rating}
+            <div className="flex items-center">
+              <span className="text-sm font-medium text-gray-700">
+                {rating}
+              </span>
+              {selectedRating === rating && (
+                <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                  Selected
+                </span>
+              )}
+            </div>
           </label>
         ))}
-      </div>
-
-      {/* Discounts */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Deals & Discounts</h2>
-        {discounts.map(discount => (
-          <label key={discount} className="flex items-center mb-1 hover:bg-gray-50 p-1 rounded">
-            <input
-              type="checkbox"
-              checked={selectedDiscounts.includes(discount)}
-              onChange={() => handleDiscount(discount)}
-              className="mr-2"
-            />
-            {discount}
-          </label>
-        ))}
+        {selectedRating && (
+          <button
+            onClick={() => handleRating("")}
+            className="mt-2 text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
+          >
+            Clear Rating Filter
+          </button>
+        )}
       </div>
 
       {/* Availability */}
@@ -195,7 +307,6 @@ const FilterSidebar = ({
           In Stock Only
         </label>
       </div>
-
       {/* New Arrivals */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-2">New Arrivals</h2>
@@ -203,7 +314,11 @@ const FilterSidebar = ({
           <input
             type="checkbox"
             checked={newArrivals === "Last 30 Days"}
-            onChange={() => setNewArrivals(newArrivals === "Last 30 Days" ? "" : "Last 30 Days")}
+            onChange={() =>
+              setNewArrivals(
+                newArrivals === "Last 30 Days" ? "" : "Last 30 Days"
+              )
+            }
             className="mr-2"
           />
           Last 30 Days
@@ -212,7 +327,11 @@ const FilterSidebar = ({
           <input
             type="checkbox"
             checked={newArrivals === "Last 90 Days"}
-            onChange={() => setNewArrivals(newArrivals === "Last 90 Days" ? "" : "Last 90 Days")}
+            onChange={() =>
+              setNewArrivals(
+                newArrivals === "Last 90 Days" ? "" : "Last 90 Days"
+              )
+            }
             className="mr-2"
           />
           Last 90 Days

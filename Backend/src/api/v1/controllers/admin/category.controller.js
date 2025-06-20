@@ -83,7 +83,7 @@ const getAllCategories = async (req, res) => {
 
     res
       .status(StatusCodes.OK)
-      .json({ message: MESSAGE.get.succ, data: categories });
+      .json({ status: true, message: MESSAGE.get.succ, data: categories });
   } catch (error) {
     console.error("Error fetching categories:", error);
     res

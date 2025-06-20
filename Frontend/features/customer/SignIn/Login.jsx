@@ -1,45 +1,125 @@
 import React, { useState } from "react";
-import { FaFacebookF, FaEye, FaEyeSlash, } from "react-icons/fa";
-import { FcGoogle } from 'react-icons/fc';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
+import { createApi, userPanelLoginRoute } from '../../../src/index.js';
 
 
-const Login = ({ setModalContent, setUser, closeModal, setMessage }) => {
-  const [loginData, setLoginData] = useState({ emailOrMobile: "", password: "" });
+const Login = ({ setModalContent, setUser, setMessage }) => {
+  const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLoginChange = (e) => {
     const { name, value } = e.target;
-    setLoginData((prev) => ({ ...prev, [name]: value }));
+    console.log(`Login input change: ${name}=${value}`); // Debug state update
+    setLoginData((prev) => {
+      const newState = { ...prev, [name]: value };
+      console.log('New loginData:', newState); // Debug new state
+      return newState;
+    });
     setErrors((prev) => ({ ...prev, [name]: "" }));
     setMessage("");
   };
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
     const newErrors = {};
-    if (!loginData.emailOrMobile) {
-      newErrors.emailOrMobile = "Please enter your email or mobile number";
+
+    // Validation
+    if (!loginData.email) {
+      newErrors.email = "Please enter your email";
+    } else if (!/\S+@\S+\.\S+/.test(loginData.email)) {
+      newErrors.email = "Please enter a valid email address";
     }
     if (!loginData.password) {
       newErrors.password = "Please enter your password";
     }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      setIsLoading(false);
       return;
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      setUser({ emailOrMobile: loginData.emailOrMobile });
-      setModalContent("success");
-      setMessage("Login successful!");
-      setLoginData({ emailOrMobile: "", password: "" });
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      // Prepare data for API call
+      const apiData = {
+        email: loginData.email,
+        password: loginData.password
+      };
+
+      console.warn('Login data:', apiData);
+
+      // Make API call
+      const response = await createApi(userPanelLoginRoute, apiData);
+
+      console.log('Login successful:', response);
+
+      // Handle successful login
+      if (response.success && response.token) {
+        // Store the token in localStorage
+        localStorage.setItem('token', response.token);
+
+        // Dispatch custom event to notify other components
+        window.dispatchEvent(new Event('tokenChanged'));
+
+        // Decode token to get user information (optional, for immediate use)
+        try {
+          const tokenPayload = JSON.parse(atob(response.token.split('.')[1]));
+
+          // Create user object from token data
+          setUser({
+            email: tokenPayload.email || loginData.email,
+            emailOrMobile: tokenPayload.email || loginData.email,
+            user_id: tokenPayload.user_id,
+            role: tokenPayload.role,
+            // Add other user properties from token
+          });
+        } catch (tokenError) {
+          console.warn('Could not decode token:', tokenError);
+          // Fallback to basic user object
+          setUser({
+            email: loginData.email,
+            emailOrMobile: loginData.email,
+          });
+        }
+
+        setModalContent('success');
+        setMessage('Login successful!');
+        setLoginData({ email: "", password: "" });
+      } else {
+        setErrors({ general: response.message || 'Login failed. Please try again.' });
+      }
+
+    } catch (error) {
+      console.error('Login error:', error);
+
+      // Handle API errors
+      if (error.message) {
+        if (error.message.includes('email') || error.message.includes('not found')) {
+          setErrors({ email: 'Email not found. Please check your email or sign up.' });
+        } else if (error.message.includes('password')) {
+          setErrors({ password: 'Invalid password. Please try again.' });
+        } else {
+          setErrors({ general: error.message });
+        }
+      } else {
+        setErrors({ general: 'Login failed. Please try again.' });
+      }
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
+  };
+
+  // Close modal function
+  const handleCloseModal = () => {
+    setModalContent(null);
+    setLoginData({ email: "", password: "" });
+    setErrors({});
+    setMessage("");
   };
 
   return (
@@ -57,21 +137,21 @@ const Login = ({ setModalContent, setUser, closeModal, setMessage }) => {
       <form onSubmit={handleLoginSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email or Mobile
+            Email
           </label>
           <input
-            type="text"
-            name="emailOrMobile"
-            value={loginData.emailOrMobile}
+            type="email"
+            name="email"
+            value={loginData.email}
             onChange={handleLoginChange}
-            placeholder="Enter email or mobile"
+            placeholder="Enter your email"
             autoFocus
             autoComplete="email"
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 transition-all"
-            aria-label="Email or Mobile"
+            aria-label="Email"
           />
-          {errors.emailOrMobile && (
-            <p className="text-red-500 text-xs mt-1">{errors.emailOrMobile}</p>
+          {errors.email && (
+            <p className="text-red-500 text-xs mt-1">{errors.email}</p>
           )}
         </div>
         <div>
@@ -112,6 +192,11 @@ const Login = ({ setModalContent, setUser, closeModal, setMessage }) => {
             Forgot Password?
           </button>
         </div>
+        {errors.general && (
+          <div className="text-red-500 text-sm text-center">
+            {errors.general}
+          </div>
+        )}
         <button
           type="submit"
           disabled={isLoading}
@@ -146,42 +231,10 @@ const Login = ({ setModalContent, setUser, closeModal, setMessage }) => {
           )}
         </button>
       </form>
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-300"></div>
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-500">Or continue with</span>
-        </div>
-      </div>
-      <div className="space-y-2">
-        <button
-          className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2.5 rounded-lg hover:bg-gray-50 transition-colors"
-          aria-label="Login with Google"
-          onClick={() => {
-            setMessage("Google login initiated (dummy)");
-            setTimeout(() => setMessage(""), 2000);
-          }}
-        >
-          <FcGoogle className="w-5 h-5 text-red-600" />
-          <span className="text-sm font-medium text-gray-800">Login with Google</span>
-        </button>
-        <button
-          className="w-full flex items-center justify-center gap-2 border border-blue-600 text-blue-600 py-2.5 rounded-lg hover:bg-blue-50 transition-colors"
-          aria-label="Login with Facebook"
-          onClick={() => {
-            setMessage("Facebook login initiated (dummy)");
-            setTimeout(() => setMessage(""), 2000);
-          }}
-        >
-          <FaFacebookF className="w-5 h-5 text-blue-600" />
-          <span className="text-sm font-medium text-blue-600">Login with Facebook</span>
-        </button>
-      </div>
       <div className="text-center">
         <button
           className="text-blue-600 text-sm underline hover:text-blue-800"
-          onClick={closeModal}
+          onClick={handleCloseModal}
           aria-label="Close login modal"
         >
           Close

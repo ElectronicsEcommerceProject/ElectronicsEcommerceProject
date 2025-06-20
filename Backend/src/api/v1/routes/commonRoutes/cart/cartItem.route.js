@@ -14,11 +14,31 @@ router.post(
   cartItemController.addItemToCart
 );
 
-// Get all items in user's cart
-router.get("/", verifyJwtToken, cartItemController.getCartItems);
+// FindOrCreate cart item - for BuyNowPage
+router.post(
+  "/findOrCreate",
+  verifyJwtToken,
+  validator(validators.cartItem.createCartItem, null),
+  cartItemController.findOrCreateCartItem
+);
+
+// Get all items in user's cart by user_id
+router.get(
+  "/:user_id",
+  verifyJwtToken,
+  cartItemController.getCartItemsByUserId
+);
+
+// get  cart items  number by user_id,
+
+router.get(
+  "/totalCartItemNumber/:user_id",
+  verifyJwtToken,
+  cartItemController.getCartItemsByNumberByUserId
+);
 
 // Update cart item quantity
-router.put(
+router.patch(
   "/:cart_item_id",
   verifyJwtToken,
   validator(validators.cartItem.cartItemId, "params"),

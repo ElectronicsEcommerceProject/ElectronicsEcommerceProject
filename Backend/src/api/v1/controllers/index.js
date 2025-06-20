@@ -13,6 +13,9 @@ export { default as orderController } from "./commonControllers/order/order.cont
 export { default as orderItemController } from "./commonControllers/order/orderItem.controller.js";
 export { default as couponRedemptionController } from "./commonControllers/coupon/couponRedemption.controller.js";
 export { default as productReviewController } from "./commonControllers/product/productReview/productReview.controller.js";
+export { default as userProductByIdDetailsController } from "./commonControllers/product/userProductByIdDetails/userProductByIdDetails.controller.js";
+export { default as userCouponUserController } from "./commonControllers/coupon/couponUser.controller.js";
+export { default as resetPasswordController } from "./auth/resetPassword.controller.js";
 
 //     admin controller
 export { default as adminCategoryController } from "./admin/category.controller.js";

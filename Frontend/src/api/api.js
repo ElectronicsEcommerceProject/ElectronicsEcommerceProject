@@ -2,20 +2,29 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL; // Ensure this is the correct environment variable
-let ROUTE_ENDPOINT;
 
-// const token = localStorage.getItem("token");
+// Function to get current token from localStorage
+const getToken = () => {
+  return localStorage.getItem("token");
+};
 
-const token =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJfaWQiOiI5ZGVmYjU2OC1mN2I4LTQ4Y2YtODVlYS1mNTI1NmFmNDA3NjIiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NDk1ODEwMzAsImV4cCI6MTc1MjEwMTAzMH0.f5ATa7ur4XVIZ5RhRu28dDr17Pn1AHjBW-_UyWjSedk";
-
-let decodedToken;
-
-if (token) {
-  decodedToken = jwtDecode(token);
-  const { role } = decodedToken;
-  ROUTE_ENDPOINT = role === "admin" ? `admin` : `user`;
-}
+// Function to get route endpoint based on token
+const getRouteEndpoint = () => {
+  const token = getToken();
+  if (token) {
+    try {
+      const decodedToken = jwtDecode(token);
+      const { role } = decodedToken;
+      return role === "admin" ? `admin` : `user`;
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      // Clear invalid token
+      localStorage.removeItem("token");
+      return null;
+    }
+  }
+  return null;
+};
 
 // Helper function to construct the API URL without double slashes
 const constructApiUrl = (baseUrl, routeEndpoint) => {
@@ -25,6 +34,17 @@ const constructApiUrl = (baseUrl, routeEndpoint) => {
 // 🔐 Create API
 const createApi = async (routeEndpoint, data) => {
   try {
+    const token = getToken();
+    const ROUTE_ENDPOINT = getRouteEndpoint();
+
+    // If no token or route endpoint, handle unauthenticated requests
+    if (!token || !ROUTE_ENDPOINT) {
+      // For login/register endpoints, make request without auth
+      const API_ENDPOINT = constructApiUrl(BASE_URL, routeEndpoint);
+      const response = await axios.post(`${API_ENDPOINT}`, data);
+      return response.data;
+    }
+
     const API_ENDPOINT = constructApiUrl(
       BASE_URL,
       `${ROUTE_ENDPOINT}${routeEndpoint}`
@@ -41,10 +61,18 @@ const createApi = async (routeEndpoint, data) => {
 // 🔍 Get All API
 const getApi = async (routeEndpoint) => {
   try {
+    const token = getToken();
+    const ROUTE_ENDPOINT = getRouteEndpoint();
+
     console.log(
       "testing form routeEndpoint passed by function to getApi",
       routeEndpoint
     );
+
+    if (!token || !ROUTE_ENDPOINT) {
+      throw { message: "Authentication required" };
+    }
+
     const API_ENDPOINT = constructApiUrl(
       BASE_URL,
       `${ROUTE_ENDPOINT}${routeEndpoint}`
@@ -62,6 +90,13 @@ const getApi = async (routeEndpoint) => {
 // 🔍 Get API by ID
 const getApiById = async (routeEndpoint, id) => {
   try {
+    const token = getToken();
+    const ROUTE_ENDPOINT = getRouteEndpoint();
+
+    if (!token || !ROUTE_ENDPOINT) {
+      throw { message: "Authentication required" };
+    }
+
     const API_ENDPOINT = constructApiUrl(
       BASE_URL,
       `${ROUTE_ENDPOINT}${routeEndpoint}`
@@ -78,6 +113,13 @@ const getApiById = async (routeEndpoint, id) => {
 // 🔄 Update API
 const updateApi = async (routeEndpoint, id, data) => {
   try {
+    const token = getToken();
+    const ROUTE_ENDPOINT = getRouteEndpoint();
+
+    if (!token || !ROUTE_ENDPOINT) {
+      throw { message: "Authentication required" };
+    }
+
     const API_ENDPOINT = constructApiUrl(
       BASE_URL,
       `${ROUTE_ENDPOINT}${routeEndpoint}`
@@ -94,6 +136,13 @@ const updateApi = async (routeEndpoint, id, data) => {
 // 🔄 Update API by ID
 const updateApiById = async (routeEndpoint, id, data) => {
   try {
+    const token = getToken();
+    const ROUTE_ENDPOINT = getRouteEndpoint();
+
+    if (!token || !ROUTE_ENDPOINT) {
+      throw { message: "Authentication required" };
+    }
+
     const API_ENDPOINT = constructApiUrl(
       BASE_URL,
       `${ROUTE_ENDPOINT}${routeEndpoint}`
@@ -110,6 +159,13 @@ const updateApiById = async (routeEndpoint, id, data) => {
 // 🗑️ Delete API
 const deleteApi = async (routeEndpoint) => {
   try {
+    const token = getToken();
+    const ROUTE_ENDPOINT = getRouteEndpoint();
+
+    if (!token || !ROUTE_ENDPOINT) {
+      throw { message: "Authentication required" };
+    }
+
     const API_ENDPOINT = constructApiUrl(
       BASE_URL,
       `${ROUTE_ENDPOINT}${routeEndpoint}`
@@ -126,6 +182,13 @@ const deleteApi = async (routeEndpoint) => {
 // 🗑️ Delete API by ID
 const deleteApiById = async (routeEndpoint, id) => {
   try {
+    const token = getToken();
+    const ROUTE_ENDPOINT = getRouteEndpoint();
+
+    if (!token || !ROUTE_ENDPOINT) {
+      throw { message: "Authentication required" };
+    }
+
     const API_ENDPOINT = constructApiUrl(
       BASE_URL,
       `${ROUTE_ENDPOINT}${routeEndpoint}`
@@ -141,6 +204,13 @@ const deleteApiById = async (routeEndpoint, id) => {
 
 const deleteApiByCondition = async (routeEndpoint, id, data) => {
   try {
+    const token = getToken();
+    const ROUTE_ENDPOINT = getRouteEndpoint();
+
+    if (!token || !ROUTE_ENDPOINT) {
+      throw { message: "Authentication required" };
+    }
+
     console.log("Data being sent:", data);
 
     const apiUrl = constructApiUrl(
@@ -160,6 +230,11 @@ const deleteApiByCondition = async (routeEndpoint, id, data) => {
   }
 };
 
+// 🚪 Logout function to clear token
+const logout = () => {
+  localStorage.removeItem("token");
+};
+
 export {
   createApi,
   getApi,
@@ -169,4 +244,5 @@ export {
   deleteApi,
   deleteApiById,
   deleteApiByCondition,
+  logout,
 };

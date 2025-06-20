@@ -37,6 +37,17 @@ export default (sequelize) => {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: true,
       },
+      discount_type: {
+        type: DataTypes.ENUM("fixed", "percentage"),
+        allowNull: true,
+        comment:
+          "Specifies whether discount_applied is a fixed amount or percentage",
+      },
+      coupon_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        comment: "References the coupon applied to this specific cart item",
+      },
       final_price: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
@@ -63,6 +74,9 @@ export default (sequelize) => {
       foreignKey: "product_variant_id",
       as: "variant",
     }); // Links cart item to a product variant
+    CartItem.belongsTo(models.Coupon, {
+      foreignKey: "coupon_id",
+    }); // Links cart item to the applied coupon
   };
 
   return CartItem;

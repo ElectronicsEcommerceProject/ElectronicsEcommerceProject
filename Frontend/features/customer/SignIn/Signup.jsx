@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { FcGoogle } from 'react-icons/fc';
-import { FaFacebookF, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+
+import { createApi, userPanelRegisterRoute } from '../../../src/index.js';
 
 const Signup = ({ setModalContent, setUser }) => {
   const [signupData, setSignupData] = useState({
     firstName: '',
     lastName: '',
-    gender: '',
+    role: '',
     mobile: '',
     email: '',
     password: '',
@@ -15,11 +16,43 @@ const Signup = ({ setModalContent, setUser }) => {
   const [errors, setErrors] = useState({});
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Handle input changes
   const handleSignupChange = (e) => {
     const { name, value } = e.target;
     console.log(`Signup input change: ${name}=${value}`); // Debug state update
+    
+    // Handle mobile number input with masking
+    if (name === 'mobile') {
+      // Remove all non-digit characters
+      let digits = value.replace(/[^0-9]/g, '');
+      
+      // Limit to 10 digits
+      if (digits.length > 10) {
+        digits = digits.slice(0, 10);
+      }
+      
+      // Format as XXX-XXX-XXXX
+      let formattedValue = '';
+      if (digits.length > 3) {
+        formattedValue += digits.substring(0, 3) + '-';
+        if (digits.length > 6) {
+          formattedValue += digits.substring(3, 6) + '-';
+          formattedValue += digits.substring(6);
+        } else {
+          formattedValue += digits.substring(3);
+        }
+      } else {
+        formattedValue = digits;
+      }
+      
+      // Update the value in the signupData state
+      setSignupData((prev) => ({ ...prev, [name]: formattedValue }));
+      return;
+    }
+    
+    // Handle other fields normally
     setSignupData((prev) => {
       const newState = { ...prev, [name]: value };
       console.log('New signupData:', newState); // Debug new state
@@ -29,14 +62,22 @@ const Signup = ({ setModalContent, setUser }) => {
   };
 
   // Handle signup form submission
-  const handleSignupSubmit = (e) => {
+  const handleSignupSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
 
     if (!signupData.firstName) newErrors.firstName = 'Please enter your first name';
     if (!signupData.lastName) newErrors.lastName = 'Please enter your last name';
-    if (!signupData.gender) newErrors.gender = 'Please select your gender';
-    if (!signupData.mobile) newErrors.mobile = 'Please enter your mobile number';
+    if (!signupData.role) newErrors.role = 'Please select your role';
+    if (!signupData.mobile) {
+      newErrors.mobile = 'Please enter your mobile number';
+    } else {
+      // Check if it's exactly 10 digits
+      const digits = signupData.mobile.replace(/[^0-9]/g, '');
+      if (digits.length !== 10) {
+        newErrors.mobile = 'Mobile number must be exactly 10 digits';
+      }
+    }
     if (!signupData.email) newErrors.email = 'Please enter your email';
     if (!signupData.password) newErrors.password = 'Please enter your password';
     if (!signupData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
@@ -49,19 +90,70 @@ const Signup = ({ setModalContent, setUser }) => {
       return;
     }
 
-    // Simulate successful signup
-    setUser({ email: signupData.email });
-    setModalContent('success');
+    setIsLoading(true);
     setErrors({});
-    setSignupData({
-      firstName: '',
-      lastName: '',
-      gender: '',
-      mobile: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-    });
+
+    try {
+      // Prepare data for API call
+      const apiData = {
+        name: `${signupData.firstName} ${signupData.lastName}`.trim(),
+        email: signupData.email,
+        phone_number: signupData.mobile.replace(/[^0-9]/g, ''),
+        password: signupData.password,
+        role: signupData.role.toLowerCase()
+      };
+
+      console.warn('Signup data:', apiData)
+
+      // Make API call
+      const response = await createApi(userPanelRegisterRoute, apiData);
+
+      console.log('Signup successful:', response);
+
+      // Handle successful signup
+      if (response.success && response.user) {
+        // Dispatch custom event to notify other components
+        window.dispatchEvent(new Event('tokenChanged'));
+
+        setUser({
+          email: response.user.email,
+          name: response.user.name,
+          role: response.user.role,
+          user_id: response.user.user_id,
+          user: response.user
+        });
+        setModalContent('success');
+        setSignupData({
+          firstName: '',
+          lastName: '',
+          role: '',
+          mobile: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+        });
+      } else {
+        setErrors({ general: response.message || 'Registration failed. Please try again.' });
+      }
+
+    } catch (error) {
+      console.error('Signup error:', error);
+
+      // Handle API errors
+      if (error.message) {
+        if (error.message.includes('email')) {
+          setErrors({ email: error.message });
+        } else if (error.message.includes('phone')) {
+          setErrors({ mobile: error.message });
+        } else {
+          setErrors({ general: error.message });
+        }
+      } else {
+        setErrors({ general: 'Registration failed. Please try again.' });
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Close modal
@@ -70,7 +162,7 @@ const Signup = ({ setModalContent, setUser }) => {
     setSignupData({
       firstName: '',
       lastName: '',
-      gender: '',
+      role: '',
       mobile: '',
       email: '',
       password: '',
@@ -123,19 +215,18 @@ const Signup = ({ setModalContent, setUser }) => {
         </div>
         <div>
           <select
-            name="gender"
-            value={signupData.gender}
+            name="role"
+            value={signupData.role}
             onChange={handleSignupChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-            aria-label="Gender"
+            aria-label="Role"
           >
-            <option value="" disabled>Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
+            <option value="" disabled>Select Role</option>
+            <option value="Customer">Customer</option>
+            <option value="Retailer">Retailer</option>
           </select>
-          {errors.gender && (
-            <p className="text-red-500 text-xs mt-1">{errors.gender}</p>
+          {errors.role && (
+            <p className="text-red-500 text-xs mt-1">{errors.role}</p>
           )}
         </div>
         <div>
@@ -147,6 +238,7 @@ const Signup = ({ setModalContent, setUser }) => {
             placeholder="Mobile Number"
             className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
             aria-label="Mobile Number"
+            maxLength="12" // Adding maxLength for better UX with our formatting (XXX-XXX-XXXX)
           />
           {errors.mobile && (
             <p className="text-red-500 text-xs mt-1">{errors.mobile}</p>
@@ -210,30 +302,24 @@ const Signup = ({ setModalContent, setUser }) => {
             <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
           )}
         </div>
+        {errors.general && (
+          <div className="text-red-500 text-sm text-center">
+            {errors.general}
+          </div>
+        )}
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
+          disabled={isLoading}
+          className={`w-full py-2 rounded-md transition-colors ${
+            isLoading
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700'
+          } text-white`}
           aria-label="Submit signup"
         >
-          Sign Up
+          {isLoading ? 'Signing Up...' : 'Sign Up'}
         </button>
       </form>
-      <div className="space-y-2">
-        <button
-          className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md hover:bg-gray-50 transition-colors"
-          aria-label="Sign up with Google"
-        >
-          <FcGoogle className="text-xl" />
-          <span className="text-sm text-gray-800">Sign Up with Google</span>
-        </button>
-        <button
-          className="w-full flex items-center justify-center gap-2 border border-blue-600 text-blue-600 py-2 rounded-md hover:bg-blue-50 transition-colors"
-          aria-label="Sign up with Facebook"
-        >
-          <FaFacebookF className="text-base" />
-          <span className="text-sm">Sign Up with Facebook</span>
-        </button>
-      </div>
       <div className="text-center">
         <button
           className="text-blue-600 text-sm underline hover:text-blue-800"
