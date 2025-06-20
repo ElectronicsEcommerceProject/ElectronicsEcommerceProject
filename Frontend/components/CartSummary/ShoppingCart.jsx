@@ -362,7 +362,7 @@ const CartPage = () => {
           window.location.href = "/orders";
         } catch (clearCartError) {
           console.error("Error clearing cart:", clearCartError);
-          alert("Order placed successfully, but there was an issue clearing your cart.");
+          alert("Order placed successfully");
           window.location.href = "/orders";
         }
       } else {
