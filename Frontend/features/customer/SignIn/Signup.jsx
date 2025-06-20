@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { FcGoogle } from 'react-icons/fc';
-import { FaFacebookF, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 import { createApi, userPanelRegisterRoute } from '../../../src/index.js';
 
@@ -321,24 +320,6 @@ const Signup = ({ setModalContent, setUser }) => {
           {isLoading ? 'Signing Up...' : 'Sign Up'}
         </button>
       </form>
-      <div className="space-y-2">
-        <button
-          className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md hover:bg-gray-50 transition-colors"
-          onClick={() => alert("This feature will come soon")}
-          aria-label="Sign up with Google"
-        >
-          <FcGoogle className="text-xl" />
-          <span className="text-sm text-gray-800">Sign Up with Google</span>
-        </button>
-        <button
-          className="w-full flex items-center justify-center gap-2 border border-blue-600 text-blue-600 py-2 rounded-md hover:bg-blue-50 transition-colors"
-          onClick={() => alert("This feature will come soon")}
-          aria-label="Sign up with Facebook"
-        >
-          <FaFacebookF className="text-base" />
-          <span className="text-sm">Sign Up with Facebook</span>
-        </button>
-      </div>
       <div className="text-center">
         <button
           className="text-blue-600 text-sm underline hover:text-blue-800"

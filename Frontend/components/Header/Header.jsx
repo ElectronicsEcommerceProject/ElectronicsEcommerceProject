@@ -298,15 +298,17 @@ const Header = () => {
 
   // Handle mouse leave with modal check
   const handleMouseLeave = () => {
-    // Only close hover menu if no modal is open
-    if (!isModalOpen) {
-      // Add a small delay to prevent accidental closing
-      setTimeout(() => {
-        if (!isModalOpen) {
-          setIsHoveringSignIn(false);
-        }
-      }, 800);
+    // Don't close if modal is open
+    if (isModalOpen) {
+      return;
     }
+
+    // Add a small delay to prevent accidental closing
+    setTimeout(() => {
+      if (!isModalOpen) {
+        setIsHoveringSignIn(false);
+      }
+    }, 800);
   };
 
   // Handle category dropdown hover

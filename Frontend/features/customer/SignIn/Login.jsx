@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { FaFacebookF, FaEye, FaEyeSlash, } from "react-icons/fa";
-import { FcGoogle } from 'react-icons/fc';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import { createApi, userPanelLoginRoute } from '../../../src/index.js';
 
@@ -232,32 +231,6 @@ const Login = ({ setModalContent, setUser, setMessage }) => {
           )}
         </button>
       </form>
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-300"></div>
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-500">Or continue with</span>
-        </div>
-      </div>
-      <div className="space-y-2">
-        <button
-          className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2.5 rounded-lg hover:bg-gray-50 transition-colors"
-          aria-label="Login with Google"
-          onClick={() => alert("This feature will come soon")}
-        >
-          <FcGoogle className="w-5 h-5" />
-          <span className="text-sm font-medium text-gray-800">Login with Google</span>
-        </button>
-        <button
-          className="w-full flex items-center justify-center gap-2 border border-blue-600 text-blue-600 py-2.5 rounded-lg hover:bg-blue-50 transition-colors"
-          aria-label="Login with Facebook"
-          onClick={() => alert("This feature will come soon")}
-        >
-          <FaFacebookF className="w-5 h-5" />
-          <span className="text-sm font-medium">Login with Facebook</span>
-        </button>
-      </div>
       <div className="text-center">
         <button
           className="text-blue-600 text-sm underline hover:text-blue-800"

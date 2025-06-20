@@ -349,7 +349,7 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
             <motion.div
               initial={{ y: 20 }}
               animate={{ y: 0 }}
-              className="bg-white rounded-xl w-full max-w-md p-6 sm:p-8 relative shadow-2xl"
+              className="bg-white rounded-xl w-full max-w-sm sm:max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6 relative shadow-2xl"
               onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
             >
               {modalContent === "login" ? (
