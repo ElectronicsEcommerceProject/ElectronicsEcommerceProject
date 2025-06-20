@@ -426,24 +426,43 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden bg-indigo-700 px-4 py-4 space-y-4 rounded-b shadow-lg divide-y divide-indigo-600">
             <div className="space-y-4">
-              <a href="#" className="flex items-center">
+              <button 
+                onClick={() => {
+                  setIsHoveringSignIn(true);
+                  setIsModalOpen(true);
+                  setIsMenuOpen(false);
+                }}
+                className="flex items-center w-full text-left hover:bg-indigo-600 p-2 rounded transition-colors"
+              >
                 <FiUser className="w-5 h-5 mr-2" />
                 <span>Login</span>
-              </a>
-              <a href="#" className="flex items-center relative">
+              </button>
+              <Link 
+                to="/notifications" 
+                className="flex items-center relative hover:bg-indigo-600 p-2 rounded transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 <FiBell className="w-5 h-5 mr-2" />
                 <span>Notifications</span>
-                <span className="ml-auto bg-red-500 text-white text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full animate-pulse">
-                  {notificationCount}
-                </span>
-              </a>
-              <a href="#" className="flex items-center relative">
+                {notificationCount > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full animate-pulse">
+                    {notificationCount}
+                  </span>
+                )}
+              </Link>
+              <Link 
+                to="/cart" 
+                className="flex items-center relative hover:bg-indigo-600 p-2 rounded transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 <FiShoppingCart className="w-5 h-5 mr-2" />
                 <span>Cart</span>
-                <span className="ml-auto bg-amber-500 text-white text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full">
-                  {cartCount}
-                </span>
-              </a>
+                {cartCount > 0 && (
+                  <span className="ml-auto bg-amber-500 text-white text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
             </div>
           </div>
         )}
