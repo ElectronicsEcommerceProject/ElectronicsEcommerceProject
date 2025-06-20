@@ -1,10 +1,33 @@
 import React, { useState, useEffect } from "react";
+import { FiUser, FiShoppingBag, FiStar, FiShield } from "react-icons/fi";
 
 import Footer from "../../../components/Footer/Footer.jsx";
 import Header from "../../../components/Header/Header.jsx";
+import { isAuthenticated } from "../../../src/index.js";
 
 const MainDashboard = () => {
   const [activeBanner, setActiveBanner] = useState(0);
+  const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = () => {
+      setIsUserAuthenticated(isAuthenticated());
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const handleAuthChange = () => {
+      checkAuth();
+    };
+
+    window.addEventListener("tokenChanged", handleAuthChange);
+
+    return () => {
+      window.removeEventListener("tokenChanged", handleAuthChange);
+    };
+  }, []);
 
   const banners = [
     {
@@ -142,6 +165,55 @@ const MainDashboard = () => {
       discount: "Gaming special",
     },
   ];
+
+  // If user is not authenticated, show login prompt
+  if (!isUserAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex flex-col font-sans">
+        <Header />
+
+        <div className="flex-1 flex items-center justify-center px-4 py-12">
+          <div className="max-w-md w-full">
+            <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FiUser className="w-10 h-10 text-white" />
+              </div>
+
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                Welcome to MAA LAXMI STORE
+              </h2>
+
+              <p className="text-gray-600 mb-8 leading-relaxed">
+                Please login first to explore our amazing collection of products
+                and enjoy exclusive deals!
+              </p>
+
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center text-sm text-gray-600">
+                  <FiShoppingBag className="w-5 h-5 mr-3 text-blue-500" />
+                  <span>Access thousands of products</span>
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <FiStar className="w-5 h-5 mr-3 text-yellow-500" />
+                  <span>Exclusive member discounts</span>
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <FiShield className="w-5 h-5 mr-3 text-green-500" />
+                  <span>Secure shopping experience</span>
+                </div>
+              </div>
+
+              <div className="text-sm text-gray-500">
+                Click on "Sign In" in the header to get started
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
