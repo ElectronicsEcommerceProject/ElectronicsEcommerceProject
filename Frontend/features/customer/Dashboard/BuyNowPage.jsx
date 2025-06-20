@@ -779,6 +779,11 @@ const BuyNowPage = () => {
                     alert(
                       `${action} ${quantity} item(s) in cart successfully!`
                     );
+                    
+                    // Refresh page after successful add to cart
+                    setTimeout(() => {
+                      window.location.reload();
+                    }, 1000);
                   } else {
                     throw new Error(
                       cartItemResponse.message || "Failed to add item to cart"
