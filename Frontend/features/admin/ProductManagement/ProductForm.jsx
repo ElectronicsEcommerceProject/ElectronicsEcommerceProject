@@ -524,6 +524,11 @@ const ProductCatalogManagement = () => {
         }
       }
 
+      // Prevent negative values for number inputs
+      if (type === "number" && parseFloat(value) < 0) {
+        return; // Don't update state with negative values
+      }
+
       const newValue = type === "file" ? files[0] : value;
       setLocalData((prev) => ({ ...prev, [name]: newValue }));
       setFilledFields((prev) => ({ ...prev, [name]: !!newValue }));
