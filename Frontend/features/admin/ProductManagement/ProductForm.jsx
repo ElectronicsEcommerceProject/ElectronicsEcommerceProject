@@ -1012,10 +1012,10 @@ const ProductCatalogManagement = () => {
           required: true,
         },
         {
-          name: "discount_percentage",
-          label: "Discount Percentage (%) for (Customer)",
+          name: "min_retailer_quantity",
+          label: "Minimum Order Quantity for Retailers and Customers",
           type: "number",
-          placeholder: "e.g., 10",
+          placeholder: "e.g., 5",
           required: false,
         },
         {
@@ -1026,10 +1026,10 @@ const ProductCatalogManagement = () => {
           required: false,
         },
         {
-          name: "min_retailer_quantity",
-          label: "Minimum Order Quantity for Retailers and Customers",
+          name: "discount_percentage",
+          label: "Discount Percentage (%) for (Customer)",
           type: "number",
-          placeholder: "e.g., 5",
+          placeholder: "e.g., 10",
           required: false,
         },
         {
