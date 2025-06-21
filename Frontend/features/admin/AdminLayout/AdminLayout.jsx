@@ -24,9 +24,32 @@ import {
   AdminHeader,
   NotificationPage,
   StockManagement,
+  isAuthenticated,
 } from "../../../features/admin/index.js";
 
 const AdminLayout = () => {
+  // Check if user is authenticated
+  if (!isAuthenticated()) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex flex-col">
+        <AdminHeader notifications={[]} dismissNotification={() => {}} />
+        <div className="flex-1 flex items-center justify-center pt-20">
+          <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full mx-4">
+            <h2 className="text-2xl font-bold text-center text-gray-800 mb-4">
+              Access Denied
+            </h2>
+            <p className="text-gray-600 text-center mb-6">
+              You need to be logged in to access the admin panel.
+            </p>
+            <p className="text-sm text-gray-500 text-center">
+              Please use the login button in the header above.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const [activeSection, setActiveSection] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -66,9 +89,7 @@ const AdminLayout = () => {
     {
       label: "Stock Management",
       section: "stock",
-      icon: (
-        <Package size={24} weight="duotone" className="text-blue-500" />
-      ),
+      icon: <Package size={24} weight="duotone" className="text-blue-500" />,
     },
     {
       label: "User Management",
