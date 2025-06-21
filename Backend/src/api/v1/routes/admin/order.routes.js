@@ -17,8 +17,11 @@ router.get(
   orderController.getLatestOrder
 );
 
+// get all orders by user ID
+router.get("/:user_id", verifyJwtToken, orderController.getAllOrdersByUserId);
+
 // 🔍 Get single order by ID
-router.get("/:id", verifyJwtToken, orderController.getOrderById);
+router.get("/:order_id", verifyJwtToken, orderController.getOrderById);
 
 // 🔄 Update order by ID
 router.patch(

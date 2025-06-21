@@ -1,49 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import OrderStatus from "./OrderStatus.jsx";
 import { useNavigate } from "react-router-dom";
 
-const dummyOrders = [
-  {
-    id: 1,
-    status: "delivered",
-    statusText: "Delivery between 08:00 AM - 07:55 PM on JUN 17",
-    message: "Your Order has been placed.",
-    orderDate: "2024-06-17",
-    items: [
-      {
-        id: "1a",
-        image: "https://via.placeholder.com/80",
-        title: "JACY LONIDON HARD SIDED PC 8 WHEEL SPINNE...",
-        color: "Blue",
-        price: "₹1,908",
-        quantity: 1,
-      },
-      {
-        id: "1b",
-        image: "https://via.placeholder.com/80",
-        title: "Boat Rockerz 650 Pro, Touch/Swipe Contro...",
-        color: "Silver",
-        price: "₹2,518",
-        quantity: 2,
-      },
-    ],
-  },
-  {
-    id: 2,
-    status: "cancelled",
-    statusText: "Cancelled on MAY 05",
-    orderDate: "2024-05-05",
-    items: [
-      {
-        id: "2a",
-        image: "https://via.placeholder.com/80",
-        title: "Wild Stone ULTRA SENSUAL Eau de Parfum ...",
-        price: "₹305",
-        quantity: 1,
-      },
-    ],
-  },
-];
+import {
+  getApi,
+  orderRoute,
+  getApiById,
+  getUserIdFromToken,
+  orderItemByOrderIdRoute,
+} from "../../src/index.js";
 
 const FilterSidebar = ({
   orderStatusFilters,
@@ -117,24 +82,54 @@ const FilterSidebar = ({
 };
 
 const OrderCard = ({ order, expanded, onExpand }) => {
+  const [orderItems, setOrderItems] = useState([]);
+  const [loadingItems, setLoadingItems] = useState(false);
+
+  const handleShowItems = async () => {
+    alert(`Order ID: ${order.order_id}`);
+    
+    if (!expanded) {
+      setLoadingItems(true);
+      try {
+        const response = await getApiById(orderItemByOrderIdRoute, order.order_id);
+        if (response.data) {
+          setOrderItems(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching order items:", error);
+      } finally {
+        setLoadingItems(false);
+      }
+    }
+    
+    onExpand();
+  };
+
   return (
     <div className="w-full bg-white p-4 mb-4 rounded-lg shadow-md hover:shadow-lg hover:bg-gray-50 transition-shadow duration-200">
       <div
         className="flex flex-col sm:flex-row items-start sm:items-center justify-between cursor-pointer"
-        onClick={onExpand}
+        onClick={handleShowItems}
       >
         <div className="flex-1">
           <h4 className="text-base font-semibold text-gray-800">
-            Order #{order.id}
+            Order #{order.order_number}
           </h4>
           <p
             className={`text-sm font-bold ${
-              order.status === "delivered" ? "text-green-600" : "text-red-600"
+              order.order_status === "delivered"
+                ? "text-green-600"
+                : "text-red-600"
             }`}
           >
-            {order.statusText}
+            Status: {order.order_status}
           </p>
-          <p className="text-xs text-gray-500">Order Date: {order.orderDate}</p>
+          <p className="text-xs text-gray-500">
+            Order Date: {new Date(order.order_date).toLocaleDateString()}
+          </p>
+          <p className="text-sm text-gray-700 font-semibold">
+            Total: ₹{order.total_amount}
+          </p>
         </div>
         <div className="flex items-center mt-2 sm:mt-0">
           <span className="text-blue-600 text-sm font-medium mr-2">
@@ -159,29 +154,42 @@ const OrderCard = ({ order, expanded, onExpand }) => {
       </div>
       {expanded && (
         <div className="mt-4 border-t pt-4">
-          {order.items.map((item) => (
-            <div key={item.id} className="flex items-center mb-3">
-              <img
-                src={item.image}
-                alt="Product"
-                className="w-16 h-16 rounded mr-4"
-              />
-              <div className="flex-1">
-                <div className="font-medium text-gray-800">{item.title}</div>
-                {item.color && (
-                  <div className="text-sm text-gray-500">
-                    Color: {item.color}
-                  </div>
-                )}
-                <div className="text-sm text-gray-500">
-                  Quantity: {item.quantity}
-                </div>
-                <div className="text-sm text-gray-700 font-semibold">
-                  {item.price}
-                </div>
+          {loadingItems ? (
+            <p className="text-sm text-gray-600">Loading order items...</p>
+          ) : orderItems.length > 0 ? (
+            <>
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-1">Payment Method: {order.payment_method}</p>
+                <p className="text-sm text-gray-600 mb-1">Payment Status: {order.payment_status}</p>
               </div>
+              <h5 className="font-semibold text-gray-800 mb-3">Order Items:</h5>
+              {orderItems.map((item) => (
+                <div key={item.order_item_id} className="flex items-center mb-4 p-3 bg-gray-50 rounded">
+                  <img
+                    src={item.productVariant?.base_variant_image_url || "https://via.placeholder.com/80"}
+                    alt="Product"
+                    className="w-16 h-16 rounded mr-4 object-cover"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-800">{item.product?.name}</div>
+                    <div className="text-sm text-gray-600">{item.productVariant?.description}</div>
+                    <div className="text-sm text-gray-500">Quantity: {item.total_quantity}</div>
+                    <div className="text-sm text-gray-500">Price: ₹{item.price_at_time}</div>
+                    <div className="text-sm text-gray-700 font-semibold">Total: ₹{item.final_price}</div>
+                    {item.discount_applied > 0 && (
+                      <div className="text-sm text-green-600">Discount: ₹{item.discount_applied}</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            <div>
+              <p className="text-sm text-gray-600 mb-2">Payment Method: {order.payment_method}</p>
+              <p className="text-sm text-gray-600 mb-2">Payment Status: {order.payment_status}</p>
+              {order.notes && <p className="text-sm text-gray-600">Notes: {order.notes}</p>}
             </div>
-          ))}
+          )}
         </div>
       )}
     </div>
@@ -208,6 +216,8 @@ const SearchBar = ({ searchQuery, setSearchQuery, handleSearch }) => (
 
 const OrderDetails = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [orderStatusFilters, setOrderStatusFilters] = useState({
     onTheWay: false,
     delivered: false,
@@ -224,19 +234,38 @@ const OrderDetails = () => {
   });
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const userId = getUserIdFromToken();
+        if (userId) {
+          const response = await getApiById(orderRoute, userId);
+          if (response.success) {
+            setOrders(response.data);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
+
   const handleSearch = () => {
     console.log("Search query:", searchQuery);
   };
 
-  const filteredOrders = dummyOrders.filter((order) => {
+  const filteredOrders = orders.filter((order) => {
     const statusMatch =
       !Object.values(orderStatusFilters).some(Boolean) ||
-      (orderStatusFilters.delivered && order.status === "delivered") ||
-      (orderStatusFilters.cancelled && order.status === "cancelled") ||
-      (orderStatusFilters.onTheWay && order.status === "onTheWay") ||
-      (orderStatusFilters.returned && order.status === "returned");
+      (orderStatusFilters.delivered && order.order_status === "delivered") ||
+      (orderStatusFilters.cancelled && order.order_status === "cancelled") ||
+      (orderStatusFilters.onTheWay && order.order_status === "pending") ||
+      (orderStatusFilters.returned && order.order_status === "returned");
 
-    const orderDate = new Date(order.orderDate);
+    const orderDate = new Date(order.order_date);
     const now = new Date();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(now.getDate() - 30);
@@ -251,9 +280,7 @@ const OrderDetails = () => {
       (orderTimeFilters.older && orderDate.getFullYear() < 2021);
 
     const searchMatch = searchQuery
-      ? order.items.some((item) =>
-          item.title.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+      ? order.order_number.toLowerCase().includes(searchQuery.toLowerCase())
       : true;
 
     return statusMatch && timeMatch && searchMatch;
@@ -276,15 +303,17 @@ const OrderDetails = () => {
             setSearchQuery={setSearchQuery}
             handleSearch={handleSearch}
           />
-          {filteredOrders.length > 0 ? (
+          {loading ? (
+            <p className="text-sm text-gray-600">Loading orders...</p>
+          ) : filteredOrders.length > 0 ? (
             filteredOrders.map((order) => (
               <OrderCard
-                key={order.id}
+                key={order.order_id}
                 order={order}
-                expanded={expandedOrderId === order.id}
+                expanded={expandedOrderId === order.order_id}
                 onExpand={() =>
                   setExpandedOrderId(
-                    expandedOrderId === order.id ? null : order.id
+                    expandedOrderId === order.order_id ? null : order.order_id
                   )
                 }
               />

@@ -25,12 +25,12 @@ export const createOrder = async (req, res) => {
 
     // Find or create user
     const [user] = await User.findOrCreate({
-      where: { user_id }
+      where: { user_id },
     });
 
     // Find or create address
     const [address] = await Address.findOrCreate({
-      where: { address_id }
+      where: { address_id },
     });
 
     // Generate unique order number
@@ -52,7 +52,7 @@ export const createOrder = async (req, res) => {
       discount_amount: discount_amount || 0,
       total_amount,
       notes: notes || "",
-      tracking_number: null
+      tracking_number: null,
     });
 
     // If coupon_id is provided, create coupon redemption
@@ -74,8 +74,8 @@ export const createOrder = async (req, res) => {
       success: true,
       message: MESSAGE.post.succ,
       data: {
-        order
-      }
+        order,
+      },
     });
   } catch (err) {
     console.error("❌ Error in createOrder:", err);
@@ -321,6 +321,44 @@ export const getLatestOrder = async (req, res) => {
   }
 };
 
+// 📋 Get all orders by user ID
+const getAllOrdersByUserId = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    if (!user_id) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+    const user = await User.findOne({ where: { user_id } });
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const orders = await Order.findAll({
+      where: { user_id },
+      order: [["createdAt", "DESC"]],
+    });
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: MESSAGE.get.succ,
+      data: orders,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching orders by user ID:", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: MESSAGE.get.fail,
+      error: error.message,
+    });
+  }
+};
+
 export default {
   createOrder,
   getAllOrders,
@@ -328,4 +366,5 @@ export default {
   updateOrderById,
   cancelOrderById,
   getLatestOrder,
+  getAllOrdersByUserId,
 };
