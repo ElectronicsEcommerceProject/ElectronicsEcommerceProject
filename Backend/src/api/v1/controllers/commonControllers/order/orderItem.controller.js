@@ -2,7 +2,27 @@ import { StatusCodes } from "http-status-codes";
 import MESSAGE from "../../../../../constants/message.js";
 import db from "../../../../../models/index.js";
 
-const { OrderItem, Order, Product, ProductVariant, Cart, CartItem } = db;
+// Convert relative path to full URL for response
+const convertToFullUrl = (imagePath, req) => {
+  if (imagePath && !imagePath.startsWith("http")) {
+    return `${req.protocol}://${req.get("host")}/${imagePath.replace(
+      /\\/g,
+      "/"
+    )}`;
+  }
+  return imagePath || "";
+};
+
+const {
+  OrderItem,
+  Order,
+  Product,
+  ProductVariant,
+  Cart,
+  CartItem,
+  ProductMedia,
+  ProductMediaUrl,
+} = db;
 
 // Create a new order item
 export const createOrderItem = async (req, res) => {
@@ -87,7 +107,7 @@ export const createOrderItem = async (req, res) => {
 };
 
 // Get all items for an order
-export const getOrderItems = async (req, res) => {
+export const getOrderItemsByOrderId = async (req, res) => {
   try {
     const { order_id } = req.params;
 
@@ -106,17 +126,89 @@ export const getOrderItems = async (req, res) => {
         {
           model: Product,
           as: "product",
+          include: [
+            {
+              model: ProductMedia,
+              as: "media",
+              attributes: ["product_media_id", "media_type"],
+              include: [
+                {
+                  model: ProductMediaUrl,
+                  attributes: ["product_media_url"],
+                },
+              ],
+              limit: 1,
+              required: false,
+            },
+          ],
         },
         {
           model: ProductVariant,
           as: "productVariant",
+          include: [
+            {
+              model: ProductMedia,
+              attributes: ["product_media_id", "media_type"],
+              include: [
+                {
+                  model: ProductMediaUrl,
+                  attributes: ["product_media_url"],
+                },
+              ],
+              limit: 1,
+              required: false,
+            },
+          ],
         },
       ],
     });
 
+    // Transform order items to include full URLs
+    const transformedOrderItems = orderItems.map((item) => {
+      const product = item.product;
+      const variant = item.productVariant;
+
+      // Get main image - priority: variant base_variant_image_url > variant ProductMedia > product ProductMedia > default
+      let mainImage = "/assets/shop.jpg"; // default fallback
+
+      if (variant?.base_variant_image_url) {
+        mainImage = convertToFullUrl(variant.base_variant_image_url, req);
+      } else if (
+        variant?.ProductMedia?.[0]?.ProductMediaURLs?.[0]?.product_media_url
+      ) {
+        mainImage = convertToFullUrl(
+          variant.ProductMedia[0].ProductMediaURLs[0].product_media_url,
+          req
+        );
+      } else if (
+        product?.media?.[0]?.ProductMediaURLs?.[0]?.product_media_url
+      ) {
+        mainImage = convertToFullUrl(
+          product.media[0].ProductMediaURLs[0].product_media_url,
+          req
+        );
+      }
+
+      return {
+        ...item.toJSON(),
+        product: {
+          ...product.toJSON(),
+          mainImage,
+        },
+        productVariant: variant
+          ? {
+              ...variant.toJSON(),
+              base_variant_image_url: variant.base_variant_image_url
+                ? convertToFullUrl(variant.base_variant_image_url, req)
+                : mainImage,
+            }
+          : null,
+      };
+    });
+
     return res.status(StatusCodes.OK).json({
       message: MESSAGE.get.succ,
-      data: orderItems,
+      data: transformedOrderItems,
     });
   } catch (err) {
     console.error("❌ Error in getOrderItems:", err);
@@ -137,10 +229,39 @@ export const getOrderItemById = async (req, res) => {
         {
           model: Product,
           as: "product",
+          include: [
+            {
+              model: ProductMedia,
+              as: "media",
+              attributes: ["product_media_id", "media_type"],
+              include: [
+                {
+                  model: ProductMediaUrl,
+                  attributes: ["product_media_url"],
+                },
+              ],
+              limit: 1,
+              required: false,
+            },
+          ],
         },
         {
           model: ProductVariant,
           as: "productVariant",
+          include: [
+            {
+              model: ProductMedia,
+              attributes: ["product_media_id", "media_type"],
+              include: [
+                {
+                  model: ProductMediaUrl,
+                  attributes: ["product_media_url"],
+                },
+              ],
+              limit: 1,
+              required: false,
+            },
+          ],
         },
       ],
     });
@@ -151,9 +272,48 @@ export const getOrderItemById = async (req, res) => {
       });
     }
 
+    // Transform order item to include full URLs
+    const product = orderItem.product;
+    const variant = orderItem.productVariant;
+
+    // Get main image - priority: variant base_variant_image_url > variant ProductMedia > product ProductMedia > default
+    let mainImage = "/assets/shop.jpg"; // default fallback
+
+    if (variant?.base_variant_image_url) {
+      mainImage = convertToFullUrl(variant.base_variant_image_url, req);
+    } else if (
+      variant?.ProductMedia?.[0]?.ProductMediaURLs?.[0]?.product_media_url
+    ) {
+      mainImage = convertToFullUrl(
+        variant.ProductMedia[0].ProductMediaURLs[0].product_media_url,
+        req
+      );
+    } else if (product?.media?.[0]?.ProductMediaURLs?.[0]?.product_media_url) {
+      mainImage = convertToFullUrl(
+        product.media[0].ProductMediaURLs[0].product_media_url,
+        req
+      );
+    }
+
+    const transformedOrderItem = {
+      ...orderItem.toJSON(),
+      product: {
+        ...product.toJSON(),
+        mainImage,
+      },
+      productVariant: variant
+        ? {
+            ...variant.toJSON(),
+            base_variant_image_url: variant.base_variant_image_url
+              ? convertToFullUrl(variant.base_variant_image_url, req)
+              : mainImage,
+          }
+        : null,
+    };
+
     return res.status(StatusCodes.OK).json({
       message: MESSAGE.get.succ,
-      data: orderItem,
+      data: transformedOrderItem,
     });
   } catch (err) {
     console.error("❌ Error in getOrderItemById:", err);
@@ -229,7 +389,7 @@ export const deleteOrderItem = async (req, res) => {
 
 export default {
   createOrderItem,
-  getOrderItems,
+  getOrderItemsByOrderId,
   getOrderItemById,
   updateOrderItem,
   deleteOrderItem,

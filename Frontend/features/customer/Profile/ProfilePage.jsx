@@ -42,11 +42,18 @@ const Profile = () => {
     fetchUserProfile();
   }, []);
 
-  // Handle query params to set active section
+  // Handle URL path and query params to set active section
   useEffect(() => {
+    const path = location.pathname;
     const params = new URLSearchParams(location.search);
     const section = params.get("section");
-    if (section === "OrderDetails") {
+    
+    // Check URL path first
+    if (path.includes("/orders")) {
+      setActiveSection("OrderDetails");
+    } else if (path.includes("/wishlist")) {
+      setActiveSection("Wishlist");
+    } else if (section === "OrderDetails") {
       setActiveSection("OrderDetails");
     } else if (section === "wishlist") {
       setActiveSection("Wishlist");

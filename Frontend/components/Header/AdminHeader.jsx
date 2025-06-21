@@ -68,6 +68,7 @@ const AdminHeader = ({ notifications, dismissNotification }) => {
     window.dispatchEvent(new Event('tokenChanged'));
     setUser(null);
     setMessage('Logged out successfully!');
+    window.location.reload();
   };
 
   const closeModal = () => {

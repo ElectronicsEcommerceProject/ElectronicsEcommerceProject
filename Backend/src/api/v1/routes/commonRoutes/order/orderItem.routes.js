@@ -18,7 +18,7 @@ router.get(
   "/order/:order_id",
   verifyJwtToken,
   validator(validators.order.orderIdValidator, "params"),
-  orderItemController.getOrderItems
+  orderItemController.getOrderItemsByOrderId
 );
 
 // Get order item by ID

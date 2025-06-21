@@ -169,47 +169,7 @@ const Header = () => {
       } catch (error) {
         console.error("Error fetching categories:", error);
         setCategoriesError(error.message || "Failed to fetch categories");
-
-        // Fallback to hardcoded data if API fails
-        const fallbackCategories = [
-          {
-            icon: FiSmartphone,
-            label: "Mobiles",
-            slug: "mobiles",
-            category_id: "fallback-1",
-          },
-          {
-            icon: FiMonitor,
-            label: "Electronics",
-            slug: "electronics",
-            category_id: "fallback-2",
-          },
-          {
-            icon: FiHeadphones,
-            label: "Audio",
-            slug: "audio",
-            category_id: "fallback-3",
-          },
-          {
-            icon: FiCamera,
-            label: "Cameras",
-            slug: "cameras",
-            category_id: "fallback-4",
-          },
-          {
-            icon: FiBriefcase,
-            label: "Travel",
-            slug: "travel",
-            category_id: "fallback-5",
-          },
-          {
-            icon: FiNavigation,
-            label: "Navigation",
-            slug: "navigation",
-            category_id: "fallback-6",
-          },
-        ];
-        setCategories(fallbackCategories);
+        setCategories([]);
       } finally {
         setCategoriesLoading(false);
       }

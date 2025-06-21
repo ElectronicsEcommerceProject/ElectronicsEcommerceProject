@@ -340,7 +340,7 @@ const CustomerRow = ({ name, email, isChecked, onCheckChange }) => (
 
 const SendNotification = () => {
   const [targetAudience, setTargetAudience] = React.useState('All Users');
-  const [channel, setChannel] = React.useState('Email');
+  const [channel, setChannel] = React.useState('In app SMS');
   const [template, setTemplate] = React.useState('No Template');
   const [selectedCustomers, setSelectedCustomers] = React.useState([]);
   const [title, setTitle] = React.useState('');

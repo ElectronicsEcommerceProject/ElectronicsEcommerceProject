@@ -477,14 +477,14 @@ const ProductCatalogManagement = () => {
 
     useEffect(() => {
       const currentStepData = { ...stepFormData[step] };
-      
+
       // Set default values for fields that have them
-      fields.forEach(field => {
+      fields.forEach((field) => {
         if (field.defaultValue && !currentStepData[field.name]) {
           currentStepData[field.name] = field.defaultValue;
         }
       });
-      
+
       setLocalData(currentStepData);
       setFilledFields(
         Object.keys(currentStepData).reduce(
@@ -496,28 +496,34 @@ const ProductCatalogManagement = () => {
 
     const handleChange = (e) => {
       const { name, value, type, files, newItem } = e.target;
-      
+
       if (type === "file" && files[0]) {
         const file = files[0];
         const maxSize = 2 * 1024 * 1024; // 2MB
-        const allowedExtensions = ['jpeg', 'jpg', 'png'];
-        const fileExtension = file.name.split('.').pop().toLowerCase();
-        
+        const allowedExtensions = ["jpeg", "jpg", "png"];
+        const fileExtension = file.name.split(".").pop().toLowerCase();
+
         // Check file size
         if (file.size > maxSize) {
-          alert(`Image size is ${(file.size / (1024 * 1024)).toFixed(2)}MB. Maximum allowed size is 2MB.`);
-          e.target.value = ''; // Clear the input
+          alert(
+            `Image size is ${(file.size / (1024 * 1024)).toFixed(
+              2
+            )}MB. Maximum allowed size is 2MB.`
+          );
+          e.target.value = ""; // Clear the input
           return;
         }
-        
+
         // Check file extension
         if (!allowedExtensions.includes(fileExtension)) {
-          alert(`File extension '${fileExtension}' is not allowed. Only jpeg, jpg, png are allowed.`);
-          e.target.value = ''; // Clear the input
+          alert(
+            `File extension '${fileExtension}' is not allowed. Only jpeg, jpg, png are allowed.`
+          );
+          e.target.value = ""; // Clear the input
           return;
         }
       }
-      
+
       const newValue = type === "file" ? files[0] : value;
       setLocalData((prev) => ({ ...prev, [name]: newValue }));
       setFilledFields((prev) => ({ ...prev, [name]: !!newValue }));
@@ -1006,10 +1012,10 @@ const ProductCatalogManagement = () => {
           required: true,
         },
         {
-          name: "discount_percentage",
-          label: "Discount Percentage (%) for (Customer)",
+          name: "min_retailer_quantity",
+          label: "Minimum Order Quantity for Retailers and Customers",
           type: "number",
-          placeholder: "e.g., 10",
+          placeholder: "e.g., 5",
           required: false,
         },
         {
@@ -1020,17 +1026,10 @@ const ProductCatalogManagement = () => {
           required: false,
         },
         {
-          name: "min_retailer_quantity",
-          label: "Minimum Order Quantity for Retailers",
+          name: "discount_percentage",
+          label: "Discount Percentage (%) for (Customer)",
           type: "number",
-          placeholder: "e.g., 5",
-          required: false,
-        },
-        {
-          name: "bulk_discount_percentage",
-          label: "Bulk Discount Percentage (%)",
-          type: "number",
-          placeholder: "e.g., 15",
+          placeholder: "e.g., 10",
           required: false,
         },
         {
@@ -1038,6 +1037,13 @@ const ProductCatalogManagement = () => {
           label: "Bulk Discount Quantity",
           type: "number",
           placeholder: "e.g., 10",
+          required: false,
+        },
+        {
+          name: "bulk_discount_percentage",
+          label: "Bulk Discount Percentage (%)",
+          type: "number",
+          placeholder: "e.g., 15",
           required: false,
         },
       ],
