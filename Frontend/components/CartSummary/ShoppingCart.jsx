@@ -894,12 +894,25 @@ const CartPage = () => {
               </div>
             </div>
             <button
-              className="w-full mt-6 bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+              className={`w-full mt-6 py-2 rounded ${
+                loading || cartItems.length === 0 || !selectedAddress
+                  ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
               onClick={handlePlaceOrder}
               disabled={loading || cartItems.length === 0 || !selectedAddress}
             >
               {loading ? "PROCESSING..." : "PLACE ORDER"}
             </button>
+            {/* Debug info */}
+            {(loading || cartItems.length === 0 || !selectedAddress) && (
+              <div className="text-xs text-red-500 mt-2">
+                Button disabled because:
+                {loading && <div>• Loading in progress</div>}
+                {cartItems.length === 0 && <div>• Cart is empty</div>}
+                {!selectedAddress && <div>• No address selected</div>}
+              </div>
+            )}
             {discount > 0 && (
               <p className="text-green-600 text-sm mt-4">
                 You will save ₹{discount.toLocaleString()} on this order
