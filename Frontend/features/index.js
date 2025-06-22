@@ -53,10 +53,6 @@ export { isAuthenticated } from "../src/utils/auth.js";
 // 💳 Payment Features
 export { default as RazorpayButton } from "./Payment/RazorpayButton.jsx";
 
-// 🏪 Retailer Features
-export { default as RetailerOrderList } from "./Retailer/Orders/RetailerOrderList.jsx";
-export { default as RetailerLogout } from "./Retailer/Logout/RetailerLogout.jsx";
-
 // 🔐 Customer Authentication
 export { default as Login } from "./customer/SignIn/Login.jsx";
 export { default as Signup } from "./customer/SignIn/Signup.jsx";
