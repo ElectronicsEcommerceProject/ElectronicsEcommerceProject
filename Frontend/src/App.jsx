@@ -6,8 +6,6 @@ import {
   BuyNowPage,
   ProfilePage,
   ShoppingCart,
-  OrderCheckoutPage,
-  OrderStatus,
 } from "../features/index.js";
 
 import { AdminLayout, ProductForm } from "../features/index.js";
