@@ -9,7 +9,6 @@ export { default as MainZone } from "./customer/Dashboard/MainZone.jsx";
 export { default as BuyNowPage } from "./customer/Dashboard/BuyNowPage.jsx";
 export { default as ProfilePage } from "./customer/Profile/ProfilePage.jsx";
 export { default as ShoppingCart } from "../components/CartSummary/ShoppingCart.jsx";
-export { default as OrderCheckoutPage } from "./Order/OrderCheckoutPage.jsx";
 export { default as OrderDetails } from "./Order/OrderDetails.jsx";
 export { default as OrderStatus } from "./Order/OrderStatus.jsx";
 export { default as Header } from "../components/Header/Header.jsx";
@@ -51,9 +50,6 @@ export { default as QuickActions } from "../components/OrderManagement/QuickActi
 
 // Auth utility
 export { isAuthenticated } from "../src/utils/auth.js";
-
-// 📦 Order Features
-// Note: OrderCheckoutPage, OrderDetails, and OrderStatus are exported through customer/index.js
 
 // 💳 Payment Features
 export { default as RazorpayButton } from "./Payment/RazorpayButton.jsx";
