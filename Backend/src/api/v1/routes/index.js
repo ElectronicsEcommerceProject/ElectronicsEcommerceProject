@@ -2,8 +2,6 @@ import express from "express";
 
 import authRoutes from "./commonRoutes/auth/auth.route.js";
 import adminRoutes from "./admin/index.js";
-import customerRoutes from "./customer/index.js";
-import retailerRoutes from "./retailer/index.js";
 import profileRoutes from "./commonRoutes/profile/profile.route.js";
 import addressesRoutes from "./commonRoutes/addresses/addresses.route.js";
 import cartRoutes from "./commonRoutes/cart/cart.route.js";
@@ -50,9 +48,5 @@ app.use("/user/order-Item", orderItemRoutes);
 app.use("/user/product-Reviews", productReviewRoutes);
 
 app.use("/admin", adminRoutes);
-
-app.use("/customer", customerRoutes);
-
-app.use("/retailer", retailerRoutes);
 
 export default app;
