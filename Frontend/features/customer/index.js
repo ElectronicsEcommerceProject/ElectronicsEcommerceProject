@@ -38,8 +38,8 @@ import ProductGrid from "../../components/ProductZone/ProductGrid.jsx";
 import SortOptions from "../../components/ProductZone/SortOptions.jsx";
 
 // 📊 Dummy Data
-import categoriesData from "../../components/Data/categories.js";
-import { brandsData } from "../../components/Data/brands.js";
+import categoriesData from "../../components/Data/categories.jsx";
+import { brandsData } from "../../components/Data/brands.jsx";
 
 // ✅ Named Exports (excluding Redux actions)
 export {
