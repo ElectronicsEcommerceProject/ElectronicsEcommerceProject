@@ -42,17 +42,17 @@ export { default as adminAnalyticsDashboardDataController } from "./admin/adminR
 export { default as adminStockManagementController } from "./admin/adminStockManagment.controller.js";
 
 //     customer controller
-export { default as customerOrderController } from "./customer/order.controller.js";
-export { default as customerProductController } from "./customer/product.controller.js";
-// export { default as customerProfileController } from './customer/profile.controller.js';
-export { default as customerReviewController } from "./customer/review.controller.js";
-export { default as customerWishlistController } from "./customer/wishlist.controller.js";
-export { default as customerCartController } from "./customer/cart.controller.js";
+// export { default as customerOrderController } from "./customer/order.controller.js";
+// export { default as customerProductController } from "./customer/product.controller.js";
+// // export { default as customerProfileController } from './customer/profile.controller.js';
+// export { default as customerReviewController } from "./customer/review.controller.js";
+// export { default as customerWishlistController } from "./customer/wishlist.controller.js";
+// export { default as customerCartController } from "./customer/cart.controller.js";
 
-//     retailer controller
-export { default as retailerOrderController } from "./retailer/order.controller.js";
-export { default as retailerProductController } from "./retailer/product.controller.js";
-// export { default as retailerProfileController } from './retailer/profile.controller.js';
-export { default as retailerReviewController } from "./retailer/review.controller.js";
-export { default as retailerCartController } from "./retailer/cart.controller.js";
-export { default as retailerrWishlistController } from "./retailer/wishlist.controller.js";
+// //     retailer controller
+// export { default as retailerOrderController } from "./retailer/order.controller.js";
+// export { default as retailerProductController } from "./retailer/product.controller.js";
+// // export { default as retailerProfileController } from './retailer/profile.controller.js';
+// export { default as retailerReviewController } from "./retailer/review.controller.js";
+// export { default as retailerCartController } from "./retailer/cart.controller.js";
+// export { default as retailerrWishlistController } from "./retailer/wishlist.controller.js";
