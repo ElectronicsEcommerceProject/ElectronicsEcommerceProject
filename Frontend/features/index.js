@@ -17,7 +17,6 @@ export { default as Footer } from "../components/Footer/Footer.jsx";
 export { default as FilterSidebar } from "../components/ProductZone/FilterSidebar.jsx";
 export { default as ProductGrid } from "../components/ProductZone/ProductGrid.jsx";
 export { default as SortOptions } from "../components/ProductZone/SortOptions.jsx";
-export { default as categoriesData } from "../components/Data/categories.jsx";
 
 // 🛡️ Admin Features
 export { default as Dashboard } from "./admin/Dashboard/AdminDashboard.jsx";

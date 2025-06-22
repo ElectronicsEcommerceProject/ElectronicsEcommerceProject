@@ -12,7 +12,6 @@ export { default as ShoppingCart } from "./CartSummary/ShoppingCart.jsx";
 export { default as Footer } from "./Footer/Footer.jsx";
 
 // Data Components
-export { default as categoriesData } from "./Data/categories.jsx";
 export { priceRanges, ratings, discounts } from "./Data/filters.jsx";
 export { dummyProducts } from "./Data/products.jsx";
 
