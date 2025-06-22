@@ -10,7 +10,6 @@ export { default as BuyNowPage } from "./customer/Dashboard/BuyNowPage.jsx";
 export { default as ProfilePage } from "./customer/Profile/ProfilePage.jsx";
 export { default as ShoppingCart } from "../components/CartSummary/ShoppingCart.jsx";
 export { default as OrderDetails } from "./Order/OrderDetails.jsx";
-export { default as OrderStatus } from "./Order/OrderStatus.jsx";
 export { default as Header } from "../components/Header/Header.jsx";
 export { default as Footer } from "../components/Footer/Footer.jsx";
 export { default as FilterSidebar } from "../components/ProductZone/FilterSidebar.jsx";
