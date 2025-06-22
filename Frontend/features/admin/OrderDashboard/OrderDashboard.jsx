@@ -12,7 +12,7 @@ import {
   QuickActions,
   Notifications,
   CustomModal,
-} from "../../../features/admin/index.js";
+} from "../../../features/index.js";
 
 import {
   orderRoute,
@@ -88,7 +88,11 @@ const OrderDashboard = () => {
       setDateRange(newDateRange);
     } else if (field === "end") {
       // When end date changes, ensure it's not before start date
-      if (dateRange.start && value && new Date(value) < new Date(dateRange.start)) {
+      if (
+        dateRange.start &&
+        value &&
+        new Date(value) < new Date(dateRange.start)
+      ) {
         // Don't allow end date to be before start date
         return;
       }

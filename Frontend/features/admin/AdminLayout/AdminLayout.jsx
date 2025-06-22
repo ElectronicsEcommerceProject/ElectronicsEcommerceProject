@@ -25,7 +25,7 @@ import {
   NotificationPage,
   StockManagement,
   isAuthenticated,
-} from "../../../features/admin/index.js";
+} from "../../../features/index.js";
 
 const AdminLayout = () => {
   // Check if user is authenticated

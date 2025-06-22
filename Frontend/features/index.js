@@ -23,28 +23,38 @@ export {
 } from "./customer/index.js";
 
 // 🛡️ Admin Features
-export {
-  Dashboard,
-  ProductManagement,
-  OrderManagement,
-  UserManagement,
-  UserProfileView,
-  ReviewManagement,
-  CouponsOffers,
-  Notifications,
-  NotificationPage,
-  ReportsAnalytics,
-  AdminHeader,
-  StockManagement,
-  AdminLayout,
-  ProductForm,
-  AdminLogin,
-  ForgotPassword,
-  AdminSidebar,
-  AnalyticsDashboard,
-  CouponDashboard,
-  isAuthenticated,
-} from "./admin/index.js";
+export { default as Dashboard } from "./admin/Dashboard/AdminDashboard.jsx";
+export { default as ProductManagement } from "./admin/ProductManagement/ProductDashboard.jsx";
+export { default as OrderManagement } from "./admin/OrderDashboard/OrderDashboard.jsx";
+export { default as UserManagement } from "./admin/UserManagement/UserDashboard.jsx";
+export { default as UserProfileView } from "./admin/UserManagement/UserProfileView.jsx";
+export { default as ReviewManagement } from "./admin/ReviewManagement/ReviewDashboard.jsx";
+export { default as CouponsOffers } from "./admin/CouponManagement/CouponDashboard.jsx";
+export { default as NotificationPage } from "./admin/NotificationManagement/NotificationPage.jsx";
+export { default as ReportsAnalytics } from "./admin/AnalyticManagement/AnalyticDashboard.jsx";
+export { default as StockManagement } from "./admin/StockManagement/StockManagement.jsx";
+export { default as AdminLayout } from "./admin/AdminLayout/AdminLayout.jsx";
+export { default as ProductForm } from "./admin/ProductManagement/ProductForm.jsx";
+export { default as AdminLogin } from "./admin/AdminLayout/AdminLogin.jsx";
+export { default as ForgotPassword } from "./admin/AdminLayout/ForgotPassword.jsx";
+export { default as AdminSidebar } from "./admin/Dashboard/AdminSidebar.jsx";
+export { default as AnalyticsDashboard } from "./admin/AnalyticManagement/AnalyticDashboard.jsx";
+export { default as CouponDashboard } from "./admin/CouponManagement/CouponDashboard.jsx";
+
+// Admin Components from components directory
+export { default as AdminHeader } from "../components/Header/AdminHeader.jsx";
+export { default as Notifications } from "../components/OrderManagement/Notifications.jsx";
+export { default as CustomModal } from "../components/OrderManagement/CustomModal.jsx";
+export { default as FiltersSection } from "../components/OrderManagement/FilterSection.jsx";
+export { default as OrderHeader } from "../components/OrderManagement/Header.jsx";
+export { default as ManualOrderModal } from "../components/OrderManagement/ManualOrderModal.jsx";
+export { default as MetricsSection } from "../components/OrderManagement/MetricsSection.jsx";
+export { default as OrderDetailModal } from "../components/OrderManagement/OrderDetailModal.jsx";
+export { default as OrdersTable } from "../components/OrderManagement/OrdersTable.jsx";
+export { default as QuickActions } from "../components/OrderManagement/QuickActions.jsx";
+
+// Auth utility
+export { isAuthenticated } from "../src/utils/auth.js";
 
 // 📦 Order Features
 // Note: OrderCheckoutPage, OrderDetails, and OrderStatus are exported through customer/index.js
