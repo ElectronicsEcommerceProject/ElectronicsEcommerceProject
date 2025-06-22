@@ -18,7 +18,6 @@ export { default as FilterSidebar } from "../components/ProductZone/FilterSideba
 export { default as ProductGrid } from "../components/ProductZone/ProductGrid.jsx";
 export { default as SortOptions } from "../components/ProductZone/SortOptions.jsx";
 export { default as categoriesData } from "../components/Data/categories.jsx";
-export { brandsData } from "../components/Data/brands.jsx";
 
 // 🛡️ Admin Features
 export { default as Dashboard } from "./admin/Dashboard/AdminDashboard.jsx";
@@ -74,5 +73,3 @@ export { default as LogoutModal } from "./customer/SignIn/Logout.jsx";
 export { default as PrivacySettings } from "./customer/Privacy/PrivacySettings.jsx";
 export { default as SavedCards } from "./customer/SavedCards/SavedCards.jsx";
 export { default as CustomerAlert } from "./customer/CustomerAlert/CustomerAlert.jsx";
-
-
