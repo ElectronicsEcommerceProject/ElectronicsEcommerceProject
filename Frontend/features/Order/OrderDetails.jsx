@@ -86,12 +86,15 @@ const OrderCard = ({ order, expanded, onExpand }) => {
   const [loadingItems, setLoadingItems] = useState(false);
 
   const handleShowItems = async () => {
-    alert(`Order ID: ${order.order_id}`);
-    
+    // alert(`Order ID: ${order.order_id}`);
+
     if (!expanded) {
       setLoadingItems(true);
       try {
-        const response = await getApiById(orderItemByOrderIdRoute, order.order_id);
+        const response = await getApiById(
+          orderItemByOrderIdRoute,
+          order.order_id
+        );
         if (response.data) {
           setOrderItems(response.data);
         }
@@ -101,7 +104,7 @@ const OrderCard = ({ order, expanded, onExpand }) => {
         setLoadingItems(false);
       }
     }
-    
+
     onExpand();
   };
 
@@ -159,25 +162,47 @@ const OrderCard = ({ order, expanded, onExpand }) => {
           ) : orderItems.length > 0 ? (
             <>
               <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-1">Payment Method: {order.payment_method}</p>
-                <p className="text-sm text-gray-600 mb-1">Payment Status: {order.payment_status}</p>
+                <p className="text-sm text-gray-600 mb-1">
+                  Payment Method: {order.payment_method}
+                </p>
+                <p className="text-sm text-gray-600 mb-1">
+                  Payment Status: {order.payment_status}
+                </p>
               </div>
               <h5 className="font-semibold text-gray-800 mb-3">Order Items:</h5>
               {orderItems.map((item) => (
-                <div key={item.order_item_id} className="flex items-center mb-4 p-3 bg-gray-50 rounded">
+                <div
+                  key={item.order_item_id}
+                  className="flex items-center mb-4 p-3 bg-gray-50 rounded"
+                >
                   <img
-                    src={item.productVariant?.base_variant_image_url || "https://via.placeholder.com/80"}
+                    src={
+                      item.productVariant?.base_variant_image_url ||
+                      "https://via.placeholder.com/80"
+                    }
                     alt="Product"
                     className="w-16 h-16 rounded mr-4 object-cover"
                   />
                   <div className="flex-1">
-                    <div className="font-medium text-gray-800">{item.product?.name}</div>
-                    <div className="text-sm text-gray-600">{item.productVariant?.description}</div>
-                    <div className="text-sm text-gray-500">Quantity: {item.total_quantity}</div>
-                    <div className="text-sm text-gray-500">Price: ₹{item.price_at_time}</div>
-                    <div className="text-sm text-gray-700 font-semibold">Total: ₹{item.final_price}</div>
+                    <div className="font-medium text-gray-800">
+                      {item.product?.name}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {item.productVariant?.description}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Quantity: {item.total_quantity}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Price: ₹{item.price_at_time}
+                    </div>
+                    <div className="text-sm text-gray-700 font-semibold">
+                      Total: ₹{item.final_price}
+                    </div>
                     {item.discount_applied > 0 && (
-                      <div className="text-sm text-green-600">Discount: ₹{item.discount_applied}</div>
+                      <div className="text-sm text-green-600">
+                        Discount: ₹{item.discount_applied}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -185,9 +210,15 @@ const OrderCard = ({ order, expanded, onExpand }) => {
             </>
           ) : (
             <div>
-              <p className="text-sm text-gray-600 mb-2">Payment Method: {order.payment_method}</p>
-              <p className="text-sm text-gray-600 mb-2">Payment Status: {order.payment_status}</p>
-              {order.notes && <p className="text-sm text-gray-600">Notes: {order.notes}</p>}
+              <p className="text-sm text-gray-600 mb-2">
+                Payment Method: {order.payment_method}
+              </p>
+              <p className="text-sm text-gray-600 mb-2">
+                Payment Status: {order.payment_status}
+              </p>
+              {order.notes && (
+                <p className="text-sm text-gray-600">Notes: {order.notes}</p>
+              )}
             </div>
           )}
         </div>

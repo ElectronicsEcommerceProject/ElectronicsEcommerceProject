@@ -8,9 +8,9 @@ import {
   ShoppingCart,
   OrderCheckoutPage,
   OrderStatus,
-} from "../features/customer/index.js";
+} from "../features/index.js";
 
-import { AdminLayout, ProductForm } from "../features/admin/index.js";
+import { AdminLayout, ProductForm } from "../features/index.js";
 
 import { UserNotification } from "../src/index.js";
 

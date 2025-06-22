@@ -1,5 +1,5 @@
 import React from "react";
-import ProductCard from "../../components/ProductZone/ProductCard";
+import { ProductCardZone } from '../index.js';
 
 const ProductGrid = ({
   products,
@@ -26,7 +26,7 @@ const ProductGrid = ({
           </p>
         ) : (
           products.map((product) => (
-            <ProductCard
+            <ProductCardZone
               key={product.id}
               product={product}
               onProductClick={onProductClick}
