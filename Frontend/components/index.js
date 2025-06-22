@@ -26,7 +26,6 @@ export { default as Spinner } from "./Loader/Spinner.jsx";
 
 // Product Card Components
 export { default as ProductCard } from "./ProductCard/ProductCard.jsx";
-export { default as ProductCardService } from "./ProductCard/ProductCardService.js";
 
 // Product Zone Components
 export { default as FilterSidebar } from "./ProductZone/FilterSidebar.jsx";
