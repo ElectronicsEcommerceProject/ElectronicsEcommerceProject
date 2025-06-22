@@ -26,7 +26,12 @@ import StockManagement from "../../features/admin/StockManagement/StockManagemen
 import AdminHeader from "../../components/Header/AdminHeader.jsx";
 import AdminLayout from "../../features/admin/AdminLayout/AdminLayout.jsx";
 import ProductForm from "../../features/admin/ProductManagement/ProductForm.jsx";
-import { isAuthenticated } from "../../src/index.js";
+import AdminLogin from "../../features/admin/AdminLayout/AdminLogin.jsx";
+import ForgotPassword from "../../features/admin/AdminLayout/ForgotPassword.jsx";
+import AdminSidebar from "../../features/admin/Dashboard/AdminSidebar.jsx";
+import AnalyticsDashboard from "../../features/admin/AnalyticManagement/AnalyticDashboard.jsx";
+import CouponDashboard from "../../features/admin/CouponManagement/CouponDashboard.jsx";
+import { isAuthenticated } from "../../src/utils/auth.js";
 
 // Export all for global use
 export {
@@ -52,5 +57,10 @@ export {
   StockManagement,
   AdminLayout,
   ProductForm,
+  AdminLogin,
+  ForgotPassword,
+  AdminSidebar,
+  AnalyticsDashboard,
+  CouponDashboard,
   isAuthenticated,
 };
