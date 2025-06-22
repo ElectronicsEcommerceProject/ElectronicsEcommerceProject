@@ -1,22 +1,22 @@
 // 📁 Customer Dashboard Pages
-import MainDashboard from "../../features/customer/Dashboard/MainDashboard";
-import MainZone from "../../features/customer/Dashboard/MainZone";
+import MainDashboard from "../../features/customer/Dashboard/MainDashboard.jsx";
+import MainZone from "../../features/customer/Dashboard/MainZone.jsx";
 import BuyNowPage from "./Dashboard/BuyNowPage.jsx";
 
 // 📁 Customer Profile
-import ProfilePage from "../../features/customer/Profile/ProfilePage";
+import ProfilePage from "../../features/customer/Profile/ProfilePage.jsx";
 
 // 🛒 Cart
-import ShoppingCart from "../../components/CartSummary/ShoppingCart";
+import ShoppingCart from "../../components/CartSummary/ShoppingCart.jsx";
 
 import OrderCheckoutPage from "../../features/Order/OrderCheckoutPage.jsx";
 import OrderDetails from "../Order/OrderDetails.jsx";
 import OrderStatus from "../../features/Order/OrderStatus.jsx";
 
 // 🧭 Common UI
-import Header from "../../components/Header/Header";
-import Footer from "../../components/Footer/Footer";
-import HoverMenu from "../common/HoverMenu";
+import Header from "../../components/Header/Header.jsx";
+import Footer from "../../components/Footer/Footer.jsx";
+import HoverMenu from "../common/HoverMenu.jsx";
 
 //  import {
 //   setSearchTerm,
@@ -33,13 +33,13 @@ import HoverMenu from "../common/HoverMenu";
 // } from "../../components/Redux/filterSlice";
 
 // 🧱 Product Zone Components
-import FilterSidebar from "../../components/ProductZone/FilterSidebar";
-import ProductGrid from "../../components/ProductZone/ProductGrid";
-import SortOptions from "../../components/ProductZone/SortOptions";
+import FilterSidebar from "../../components/ProductZone/FilterSidebar.jsx";
+import ProductGrid from "../../components/ProductZone/ProductGrid.jsx";
+import SortOptions from "../../components/ProductZone/SortOptions.jsx";
 
 // 📊 Dummy Data
-import categoriesData from "../../components/Data/categories";
-import { brandsData } from "../../components/Data/brands";
+import categoriesData from "../../components/Data/categories.js";
+import { brandsData } from "../../components/Data/brands.js";
 
 // ✅ Named Exports (excluding Redux actions)
 export {
