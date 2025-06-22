@@ -13,7 +13,6 @@ export { default as Footer } from "./Footer/Footer.jsx";
 
 // Data Components
 export { priceRanges, ratings, discounts } from "./Data/filters.jsx";
-export { dummyProducts } from "./Data/products.jsx";
 
 // Header Components
 export { default as AdminHeader } from "./Header/AdminHeader.jsx";
