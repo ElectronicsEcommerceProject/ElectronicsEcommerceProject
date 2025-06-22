@@ -19,7 +19,7 @@ export { default as AdminHeader } from "./Header/AdminHeader.jsx";
 export { default as Header } from "./Header/Header.jsx";
 
 // Layout Components
-export { default as Layout } from "./Layout/Layout.jsx";
+// export { default as Layout } from "./Layout/Layout.jsx";
 
 // Loader Components
 export { default as Spinner } from "./Loader/Spinner.jsx";
