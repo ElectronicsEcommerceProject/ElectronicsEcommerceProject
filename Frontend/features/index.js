@@ -71,4 +71,3 @@ export { default as LogoutModal } from "./customer/SignIn/Logout.jsx";
 // 👤 Customer Profile & Settings
 export { default as PrivacySettings } from "./customer/Privacy/PrivacySettings.jsx";
 export { default as SavedCards } from "./customer/SavedCards/SavedCards.jsx";
-export { default as CustomerAlert } from "./customer/CustomerAlert/CustomerAlert.jsx";
