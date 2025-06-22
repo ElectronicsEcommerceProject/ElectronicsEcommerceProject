@@ -3,7 +3,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import { jsPDF } from "jspdf";
 
 import {
-  Header,
+  AdminHeader,
   FiltersSection,
   MetricsSection,
   OrdersTable,
@@ -537,8 +537,8 @@ const OrderDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Call Header Component */}
-      <Header />
+      {/* Call AdminHeader Component */}
+      <AdminHeader />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-4 px-4 sm:py-6 sm:px-6 lg:px-8">
