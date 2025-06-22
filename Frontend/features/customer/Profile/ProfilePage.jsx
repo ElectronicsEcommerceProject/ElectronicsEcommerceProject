@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import React from "react";
 import axios from "axios";
-import { OrderDetails } from "../../customer/index.js";
+import { OrderDetails } from "../../../features/index.js";
 import {
   AddressForm,
   UserNotification,
@@ -47,7 +47,7 @@ const Profile = () => {
     const path = location.pathname;
     const params = new URLSearchParams(location.search);
     const section = params.get("section");
-    
+
     // Check URL path first
     if (path.includes("/orders")) {
       setActiveSection("OrderDetails");

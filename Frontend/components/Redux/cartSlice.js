@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import CartService from "../ShowAllCartItems/CartService";
+import { CartService } from '../index.js';
 
 // Async thunk for adding item to cart
 export const addToCartAsync = createAsyncThunk(

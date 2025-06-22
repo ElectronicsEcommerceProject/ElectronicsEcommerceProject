@@ -12,27 +12,31 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 
 //***************************************************************************************************** */
 
-// Admin
-import AdminDashboard from "../features/admin/Dashboard/AdminDashboard.jsx";
-import AdminSlidebar from "../features/admin/Dashboard/AdminSidebar.jsx";
-import AnalyticsDashboard from "../features/admin/AnalyticManagement/AnalyticDashboard.jsx";
-import CoupanDashboard from "../features/admin/CouponManagement/CouponDashboard.jsx";
-import NotificationPage from "../features/admin/NotificationManagement/NotificationPage.jsx";
-import OrderDashboard from "../features/admin/OrderDashboard/OrderDashboard.jsx";
-import ReviewDashboard from "../features/admin/ReviewManagement/ReviewDashboard.jsx";
-import UserDashboard from "../features/admin/UserManagement/UserDashboard.jsx";
-import UserProfileView from "../features/admin/UserManagement/UserProfileView.jsx";
-import AdminLogin from "../features/admin/AdminLayout/AdminLogin.jsx";
-import ForgotPassword from "../features/admin/AdminLayout/ForgotPassword.jsx";
-import ProductDashboard from "../features/admin/ProductManagement/ProductDashboard.jsx";
-import ProductForm from "../features/admin/ProductManagement/ProductForm.jsx";
-import AdminLayout from "../features/admin/AdminLayout/AdminLayout.jsx";
-import StockManagement from "../features/admin/StockManagement/StockManagement.jsx";
+// Features
+import {
+  Dashboard as AdminDashboard,
+  AdminSidebar as AdminSlidebar,
+  AnalyticsDashboard,
+  CouponsOffers as CoupanDashboard,
+  NotificationPage,
+  OrderManagement as OrderDashboard,
+  ReviewManagement as ReviewDashboard,
+  UserManagement as UserDashboard,
+  UserProfileView,
+  AdminLogin,
+  ForgotPassword,
+  ProductManagement as ProductDashboard,
+  ProductForm,
+  AdminLayout,
+  StockManagement,
+} from "../features/index.js";
 
 // Components
-import AlertMessage from "../components/Alert/AlertMessage.jsx";
-import AddressForm from "../components/AddressForm/AddressForm.jsx";
-import UserNotification from "../components/UserNotification/UserNotification.jsx";
+import {
+  AlertMessage,
+  AddressForm,
+  UserNotification,
+} from "../components/index.js";
 
 import {
   createApi,
