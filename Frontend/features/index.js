@@ -4,23 +4,21 @@ export { default as UiSlice } from "./common/UiSlice.jsx";
 export { default as UserSlice } from "./common/UserSlice.jsx";
 
 // 👥 Customer Features
-export {
-  MainDashboard,
-  MainZone,
-  BuyNowPage,
-  ProfilePage,
-  ShoppingCart,
-  OrderCheckoutPage,
-  OrderDetails,
-  OrderStatus,
-  Header,
-  Footer,
-  FilterSidebar,
-  ProductGrid,
-  SortOptions,
-  categoriesData,
-  brandsData,
-} from "./customer/index.js";
+export { default as MainDashboard } from "./customer/Dashboard/MainDashboard.jsx";
+export { default as MainZone } from "./customer/Dashboard/MainZone.jsx";
+export { default as BuyNowPage } from "./customer/Dashboard/BuyNowPage.jsx";
+export { default as ProfilePage } from "./customer/Profile/ProfilePage.jsx";
+export { default as ShoppingCart } from "../components/CartSummary/ShoppingCart.jsx";
+export { default as OrderCheckoutPage } from "./Order/OrderCheckoutPage.jsx";
+export { default as OrderDetails } from "./Order/OrderDetails.jsx";
+export { default as OrderStatus } from "./Order/OrderStatus.jsx";
+export { default as Header } from "../components/Header/Header.jsx";
+export { default as Footer } from "../components/Footer/Footer.jsx";
+export { default as FilterSidebar } from "../components/ProductZone/FilterSidebar.jsx";
+export { default as ProductGrid } from "../components/ProductZone/ProductGrid.jsx";
+export { default as SortOptions } from "../components/ProductZone/SortOptions.jsx";
+export { default as categoriesData } from "../components/Data/categories.jsx";
+export { brandsData } from "../components/Data/brands.jsx";
 
 // 🛡️ Admin Features
 export { default as Dashboard } from "./admin/Dashboard/AdminDashboard.jsx";
@@ -76,3 +74,5 @@ export { default as LogoutModal } from "./customer/SignIn/Logout.jsx";
 export { default as PrivacySettings } from "./customer/Privacy/PrivacySettings.jsx";
 export { default as SavedCards } from "./customer/SavedCards/SavedCards.jsx";
 export { default as CustomerAlert } from "./customer/CustomerAlert/CustomerAlert.jsx";
+
+
