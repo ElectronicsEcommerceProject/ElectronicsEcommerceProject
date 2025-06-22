@@ -67,7 +67,3 @@ export { default as RetailerLogout } from "./Retailer/Logout/RetailerLogout.jsx"
 export { default as Login } from "./customer/SignIn/Login.jsx";
 export { default as Signup } from "./customer/SignIn/Signup.jsx";
 export { default as LogoutModal } from "./customer/SignIn/Logout.jsx";
-
-// 👤 Customer Profile & Settings
-export { default as PrivacySettings } from "./customer/Privacy/PrivacySettings.jsx";
-export { default as SavedCards } from "./customer/SavedCards/SavedCards.jsx";
