@@ -2,7 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import db from "../../../../../models/index.js";
 import MESSAGE from "../../../../../constants/message.js";
 
-const { CouponUser, Coupon, User } = db;
+const { CouponUser, Coupon, User, CouponRedemption } = db;
 
 // Create a new coupon-user association
 export const createCouponUser = async (req, res) => {
@@ -48,45 +48,34 @@ export const createCouponUser = async (req, res) => {
       });
       if (existingCouponUsage) {
         return res.status(StatusCodes.BAD_REQUEST).json({
-          message: "This coupon is only for new users",
           success: false,
+          message: "This coupon is only for new users",
         });
       }
     }
 
-    // ✅ Check if association already exists
-    const existing = await CouponUser.findOne({
-      where: { coupon_id, user_id },
-    });
-    if (existing) {
-      return res.status(StatusCodes.CONFLICT).json({
-        message: "You have already claimed this coupon",
-        success: false,
-      });
-    }
-
-    // ✅ Check usage per user limit
+    // ✅ Check usage per user limit (based on claims)
     if (coupon.usage_per_user) {
       const userCouponCount = await CouponUser.count({
         where: { user_id, coupon_id },
       });
       if (userCouponCount >= coupon.usage_per_user) {
         return res.status(StatusCodes.BAD_REQUEST).json({
-          message: "You have reached the usage limit for this coupon",
           success: false,
+          message: "You have reached the usage limit for this coupon",
         });
       }
     }
 
-    // ✅ Check overall usage limit
+    // ✅ Check overall usage limit (based on claims)
     if (coupon.usage_limit) {
       const totalUsageCount = await CouponUser.count({
         where: { coupon_id },
       });
       if (totalUsageCount >= coupon.usage_limit) {
         return res.status(StatusCodes.BAD_REQUEST).json({
-          message: "This coupon has reached its usage limit",
           success: false,
+          message: "This coupon has reached its usage limit",
         });
       }
     }

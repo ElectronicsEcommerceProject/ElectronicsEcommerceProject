@@ -5,6 +5,8 @@ import { orderController } from "../../controllers/index.js";
 
 const router = express.Router();
 
+router.post("/", verifyJwtToken, orderController.createOrder);
+
 // 🧑‍💼 Admin: Get all orders (add below existing routes)
 router.get("/", verifyJwtToken, isAdmin, orderController.getAllOrders);
 

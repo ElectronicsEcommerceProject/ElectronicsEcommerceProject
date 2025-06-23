@@ -21,11 +21,7 @@ export default (sequelize) => {
     {
       tableName: "CouponUsers",
       timestamps: true,
-      indexes: [
-        { fields: ["coupon_id"] },
-        { fields: ["user_id"] },
-        { unique: true, fields: ["coupon_id", "user_id"] }, // Prevent duplicate entries
-      ],
+      indexes: [{ fields: ["coupon_id"] }, { fields: ["user_id"] }],
     }
   );
 
