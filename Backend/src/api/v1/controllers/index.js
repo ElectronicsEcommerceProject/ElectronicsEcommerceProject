@@ -18,41 +18,24 @@ export { default as userCouponUserController } from "./commonControllers/coupon/
 export { default as resetPasswordController } from "./auth/resetPassword.controller.js";
 
 //     admin controller
-export { default as adminCategoryController } from "./admin/category.controller.js";
-export { default as adminCouponController } from "./admin/coupon.controller.js";
-export { default as adminUserController } from "./admin/user.controller.js";
-export { default as adminProductController } from "./admin/product.controller.js";
-export { default as adminProductVariantController } from "./admin/productVariant.controller.js";
-export { default as adminProductMediaController } from "./admin/productMedia.controller.js";
-export { default as adminProductMediaURLController } from "./admin/productMediaUrl.controller.js";
-export { default as adminVariantAttributeValueController } from "./admin/productVariantAttributeValues.controller.js";
-export { default as adminStockAlertController } from "./admin/stockAlert.controller.js";
-export { default as adminCouponUserController } from "./admin/couponUser.controller.js";
-export { default as adminDiscountRuleController } from "./admin/discountRule.controller.js";
-export { default as adminUserManagmentDashboardDataController } from "./admin/userManagmentDashboardData.controller.js";
-// export { default as adminProfileController } from './admin/profile.controller.js';
-export { default as adminCartController } from "./admin/cart.controller.js";
-export { default as adminBrandController } from "./admin/brand.controller.js";
-export { default as adminAttributeController } from "./admin/productAttributes.controller.js";
-export { default as adminAttributeValueController } from "./admin/productAttributesValues.controller.js";
+export { default as adminCategoryController } from "./admin/adminCategory.controller.js";
+export { default as adminCouponController } from "./admin/adminCoupon.controller.js";
+export { default as adminUserController } from "./admin/adminUser.controller.js";
+export { default as adminProductController } from "./admin/adminProduct.controller.js";
+export { default as adminProductVariantController } from "./admin/adminProductVariant.controller.js";
+export { default as adminProductMediaController } from "./admin/adminProductMedia.controller.js";
+export { default as adminProductMediaURLController } from "./admin/adminProductMediaUrl.controller.js";
+export { default as adminVariantAttributeValueController } from "./admin/adminProductVariantAttributeValues.controller.js";
+export { default as adminStockAlertController } from "./admin/adminStockAlert.controller.js";
+export { default as adminCouponUserController } from "./admin/adminCouponUser.controller.js";
+export { default as adminDiscountRuleController } from "./admin/adminDiscountRule.controller.js";
+export { default as adminUserManagmentDashboardDataController } from "./admin/adminUserManagmentDashboardData.controller.js";
+export { default as adminCartController } from "./admin/adminCart.controller.js";
+export { default as adminBrandController } from "./admin/adminBrand.controller.js";
+export { default as adminAttributeController } from "./admin/adminProductAttributes.controller.js";
+export { default as adminAttributeValueController } from "./admin/adminProductAttributesValues.controller.js";
 export { default as adminProductReviewController } from "./admin/adminProductReview.controller.js";
 export { default as adminDashboardController } from "./admin/adminDashboard.controller.js";
 export { default as adminProductManagmentDashboardDataController } from "./admin/adminProductManagment.controller.js";
 export { default as adminAnalyticsDashboardDataController } from "./admin/adminReportsAndAnalyticsData.controller.js";
 export { default as adminStockManagementController } from "./admin/adminStockManagment.controller.js";
-
-//     customer controller
-export { default as customerOrderController } from "./customer/order.controller.js";
-export { default as customerProductController } from "./customer/product.controller.js";
-// export { default as customerProfileController } from './customer/profile.controller.js';
-export { default as customerReviewController } from "./customer/review.controller.js";
-export { default as customerWishlistController } from "./customer/wishlist.controller.js";
-export { default as customerCartController } from "./customer/cart.controller.js";
-
-//     retailer controller
-export { default as retailerOrderController } from "./retailer/order.controller.js";
-export { default as retailerProductController } from "./retailer/product.controller.js";
-// export { default as retailerProfileController } from './retailer/profile.controller.js';
-export { default as retailerReviewController } from "./retailer/review.controller.js";
-export { default as retailerCartController } from "./retailer/cart.controller.js";
-export { default as retailerrWishlistController } from "./retailer/wishlist.controller.js";

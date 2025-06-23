@@ -56,6 +56,12 @@ export const createReviewValidator = Joi.object({
         "Is verified purchase must be a boolean value"
       ),
     }),
+  created_by: Joi.string()
+    .uuid()
+    .optional()
+    .messages({
+      "string.guid": MESSAGE.custom("Created by must be a valid UUID"),
+    }),
 });
 
 export const updateReviewValidator = Joi.object({

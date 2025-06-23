@@ -1,47 +1,42 @@
 import express from "express";
-import {
-  isAdmin,
-  validator,
-  verifyJwtToken,
-} from "../../../../../middleware/index.js";
-import { validators } from "../../../validators/index.js";
+
+import { verifyJwtToken, isAdmin } from "../../../../../middleware/index.js";
 import { orderController } from "../../../controllers/index.js";
 
 const router = express.Router();
 
-router.post(
-  "/",
-  verifyJwtToken,
-  validator(validators.order.createOrderValidator, null),
-  orderController.createOrder
-);
-
-// Get all orders
+// 🧑‍💼 Admin: Get all orders (add below existing routes)
 router.get("/", verifyJwtToken, isAdmin, orderController.getAllOrders);
 
-// Get order by ID
+// Place static/specific routes BEFORE dynamic ones
 router.get(
-  "/:order_id",
+  "/latest",
   verifyJwtToken,
-  validator(validators.order.orderIdValidator, "params"),
-  orderController.getOrderById
+  isAdmin,
+
+  orderController.getLatestOrder
 );
 
-// Update order
+// get all orders by user ID
+router.get("/:user_id", verifyJwtToken, orderController.getAllOrdersByUserId);
+
+// 🔍 Get single order by ID
+router.get("/:order_id", verifyJwtToken, orderController.getOrderById);
+
+// 🔄 Update order by ID
 router.patch(
   "/:order_id",
   verifyJwtToken,
-  validator(validators.order.orderIdValidator, "params"),
-  validator(validators.order.updateOrderValidator, null),
+  isAdmin,
   orderController.updateOrderById
 );
 
-// Cancel order
+// ❌ Request order cancellation
 router.patch(
-  "/:order_id/cancel",
+  "/:id/cancel",
   verifyJwtToken,
-  validator(validators.order.orderIdValidator, "params"),
-  orderController.cancelOrderById // This function is undefined
+  isAdmin,
+  orderController.cancelOrderById
 );
 
 export default router;

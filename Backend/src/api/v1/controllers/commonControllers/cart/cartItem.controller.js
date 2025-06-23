@@ -810,19 +810,9 @@ const findOrCreateCartItem = async (req, res) => {
     });
 
     if (!created) {
-      // Item already exists, update the quantity and other fields
-      cartItem.total_quantity += total_quantity;
-      cartItem.discount_quantity = discount_quantity;
-      cartItem.price_at_time = price_at_time;
-      cartItem.discount_applied = discount_applied;
-      cartItem.discount_type = discount_type;
-      cartItem.final_price = final_price;
-      cartItem.coupon_id = coupon_id || null;
-      await cartItem.save();
-
       return res.status(StatusCodes.OK).json({
-        message: "Item quantity updated in cart",
-        success: true,
+        message: "Item already exist in cart",
+        success: false,
         data: cartItem,
         created: false,
       });
