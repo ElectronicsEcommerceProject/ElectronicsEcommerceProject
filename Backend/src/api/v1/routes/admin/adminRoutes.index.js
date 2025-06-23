@@ -1,21 +1,20 @@
 import express from "express";
 
-import productRoutes from "./product.route.js";
-
-import categoryRoutes from "./category.route.js";
-import couponRoutes from "./coupon.route.js";
-import userRoutes from "./user.route.js";
-import stockAlertRoutes from "./stockAlert.route.js";
-import brandsRoutes from "./brand.routes.js";
-import productAttributesRoutes from "./productAttributes.routes.js";
-import productAttributesValuesRoutes from "./productAttributesValues.routes.js";
-import productVariantRoutes from "./productVariant.routes.js";
-import productVariantAttributeValuesRoutes from "./productVariantAttributeValues.routes.js";
-import productMediaRoutes from "./productMedia.routes.js";
-import productMediaUrlRoutes from "./productMediaUrl.routes.js";
-import discountRuleRoutes from "./discountRule.routes.js";
-import orderRoutes from "./order.routes.js";
-import usersManagmentDashboardDataRoutes from "./userManagmentDashboardData.routes.js";
+import adminProductRoutes from "./adminProduct.route.js";
+import adminCategoryRoutes from "./adminCategory.route.js";
+import adminCouponRoutes from "./adminCoupon.route.js";
+import adminUserRoutes from "./adminUser.route.js";
+import adminStockAlertRoutes from "./adminStockAlert.route.js";
+import adminBrandsRoutes from "./adminBrand.routes.js";
+import adminProductAttributesRoutes from "./adminProductAttributes.routes.js";
+import adminProductAttributesValuesRoutes from "./adminProductAttributesValues.routes.js";
+import adminProductVariantRoutes from "./adminProductVariant.routes.js";
+import adminProductVariantAttributeValuesRoutes from "./adminProductVariantAttributeValues.routes.js";
+import adminProductMediaRoutes from "./adminProductMedia.routes.js";
+import adminProductMediaUrlRoutes from "./adminProductMediaUrl.routes.js";
+import adminDiscountRuleRoutes from "./adminDiscountRule.routes.js";
+import adminOrderRoutes from "./adminOrder.routes.js";
+import adminUsersManagmentDashboardDataRoutes from "./adminUserManagmentDashboardData.routes.js";
 import adminProductReviewRoutes from "./adminProductReview.routes.js";
 import adminDashboardDataRoutes from "./adminDashboardData.routes.js";
 import adminProductManagmentDataRoutes from "./adminProductManagmentData.routes.js";
@@ -25,21 +24,22 @@ import adminNotificationRoutes from "./adminNotification.routes.js";
 
 // Export all route modules
 export {
-  productRoutes,
-  categoryRoutes,
-  couponRoutes,
-  userRoutes,
-  stockAlertRoutes,
-  brandsRoutes,
-  productAttributesRoutes,
-  productAttributesValuesRoutes,
-  productVariantRoutes,
-  productVariantAttributeValuesRoutes,
-  productMediaRoutes,
-  productMediaUrlRoutes,
-  discountRuleRoutes,
-  orderRoutes,
-  usersManagmentDashboardDataRoutes,
+  //export all above routes
+  adminProductRoutes,
+  adminCategoryRoutes,
+  adminCouponRoutes,
+  adminUserRoutes,
+  adminStockAlertRoutes,
+  adminBrandsRoutes,
+  adminProductAttributesRoutes,
+  adminProductAttributesValuesRoutes,
+  adminProductVariantRoutes,
+  adminProductVariantAttributeValuesRoutes,
+  adminProductMediaRoutes,
+  adminProductMediaUrlRoutes,
+  adminDiscountRuleRoutes,
+  adminOrderRoutes,
+  adminUsersManagmentDashboardDataRoutes,
   adminProductReviewRoutes,
   adminDashboardDataRoutes,
   adminProductManagmentDataRoutes,

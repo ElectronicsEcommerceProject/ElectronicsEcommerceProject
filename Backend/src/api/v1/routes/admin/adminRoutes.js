@@ -1,21 +1,21 @@
 import express from "express";
 
 import {
-  productRoutes,
-  categoryRoutes,
-  couponRoutes,
-  userRoutes,
-  stockAlertRoutes,
-  brandsRoutes,
-  productAttributesRoutes,
-  productAttributesValuesRoutes,
-  productVariantRoutes,
-  productVariantAttributeValuesRoutes,
-  productMediaRoutes,
-  productMediaUrlRoutes,
-  discountRuleRoutes,
-  orderRoutes,
-  usersManagmentDashboardDataRoutes,
+  adminProductRoutes,
+  adminCategoryRoutes,
+  adminCouponRoutes,
+  adminUserRoutes,
+  adminStockAlertRoutes,
+  adminBrandsRoutes,
+  adminProductAttributesRoutes,
+  adminProductAttributesValuesRoutes,
+  adminProductVariantRoutes,
+  adminProductVariantAttributeValuesRoutes,
+  adminProductMediaRoutes,
+  adminProductMediaUrlRoutes,
+  adminDiscountRuleRoutes,
+  adminOrderRoutes,
+  adminUsersManagmentDashboardDataRoutes,
   adminProductReviewRoutes,
   adminDashboardDataRoutes,
   adminProductManagmentDataRoutes,
@@ -26,34 +26,34 @@ import {
 
 const app = express();
 
-app.use("/category", categoryRoutes);
+app.use("/category", adminCategoryRoutes);
 
-app.use("/brand", brandsRoutes);
+app.use("/brand", adminBrandsRoutes);
 
-app.use("/product", productRoutes);
+app.use("/product", adminProductRoutes);
 
-app.use("/product-Variant", productVariantRoutes);
+app.use("/product-Variant", adminProductVariantRoutes);
 
-app.use("/product-Attributes", productAttributesRoutes);
+app.use("/product-Attributes", adminProductAttributesRoutes);
 
-app.use("/product-Attributes-Values", productAttributesValuesRoutes);
+app.use("/product-Attributes-Values", adminProductAttributesValuesRoutes);
 
 app.use(
   "/product-Variant-Attribute-Values",
-  productVariantAttributeValuesRoutes
+  adminProductVariantAttributeValuesRoutes
 );
 
-app.use("/product-Media", productMediaRoutes); //done upto here...
+app.use("/product-Media", adminProductMediaRoutes); //done upto here...
 
-app.use("/product-Media-Url", productMediaUrlRoutes);
+app.use("/product-Media-Url", adminProductMediaUrlRoutes);
 
 app.use("/notifications", adminNotificationRoutes); // Notification Management Routes
 
-app.use("/order", orderRoutes);
+app.use("/order", adminOrderRoutes);
 
-app.use("/coupon", couponRoutes);
+app.use("/coupon", adminCouponRoutes);
 
-app.use("/users", userRoutes);
+app.use("/users", adminUserRoutes);
 
 app.use("/admin-Dashboard-Data", adminDashboardDataRoutes);
 
@@ -61,11 +61,14 @@ app.use("/product-Management-Dashboard-Data", adminProductManagmentDataRoutes);
 
 app.use("/reports-Analytics-Dashboard-Data", adminAnalyticsDashboardDataRoutes);
 
-app.use("/users-Management-Dashboard-Data", usersManagmentDashboardDataRoutes);
+app.use(
+  "/users-Management-Dashboard-Data",
+  adminUsersManagmentDashboardDataRoutes
+);
 
-app.use("/discount-Rule", discountRuleRoutes);
+app.use("/discount-Rule", adminDiscountRuleRoutes);
 
-app.use("/stock-Alert", stockAlertRoutes);
+app.use("/stock-Alert", adminStockAlertRoutes);
 
 app.use("/stock-management", adminStockManagementDataRoutes);
 

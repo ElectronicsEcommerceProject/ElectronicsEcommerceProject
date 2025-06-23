@@ -1,7 +1,6 @@
 import express from "express";
 import {
   authRoutes,
-  adminRoutes,
   profileRoutes,
   addressesRoutes,
   cartRoutes,
@@ -17,16 +16,16 @@ import {
 } from "./commonRoutes.index.js";
 
 import {
-  productRoutes,
-  categoryRoutes,
-  brandsRoutes,
-  productAttributesRoutes,
-  productAttributesValuesRoutes,
-  productVariantRoutes,
-  productVariantAttributeValuesRoutes,
-  productMediaRoutes,
-  productMediaUrlRoutes,
-  orderRoutes,
+  adminProductRoutes,
+  adminCategoryRoutes,
+  adminBrandsRoutes,
+  adminProductAttributesRoutes,
+  adminProductAttributesValuesRoutes,
+  adminProductVariantRoutes,
+  adminProductVariantAttributeValuesRoutes,
+  adminProductMediaRoutes,
+  adminProductMediaUrlRoutes,
+  adminOrderRoutes,
   adminNotificationRoutes,
 } from "../admin/adminRoutes.index.js";
 
@@ -34,26 +33,26 @@ const app = express();
 
 app.use("/auth", authRoutes);
 
-app.use("/category", categoryRoutes);
+app.use("/category", adminCategoryRoutes);
 
-app.use("/brand", brandsRoutes);
+app.use("/brand", adminBrandsRoutes);
 
-app.use("/product", productRoutes);
+app.use("/product", adminProductRoutes);
 
-app.use("/product-Variant", productVariantRoutes);
+app.use("/product-Variant", adminProductVariantRoutes);
 
-app.use("/product-Attributes", productAttributesRoutes);
+app.use("/product-Attributes", adminProductAttributesRoutes);
 
-app.use("/product-Attributes-Values", productAttributesValuesRoutes);
+app.use("/product-Attributes-Values", adminProductAttributesValuesRoutes);
 
 app.use(
   "/product-Variant-Attribute-Values",
-  productVariantAttributeValuesRoutes
+  adminProductVariantAttributeValuesRoutes
 );
 
-app.use("/product-Media", productMediaRoutes); //done upto here...
+app.use("/product-Media", adminProductMediaRoutes); //done upto here...
 
-app.use("/product-Media-Url", productMediaUrlRoutes);
+app.use("/product-Media-Url", adminProductMediaUrlRoutes);
 
 app.use("/productById-Details-Page", userProductByIdDetailsPageRoutes);
 
@@ -61,7 +60,7 @@ app.use("/profile", profileRoutes);
 
 app.use("/addresses", addressesRoutes);
 
-app.use("/product-Catalog/product", adminRoutes);
+app.use("/product-Catalog/product", adminProductRoutes); // Product Catalog Routes
 
 app.use("/cart", cartRoutes);
 
