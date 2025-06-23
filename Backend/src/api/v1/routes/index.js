@@ -1,7 +1,7 @@
 import express from "express";
 
 import authRoutes from "./commonRoutes/auth/auth.route.js";
-import adminRoutes from "./admin/index.js";
+import adminRoutes from "./admin/adminRoutes.js";
 import profileRoutes from "./commonRoutes/profile/profile.route.js";
 import addressesRoutes from "./commonRoutes/addresses/addresses.route.js";
 import cartRoutes from "./commonRoutes/cart/cart.route.js";
