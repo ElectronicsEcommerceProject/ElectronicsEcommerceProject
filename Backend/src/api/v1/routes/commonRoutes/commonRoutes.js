@@ -58,7 +58,7 @@ app.use("/profile", profileRoutes);
 
 app.use("/addresses", addressesRoutes);
 
-app.use("/product-Catalog/product", adminProductRoutes); // Product Catalog Routes
+app.use("/product-Catalog/product", adminProductRoutes); // Get products by category_id and brand_id
 
 app.use("/cart", cartRoutes);
 
