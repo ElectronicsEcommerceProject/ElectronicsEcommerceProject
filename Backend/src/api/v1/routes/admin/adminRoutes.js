@@ -22,7 +22,7 @@ import {
   adminAnalyticsDashboardDataRoutes,
   adminStockManagementDataRoutes,
   adminNotificationRoutes,
-} from "./index.js";
+} from "./adminRoutes.index.js";
 
 const app = express();
 
