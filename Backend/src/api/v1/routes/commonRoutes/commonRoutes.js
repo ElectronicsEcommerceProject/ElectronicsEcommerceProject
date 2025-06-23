@@ -7,7 +7,6 @@ import {
   cartItemRoutes,
   wishListRoutes,
   wishListItemRoutes,
-  orderRoutes,
   orderItemRoutes,
   couponRedemptionRoutes,
   productReviewRoutes,
@@ -73,7 +72,7 @@ app.use("/wishList-Item", wishListItemRoutes);
 app.use("/coupon-User", userCouponUserRoutes);
 app.use("/coupon-Redemption", couponRedemptionRoutes);
 
-app.use("/order", orderRoutes);
+app.use("/order", adminOrderRoutes);
 
 app.use("/order-Item", orderItemRoutes);
 
