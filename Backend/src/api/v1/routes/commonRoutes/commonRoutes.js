@@ -49,8 +49,7 @@ app.use(
   adminProductVariantAttributeValuesRoutes
 );
 
-app.use("/product-Media", adminProductMediaRoutes); //done upto here...
-
+app.use("/product-Media", adminProductMediaRoutes);
 app.use("/product-Media-Url", adminProductMediaUrlRoutes);
 
 app.use("/productById-Details-Page", userProductByIdDetailsPageRoutes);
