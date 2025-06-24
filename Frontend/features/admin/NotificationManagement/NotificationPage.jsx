@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 import {
   getApi,
@@ -97,13 +97,13 @@ const TemplateRow = ({ template, isHighlighted, onEdit, onDelete }) => (
 );
 
 const TemplateModal = ({ isOpen, onClose, template, onSave }) => {
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = useState({
     name: template?.name || "",
     type: template?.type || "Email",
     content: template?.content || "",
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (template) {
       setFormData({
         name: template.name || "",
@@ -194,13 +194,13 @@ const TemplateModal = ({ isOpen, onClose, template, onSave }) => {
 };
 
 const TemplatesManager = () => {
-  const [templates, setTemplates] = React.useState([]);
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [editingTemplate, setEditingTemplate] = React.useState(null);
-  const [loading, setLoading] = React.useState(false);
+  const [templates, setTemplates] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // Fetch templates on component mount
-  React.useEffect(() => {
+  useEffect(() => {
     fetchTemplates();
   }, []);
 
@@ -356,26 +356,31 @@ const CustomerRow = ({ name, email, isChecked, onCheckChange }) => (
 );
 
 const SendNotification = () => {
-  const [targetAudience, setTargetAudience] = React.useState("All Users");
-  const [channel, setChannel] = React.useState("In app SMS");
-  const [template, setTemplate] = React.useState("No Template");
-  const [selectedTemplateData, setSelectedTemplateData] = React.useState(null);
-  const [selectedCustomers, setSelectedCustomers] = React.useState([]);
-  const [title, setTitle] = React.useState("");
-  const [message, setMessage] = React.useState("");
-  const [templates, setTemplates] = React.useState([]);
-  const [customers, setCustomers] = React.useState([]);
-  const [retailers, setRetailers] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
-  const [searchTerm, setSearchTerm] = React.useState("");
+  const [targetAudience, setTargetAudience] = useState("All Users");
+  const [channel, setChannel] = useState("In app SMS");
+  const [template, setTemplate] = useState("No Template");
+  const [selectedTemplateData, setSelectedTemplateData] = useState(null);
+  const [selectedCustomers, setSelectedCustomers] = useState([]);
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+  const [templates, setTemplates] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [retailers, setRetailers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch templates on component mount
-  React.useEffect(() => {
+  useEffect(() => {
     fetchTemplates();
   }, []);
 
+  // Reset template when channel changes and filter templates
+  useEffect(() => {
+    setTemplate("No Template");
+  }, [channel]);
+
   // Fetch customers/retailers when target audience changes
-  React.useEffect(() => {
+  useEffect(() => {
     // Clear selected customers and search term when audience changes
     setSelectedCustomers([]);
     setSearchTerm("");
@@ -386,6 +391,17 @@ const SendNotification = () => {
       fetchRetailers();
     }
   }, [targetAudience]);
+
+  // Filter templates based on selected channel
+  const getFilteredTemplates = () => {
+    const channelTypeMap = {
+      "Email": "Email",
+      "SMS": "SMS", 
+      "In app SMS": "In app SMS"
+    };
+    
+    return templates.filter(temp => temp.type === channelTypeMap[channel]);
+  };
 
   const fetchTemplates = async () => {
     try {
@@ -400,7 +416,7 @@ const SendNotification = () => {
   };
   
   // Update selected template data when template changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (template === "No Template") {
       setSelectedTemplateData(null);
     } else {
@@ -611,11 +627,14 @@ const SendNotification = () => {
               className="w-full p-2 border rounded-lg"
             >
               <option value="No Template">No Template</option>
-              {templates.map((temp) => (
+              {getFilteredTemplates().map((temp) => (
                 <option key={temp.id} value={temp.id}>
                   {temp.name}
                 </option>
               ))}
+              {getFilteredTemplates().length === 0 && (
+                <option disabled>No {channel} templates available</option>
+              )}
             </select>
           </div>
           {template === "No Template" && (
@@ -718,16 +737,16 @@ const LogRow = ({ log, onViewDetails }) => (
 );
 
 const NotificationLogs = () => {
-  const [logs, setLogs] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const [filters, setFilters] = React.useState({
+  const [filters, setFilters] = useState({
     channel: "All Channels",
     status: "All Statuses",
     audience: "All Audiences",
   });
-  const [selectedDetailLog, setSelectedDetailLog] = React.useState(null);
-  const [stats, setStats] = React.useState({
+  const [selectedDetailLog, setSelectedDetailLog] = useState(null);
+  const [stats, setStats] = useState({
     total: 0,
     successful: 0,
     failed: 0,
@@ -735,7 +754,7 @@ const NotificationLogs = () => {
   });
 
   // Fetch logs and stats on component mount and filter changes
-  React.useEffect(() => {
+  useEffect(() => {
     fetchLogs();
     fetchStats();
   }, [filters]);
@@ -1020,7 +1039,7 @@ const NotificationLogs = () => {
 };
 
 const NotificationPage = () => {
-  const [activeTab, setActiveTab] = React.useState("send");
+  const [activeTab, setActiveTab] = useState("send");
 
   return (
     <div className="min-h-screen bg-gray-50">
