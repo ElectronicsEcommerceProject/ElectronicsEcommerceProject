@@ -301,7 +301,9 @@ const OrderDashboard = () => {
       );
     }
     if (statusFilter) {
-      filtered = filtered.filter((order) => order.status === statusFilter);
+      filtered = filtered.filter((order) => 
+        order.status.toLowerCase() === statusFilter.toLowerCase()
+      );
     }
 
     if (dateRange.start && dateRange.end) {
