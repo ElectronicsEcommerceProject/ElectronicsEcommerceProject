@@ -7,11 +7,6 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import "react-toastify/dist/ReactToastify.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
-// import AdminLogin from "../features/auth/AdminLogin.jsx";
-// import ForgotPassword from "../features/auth/ForgotPassword.jsx";
-
-//***************************************************************************************************** */
-
 // Features
 import {
   Dashboard as AdminDashboard,
@@ -132,12 +127,12 @@ const adminReportsAnalyticsProductsDataRoute = import.meta.env
 const adminReportsAnalyticsCouponsDataRoute = import.meta.env
   .VITE_ADMIN_REPORT_ANALYTICS_COUPONS_DATA_ENDPOINT;
 
-// Stock Management Routes
-const stockManagementVariantsRoute = import.meta.env
+// admin Stock Management Routes
+const adminStockManagementVariantsRoute = import.meta.env
   .VITE_STOCK_MANAGEMENT_VARIANTS_ENDPOINT;
-const stockManagementVariantByIdRoute = import.meta.env
+const adminStockManagementVariantByIdRoute = import.meta.env
   .VITE_STOCK_MANAGEMENT_VARIANT_BY_ID_ENDPOINT;
-const stockManagementAnalyticsRoute = import.meta.env
+const adminStockManagementAnalyticsRoute = import.meta.env
   .VITE_STOCK_MANAGEMENT_ANALYTICS_ENDPOINT;
 
 // Notification Management Routes
@@ -235,9 +230,9 @@ export {
   adminReportsAnalyticsDashboardDataRoute,
   adminReportsAnalyticsProductsDataRoute,
   adminReportsAnalyticsCouponsDataRoute,
-  stockManagementVariantsRoute,
-  stockManagementVariantByIdRoute,
-  stockManagementAnalyticsRoute,
+  adminStockManagementVariantsRoute,
+  adminStockManagementVariantByIdRoute,
+  adminStockManagementAnalyticsRoute,
   adminNotificationRoute,
   adminNotificationAddRoute,
   adminNotificationLogsRoute,
