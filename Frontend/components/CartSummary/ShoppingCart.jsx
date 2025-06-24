@@ -363,13 +363,13 @@ const CartPage = () => {
           setCartItems([]);
           alert("Order placed successfully!");
 
-          // Redirect to orders page or show confirmation
-          window.location.href = "profile/orders";
+          // Navigate to orders page
+          navigate("/profile/orders");
         } catch (clearCartError) {
           console.error("Error clearing cart:", clearCartError);
           alert("Order placed successfully");
-          // Redirect to orders page or show confirmation
-          window.location.href = "profile/orders";
+          // Navigate to orders page
+          navigate("/profile/orders");
         }
       } else {
         alert(
