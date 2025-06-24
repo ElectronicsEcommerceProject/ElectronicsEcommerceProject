@@ -35,7 +35,7 @@ router.patch(
 
 // ❌ Request order cancellation
 router.patch(
-  "/:id/cancel",
+  "/cancel/:order_id/",
   verifyJwtToken,
   isAdmin,
   orderController.cancelOrderById

@@ -469,7 +469,7 @@ export const createTemplate = async (req, res) => {
 // Update Template
 export const updateTemplate = async (req, res) => {
   try {
-    console.log("testing for update");
+    // console.log("testing for update");
     const { templateId } = req.params;
     const { name, type, content } = req.body;
     const adminId = req.user.user_id;

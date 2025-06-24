@@ -333,7 +333,7 @@ const addProductManagmentData = async (req, res) => {
     if (req.file) {
       // Store relative path in DB - use forward slashes for consistency
       productImageUrl = `uploads/product_images/${req.file.filename}`;
-      console.log("Product image URL:", productImageUrl);
+      // console.log("Product image URL:", productImageUrl);
     }
 
     // Use transaction to ensure data consistency

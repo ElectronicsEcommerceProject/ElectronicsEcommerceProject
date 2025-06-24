@@ -19,6 +19,7 @@ import {
   getApi,
   updateApiById,
   MESSAGE,
+  cancelOrderRoute,
 } from "../../../src/index.js";
 
 // Fallback initial orders in case API fails
@@ -285,7 +286,49 @@ const OrderDashboard = () => {
       console.error("Error updating order status:", error);
       showCustomModal({
         title: "Error",
-        message: "Failed to update order status. Please try again.",
+        message:
+          error.message || "Failed to update order status. Please try again.",
+        type: "alert",
+        confirmText: "OK",
+      });
+    }
+  };
+
+  // Cancel order function
+  const cancelOrder = async (orderId) => {
+    try {
+      const response = await updateApiById(cancelOrderRoute, orderId);
+
+      if (response.success) {
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.orderId === orderId
+              ? { ...order, status: "cancelled" }
+              : order
+          )
+        );
+        setFilteredOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.orderId === orderId
+              ? { ...order, status: "cancelled" }
+              : order
+          )
+        );
+        if (selectedOrder && selectedOrder.orderId === orderId) {
+          setSelectedOrder({ ...selectedOrder, status: "cancelled" });
+        }
+        showCustomModal({
+          title: "Success",
+          message: response.message || "Order cancelled successfully",
+          type: "alert",
+          confirmText: "OK",
+        });
+      }
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      showCustomModal({
+        title: "Error",
+        message: error.message || "Failed to cancel order. Please try again.",
         type: "alert",
         confirmText: "OK",
       });
@@ -305,7 +348,9 @@ const OrderDashboard = () => {
       );
     }
     if (statusFilter) {
-      filtered = filtered.filter((order) => order.status === statusFilter);
+      filtered = filtered.filter(
+        (order) => order.status.toLowerCase() === statusFilter.toLowerCase()
+      );
     }
 
     if (dateRange.start && dateRange.end) {
@@ -319,22 +364,16 @@ const OrderDashboard = () => {
     }
     // User type filtering
     if (userType) {
-      console.log("Selected User Type:", userType);
       filtered = filtered.filter((order) => {
-        // Make sure we have the user object with role property
         if (!order.role) {
-          // console.log("testing", order);
           return false;
         }
 
-        if (userType === "admin") {
+        if (userType.toLowerCase() === "admin") {
           return true; // Admin can see all orders
-        } else if (userType === "retailer") {
-          return order.role === "retailer";
-        } else if (userType === "customer") {
-          return order.role === "customer";
+        } else {
+          return order.role.toLowerCase() === userType.toLowerCase();
         }
-        return false;
       });
     }
     setFilteredOrders(filtered);
@@ -571,6 +610,7 @@ const OrderDashboard = () => {
             setSelectedOrder={setSelectedOrder}
             setShowModal={setShowModal}
             updateOrderStatus={updateOrderStatus}
+            cancelOrder={cancelOrder}
             downloadInvoice={downloadInvoice}
             ordersPerPage={ordersPerPage}
             setOrdersPerPage={setOrdersPerPage}
