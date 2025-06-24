@@ -135,6 +135,7 @@ const StockManagement = () => {
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [analyticsData, setAnalyticsData] = useState(null);
+  const [lowStockThreshold, setLowStockThreshold] = useState(5);
   const [globalSearch, setGlobalSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [brandFilter, setBrandFilter] = useState("");
@@ -198,6 +199,7 @@ const StockManagement = () => {
       setAnalyticsData(analyticsResponse.data || {});
       setCategories(categoriesResponse.data || []);
       setBrands(brandsResponse.data || []);
+      setLowStockThreshold(analyticsResponse.lowStockThreshold || variantsResponse.lowStockThreshold || 5);
     } catch (error) {
       console.error("❌ Error loading stock management data:", error);
       setError(error.message || "Failed to load stock management data");
@@ -772,10 +774,12 @@ const StockManagement = () => {
           },
           {
             key: "lowStock",
-            title: "Low Stock",
+            title: `Low Stock (<${lowStockThreshold})`,
+            tooltip: `Items with available stock below ${lowStockThreshold} units`,
             value: summaryData.lowStock,
             icon: FaExclamationTriangle,
             color: "yellow",
+
           },
           {
             key: "outStock",
@@ -932,7 +936,7 @@ const StockManagement = () => {
                         : "text-red-600"
                     }`}
                   >
-                    {variant.status}
+                    {variant.status === "Low" ? `Low (<${lowStockThreshold})` : variant.status}
                   </span>
                 </div>
               </div>

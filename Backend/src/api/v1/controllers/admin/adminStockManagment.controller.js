@@ -3,7 +3,19 @@ import { Op } from "sequelize";
 import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
 
-const { ProductVariant, Product, Category, Brand, Order, OrderItem, User, CartItem } = db;
+const {
+  ProductVariant,
+  Product,
+  Category,
+  Brand,
+  Order,
+  OrderItem,
+  User,
+  CartItem,
+} = db;
+
+// Low stock threshold - change this value to adjust when items are considered "low stock"
+const LOW_STOCK_THRESHOLD = 15;
 
 /**
  * Get all product variants with stock data including reserved/sold quantities
@@ -143,9 +155,7 @@ export const getAllProductVariantsWithStock = async (req, res) => {
           const reservedQuantity = parseInt(
             reservedResult?.reserved_quantity || 0
           );
-          const cartQuantity = parseInt(
-            cartItemsResult?.cart_quantity || 0
-          );
+          const cartQuantity = parseInt(cartItemsResult?.cart_quantity || 0);
           const soldQuantity = parseInt(soldResult?.sold_quantity || 0);
           const currentStock = parseInt(variant.stock_quantity || 0);
           const totalReserved = reservedQuantity + cartQuantity;
@@ -154,7 +164,7 @@ export const getAllProductVariantsWithStock = async (req, res) => {
           // Calculate status
           const getStatus = (stock_quantity) => {
             if (stock_quantity <= 0) return "Out of Stock";
-            if (stock_quantity < 5) return "Low";
+            if (stock_quantity < LOW_STOCK_THRESHOLD) return "Low";
             return "In Stock";
           };
 
@@ -230,6 +240,7 @@ export const getAllProductVariantsWithStock = async (req, res) => {
     return res.status(StatusCodes.OK).json({
       message: MESSAGE.get.succ,
       data: variantsWithCalculations,
+      lowStockThreshold: LOW_STOCK_THRESHOLD,
     });
   } catch (error) {
     console.error("❌ Error fetching product variants with stock:", error);
@@ -423,7 +434,7 @@ export const updateProductVariantStock = async (req, res) => {
     // Calculate status
     const getStatus = (stock_quantity) => {
       if (stock_quantity <= 0) return "Out of Stock";
-      if (stock_quantity < 5) return "Low";
+      if (stock_quantity < LOW_STOCK_THRESHOLD) return "Low";
       return "In Stock";
     };
 
@@ -567,9 +578,7 @@ export const getStockAnalytics = async (req, res) => {
     });
 
     cartResults.forEach((result) => {
-      cartMap[result.product_variant_id] = parseInt(
-        result.cart_quantity || 0
-      );
+      cartMap[result.product_variant_id] = parseInt(result.cart_quantity || 0);
     });
 
     soldResults.forEach((result) => {
@@ -613,7 +622,7 @@ export const getStockAnalytics = async (req, res) => {
       // Categorize by stock status (based on available stock)
       if (availableStock <= 0) {
         outStock++;
-      } else if (availableStock < 5) {
+      } else if (availableStock < LOW_STOCK_THRESHOLD) {
         lowStock++;
       } else {
         inStock++;
@@ -654,6 +663,7 @@ export const getStockAnalytics = async (req, res) => {
     return res.status(StatusCodes.OK).json({
       message: MESSAGE.get.succ,
       data: analytics,
+      lowStockThreshold: LOW_STOCK_THRESHOLD,
     });
   } catch (error) {
     console.error("❌ Error calculating stock analytics:", error);
