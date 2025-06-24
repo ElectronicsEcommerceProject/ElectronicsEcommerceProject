@@ -71,6 +71,7 @@ const totalCartItemNumberRoute = import.meta.env
   .VITE_TOTAL_CART_ITEM_NUMBER_ENDPOINT;
 
 const orderRoute = import.meta.env.VITE_ORDER_ENDPOINT;
+const cancelOrderRoute = import.meta.env.VITE_ORDER_CANCEL_ENDPOINT;
 const orderItemRoute = import.meta.env.VITE_ORDER_ITEM_ENDPOINT;
 const orderItemByOrderIdRoute = import.meta.env
   .VITE_ORDER_ITEM_ORDER_ID_ENDPOINT;
@@ -210,6 +211,7 @@ export {
   orderItemRoute,
   orderItemByOrderIdRoute,
   latestOrderRoute,
+  cancelOrderRoute,
   userManagmentDashboardDataRoute,
   userManagmentDashboardUsersOrdersDataRoute,
   reviewManagmentDashboardDataRoute,

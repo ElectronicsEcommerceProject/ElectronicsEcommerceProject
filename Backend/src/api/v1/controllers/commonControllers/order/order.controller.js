@@ -209,11 +209,39 @@ export const updateOrderById = async (req, res) => {
       });
     }
 
+    const previousStatus = order.order_status;
+
     // Update order fields
     if (order_status !== undefined) order.order_status = order_status;
     if (payment_status !== undefined) order.payment_status = payment_status;
     if (tracking_number !== undefined) order.tracking_number = tracking_number;
     if (notes !== undefined) order.notes = notes;
+
+    // Update stock quantity when order status changes to delivered (except from cancelled)
+    // Logic: Get all OrderItems for this order, then reduce ProductVariant stock by ordered quantity
+    if (previousStatus !== "cancelled" && order_status === "delivered") {
+      const orderItems = await OrderItem.findAll({
+        where: { order_id },
+        include: [{
+          model: ProductVariant,
+          as: "productVariant"
+        }]
+      });
+
+      // For each order item, reduce the stock quantity by the ordered quantity
+      for (const item of orderItems) {
+        if (item.product_variant_id && item.productVariant) {
+          await ProductVariant.update(
+            {
+              stock_quantity: item.productVariant.stock_quantity - item.total_quantity
+            },
+            {
+              where: { product_variant_id: item.product_variant_id }
+            }
+          );
+        }
+      }
+    }
 
     await order.save();
 
@@ -247,8 +275,31 @@ export const cancelOrderById = async (req, res) => {
     // Check if order can be cancelled
     if (["shipped", "delivered"].includes(order.order_status)) {
       return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
         message: "Cannot cancel an order that has been shipped or delivered",
       });
+    }
+
+    // Restore stock quantity when order is cancelled
+    const orderItems = await OrderItem.findAll({
+      where: { order_id },
+      include: [{
+        model: ProductVariant,
+        as: "productVariant"
+      }]
+    });
+
+    for (const item of orderItems) {
+      if (item.product_variant_id && item.productVariant) {
+        await ProductVariant.update(
+          {
+            stock_quantity: item.productVariant.stock_quantity + item.total_quantity
+          },
+          {
+            where: { product_variant_id: item.product_variant_id }
+          }
+        );
+      }
     }
 
     // Update order status

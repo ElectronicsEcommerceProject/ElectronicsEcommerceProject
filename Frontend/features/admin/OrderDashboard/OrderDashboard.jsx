@@ -19,6 +19,7 @@ import {
   getApi,
   updateApiById,
   MESSAGE,
+  cancelOrderRoute,
 } from "../../../src/index.js";
 
 // Fallback initial orders in case API fails
@@ -285,7 +286,49 @@ const OrderDashboard = () => {
       console.error("Error updating order status:", error);
       showCustomModal({
         title: "Error",
-        message: "Failed to update order status. Please try again.",
+        message:
+          error.message || "Failed to update order status. Please try again.",
+        type: "alert",
+        confirmText: "OK",
+      });
+    }
+  };
+
+  // Cancel order function
+  const cancelOrder = async (orderId) => {
+    try {
+      const response = await updateApiById(cancelOrderRoute, orderId);
+
+      if (response.success) {
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.orderId === orderId
+              ? { ...order, status: "cancelled" }
+              : order
+          )
+        );
+        setFilteredOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.orderId === orderId
+              ? { ...order, status: "cancelled" }
+              : order
+          )
+        );
+        if (selectedOrder && selectedOrder.orderId === orderId) {
+          setSelectedOrder({ ...selectedOrder, status: "cancelled" });
+        }
+        showCustomModal({
+          title: "Success",
+          message: response.message || "Order cancelled successfully",
+          type: "alert",
+          confirmText: "OK",
+        });
+      }
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      showCustomModal({
+        title: "Error",
+        message: error.message || "Failed to cancel order. Please try again.",
         type: "alert",
         confirmText: "OK",
       });
@@ -305,8 +348,8 @@ const OrderDashboard = () => {
       );
     }
     if (statusFilter) {
-      filtered = filtered.filter((order) => 
-        order.status.toLowerCase() === statusFilter.toLowerCase()
+      filtered = filtered.filter(
+        (order) => order.status.toLowerCase() === statusFilter.toLowerCase()
       );
     }
 
@@ -567,6 +610,7 @@ const OrderDashboard = () => {
             setSelectedOrder={setSelectedOrder}
             setShowModal={setShowModal}
             updateOrderStatus={updateOrderStatus}
+            cancelOrder={cancelOrder}
             downloadInvoice={downloadInvoice}
             ordersPerPage={ordersPerPage}
             setOrdersPerPage={setOrdersPerPage}

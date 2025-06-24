@@ -5,6 +5,7 @@ const OrdersTable = ({
   setSelectedOrder,
   setShowModal,
   updateOrderStatus,
+  cancelOrder,
   ordersPerPage,
   setOrdersPerPage,
   currentPage,
@@ -105,14 +106,11 @@ const OrdersTable = ({
                       <option value="processing">processing</option>
                       <option value="shipped">shipped</option>
                       <option value="delivered">delivered</option>
-                      <option value="cancelled">cancelled</option>
                       <option value="returned">returned</option>
                     </select>
                     <button
                       className="text-red-600 hover:text-red-800 bg-red-50 px-2 py-1 rounded"
-                      onClick={() =>
-                        updateOrderStatus(order.orderId, "cancelled")
-                      }
+                      onClick={() => cancelOrder(order.orderId)}
                     >
                       Cancel
                     </button>
@@ -209,7 +207,6 @@ const OrdersTable = ({
                 <option value="processing">Processing</option>
                 <option value="shipped">Shipped</option>
                 <option value="delivered">Delivered</option>
-                <option value="cancelled">Cancelled</option>
               </select>
             </div>
           </div>
