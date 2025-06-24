@@ -323,8 +323,8 @@ const ProductCatalogManagement = () => {
       // console.log("API Response of ProductForm:", data);
       if (data && data.success) {
         alert("Product data successfully submitted!");
-        // Navigate to dashboard after successful submission
-        navigate("/admin/product-dashboard");
+        // Navigate to admin panel after successful submission
+        navigate("/admin");
       } else {
         alert(
           "Error submitting product data: " + (data?.message || "Unknown error")
