@@ -321,22 +321,16 @@ const OrderDashboard = () => {
     }
     // User type filtering
     if (userType) {
-      console.log("Selected User Type:", userType);
       filtered = filtered.filter((order) => {
-        // Make sure we have the user object with role property
         if (!order.role) {
-          // console.log("testing", order);
           return false;
         }
 
-        if (userType === "admin") {
+        if (userType.toLowerCase() === "admin") {
           return true; // Admin can see all orders
-        } else if (userType === "retailer") {
-          return order.role === "retailer";
-        } else if (userType === "customer") {
-          return order.role === "customer";
+        } else {
+          return order.role.toLowerCase() === userType.toLowerCase();
         }
-        return false;
       });
     }
     setFilteredOrders(filtered);
