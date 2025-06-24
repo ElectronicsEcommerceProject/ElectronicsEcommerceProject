@@ -3,7 +3,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import { jsPDF } from "jspdf";
 
 import {
-  Header,
+  AdminHeader,
   FiltersSection,
   MetricsSection,
   OrdersTable,
@@ -12,7 +12,7 @@ import {
   QuickActions,
   Notifications,
   CustomModal,
-} from "../../../features/admin/index.js";
+} from "../../../features/index.js";
 
 import {
   orderRoute,
@@ -88,7 +88,11 @@ const OrderDashboard = () => {
       setDateRange(newDateRange);
     } else if (field === "end") {
       // When end date changes, ensure it's not before start date
-      if (dateRange.start && value && new Date(value) < new Date(dateRange.start)) {
+      if (
+        dateRange.start &&
+        value &&
+        new Date(value) < new Date(dateRange.start)
+      ) {
         // Don't allow end date to be before start date
         return;
       }
@@ -535,8 +539,8 @@ const OrderDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Call Header Component */}
-      <Header />
+      {/* Call AdminHeader Component */}
+      <AdminHeader />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-4 px-4 sm:py-6 sm:px-6 lg:px-8">

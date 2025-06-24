@@ -1,5 +1,5 @@
 import { toast } from 'react-toastify';
- import AlertMessage from '../Alert/AlertMessage'
+import { AlertMessage } from '../index.js';
  
 // Function to show Success Alerts (with 🎉)
 const showSuccess = (message) => {
