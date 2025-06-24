@@ -246,7 +246,7 @@ const StockManagement = () => {
         variant.description ||
         variant.sku ||
         `Variant ${variant.product_variant_id.slice(-8)}`,
-      in_carts_wishlists: variant.reserved || 0, // Items currently in customer carts and wishlists
+      in_carts_wishlists: variant.cartItems || 0, // Items currently in customer carts and wishlists
     }));
 
     if (debouncedGlobalSearch) {
@@ -337,7 +337,7 @@ const StockManagement = () => {
         inStock: analyticsData.inStock || 0,
         lowStock: analyticsData.lowStock || 0,
         outStock: analyticsData.outStock || 0,
-        itemsInCartsWishlists: analyticsData.reservedItems || 0,
+        itemsInCartsWishlists: analyticsData.cartItems || 0,
         soldItems: analyticsData.soldItems || 0,
         totalStockValue: analyticsData.totalStockValue || 0,
       };

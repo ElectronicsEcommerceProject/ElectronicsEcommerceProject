@@ -3,7 +3,7 @@ import { Op } from "sequelize";
 import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
 
-const { ProductVariant, Product, Category, Brand, Order, OrderItem, User } = db;
+const { ProductVariant, Product, Category, Brand, Order, OrderItem, User, CartItem } = db;
 
 /**
  * Get all product variants with stock data including reserved/sold quantities
@@ -94,6 +94,24 @@ export const getAllProductVariantsWithStock = async (req, res) => {
             raw: true,
           });
 
+          // Calculate cart items quantity
+          const cartItemsResult = await CartItem.findOne({
+            attributes: [
+              [
+                db.sequelize.fn(
+                  "COALESCE",
+                  db.sequelize.fn("SUM", db.sequelize.col("total_quantity")),
+                  0
+                ),
+                "cart_quantity",
+              ],
+            ],
+            where: {
+              product_variant_id: variant.product_variant_id,
+            },
+            raw: true,
+          });
+
           // Calculate sold quantity (delivered orders)
           const soldResult = await OrderItem.findOne({
             attributes: [
@@ -125,9 +143,13 @@ export const getAllProductVariantsWithStock = async (req, res) => {
           const reservedQuantity = parseInt(
             reservedResult?.reserved_quantity || 0
           );
+          const cartQuantity = parseInt(
+            cartItemsResult?.cart_quantity || 0
+          );
           const soldQuantity = parseInt(soldResult?.sold_quantity || 0);
           const currentStock = parseInt(variant.stock_quantity || 0);
-          const availableStock = Math.max(0, currentStock - reservedQuantity);
+          const totalReserved = reservedQuantity + cartQuantity;
+          const availableStock = Math.max(0, currentStock - totalReserved);
 
           // Calculate status
           const getStatus = (stock_quantity) => {
@@ -159,6 +181,7 @@ export const getAllProductVariantsWithStock = async (req, res) => {
 
             // Calculated quantities
             reserved: reservedQuantity,
+            cartItems: cartQuantity,
             sold: soldQuantity,
             availableStock: availableStock,
             status: getStatus(availableStock),
@@ -188,6 +211,7 @@ export const getAllProductVariantsWithStock = async (req, res) => {
           return {
             ...variant.toJSON(),
             reserved: 0,
+            cartItems: 0,
             sold: 0,
             availableStock: variant.stock_quantity || 0,
             status: variant.stock_quantity > 0 ? "In Stock" : "Out of Stock",
@@ -322,8 +346,8 @@ export const updateProductVariantStock = async (req, res) => {
       ],
     });
 
-    // Calculate reserved and sold quantities for the updated variant
-    const [reservedResult, soldResult] = await Promise.all([
+    // Calculate reserved, cart, and sold quantities for the updated variant
+    const [reservedResult, cartItemsResult, soldResult] = await Promise.all([
       // Reserved quantity
       OrderItem.findOne({
         attributes: [
@@ -345,6 +369,22 @@ export const updateProductVariantStock = async (req, res) => {
             attributes: [],
           },
         ],
+        raw: true,
+      }),
+
+      // Cart items quantity
+      CartItem.findOne({
+        attributes: [
+          [
+            db.sequelize.fn(
+              "COALESCE",
+              db.sequelize.fn("SUM", db.sequelize.col("total_quantity")),
+              0
+            ),
+            "cart_quantity",
+          ],
+        ],
+        where: { product_variant_id: variant_id },
         raw: true,
       }),
 
@@ -374,9 +414,11 @@ export const updateProductVariantStock = async (req, res) => {
     ]);
 
     const reservedQuantity = parseInt(reservedResult?.reserved_quantity || 0);
+    const cartQuantity = parseInt(cartItemsResult?.cart_quantity || 0);
     const soldQuantity = parseInt(soldResult?.sold_quantity || 0);
     const currentStock = parseInt(updatedVariant.stock_quantity || 0);
-    const availableStock = Math.max(0, currentStock - reservedQuantity);
+    const totalReserved = reservedQuantity + cartQuantity;
+    const availableStock = Math.max(0, currentStock - totalReserved);
 
     // Calculate status
     const getStatus = (stock_quantity) => {
@@ -393,6 +435,7 @@ export const updateProductVariantStock = async (req, res) => {
       stock_quantity: currentStock,
       old_stock_quantity: oldStockQuantity,
       reserved: reservedQuantity,
+      cartItems: cartQuantity,
       sold: soldQuantity,
       availableStock: availableStock,
       status: getStatus(availableStock),
@@ -456,26 +499,40 @@ export const getStockAnalytics = async (req, res) => {
       });
     }
 
-    // Calculate reserved quantities for all variants in bulk
-    const reservedResults = await OrderItem.findAll({
-      attributes: [
-        "product_variant_id",
-        [
-          db.sequelize.fn("SUM", db.sequelize.col("total_quantity")),
-          "reserved_quantity",
+    // Calculate reserved and cart quantities for all variants in bulk
+    const [reservedResults, cartResults] = await Promise.all([
+      OrderItem.findAll({
+        attributes: [
+          "product_variant_id",
+          [
+            db.sequelize.fn("SUM", db.sequelize.col("total_quantity")),
+            "reserved_quantity",
+          ],
         ],
-      ],
-      include: [
-        {
-          model: Order,
-          as: "order",
-          where: { order_status: { [Op.in]: ["pending", "processing"] } },
-          attributes: [],
-        },
-      ],
-      group: ["product_variant_id"],
-      raw: true,
-    });
+        include: [
+          {
+            model: Order,
+            as: "order",
+            where: { order_status: { [Op.in]: ["pending", "processing"] } },
+            attributes: [],
+          },
+        ],
+        group: ["product_variant_id"],
+        raw: true,
+      }),
+
+      CartItem.findAll({
+        attributes: [
+          "product_variant_id",
+          [
+            db.sequelize.fn("SUM", db.sequelize.col("total_quantity")),
+            "cart_quantity",
+          ],
+        ],
+        group: ["product_variant_id"],
+        raw: true,
+      }),
+    ]);
 
     // Calculate sold quantities for all variants in bulk
     const soldResults = await OrderItem.findAll({
@@ -498,13 +555,20 @@ export const getStockAnalytics = async (req, res) => {
       raw: true,
     });
 
-    // Create lookup maps for reserved and sold quantities
+    // Create lookup maps for reserved, cart, and sold quantities
     const reservedMap = {};
+    const cartMap = {};
     const soldMap = {};
 
     reservedResults.forEach((result) => {
       reservedMap[result.product_variant_id] = parseInt(
         result.reserved_quantity || 0
+      );
+    });
+
+    cartResults.forEach((result) => {
+      cartMap[result.product_variant_id] = parseInt(
+        result.cart_quantity || 0
       );
     });
 
@@ -518,6 +582,7 @@ export const getStockAnalytics = async (req, res) => {
     let lowStock = 0;
     let outStock = 0;
     let totalReservedItems = 0;
+    let totalCartItems = 0;
     let totalSoldItems = 0;
     let totalStockValue = 0;
     let activeProducts = 0;
@@ -527,11 +592,14 @@ export const getStockAnalytics = async (req, res) => {
       const stockQuantity = parseInt(variant.stock_quantity || 0);
       const price = parseFloat(variant.price || 0);
       const reserved = reservedMap[variant.product_variant_id] || 0;
+      const cartItems = cartMap[variant.product_variant_id] || 0;
       const sold = soldMap[variant.product_variant_id] || 0;
-      const availableStock = Math.max(0, stockQuantity - reserved);
+      const totalReserved = reserved + cartItems;
+      const availableStock = Math.max(0, stockQuantity - totalReserved);
 
       totalVariants++;
       totalReservedItems += reserved;
+      totalCartItems += cartItems;
       totalSoldItems += sold;
       totalStockValue += stockQuantity * price;
 
@@ -558,6 +626,7 @@ export const getStockAnalytics = async (req, res) => {
       lowStock,
       outStock,
       reservedItems: totalReservedItems,
+      cartItems: totalCartItems,
       soldItems: totalSoldItems,
       totalStockValue: Math.round(totalStockValue * 100) / 100, // Round to 2 decimal places
       activeProducts,
