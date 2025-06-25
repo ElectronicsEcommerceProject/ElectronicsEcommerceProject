@@ -94,7 +94,7 @@ router.delete(
   "/:review_id",
   verifyJwtToken,
   validator(validators.productReview.reviewIdValidator, "params"),
-  productReviewController.deleteReview
+  adminProductReviewController.deleteReview
 );
 
 /**
