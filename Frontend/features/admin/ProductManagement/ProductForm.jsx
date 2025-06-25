@@ -529,6 +529,14 @@ const ProductCatalogManagement = () => {
         return; // Don't update state with negative values
       }
 
+      // Validate average_rating to be between 1 and 5
+      if (name === "average_rating" && value !== "") {
+        const rating = parseFloat(value);
+        if (rating < 1 || rating > 5) {
+          return; // Don't update state with invalid rating values
+        }
+      }
+
       const newValue = type === "file" ? files[0] : value;
       setLocalData((prev) => ({ ...prev, [name]: newValue }));
       setFilledFields((prev) => ({ ...prev, [name]: !!newValue }));

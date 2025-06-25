@@ -1034,10 +1034,6 @@ const ProductDashboard = () => {
         updatedItem[idField] = updatedItem.id;
       }
 
-      // Log the complete item with proper ID field
-      console.log(`Saving ${entityType} with complete data:`, updatedItem);
-      console.log(`Entity ID field: ${idField} = ${updatedItem[idField]}`);
-
       // Check if the entityKey exists in the data object
       if (!data[entityKey]) {
         console.error(`Entity key "${entityKey}" not found in data object`);
@@ -1045,8 +1041,6 @@ const ProductDashboard = () => {
         setIsLoading(false);
         return;
       }
-
-      console.log("testing", updatedItem);
 
       // Make the API call to update the item
       const response = await updateApiById(
@@ -1056,29 +1050,57 @@ const ProductDashboard = () => {
       );
 
       if (response && response.success) {
-        // Update the local state
+        // Update the local state immediately to avoid API call
         setData((prevData) => ({
           ...prevData,
           [entityKey]: prevData[entityKey].map(
             (item) =>
-              item.id === updatedItem.id ? { ...item, ...updatedItem } : item // Ensure all fields are updated
+              item.id === updatedItem.id ? { ...item, ...updatedItem } : item
           ),
         }));
 
+        // Update filtered data as well
+        const updateFilteredData = (setter, filteredData) => {
+          setter(filteredData.map(
+            (item) => item.id === updatedItem.id ? { ...item, ...updatedItem } : item
+          ));
+        };
+
+        switch (entityKey) {
+          case "categories":
+            updateFilteredData(setFilteredCategories, filteredCategories);
+            break;
+          case "brands":
+            updateFilteredData(setFilteredBrands, filteredBrands);
+            break;
+          case "products":
+            updateFilteredData(setFilteredProducts, filteredProducts);
+            break;
+          case "variants":
+            updateFilteredData(setFilteredVariants, filteredVariants);
+            break;
+          case "attributeValues":
+            updateFilteredData(setFilteredAttributeValues, filteredAttributeValues);
+            break;
+        }
+
         // Close the edit modal
         setEditModal({ isOpen: false, entityType: "", item: null });
-        toast.success(
-          response.message || `${entityType} updated successfully!`
-        );
+        
+        // Show both toast and alert for better visibility
+        const successMessage = response.message || `${entityType} updated successfully!`;
+        toast.success(successMessage);
+        alert(successMessage);
       } else {
-        toast.error(
-          response.message ||
-            `Failed to update ${entityType}. Please try again.`
-        );
+        const errorMessage = response.message || `Failed to update ${entityType}. Please try again.`;
+        toast.error(errorMessage);
+        alert(errorMessage);
       }
     } catch (error) {
       console.error(`Error updating ${entityType}:`, error);
-      toast.error(`Failed to update ${entityType}. Please try again.`);
+      const errorMessage = `Failed to update ${entityType}. Please try again.`;
+      toast.error(errorMessage);
+      alert(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -1094,76 +1116,33 @@ const ProductDashboard = () => {
     }
     setIsLoading(true);
     try {
-      setIsLoading(true);
-
-      // Call the delete API
-      const deleteResponse = await deleteApiByCondition(
-        adminProductManagementDashboardDataRoute,
-        id,
-        entityType
-      );
-      // console.log("Delete API Response:", deleteResponse);
-      if (deleteResponse.success) {
-        toast.success(
-          deleteResponse.message || `${entityType} deleted successfully!`
-        );
-      }
-
-      // Map the entityType to the correct property name in the data object and API endpoint
-      let entityKey, idField;
+      // Map the entityType to the correct property name in the data object
+      let entityKey;
       switch (entityType.toLowerCase()) {
         case "categories":
           entityKey = "categories";
-          idField = "category_id";
           break;
         case "brands":
           entityKey = "brands";
-          idField = "brand_id";
           break;
         case "products":
           entityKey = "products";
-          idField = "product_id";
           break;
         case "product variants":
         case "variants":
           entityKey = "variants";
-          idField = "product_variant_id";
           break;
         case "product attributes":
         case "attributes":
           entityKey = "attributes";
-          idField = "product_attribute_id";
           break;
         case "attribute values":
         case "attributevalues":
           entityKey = "attributeValues";
-          idField = "product_attribute_value_id";
           break;
         default:
           entityKey = entityType.toLowerCase() + "s";
-          idField = entityType.toLowerCase() + "_id";
       }
-
-      // Find the item to be deleted to log its details
-      const itemToDelete = data[entityKey].find((item) => item.id === id);
-
-      if (itemToDelete) {
-        // Create a proper ID field if it doesn't exist
-        if (!itemToDelete[idField]) {
-          itemToDelete[idField] = id;
-        }
-
-        // Log the complete item with proper ID field
-        console.log(`Deleting ${entityType} with complete data:`, itemToDelete);
-        console.log(`Entity ID field: ${idField} = ${itemToDelete[idField]}`);
-      } else {
-        console.log(`Deleting ${entityType} with ID: ${id}`);
-      }
-
-      // Get the API endpoint for this entity type
-
-      // In a real implementation, you would call the API to delete the item
-      // const response = await deleteApiById(endpoint, id);
 
       // Check if the entityKey exists in the data object
       if (!data[entityKey]) {
@@ -1173,20 +1152,67 @@ const ProductDashboard = () => {
         return;
       }
 
-      // Update the local state
-      setData((prevData) => ({
-        ...prevData,
-        [entityKey]: prevData[entityKey].filter((item) => item.id !== id),
-      }));
+      // Call the delete API
+      const deleteResponse = await deleteApiByCondition(
+        adminProductManagementDashboardDataRoute,
+        id,
+        entityType
+      );
 
-      toast.success(`${entityType} deleted successfully!`);
+      if (deleteResponse && deleteResponse.success) {
+        // Update the local state immediately to avoid API call
+        setData((prevData) => ({
+          ...prevData,
+          [entityKey]: prevData[entityKey].filter((item) => item.id !== id),
+        }));
+
+        // Update filtered data as well
+        const updateFilteredData = (setter, filteredData) => {
+          setter(filteredData.filter((item) => item.id !== id));
+        };
+
+        switch (entityKey) {
+          case "categories":
+            updateFilteredData(setFilteredCategories, filteredCategories);
+            break;
+          case "brands":
+            updateFilteredData(setFilteredBrands, filteredBrands);
+            break;
+          case "products":
+            updateFilteredData(setFilteredProducts, filteredProducts);
+            break;
+          case "variants":
+            updateFilteredData(setFilteredVariants, filteredVariants);
+            break;
+          case "attributeValues":
+            updateFilteredData(setFilteredAttributeValues, filteredAttributeValues);
+            break;
+        }
+
+        // Clear selection if deleted item was selected
+        if (selectedItems[entityKey] && selectedItems[entityKey].id === id) {
+          setSelectedItems(prev => ({ ...prev, [entityKey]: null }));
+        }
+
+        // Show both toast and alert for better visibility
+        const successMessage = deleteResponse.message || `${entityType} deleted successfully!`;
+        toast.success(successMessage);
+        alert(successMessage);
+      } else {
+        const errorMessage = deleteResponse.message || `Failed to delete ${entityType}. Please try again.`;
+        toast.error(errorMessage);
+        alert(errorMessage);
+      }
     } catch (error) {
       console.error(`Error deleting ${entityType}:`, error);
-      toast.error(`Failed to delete ${entityType}. Please try again.`);
+      const errorMessage = `Failed to delete ${entityType}. Please try again.`;
+      toast.error(errorMessage);
+      alert(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gray-100 p-2 sm:p-4 md:p-6">

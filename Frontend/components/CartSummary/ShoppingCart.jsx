@@ -19,7 +19,7 @@ const CartPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [estimatedDelivery, setEstimatedDelivery] =
@@ -421,12 +421,6 @@ const CartPage = () => {
       <header className="bg-white shadow-md p-4">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold text-gray-800">Shopping Cart</h1>
-          <button
-            className="text-blue-600 text-sm hover:underline"
-            onClick={() => setShowLogoutPopup(true)}
-          >
-            Logout
-          </button>
         </div>
 
         {/* Cart Summary Bar */}
@@ -972,37 +966,6 @@ const CartPage = () => {
       <footer className="bg-white shadow-inner p-4 text-center text-gray-500 text-sm">
         © 2023 Electronics Store. All rights reserved.
       </footer>
-
-      {/* Logout Confirmation Popup */}
-      {showLogoutPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
-            <h3 className="text-lg font-semibold mb-4">Confirm Logout</h3>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to logout? Your cart items will be saved.
-            </p>
-            <div className="flex justify-end gap-4">
-              <button
-                className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-100"
-                onClick={() => setShowLogoutPopup(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                onClick={() => {
-                  // Logout logic would go here
-                  setShowLogoutPopup(false);
-                  // Redirect to login page or perform actual logout
-                  alert("Logged out successfully");
-                }}
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Address Form Popup */}
       <AddressForm

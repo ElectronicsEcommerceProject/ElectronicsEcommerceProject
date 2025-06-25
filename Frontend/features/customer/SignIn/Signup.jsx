@@ -116,17 +116,7 @@ const Signup = ({ setModalContent, setUser }) => {
 
       // Handle successful signup
       if (response.success && response.user) {
-        // Dispatch custom event to notify other components
-        window.dispatchEvent(new Event('tokenChanged'));
-
-        setUser({
-          email: response.user.email,
-          name: response.user.name,
-          role: response.user.role,
-          user_id: response.user.user_id,
-          user: response.user
-        });
-        setModalContent('success');
+        // Reset form data
         setSignupData({
           firstName: '',
           lastName: '',
@@ -136,6 +126,9 @@ const Signup = ({ setModalContent, setUser }) => {
           password: '',
           confirmPassword: '',
         });
+        
+        // Redirect to login form after successful signup
+        setModalContent('login');
       } else {
         setErrors({ general: response.message || 'Registration failed. Please try again.' });
       }

@@ -111,6 +111,10 @@ const userProductByIdDetails = async (req, res, next) => {
         {
           model: ProductReview,
           as: "reviews",
+          where: {
+            review_action: "approve"
+          },
+          required: false,
           include: [
             {
               model: User,
