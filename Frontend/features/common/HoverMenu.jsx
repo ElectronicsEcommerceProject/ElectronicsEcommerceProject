@@ -10,7 +10,7 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import Login from "../customer/SignIn/Login";
 import Signup from "../customer/SignIn/Signup";
@@ -18,6 +18,7 @@ import ForgotPassword from "../customer/SignIn/ForgotPassword";
 import LogoutModal from "../customer/SignIn/Logout";
 
 const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
+  const navigate = useNavigate();
   const [modalContent, setModalContent] = useState(null);
   const [user, setUser] = useState(null); // Initialize as null for initial Login/Signup view
   const [message, setMessage] = useState("");
@@ -101,6 +102,9 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
       setModalContent("success");
       setMessage("Logged out successfully!");
       setIsLoading(false);
+      
+      // Navigate to home page after logout
+      navigate('/');
     }, 1000);
   };
 
