@@ -335,9 +335,9 @@ const EditModal = ({ isOpen, onClose, entityType, item, onSave }) => {
                         onChange={handleChange}
                         className="w-full p-2 border rounded"
                       >
-                        <option value="Customer">Customer</option>
-                        <option value="Retailer">Retailer</option>
-                        <option value="Both">Both</option>
+                        <option value="customer">Customer</option>
+                        <option value="retailer">Retailer</option>
+                        <option value="both">Both</option>
                       </select>
                     </div>
                   );
@@ -1053,17 +1053,18 @@ const ProductDashboard = () => {
         // Update the local state immediately to avoid API call
         setData((prevData) => ({
           ...prevData,
-          [entityKey]: prevData[entityKey].map(
-            (item) =>
-              item.id === updatedItem.id ? { ...item, ...updatedItem } : item
+          [entityKey]: prevData[entityKey].map((item) =>
+            item.id === updatedItem.id ? { ...item, ...updatedItem } : item
           ),
         }));
 
         // Update filtered data as well
         const updateFilteredData = (setter, filteredData) => {
-          setter(filteredData.map(
-            (item) => item.id === updatedItem.id ? { ...item, ...updatedItem } : item
-          ));
+          setter(
+            filteredData.map((item) =>
+              item.id === updatedItem.id ? { ...item, ...updatedItem } : item
+            )
+          );
         };
 
         switch (entityKey) {
@@ -1080,19 +1081,25 @@ const ProductDashboard = () => {
             updateFilteredData(setFilteredVariants, filteredVariants);
             break;
           case "attributeValues":
-            updateFilteredData(setFilteredAttributeValues, filteredAttributeValues);
+            updateFilteredData(
+              setFilteredAttributeValues,
+              filteredAttributeValues
+            );
             break;
         }
 
         // Close the edit modal
         setEditModal({ isOpen: false, entityType: "", item: null });
-        
+
         // Show both toast and alert for better visibility
-        const successMessage = response.message || `${entityType} updated successfully!`;
+        const successMessage =
+          response.message || `${entityType} updated successfully!`;
         toast.success(successMessage);
         alert(successMessage);
       } else {
-        const errorMessage = response.message || `Failed to update ${entityType}. Please try again.`;
+        const errorMessage =
+          response.message ||
+          `Failed to update ${entityType}. Please try again.`;
         toast.error(errorMessage);
         alert(errorMessage);
       }
@@ -1185,21 +1192,27 @@ const ProductDashboard = () => {
             updateFilteredData(setFilteredVariants, filteredVariants);
             break;
           case "attributeValues":
-            updateFilteredData(setFilteredAttributeValues, filteredAttributeValues);
+            updateFilteredData(
+              setFilteredAttributeValues,
+              filteredAttributeValues
+            );
             break;
         }
 
         // Clear selection if deleted item was selected
         if (selectedItems[entityKey] && selectedItems[entityKey].id === id) {
-          setSelectedItems(prev => ({ ...prev, [entityKey]: null }));
+          setSelectedItems((prev) => ({ ...prev, [entityKey]: null }));
         }
 
         // Show both toast and alert for better visibility
-        const successMessage = deleteResponse.message || `${entityType} deleted successfully!`;
+        const successMessage =
+          deleteResponse.message || `${entityType} deleted successfully!`;
         toast.success(successMessage);
         alert(successMessage);
       } else {
-        const errorMessage = deleteResponse.message || `Failed to delete ${entityType}. Please try again.`;
+        const errorMessage =
+          deleteResponse.message ||
+          `Failed to delete ${entityType}. Please try again.`;
         toast.error(errorMessage);
         alert(errorMessage);
       }
@@ -1212,7 +1225,6 @@ const ProductDashboard = () => {
       setIsLoading(false);
     }
   };
-
 
   return (
     <div className="min-h-screen bg-gray-100 p-2 sm:p-4 md:p-6">
