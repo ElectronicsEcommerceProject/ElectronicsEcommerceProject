@@ -186,6 +186,7 @@ const EntityCard = ({
 // Edit modal component
 const EditModal = ({ isOpen, onClose, entityType, item, onSave }) => {
   const [formData, setFormData] = useState({});
+  const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
     if (item) {
@@ -216,23 +217,83 @@ const EditModal = ({ isOpen, onClose, entityType, item, onSave }) => {
       }
 
       setFormData(properData);
+      setValidationErrors({});
     }
   }, [item, entityType]);
 
+  const validateField = (name, value, type) => {
+    const errors = {};
+    const numValue = parseFloat(value);
+
+    // Price validation
+    if (name.includes('price') || name === 'base_price') {
+      if (isNaN(numValue) || numValue < 0) {
+        errors[name] = 'Price must be a positive number';
+      }
+    }
+    
+    // Percentage validation
+    else if (name.includes('percentage') || name.includes('discount')) {
+      if (name.includes('percentage')) {
+        if (isNaN(numValue) || numValue < 0 || numValue > 100) {
+          errors[name] = 'Percentage must be between 0 and 100';
+        }
+      }
+    }
+    
+    // Quantity validation
+    else if (name.includes('quantity') || name.includes('stock')) {
+      if (isNaN(numValue) || numValue < 0 || !Number.isInteger(numValue)) {
+        errors[name] = 'Quantity must be a non-negative integer';
+      }
+    }
+    
+    // Rating validation
+    else if (name.includes('rating')) {
+      if (isNaN(numValue) || numValue < 0 || numValue > 5) {
+        errors[name] = 'Rating must be between 0 and 5';
+      }
+    }
+    
+    // General numeric validation for number inputs
+    else if (type === 'number') {
+      if (isNaN(numValue) || numValue < 0) {
+        errors[name] = 'Value must be a non-negative number';
+      }
+    }
+
+    return errors;
+  };
+
   const handleChange = (e) => {
-    const { name, value, type } = e.target; // Destructure type
+    const { name, value, type } = e.target;
+    
+    // Validate the field
+    const fieldErrors = validateField(name, value, type);
+    
+    setValidationErrors(prev => ({
+      ...prev,
+      [name]: fieldErrors[name] || null
+    }));
+
     setFormData((prevFormData) => {
       const lowerCaseEntityType = entityType.toLowerCase();
       let processedValue = value;
 
-      // Prevent negative values for any numeric fields when editing variants
-      if (
-        (lowerCaseEntityType === "variants" ||
-          lowerCaseEntityType === "product variants") &&
-        type === "number" // Check the HTML input type
-      ) {
-        if (parseFloat(value) < 0) {
-          processedValue = "0"; // Reset to 0 if negative
+      // For numeric inputs, ensure proper formatting
+      if (type === 'number' && value !== '') {
+        const numValue = parseFloat(value);
+        if (!isNaN(numValue)) {
+          // Apply specific constraints based on field type
+          if (name.includes('percentage')) {
+            processedValue = Math.min(Math.max(numValue, 0), 100).toString();
+          } else if (name.includes('rating')) {
+            processedValue = Math.min(Math.max(numValue, 0), 5).toString();
+          } else if (name.includes('quantity') || name.includes('stock')) {
+            processedValue = Math.max(Math.floor(numValue), 0).toString();
+          } else {
+            processedValue = Math.max(numValue, 0).toString();
+          }
         }
       }
 
@@ -247,7 +308,7 @@ const EditModal = ({ isOpen, onClose, entityType, item, onSave }) => {
       ) {
         newFormData.slug = String(processedValue)
           .toLowerCase()
-          .replace(/\s+/g, "-"); // Use processedValue
+          .replace(/\s+/g, "-");
       }
       return newFormData;
     });
@@ -255,6 +316,25 @@ const EditModal = ({ isOpen, onClose, entityType, item, onSave }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Validate all fields before submission
+    const allErrors = {};
+    Object.keys(formData).forEach(key => {
+      const input = document.querySelector(`input[name="${key}"]`);
+      if (input) {
+        const fieldErrors = validateField(key, formData[key], input.type);
+        if (fieldErrors[key]) {
+          allErrors[key] = fieldErrors[key];
+        }
+      }
+    });
+
+    // Check if there are any validation errors
+    if (Object.keys(allErrors).length > 0) {
+      setValidationErrors(allErrors);
+      toast.error('Please fix validation errors before saving');
+      return;
+    }
 
     // Log all form data with proper ID fields
     console.log(`Saving ${entityType} with complete data:`, formData);
@@ -353,14 +433,26 @@ const EditModal = ({ isOpen, onClose, entityType, item, onSave }) => {
                       name={key}
                       value={formData[key] || ""}
                       onChange={handleChange}
-                      className="w-full p-2 border rounded"
-                      min={
-                        isVariantContext && inputType === "number"
-                          ? "0"
-                          : undefined
+                      className={`w-full p-2 border rounded ${
+                        validationErrors[key] ? 'border-red-500' : ''
+                      }`}
+                      min={inputType === "number" ? "0" : undefined}
+                      max={
+                        key.includes('percentage') ? "100" :
+                        key.includes('rating') ? "5" : undefined
+                      }
+                      step={
+                        key.includes('quantity') || key.includes('stock') ? "1" :
+                        key.includes('percentage') || key.includes('rating') ? "0.1" :
+                        inputType === "number" ? "0.01" : undefined
                       }
                       readOnly={isReadOnly}
                     />
+                    {validationErrors[key] && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {validationErrors[key]}
+                      </p>
+                    )}
                   </div>
                 );
               })}
