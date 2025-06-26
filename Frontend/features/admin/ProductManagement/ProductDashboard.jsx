@@ -310,6 +310,43 @@ const EditModal = ({ isOpen, onClose, entityType, item, onSave }) => {
           .toLowerCase()
           .replace(/\s+/g, "-");
       }
+
+      // Additional validation for product variants
+      if (lowerCaseEntityType === "variants" || lowerCaseEntityType === "product variants") {
+        const stockQuantity = parseFloat(name === 'stock_quantity' ? processedValue : newFormData.stock_quantity || 0);
+        const errors = {};
+
+        // Validate min_retailer_quantity against stock_quantity
+        if (name === 'min_retailer_quantity' || name === 'stock_quantity') {
+          const minRetailerQty = parseFloat(name === 'min_retailer_quantity' ? processedValue : newFormData.min_retailer_quantity || 0);
+          if (minRetailerQty > stockQuantity) {
+            errors.min_retailer_quantity = 'Min retailer quantity cannot be greater than stock quantity';
+          }
+        }
+
+        // Validate discount_quantity against stock_quantity
+        if (name === 'discount_quantity' || name === 'stock_quantity') {
+          const discountQty = parseFloat(name === 'discount_quantity' ? processedValue : newFormData.discount_quantity || 0);
+          if (discountQty > stockQuantity) {
+            errors.discount_quantity = 'Discount quantity cannot be greater than stock quantity';
+          }
+        }
+
+        // Validate bulk_discount_quantity against stock_quantity
+        if (name === 'bulk_discount_quantity' || name === 'stock_quantity') {
+          const bulkDiscountQty = parseFloat(name === 'bulk_discount_quantity' ? processedValue : newFormData.bulk_discount_quantity || 0);
+          if (bulkDiscountQty > stockQuantity) {
+            errors.bulk_discount_quantity = 'Bulk discount quantity cannot be greater than stock quantity';
+          }
+        }
+
+        // Update validation errors
+        setValidationErrors(prev => ({
+          ...prev,
+          ...errors
+        }));
+      }
+
       return newFormData;
     });
   };
