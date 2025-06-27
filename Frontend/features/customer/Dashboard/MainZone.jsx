@@ -855,7 +855,8 @@ const MainZone = () => {
               {filteredProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300"
+                  className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer"
+                  onClick={() => handleProductClick(product.id)}
                 >
                   {/* Header Section */}
                   <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-2 border-b">
@@ -868,7 +869,10 @@ const MainZone = () => {
                         )}
                       </div>
                       <button
-                        onClick={() => toggleWishlist(product.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleWishlist(product.id);
+                        }}
                         className="p-1 rounded-full bg-white shadow hover:bg-gray-100 transition-colors"
                         title={
                           wishlist.includes(product.id)
