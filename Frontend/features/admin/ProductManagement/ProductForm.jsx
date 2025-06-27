@@ -575,6 +575,27 @@ const ProductCatalogManagement = () => {
         [`selected_${entityType.slice(0, -1)}`]: entity.name,
         [`${entityType.slice(0, -1)}_name`]: entity.name,
       }));
+      
+      // Generic form pre-filling for any entity selection
+      const entityToStepMap = {
+        categories: 1,
+        brands: 2,
+        products: 3,
+        variants: 4,
+        attributes: 5,
+        attributeValues: 5
+      };
+      
+      const targetStep = entityToStepMap[entityType];
+      if (targetStep && targetStep !== step) {
+        setStepFormData((prev) => ({
+          ...prev,
+          [targetStep]: {
+            ...entity,
+            [`${entityType.slice(0, -1)}_id`]: entity.id || entity[`${entityType.slice(0, -1)}_id`]
+          }
+        }));
+      }
     };
 
     const isFormValid = () =>
