@@ -537,6 +537,23 @@ const ProductCatalogManagement = () => {
         }
       }
 
+      // Validate discount, bulk discount, and minimum order quantities against stock quantity
+      if ((name === "discount_quantity" || name === "bulk_discount_quantity" || name === "min_retailer_quantity") && value !== "") {
+        const quantity = parseFloat(value);
+        const stockQuantity = parseFloat(localData.stock_quantity) || 0;
+        if (stockQuantity > 0 && quantity > stockQuantity) {
+          return; // Don't update if quantity exceeds stock
+        }
+      }
+
+      // Validate percentage fields to not exceed 100
+      if ((name === "discount_percentage" || name === "bulk_discount_percentage") && value !== "") {
+        const percentage = parseFloat(value);
+        if (percentage > 100) {
+          return; // Don't update if percentage exceeds 100
+        }
+      }
+
       const newValue = type === "file" ? files[0] : value;
       setLocalData((prev) => ({ ...prev, [name]: newValue }));
       setFilledFields((prev) => ({ ...prev, [name]: !!newValue }));
@@ -558,6 +575,27 @@ const ProductCatalogManagement = () => {
         [`selected_${entityType.slice(0, -1)}`]: entity.name,
         [`${entityType.slice(0, -1)}_name`]: entity.name,
       }));
+      
+      // Generic form pre-filling for any entity selection
+      const entityToStepMap = {
+        categories: 1,
+        brands: 2,
+        products: 3,
+        variants: 4,
+        attributes: 5,
+        attributeValues: 5
+      };
+      
+      const targetStep = entityToStepMap[entityType];
+      if (targetStep && targetStep !== step) {
+        setStepFormData((prev) => ({
+          ...prev,
+          [targetStep]: {
+            ...entity,
+            [`${entityType.slice(0, -1)}_id`]: entity.id || entity[`${entityType.slice(0, -1)}_id`]
+          }
+        }));
+      }
     };
 
     const isFormValid = () =>

@@ -45,6 +45,7 @@ export const createCoupon = async (req, res) => {
     const existingCoupon = await Coupon.findOne({ where: { code } });
     if (existingCoupon) {
       return res.status(StatusCodes.CONFLICT).json({
+        success: false,
         message: "Coupon code already exists",
       });
     }
@@ -110,8 +111,7 @@ export const createCoupon = async (req, res) => {
         minOrder: parseFloat(newCoupon.min_cart_value) || 0,
         status: newCoupon.is_active ? "Active" : "Inactive",
         type: newCoupon.type === "percentage" ? "Percentage" : "Flat",
-        product:
-          newCoupon.Product?.name || "All",
+        product: newCoupon.Product?.name || "All",
         role: newCoupon.target_role || "Customer",
         usageLimit: newCoupon.usage_limit,
         description: newCoupon.description,

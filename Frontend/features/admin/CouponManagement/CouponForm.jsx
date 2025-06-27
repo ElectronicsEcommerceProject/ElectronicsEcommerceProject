@@ -248,8 +248,7 @@ const CouponForm = ({ coupon = null, onSave, onClose }) => {
     }
 
     if (formData.maxDiscountValue !== null && formData.maxDiscountValue < 0) {
-      newErrors.maxDiscountValue =
-        "Maximum discount value cannot be negative";
+      newErrors.maxDiscountValue = "Maximum discount value cannot be negative";
     }
 
     setErrors(newErrors);
@@ -294,9 +293,7 @@ const CouponForm = ({ coupon = null, onSave, onClose }) => {
         max_discount_value: formData.maxDiscountValue
           ? parseFloat(formData.maxDiscountValue)
           : null,
-        usage_limit: formData.usageLimit
-          ? parseInt(formData.usageLimit)
-          : null,
+        usage_limit: formData.usageLimit ? parseInt(formData.usageLimit) : null,
         usage_per_user: formData.usagePerUser
           ? parseInt(formData.usagePerUser)
           : null,
@@ -330,9 +327,8 @@ const CouponForm = ({ coupon = null, onSave, onClose }) => {
           formData.targetType === "cart"
             ? "All"
             : formData.targetType === "product"
-            ? products.find(
-                (p) => String(p.id) === String(formData.productId)
-              )?.name || "Selected Product"
+            ? products.find((p) => String(p.id) === String(formData.productId))
+                ?.name || "Selected Product"
             : formData.targetType === "category"
             ? categories.find(
                 (c) => String(c.id) === String(formData.categoryId)
@@ -364,12 +360,7 @@ const CouponForm = ({ coupon = null, onSave, onClose }) => {
       // If editing existing coupon
       if (coupon?.id) {
         // Log all form data when updating
-        console.log(
-          "Updating coupon with ID:",
-          coupon.id,
-          "Data:",
-          couponData
-        );
+        console.log("Updating coupon with ID:", coupon.id, "Data:", couponData);
 
         const response = await updateApiById(
           couponAndOffersDashboardDataRoute,
@@ -393,17 +384,30 @@ const CouponForm = ({ coupon = null, onSave, onClose }) => {
           couponData
         );
 
+        console.log("testing", response);
+
         if (response.success) {
           alert(`Coupon created successfully}`);
           // console.log("Create API response:", response);
           onSave({ ...uiCoupon, id: response.data.coupon_id });
         } else {
+          alert(response.message || "Failed to create coupon");
           setErrors({ form: response.message || "Failed to create coupon" });
         }
       }
     } catch (error) {
       console.error("Error saving coupon:", error);
-      setErrors({ form: "An error occurred while saving the coupon" });
+      // Check if error response contains structured data
+      if (error.response?.data?.message) {
+        alert(error.response.data.message);
+        setErrors({ form: error.response.data.message });
+      } else if (error.message) {
+        alert(error.message);
+        setErrors({ form: error.message });
+      } else {
+        alert("An error occurred while saving the coupon");
+        setErrors({ form: "An error occurred while saving the coupon" });
+      }
     } finally {
       setLoading(false);
     }
@@ -659,59 +663,56 @@ const CouponForm = ({ coupon = null, onSave, onClose }) => {
                   ))}
                 </select>
                 {errors.brandId && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.brandId}
-                  </p>
+                  <p className="text-red-500 text-xs mt-1">{errors.brandId}</p>
                 )}
               </div>
             )}
           </div>
 
           {/* Product Variant Dropdown - shown if targetType is "product_variant" and a product is selected */}
-          {formData.targetType === "product_variant" &&
-            formData.productId && (
-              <div className="mt-4">
-                {" "}
-                {/* Ensure it's part of the grid or styled appropriately */}
-                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
-                  PRODUCT VARIANT *
-                </label>
-                <select
-                  name="productVariantId"
-                  value={formData.productVariantId || ""}
-                  onChange={handleChange}
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm ${
-                    errors.productVariantId ? "border-red-500" : ""
-                  }`}
-                >
-                  <option key="select-variant" value="">
-                    Select a variant
+          {formData.targetType === "product_variant" && formData.productId && (
+            <div className="mt-4">
+              {" "}
+              {/* Ensure it's part of the grid or styled appropriately */}
+              <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
+                PRODUCT VARIANT *
+              </label>
+              <select
+                name="productVariantId"
+                value={formData.productVariantId || ""}
+                onChange={handleChange}
+                className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm ${
+                  errors.productVariantId ? "border-red-500" : ""
+                }`}
+              >
+                <option key="select-variant" value="">
+                  Select a variant
+                </option>
+                {productVariants.map((variant, index) => (
+                  <option
+                    key={
+                      variant.variant_id ||
+                      variant.id ||
+                      variant.product_variant_id ||
+                      `variant-${index}`
+                    }
+                    value={
+                      variant.variant_id ||
+                      variant.id ||
+                      variant.product_variant_id
+                    }
+                  >
+                    {variant.name} (SKU: {variant.sku || "N/A"})
                   </option>
-                  {productVariants.map((variant, index) => (
-                    <option
-                      key={
-                        variant.variant_id ||
-                        variant.id ||
-                        variant.product_variant_id ||
-                        `variant-${index}`
-                      }
-                      value={
-                        variant.variant_id ||
-                        variant.id ||
-                        variant.product_variant_id
-                      }
-                    >
-                      {variant.name} (SKU: {variant.sku || "N/A"})
-                    </option>
-                  ))}
-                </select>
-                {errors.productVariantId && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.productVariantId}
-                  </p>
-                )}
-              </div>
-            )}
+                ))}
+              </select>
+              {errors.productVariantId && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.productVariantId}
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -807,9 +808,7 @@ const CouponForm = ({ coupon = null, onSave, onClose }) => {
                 placeholder="Unlimited"
               />
               {errors.usageLimit && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.usageLimit}
-                </p>
+                <p className="text-red-500 text-xs mt-1">{errors.usageLimit}</p>
               )}
             </div>
 
