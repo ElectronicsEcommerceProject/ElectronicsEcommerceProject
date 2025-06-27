@@ -611,24 +611,29 @@ const getProductsAnalyticsData = async (req, res) => {
         {
           model: Product,
           as: "product",
-          attributes: [],
+          attributes: ["product_id"],
           include: [
             {
               model: Category,
               as: "category",
-              attributes: ["name"],
+              attributes: ["category_id", "name"],
             },
           ],
         },
       ],
       attributes: [
+        [Sequelize.col("product.category.category_id"), "categoryId"],
         [Sequelize.col("product.category.name"), "category"],
         [
           Sequelize.fn("SUM", Sequelize.col("OrderItem.final_price")),
           "revenue",
         ],
       ],
-      group: ["product.category.category_id", "product.category.name"],
+      group: [
+        "product.product_id",
+        "product.category.category_id", 
+        "product.category.name"
+      ],
       raw: true,
     });
 
