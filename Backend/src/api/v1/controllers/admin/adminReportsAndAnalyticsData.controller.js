@@ -502,7 +502,7 @@ const getProductsAnalyticsData = async (req, res) => {
             {
               model: Category,
               as: "category",
-              attributes: ["name"],
+              attributes: ["category_id", "name"],
             },
           ],
         },
@@ -517,6 +517,7 @@ const getProductsAnalyticsData = async (req, res) => {
         "OrderItem.product_id",
         "product.product_id",
         "product.name",
+        "product.category.category_id",
         "product.category.name",
       ],
       order: [[Sequelize.fn("SUM", Sequelize.col("total_quantity")), "DESC"]],
@@ -548,7 +549,7 @@ const getProductsAnalyticsData = async (req, res) => {
             {
               model: Category,
               as: "category",
-              attributes: ["name"],
+              attributes: ["category_id", "name"],
             },
           ],
         },
@@ -563,6 +564,7 @@ const getProductsAnalyticsData = async (req, res) => {
         "OrderItem.product_id",
         "product.product_id",
         "product.name",
+        "product.category.category_id",
         "product.category.name",
       ],
       order: [[Sequelize.fn("SUM", Sequelize.col("total_quantity")), "ASC"]],
@@ -656,7 +658,7 @@ const getProductsAnalyticsData = async (req, res) => {
             {
               model: Category,
               as: "category",
-              attributes: ["name"],
+              attributes: ["category_id", "name"],
             },
           ],
         },
@@ -674,6 +676,7 @@ const getProductsAnalyticsData = async (req, res) => {
         "WishListItem.product_id",
         "product.product_id",
         "product.name",
+        "product.category.category_id",
         "product.category.name",
       ],
       order: [
