@@ -89,11 +89,44 @@ const AddressForm = ({
     }
   };
 
+  // Request location permission and get coordinates
+  const requestLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setFormData(prev => ({
+            ...prev,
+            latitude: latitude.toString(),
+            longitude: longitude.toString()
+          }));
+          alert(`Location captured successfully!\nLatitude: ${latitude}\nLongitude: ${longitude}`);
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          if (error.code === error.PERMISSION_DENIED) {
+            alert(`Location permission denied. To enable location access:\n\n1. Click the location icon in your browser's address bar\n2. Select "Allow" for location access\n3. Refresh the page and try again\n\nOr manually enter coordinates in the form below.`);
+          } else {
+            alert("Unable to retrieve your location. Please check your browser settings or enter coordinates manually.");
+          }
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
+  };
+
   // Load addresses when component mounts
   useEffect(() => {
     if (isOpen) {
       console.log("AddressForm opened, fetching addresses from:", userAddressesRoute);
       fetchAddresses();
+      requestLocation();
     }
   }, [isOpen]);
 
@@ -105,6 +138,8 @@ const AddressForm = ({
     state: "",
     postal_code: "",
     country: "India",
+    latitude: "",
+    longitude: "",
     is_default: false,
   });
 
@@ -170,6 +205,8 @@ const AddressForm = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log("Form Data:", formData);
+
     if (!validateForm()) {
       return;
     }
@@ -183,6 +220,8 @@ const AddressForm = ({
         state: formData.state,
         postal_code: formData.postal_code,
         country: formData.country,
+        latitude: formData.latitude || null,
+        longitude: formData.longitude || null,
         is_default: formData.is_default,
       };
 
@@ -214,6 +253,8 @@ const AddressForm = ({
             state: "",
             postal_code: "",
             country: "India",
+            latitude: "",
+            longitude: "",
             is_default: false,
           });
           setEditingAddress(null);
@@ -243,6 +284,8 @@ const AddressForm = ({
             state: "",
             postal_code: "",
             country: "India",
+            latitude: "",
+            longitude: "",
             is_default: false,
           });
           setShowAddForm(false);
@@ -278,6 +321,8 @@ const AddressForm = ({
       state: address.state,
       postal_code: address.postal_code,
       country: address.country,
+      latitude: address.latitude || "",
+      longitude: address.longitude || "",
       is_default: address.is_default,
     });
     setEditingAddress(address);
@@ -592,6 +637,36 @@ const AddressForm = ({
                     }`}
                     placeholder="Country"
                     readOnly
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Latitude
+                  </label>
+                  <input
+                    type="text"
+                    name="latitude"
+                    value={formData.latitude}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded"
+                    placeholder="Auto-filled or enter manually"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Longitude
+                  </label>
+                  <input
+                    type="text"
+                    name="longitude"
+                    value={formData.longitude}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded"
+                    placeholder="Auto-filled or enter manually"
                   />
                 </div>
               </div>

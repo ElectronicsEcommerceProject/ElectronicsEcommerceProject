@@ -43,6 +43,26 @@ export const addressValidator = Joi.object({
     .messages({
       "string.base": MESSAGE.custom("Country must be a string"),
     }),
+  latitude: Joi.number()
+    .optional()
+    .allow(null)
+    .min(-90)
+    .max(90)
+    .messages({
+      "number.base": MESSAGE.custom("Latitude must be a number"),
+      "number.min": MESSAGE.custom("Latitude must be between -90 and 90"),
+      "number.max": MESSAGE.custom("Latitude must be between -90 and 90"),
+    }),
+  longitude: Joi.number()
+    .optional()
+    .allow(null)
+    .min(-180)
+    .max(180)
+    .messages({
+      "number.base": MESSAGE.custom("Longitude must be a number"),
+      "number.min": MESSAGE.custom("Longitude must be between -180 and 180"),
+      "number.max": MESSAGE.custom("Longitude must be between -180 and 180"),
+    }),
   is_default: Joi.boolean()
     .optional()
     .default(false)
@@ -89,6 +109,26 @@ export const updateAddressValidator = Joi.object({
     .optional()
     .messages({
       "string.base": MESSAGE.custom("Country must be a string"),
+    }),
+  latitude: Joi.number()
+    .optional()
+    .allow(null)
+    .min(-90)
+    .max(90)
+    .messages({
+      "number.base": MESSAGE.custom("Latitude must be a number"),
+      "number.min": MESSAGE.custom("Latitude must be between -90 and 90"),
+      "number.max": MESSAGE.custom("Latitude must be between -90 and 90"),
+    }),
+  longitude: Joi.number()
+    .optional()
+    .allow(null)
+    .min(-180)
+    .max(180)
+    .messages({
+      "number.base": MESSAGE.custom("Longitude must be a number"),
+      "number.min": MESSAGE.custom("Longitude must be between -180 and 180"),
+      "number.max": MESSAGE.custom("Longitude must be between -180 and 180"),
     }),
   is_default: Joi.boolean()
     .optional()
