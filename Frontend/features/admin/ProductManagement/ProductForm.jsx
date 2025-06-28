@@ -499,7 +499,7 @@ const ProductCatalogManagement = () => {
 
       if (type === "file" && files[0]) {
         const file = files[0];
-        const maxSize = 2 * 1024 * 1024; // 2MB
+        const maxSize = 10 * 1024 * 1024; // 10MB (will be compressed to 2MB on backend)
         const allowedExtensions = ["jpeg", "jpg", "png"];
         const fileExtension = file.name.split(".").pop().toLowerCase();
 
@@ -508,7 +508,7 @@ const ProductCatalogManagement = () => {
           alert(
             `Image size is ${(file.size / (1024 * 1024)).toFixed(
               2
-            )}MB. Maximum allowed size is 2MB.`
+            )}MB. Maximum allowed size is 10MB (will be compressed to 2MB automatically).`
           );
           e.target.value = ""; // Clear the input
           return;
