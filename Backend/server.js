@@ -45,7 +45,7 @@ const PORT = process.env.PORT || 3000;
     await sequelize.authenticate();
     await sequelize.sync();
     // await sequelize.sync({ force: true }); // Use force: true only for development/testing
-    // await sequelize.sync({ alter: true }); //use alter: true to update the schema without losing data
+    await sequelize.sync({ alter: true }); //use alter: true to update the schema without losing data
     console.log("✅ Database connection established successfully.");
     console.log("✅ Database synced successfully.");
 
