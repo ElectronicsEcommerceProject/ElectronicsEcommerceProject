@@ -225,6 +225,8 @@ const OrderDashboard = () => {
               date: formattedDate,
               items: items,
               address: address,
+              latitude: order.address ? order.address.latitude : null,
+              longitude: order.address ? order.address.longitude : null,
               tracking: tracking,
               refundStatus: null, // Not provided in API
               paymentStatus: order.payment_status,
