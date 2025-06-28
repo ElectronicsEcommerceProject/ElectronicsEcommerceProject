@@ -41,6 +41,15 @@ const OrderDetailModal = ({
               <p className="text-sm">
                 <strong>Address:</strong> {selectedOrder.address}
               </p>
+              {(selectedOrder.latitude || selectedOrder.longitude) && (
+                <div className="text-sm mt-2">
+                  <strong>Coordinates:</strong>
+                  <div className="ml-2 text-xs text-gray-600">
+                    <div>Latitude: {selectedOrder.latitude || 'N/A'}</div>
+                    <div>Longitude: {selectedOrder.longitude || 'N/A'}</div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <div>
