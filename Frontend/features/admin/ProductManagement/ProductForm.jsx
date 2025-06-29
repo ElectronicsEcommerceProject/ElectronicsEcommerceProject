@@ -499,7 +499,7 @@ const ProductCatalogManagement = () => {
 
       if (type === "file" && files[0]) {
         const file = files[0];
-        const maxSize = 2 * 1024 * 1024; // 2MB
+        const maxSize = 10 * 1024 * 1024; // 10MB (will be compressed to 2MB on backend)
         const allowedExtensions = ["jpeg", "jpg", "png"];
         const fileExtension = file.name.split(".").pop().toLowerCase();
 
@@ -508,7 +508,7 @@ const ProductCatalogManagement = () => {
           alert(
             `Image size is ${(file.size / (1024 * 1024)).toFixed(
               2
-            )}MB. Maximum allowed size is 2MB.`
+            )}MB. Maximum allowed size is 10MB (will be compressed to 2MB automatically).`
           );
           e.target.value = ""; // Clear the input
           return;
@@ -813,6 +813,18 @@ const ProductCatalogManagement = () => {
       "Media",
       "Review",
     ];
+
+    const canNavigateToStep = (targetStep) => {
+      // Can navigate to any previous step if it has been filled
+      return targetStep < step && Object.keys(stepFormData[targetStep]).length > 0;
+    };
+
+    const handleStepClick = (targetStep) => {
+      if (canNavigateToStep(targetStep)) {
+        setStep(targetStep);
+      }
+    };
+
     return (
       <div className="mb-6 flex items-center justify-between">
         {steps.map((name, i) => (
@@ -825,11 +837,12 @@ const ProductCatalogManagement = () => {
               <div
                 className={`w-10 h-10 flex items-center justify-center rounded-full text-sm font-semibold ${
                   i + 1 < step
-                    ? "bg-blue-600 text-white"
+                    ? "bg-blue-600 text-white cursor-pointer hover:bg-blue-700"
                     : i + 1 === step
                     ? "border-2 border-blue-600 text-blue-600"
                     : "border-2 border-gray-300 text-gray-400"
-                }`}
+                } ${canNavigateToStep(i + 1) ? "cursor-pointer" : ""}`}
+                onClick={() => handleStepClick(i + 1)}
               >
                 {i + 1 < step ? "✓" : i + 1}
               </div>
@@ -848,85 +861,93 @@ const ProductCatalogManagement = () => {
     );
   };
 
-  const ReviewStep = () => (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <div className="flex items-center justify-center mb-6">
-        <div className="text-green-500 text-center">
-          <h2 className="text-2xl font-bold text-green-600 mb-2">
-            Product Creation Complete!
-          </h2>
-          <svg
-            className="w-16 h-16 text-green-500"
-            fill="currentColor"
-            viewBox="0 0 20 20"
+  const ReviewStep = () => {
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSave = async () => {
+      setIsSaving(true);
+      try {
+        await submitAllFormData();
+      } catch (error) {
+        console.error('Error saving data:', error);
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    return (
+      <div className="bg-white p-6 rounded-lg shadow-md max-w-4xl mx-auto">
+        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
+          Review Product Information
+        </h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[
+            "Category",
+            "Brand",
+            "Product",
+            "Variant",
+            "Attribute Value",
+            "Media",
+          ].map((label, i) => (
+            <div key={label} className="bg-gray-50 p-4 rounded-lg border">
+              <h4 className="font-semibold text-gray-700 mb-2">{label}</h4>
+              <div className="space-y-1">
+                <p className="font-medium text-gray-900">
+                  {stepFormData[i + 1]?.[
+                    i < 3
+                      ? "name"
+                      : i === 3
+                      ? "sku"
+                      : i === 4
+                      ? "value"
+                      : "media_type"
+                  ] || "N/A"}
+                </p>
+                {i === 4 && stepFormData[5]?.attribute_name && (
+                  <p className="text-sm text-gray-600">
+                    Attribute: {stepFormData[5].attribute_name}
+                  </p>
+                )}
+                {i === 5 && stepFormData[6]?.media_file && (
+                  <>
+                    <p className="text-sm text-gray-600">
+                      File: {stepFormData[6].media_file.name}
+                    </p>
+                    <img
+                      src={URL.createObjectURL(stepFormData[6].media_file)}
+                      alt="Media preview"
+                      className="mt-2 max-w-full h-auto max-h-32 rounded border"
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <div className="mt-8 flex justify-between items-center">
+          <button
+            onClick={() => setStep(6)}
+            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
           >
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-              clipRule="evenodd"
-            />
-          </svg>
+            Back to Media
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className={`px-8 py-3 bg-green-600 text-white rounded-lg font-semibold transition-colors ${
+              isSaving 
+                ? "opacity-70 cursor-not-allowed" 
+                : "hover:bg-green-700"
+            }`}
+          >
+            {isSaving ? "Saving..." : "Save Product"}
+          </button>
         </div>
       </div>
-      <h3 className="text-xl font-bold mb-4">Product Information Summary</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[
-          "Category",
-          "Brand",
-          "Product",
-          "Variant",
-          "Attribute Value",
-          "Media",
-        ].map((label, i) => (
-          <div key={label} className="bg-gray-50 p-3 rounded">
-            <h4 className="font-medium text-gray-700">{label}</h4>
-            <p className="font-semibold">
-              {stepFormData[i + 1]?.[
-                i < 3
-                  ? "name"
-                  : i === 3
-                  ? "sku"
-                  : i === 4
-                  ? "value"
-                  : "media_type"
-              ] || "N/A"}
-            </p>
-            {i === 4 && stepFormData[5]?.attribute_name && (
-              <p className="text-sm text-gray-500">
-                For: {stepFormData[5].attribute_name}
-              </p>
-            )}
-            {i === 5 && stepFormData[6]?.media_file && (
-              <>
-                <p className="text-sm text-gray-500">
-                  File: {stepFormData[6].media_file.name}
-                </p>
-                <img
-                  src={URL.createObjectURL(stepFormData[6].media_file)}
-                  alt="Media preview"
-                  className="mt-2 max-w-full h-auto max-h-32 rounded"
-                />
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-      <div className="mt-6 flex justify-between">
-        <button
-          onClick={() => setStep(6)}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-        >
-          Back
-        </button>
-        <button
-          onClick={() => navigate("/admin/product-dashboard")}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Go to Dashboard
-        </button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const stepsConfig = [
     {
@@ -1165,12 +1186,7 @@ const ProductCatalogManagement = () => {
     },
   ];
 
-  useEffect(() => {
-    if (step === 7) {
-      submitAllFormData();
-    }
-    // eslint-disable-next-line
-  }, [step]);
+
 
   return (
     <div className="min-h-screen bg-gray-100 py-4 px-4 md:px-8">

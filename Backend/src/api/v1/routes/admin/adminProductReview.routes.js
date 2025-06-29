@@ -67,9 +67,10 @@ router.get(
 router.patch(
   "/:review_id",
   verifyJwtToken,
+  isAdmin,
   validator(validators.productReview.reviewIdValidator, "params"),
   validator(validators.productReview.updateReviewValidator, null),
-  productReviewController.updateReview
+  adminProductReviewController.updateReview
 );
 
 /**

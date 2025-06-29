@@ -14,6 +14,8 @@ const addAddress = async (req, res) => {
       state,
       postal_code,
       country,
+      latitude,
+      longitude,
       is_default,
       is_active,
     } = req.body;
@@ -52,6 +54,8 @@ const addAddress = async (req, res) => {
       state,
       postal_code,
       country: country || "India",
+      latitude: latitude || null,
+      longitude: longitude || null,
       is_default: is_default || false,
       is_active: is_active !== undefined ? is_active : true,
     });
@@ -183,6 +187,8 @@ const updateAddress = async (req, res) => {
       state,
       postal_code,
       country,
+      latitude,
+      longitude,
       is_default,
       is_active,
     } = req.body;
@@ -238,6 +244,8 @@ const updateAddress = async (req, res) => {
     if (state !== undefined) updatedFields.state = state;
     if (postal_code !== undefined) updatedFields.postal_code = postal_code;
     if (country !== undefined) updatedFields.country = country;
+    if (latitude !== undefined) updatedFields.latitude = latitude;
+    if (longitude !== undefined) updatedFields.longitude = longitude;
     if (is_default !== undefined) updatedFields.is_default = is_default;
     if (is_active !== undefined) updatedFields.is_active = is_active;
 

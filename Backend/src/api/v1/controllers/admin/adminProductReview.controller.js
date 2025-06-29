@@ -511,6 +511,53 @@ export const reviewAnalytics = async (req, res) => {
   }
 };
 
+export const updateReview = async (req, res) => {
+  try {
+    const { review_id } = req.params;
+    const { rating, title, review } = req.body;
+
+    // Get user from token
+    const user = await User.findOne({ where: { email: req.user.email } });
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Find the review
+    const reviewToUpdate = await ProductReview.findByPk(review_id);
+    if (!reviewToUpdate) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: "Review not found",
+      });
+    }
+
+    // Update the review
+    await reviewToUpdate.update({
+      rating: rating || reviewToUpdate.rating,
+      title: title !== undefined ? title : reviewToUpdate.title,
+      review: review !== undefined ? review : reviewToUpdate.review,
+      is_approved: false, // Reset approval status on update
+      updated_by: user.user_id,
+    });
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: MESSAGE.put.succ,
+      data: reviewToUpdate,
+    });
+  } catch (err) {
+    console.error("❌ Error updating review:", err);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: MESSAGE.put.fail,
+      error: err.message,
+    });
+  }
+};
+
 export default {
   getAllProductReviews,
   getProductReviews,
@@ -518,4 +565,5 @@ export default {
   changeReviewStatus,
   deleteReview,
   reviewAnalytics,
+  updateReview,
 };

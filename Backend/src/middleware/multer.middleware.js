@@ -4,6 +4,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import { StatusCodes } from "http-status-codes";
+import sharp from "sharp";
 
 // Get the directory name properly in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -68,22 +69,72 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Initialize multer with proper field name
+// Initialize multer with higher file size limit for compression
 const upload = multer({
   storage,
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB file size limit
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB file size limit (before compression)
   fileFilter,
 });
+
+// Image compression function
+const compressImage = async (filePath, maxSizeBytes = 2 * 1024 * 1024) => {
+  try {
+    // Wait a bit for file to be fully written
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    const stats = fs.statSync(filePath);
+    
+    // If file is already under 2MB, no compression needed
+    if (stats.size <= maxSizeBytes) {
+      console.log(`File ${filePath} is already under 2MB (${(stats.size / (1024 * 1024)).toFixed(2)}MB)`);
+      return;
+    }
+
+    console.log(`Compressing image: ${filePath} (${(stats.size / (1024 * 1024)).toFixed(2)}MB)`);
+    
+    // Start with quality 80 and reduce if needed
+    let quality = 80;
+    let compressedBuffer;
+    
+    do {
+      compressedBuffer = await sharp(filePath)
+        .jpeg({ quality, progressive: true })
+        .toBuffer();
+      
+      if (compressedBuffer.length <= maxSizeBytes) {
+        break;
+      }
+      
+      quality -= 10;
+    } while (quality > 20 && compressedBuffer.length > maxSizeBytes);
+    
+    // Create temporary file path
+    const tempPath = filePath + '.temp';
+    
+    // Write compressed image to temp file first
+    fs.writeFileSync(tempPath, compressedBuffer);
+    
+    // Replace original with compressed
+    fs.renameSync(tempPath, filePath);
+    
+    const newStats = fs.statSync(filePath);
+    console.log(`Image compressed successfully: ${(newStats.size / (1024 * 1024)).toFixed(2)}MB (quality: ${quality})`);
+    
+  } catch (error) {
+    console.error('Error compressing image:', error);
+    throw error;
+  }
+};
 
 // Export the middleware with console logging for debugging
 export default {
   single: (fieldName) => {
     console.log(`Setting up multer for field: ${fieldName}`);
-    return (req, res, next) => {
+    return async (req, res, next) => {
       console.log("Multer middleware running");
       console.log("Request headers:", req.headers);
 
-      upload.single(fieldName)(req, res, (err) => {
+      upload.single(fieldName)(req, res, async (err) => {
         if (err) {
           console.error("Multer error:", err);
           return res.status(StatusCodes.BAD_REQUEST).json({
@@ -92,6 +143,17 @@ export default {
           });
         }
         console.log("File after multer:", req.file);
+        
+        // Compress image if it exists and is for product upload
+        if (req.file && req.originalUrl.includes("product")) {
+          try {
+            await compressImage(req.file.path);
+          } catch (compressionError) {
+            console.error("Image compression failed:", compressionError);
+            // Continue without compression if it fails
+          }
+        }
+        
         next();
       });
     };
