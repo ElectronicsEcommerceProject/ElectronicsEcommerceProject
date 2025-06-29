@@ -813,6 +813,18 @@ const ProductCatalogManagement = () => {
       "Media",
       "Review",
     ];
+
+    const canNavigateToStep = (targetStep) => {
+      // Can navigate to any previous step if it has been filled
+      return targetStep < step && Object.keys(stepFormData[targetStep]).length > 0;
+    };
+
+    const handleStepClick = (targetStep) => {
+      if (canNavigateToStep(targetStep)) {
+        setStep(targetStep);
+      }
+    };
+
     return (
       <div className="mb-6 flex items-center justify-between">
         {steps.map((name, i) => (
@@ -825,11 +837,12 @@ const ProductCatalogManagement = () => {
               <div
                 className={`w-10 h-10 flex items-center justify-center rounded-full text-sm font-semibold ${
                   i + 1 < step
-                    ? "bg-blue-600 text-white"
+                    ? "bg-blue-600 text-white cursor-pointer hover:bg-blue-700"
                     : i + 1 === step
                     ? "border-2 border-blue-600 text-blue-600"
                     : "border-2 border-gray-300 text-gray-400"
-                }`}
+                } ${canNavigateToStep(i + 1) ? "cursor-pointer" : ""}`}
+                onClick={() => handleStepClick(i + 1)}
               >
                 {i + 1 < step ? "✓" : i + 1}
               </div>
