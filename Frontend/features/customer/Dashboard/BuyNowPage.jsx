@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import Footer from "../../../components/Footer/Footer";
 import Header from "../../../components/Header/Header";
@@ -19,6 +19,7 @@ import {
 const BuyNowPage = () => {
   // Get product ID from URL parameters
   const { productId } = useParams();
+  const navigate = useNavigate();
 
   const [productData, setProductData] = useState(null);
   const [addingToCart, setAddingToCart] = useState(false);
@@ -135,7 +136,7 @@ const BuyNowPage = () => {
     }
   }, [productData]);
 
-  // Update minimum quantity when selected variant changes
+  // Update minimum quantity and image when selected variant changes
   useEffect(() => {
     if (selectedVariant && productData?.mainProduct?.variants) {
       const variantData = productData.mainProduct.variants.find(
@@ -147,6 +148,13 @@ const BuyNowPage = () => {
         // Update quantity to minimum if current quantity is less than minimum
         if (quantity < minRetailerQty) {
           setQuantity(minRetailerQty);
+        }
+        
+        // Update current image to variant image if available
+        if (variantData.base_variant_image_url && 
+            variantData.base_variant_image_url.trim() !== "" &&
+            !variantData.base_variant_image_url.includes("placeholder")) {
+          setCurrentImage(variantData.base_variant_image_url);
         }
       }
     }
@@ -384,6 +392,17 @@ const BuyNowPage = () => {
   };
 
   const filteredAndSortedReviews = getFilteredAndSortedReviews();
+
+  // Helper function to get current variant price
+  const getCurrentVariantPrice = () => {
+    if (selectedVariant && mainProduct.variants) {
+      const variantData = mainProduct.variants.find(
+        (v) => v.description === selectedVariant
+      );
+      return variantData ? parseFloat(variantData.price) : parseFloat(mainProduct.base_price || mainProduct.price || 0);
+    }
+    return parseFloat(mainProduct.base_price || mainProduct.price || 0);
+  };
 
   // Helper function to calculate the best discount (quantity vs coupon)
   const calculateBestDiscount = (
@@ -780,9 +799,9 @@ const BuyNowPage = () => {
                       `${action} ${quantity} item(s) in cart successfully!`
                     );
                     
-                    // Refresh page after successful add to cart
+                    // Navigate to cart page after successful add to cart
                     setTimeout(() => {
-                      window.location.reload();
+                      navigate('/cart');
                     }, 1000);
                   } else {
                     throw new Error(
@@ -837,7 +856,7 @@ const BuyNowPage = () => {
           </div>
           <div className="mt-4">
             <span className="text-xl sm:text-2xl lg:text-3xl font-semibold">
-              {mainProduct.price}
+              ₹{getCurrentVariantPrice()}
             </span>
             {mainProduct.originalPrice && (
               <span className="text-gray-500 line-through ml-2 text-sm sm:text-base">

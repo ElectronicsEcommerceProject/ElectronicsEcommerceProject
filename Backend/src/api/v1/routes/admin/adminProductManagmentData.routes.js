@@ -20,8 +20,11 @@ router.post(
   "/",
   verifyJwtToken,
   isAdmin,
-  // Update the field name to match what's used in the frontend
-  upload.single("media_file"),
+  // Handle multiple file uploads for product and variant media
+  upload.fields([
+    { name: "media_file", maxCount: 1 },
+    { name: "variant_media_file", maxCount: 1 }
+  ]),
   adminProductManagmentDashboardDataController.addProductManagmentData
 );
 

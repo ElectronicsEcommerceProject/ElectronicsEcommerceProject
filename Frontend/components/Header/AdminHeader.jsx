@@ -247,18 +247,13 @@ const AdminHeader = ({ notifications, dismissNotification }) => {
                   <span className="text-sm font-medium">Login</span>
                 </button>
               ) : (
-                <>
-                  <span className="text-sm font-medium bg-white/10 px-3 py-1.5 rounded-md">
-                    {user.name || user.email}
-                  </span>
-                  <button 
-                    onClick={handleLogout}
-                    className="flex items-center space-x-1 bg-red-500/80 hover:bg-red-600 px-3 py-1.5 rounded-md transition-colors"
-                  >
-                    <FiLogOut size={16} />
-                    <span className="text-sm font-medium">Logout</span>
-                  </button>
-                </>
+                <button 
+                  onClick={handleLogout}
+                  className="flex items-center space-x-1 bg-red-500/80 hover:bg-red-600 px-3 py-1.5 rounded-md transition-colors"
+                >
+                  <FiLogOut size={16} />
+                  <span className="text-sm font-medium">Logout</span>
+                </button>
               )}
             </div>
           </div>

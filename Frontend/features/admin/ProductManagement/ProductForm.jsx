@@ -30,7 +30,6 @@ const ProductCatalogManagement = () => {
     4: {},
     5: {},
     6: {},
-    7: {},
   });
   const [relatedSelections, setRelatedSelections] = useState({});
 
@@ -42,7 +41,6 @@ const ProductCatalogManagement = () => {
       variant: 4,
       attribute: 5,
       attributevalue: 5,
-      media: 6,
     };
     if (initialEntityType) {
       setStartedFromStep1(false);
@@ -72,7 +70,6 @@ const ProductCatalogManagement = () => {
         3: selections.products || {},
         4: selections.variants || {},
         5: selections.attributeValues || {},
-        6: selections.media || {},
       }));
       setRelatedSelections(selections);
     }
@@ -206,7 +203,6 @@ const ProductCatalogManagement = () => {
       3: "products",
       4: "variants",
       5: "attributeValues",
-      6: "media",
     };
 
     const currentEntityType = stepToEntityMap[step];
@@ -246,9 +242,9 @@ const ProductCatalogManagement = () => {
           stepFormData[5].id || stepFormData[5].product_attribute_value_id,
       },
       media: {
-        ...stepFormData[6],
+        ...stepFormData[3],
         product_media_id:
-          stepFormData[6].id || stepFormData[6].product_media_id,
+          stepFormData[3].id || stepFormData[3].product_media_id,
       },
     };
 
@@ -293,9 +289,14 @@ const ProductCatalogManagement = () => {
       // Create a FormData object for multipart/form-data submission
       const formData = new FormData();
 
-      // Add the file if it exists
-      if (stepFormData[6]?.media_file instanceof File) {
-        formData.append("media_file", stepFormData[6].media_file);
+      // Add the product media file if it exists
+      if (stepFormData[3]?.media_file instanceof File) {
+        formData.append("media_file", stepFormData[3].media_file);
+      }
+
+      // Add the variant media file if it exists
+      if (stepFormData[4]?.variant_media_file instanceof File) {
+        formData.append("variant_media_file", stepFormData[4].variant_media_file);
       }
 
       // Add all other data as JSON strings
@@ -810,9 +811,20 @@ const ProductCatalogManagement = () => {
       "Product",
       "Variant",
       "Attribute Value",
-      "Media",
       "Review",
     ];
+
+    const canNavigateToStep = (targetStep) => {
+      // Can navigate to any previous step if it has been filled
+      return targetStep < step && Object.keys(stepFormData[targetStep]).length > 0;
+    };
+
+    const handleStepClick = (targetStep) => {
+      if (canNavigateToStep(targetStep)) {
+        setStep(targetStep);
+      }
+    };
+
     return (
       <div className="mb-6 flex items-center justify-between">
         {steps.map((name, i) => (
@@ -825,11 +837,12 @@ const ProductCatalogManagement = () => {
               <div
                 className={`w-10 h-10 flex items-center justify-center rounded-full text-sm font-semibold ${
                   i + 1 < step
-                    ? "bg-blue-600 text-white"
+                    ? "bg-blue-600 text-white cursor-pointer hover:bg-blue-700"
                     : i + 1 === step
                     ? "border-2 border-blue-600 text-blue-600"
                     : "border-2 border-gray-300 text-gray-400"
-                }`}
+                } ${canNavigateToStep(i + 1) ? "cursor-pointer" : ""}`}
+                onClick={() => handleStepClick(i + 1)}
               >
                 {i + 1 < step ? "✓" : i + 1}
               </div>
@@ -848,85 +861,147 @@ const ProductCatalogManagement = () => {
     );
   };
 
-  const ReviewStep = () => (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <div className="flex items-center justify-center mb-6">
-        <div className="text-green-500 text-center">
-          <h2 className="text-2xl font-bold text-green-600 mb-2">
-            Product Creation Complete!
-          </h2>
-          <svg
-            className="w-16 h-16 text-green-500"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </div>
-      </div>
-      <h3 className="text-xl font-bold mb-4">Product Information Summary</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[
-          "Category",
-          "Brand",
-          "Product",
-          "Variant",
-          "Attribute Value",
-          "Media",
-        ].map((label, i) => (
-          <div key={label} className="bg-gray-50 p-3 rounded">
-            <h4 className="font-medium text-gray-700">{label}</h4>
-            <p className="font-semibold">
-              {stepFormData[i + 1]?.[
-                i < 3
-                  ? "name"
-                  : i === 3
-                  ? "sku"
-                  : i === 4
-                  ? "value"
-                  : "media_type"
-              ] || "N/A"}
-            </p>
-            {i === 4 && stepFormData[5]?.attribute_name && (
-              <p className="text-sm text-gray-500">
-                For: {stepFormData[5].attribute_name}
-              </p>
-            )}
-            {i === 5 && stepFormData[6]?.media_file && (
-              <>
-                <p className="text-sm text-gray-500">
-                  File: {stepFormData[6].media_file.name}
-                </p>
+  const ReviewStep = () => {
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSave = async () => {
+      setIsSaving(true);
+      try {
+        await submitAllFormData();
+      } catch (error) {
+        console.error('Error saving data:', error);
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    return (
+      <div className="bg-white p-6 rounded-lg shadow-md max-w-4xl mx-auto">
+        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
+          Review Product Information
+        </h2>
+        
+        <div className="space-y-6">
+          {/* Category Section */}
+          <div className="bg-gray-50 p-4 rounded-lg border">
+            <h4 className="font-semibold text-gray-700 mb-3">Category</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div><span className="font-medium">Name:</span> {stepFormData[1]?.name || "N/A"}</div>
+              <div><span className="font-medium">Slug:</span> {stepFormData[1]?.slug || "N/A"}</div>
+              <div><span className="font-medium">Target Role:</span> {stepFormData[1]?.target_role || "N/A"}</div>
+            </div>
+          </div>
+
+          {/* Brand Section */}
+          <div className="bg-gray-50 p-4 rounded-lg border">
+            <h4 className="font-semibold text-gray-700 mb-3">Brand</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div><span className="font-medium">Name:</span> {stepFormData[2]?.name || "N/A"}</div>
+              <div><span className="font-medium">Slug:</span> {stepFormData[2]?.slug || "N/A"}</div>
+            </div>
+          </div>
+
+          {/* Product Section */}
+          <div className="bg-gray-50 p-4 rounded-lg border">
+            <h4 className="font-semibold text-gray-700 mb-3">Product</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div><span className="font-medium">Name:</span> {stepFormData[3]?.name || "N/A"}</div>
+              <div><span className="font-medium">Slug:</span> {stepFormData[3]?.slug || "N/A"}</div>
+              <div><span className="font-medium">Base Price:</span> ₹{stepFormData[3]?.base_price || "N/A"}</div>
+              <div><span className="font-medium">Average Rating:</span> {stepFormData[3]?.average_rating || "N/A"}</div>
+              <div className="md:col-span-2"><span className="font-medium">Description:</span> {stepFormData[3]?.description || "N/A"}</div>
+            </div>
+          </div>
+
+          {/* Variant Section */}
+          <div className="bg-gray-50 p-4 rounded-lg border">
+            <h4 className="font-semibold text-gray-700 mb-3">Product Variant</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div><span className="font-medium">SKU:</span> {stepFormData[4]?.sku || "N/A"}</div>
+              <div><span className="font-medium">Price:</span> ₹{stepFormData[4]?.price || "N/A"}</div>
+              <div><span className="font-medium">Stock Quantity:</span> {stepFormData[4]?.stock_quantity || "N/A"}</div>
+              <div><span className="font-medium">Min Order Quantity:</span> {stepFormData[4]?.min_retailer_quantity || "N/A"}</div>
+              <div><span className="font-medium">Discount Quantity:</span> {stepFormData[4]?.discount_quantity || "N/A"}</div>
+              <div><span className="font-medium">Discount %:</span> {stepFormData[4]?.discount_percentage || "N/A"}%</div>
+              <div><span className="font-medium">Bulk Discount Quantity:</span> {stepFormData[4]?.bulk_discount_quantity || "N/A"}</div>
+              <div><span className="font-medium">Bulk Discount %:</span> {stepFormData[4]?.bulk_discount_percentage || "N/A"}%</div>
+              <div className="md:col-span-2"><span className="font-medium">Description:</span> {stepFormData[4]?.description || "N/A"}</div>
+            </div>
+          </div>
+
+          {/* Variant Media Section */}
+          <div className="bg-gray-50 p-4 rounded-lg border">
+            <h4 className="font-semibold text-gray-700 mb-3">Variant Media</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div><span className="font-medium">Media Type:</span> {stepFormData[4]?.variant_media_type || "N/A"}</div>
+              {stepFormData[4]?.variant_media_file && (
+                <div><span className="font-medium">File:</span> {stepFormData[4].variant_media_file.name}</div>
+              )}
+            </div>
+            {stepFormData[4]?.variant_media_file && (
+              <div className="mt-3">
                 <img
-                  src={URL.createObjectURL(stepFormData[6].media_file)}
-                  alt="Media preview"
-                  className="mt-2 max-w-full h-auto max-h-32 rounded"
+                  src={URL.createObjectURL(stepFormData[4].variant_media_file)}
+                  alt="Variant media preview"
+                  className="max-w-full h-auto max-h-40 rounded border"
                 />
-              </>
+              </div>
             )}
           </div>
-        ))}
+
+          {/* Attribute Value Section */}
+          <div className="bg-gray-50 p-4 rounded-lg border">
+            <h4 className="font-semibold text-gray-700 mb-3">Attribute Value</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div><span className="font-medium">Attribute Name:</span> {stepFormData[5]?.attribute_name || "N/A"}</div>
+              <div><span className="font-medium">Type:</span> {stepFormData[5]?.type || "N/A"}</div>
+              <div><span className="font-medium">Value:</span> {stepFormData[5]?.value || "N/A"}</div>
+            </div>
+          </div>
+
+          {/* Product Media Section */}
+          <div className="bg-gray-50 p-4 rounded-lg border">
+            <h4 className="font-semibold text-gray-700 mb-3">Product Media</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div><span className="font-medium">Media Type:</span> {stepFormData[3]?.media_type || "N/A"}</div>
+              {stepFormData[3]?.media_file && (
+                <div><span className="font-medium">File:</span> {stepFormData[3].media_file.name}</div>
+              )}
+            </div>
+            {stepFormData[3]?.media_file && (
+              <div className="mt-3">
+                <img
+                  src={URL.createObjectURL(stepFormData[3].media_file)}
+                  alt="Media preview"
+                  className="max-w-full h-auto max-h-40 rounded border"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="mt-8 flex justify-between items-center">
+          <button
+            onClick={() => setStep(5)}
+            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+          >
+            Back to Attribute Value
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className={`px-8 py-3 bg-green-600 text-white rounded-lg font-semibold transition-colors ${
+              isSaving 
+                ? "opacity-70 cursor-not-allowed" 
+                : "hover:bg-green-700"
+            }`}
+          >
+            {isSaving ? "Saving..." : "Save Product"}
+          </button>
+        </div>
       </div>
-      <div className="mt-6 flex justify-between">
-        <button
-          onClick={() => setStep(6)}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-        >
-          Back
-        </button>
-        <button
-          onClick={() => navigate("/admin/product-dashboard")}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Go to Dashboard
-        </button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const stepsConfig = [
     {
@@ -1026,6 +1101,25 @@ const ProductCatalogManagement = () => {
           placeholder: "Give rating from range 1-5 e.g., 4.5",
           required: false,
         },
+        {
+          name: "media_type",
+          label: "Product Media Type",
+          type: "select",
+          placeholder: "Select media type",
+          required: true,
+          defaultValue: "image",
+          options: [
+            { id: "image", name: "Image" },
+            { id: "video", name: "Video" },
+          ],
+        },
+        {
+          name: "media_file",
+          label: "Upload Media",
+          type: "file",
+          placeholder: "Select media file",
+          required: true,
+        },
       ],
     },
     {
@@ -1097,6 +1191,25 @@ const ProductCatalogManagement = () => {
           placeholder: "e.g., 15",
           required: false,
         },
+        {
+          name: "variant_media_type",
+          label: "Product Variant Media Type",
+          type: "select",
+          placeholder: "Select media type",
+          required: true,
+          defaultValue: "image",
+          options: [
+            { id: "image", name: "Image" },
+            { id: "video", name: "Video" },
+          ],
+        },
+        {
+          name: "variant_media_file",
+          label: "Upload Variant Media",
+          type: "file",
+          placeholder: "Select variant media file",
+          required: true,
+        },
       ],
     },
     {
@@ -1136,47 +1249,15 @@ const ProductCatalogManagement = () => {
         },
       ],
     },
-    {
-      title: "Upload Product Media",
-      endpoint: "{{baseUrl}}/admin/product-media",
-      nextStep: 7,
-      relatedEntities: ["categories", "brands", "products", "variants"],
-      fields: [
-        {
-          name: "media_type",
-          label: "Media Type",
-          type: "select",
-          placeholder: "Select media type",
-          required: true,
-          defaultValue: "image",
-          options: [
-            { id: "image", name: "Image" },
-            { id: "video", name: "Video" },
-          ],
-        },
-        {
-          name: "media_file",
-          label: "Upload Media",
-          type: "file",
-          placeholder: "Upload an image or video",
-          required: true,
-        },
-      ],
-    },
   ];
 
-  useEffect(() => {
-    if (step === 7) {
-      submitAllFormData();
-    }
-    // eslint-disable-next-line
-  }, [step]);
+
 
   return (
     <div className="min-h-screen bg-gray-100 py-4 px-4 md:px-8">
       <div className="max-w-4xl mx-auto">
         <Stepper />
-        {step === 7 ? (
+        {step === 6 ? (
           <ReviewStep />
         ) : (
           <EnhancedFormComponent {...stepsConfig[step - 1]} />
