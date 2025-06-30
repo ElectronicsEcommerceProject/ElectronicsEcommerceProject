@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import Footer from "../../../components/Footer/Footer";
 import Header from "../../../components/Header/Header";
@@ -19,6 +19,7 @@ import {
 const BuyNowPage = () => {
   // Get product ID from URL parameters
   const { productId } = useParams();
+  const navigate = useNavigate();
 
   const [productData, setProductData] = useState(null);
   const [addingToCart, setAddingToCart] = useState(false);
@@ -798,9 +799,9 @@ const BuyNowPage = () => {
                       `${action} ${quantity} item(s) in cart successfully!`
                     );
                     
-                    // Refresh page after successful add to cart
+                    // Navigate to cart page after successful add to cart
                     setTimeout(() => {
-                      window.location.reload();
+                      navigate('/cart');
                     }, 1000);
                   } else {
                     throw new Error(
