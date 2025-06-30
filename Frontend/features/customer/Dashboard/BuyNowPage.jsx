@@ -392,6 +392,17 @@ const BuyNowPage = () => {
 
   const filteredAndSortedReviews = getFilteredAndSortedReviews();
 
+  // Helper function to get current variant price
+  const getCurrentVariantPrice = () => {
+    if (selectedVariant && mainProduct.variants) {
+      const variantData = mainProduct.variants.find(
+        (v) => v.description === selectedVariant
+      );
+      return variantData ? parseFloat(variantData.price) : parseFloat(mainProduct.base_price || mainProduct.price || 0);
+    }
+    return parseFloat(mainProduct.base_price || mainProduct.price || 0);
+  };
+
   // Helper function to calculate the best discount (quantity vs coupon)
   const calculateBestDiscount = (
     variantData,
@@ -844,7 +855,7 @@ const BuyNowPage = () => {
           </div>
           <div className="mt-4">
             <span className="text-xl sm:text-2xl lg:text-3xl font-semibold">
-              {mainProduct.price}
+              ₹{getCurrentVariantPrice()}
             </span>
             {mainProduct.originalPrice && (
               <span className="text-gray-500 line-through ml-2 text-sm sm:text-base">
