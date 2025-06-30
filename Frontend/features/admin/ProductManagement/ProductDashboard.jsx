@@ -1335,11 +1335,15 @@ const ProductDashboard = () => {
           setSelectedItems((prev) => ({ ...prev, [entityKey]: null }));
         }
 
-        // Show both toast and alert for better visibility
+        // Clear active filters if deleted item was filtered
+        if (activeFilters[entityKey] && activeFilters[entityKey].id === id) {
+          setActiveFilters((prev) => ({ ...prev, [entityKey]: null }));
+        }
+
+        // Show success message
         const successMessage =
           deleteResponse.message || `${entityType} deleted successfully!`;
         toast.success(successMessage);
-        alert(successMessage);
       } else {
         const errorMessage =
           deleteResponse.message ||
