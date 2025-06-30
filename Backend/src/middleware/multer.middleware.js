@@ -158,4 +158,38 @@ export default {
       });
     };
   },
+  fields: (fields) => {
+    console.log(`Setting up multer for fields:`, fields);
+    return async (req, res, next) => {
+      console.log("Multer fields middleware running");
+      console.log("Request headers:", req.headers);
+
+      upload.fields(fields)(req, res, async (err) => {
+        if (err) {
+          console.error("Multer error:", err);
+          return res.status(StatusCodes.BAD_REQUEST).json({
+            success: false,
+            message: err.message,
+          });
+        }
+        console.log("Files after multer:", req.files);
+        
+        // Compress images if they exist and are for product upload
+        if (req.files && req.originalUrl.includes("product")) {
+          for (const fieldName in req.files) {
+            for (const file of req.files[fieldName]) {
+              try {
+                await compressImage(file.path);
+              } catch (compressionError) {
+                console.error(`Image compression failed for ${file.path}:`, compressionError);
+                // Continue without compression if it fails
+              }
+            }
+          }
+        }
+        
+        next();
+      });
+    };
+  },
 };

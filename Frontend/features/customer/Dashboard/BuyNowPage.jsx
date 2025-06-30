@@ -135,7 +135,7 @@ const BuyNowPage = () => {
     }
   }, [productData]);
 
-  // Update minimum quantity when selected variant changes
+  // Update minimum quantity and image when selected variant changes
   useEffect(() => {
     if (selectedVariant && productData?.mainProduct?.variants) {
       const variantData = productData.mainProduct.variants.find(
@@ -147,6 +147,13 @@ const BuyNowPage = () => {
         // Update quantity to minimum if current quantity is less than minimum
         if (quantity < minRetailerQty) {
           setQuantity(minRetailerQty);
+        }
+        
+        // Update current image to variant image if available
+        if (variantData.base_variant_image_url && 
+            variantData.base_variant_image_url.trim() !== "" &&
+            !variantData.base_variant_image_url.includes("placeholder")) {
+          setCurrentImage(variantData.base_variant_image_url);
         }
       }
     }

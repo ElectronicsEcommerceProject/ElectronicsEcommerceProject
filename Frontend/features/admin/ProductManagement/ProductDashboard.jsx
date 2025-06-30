@@ -402,6 +402,7 @@ const EditModal = ({ isOpen, onClose, entityType, item, onSave }) => {
                   "category", // If 'category' is a simple string name field
                   "brand", // If 'brand' is a simple string name field
                   "brand_slug", // e.g., product.brand_slug which is derived
+                  "base_variant_image_url", // Skip variant image URL in edit form
                 ];
                 // Skip ID fields and other specified fields
                 return !(
@@ -652,14 +653,14 @@ const ProductDashboard = () => {
               category_id: product.category_id,
               brand: product.brand_name,
               brand_id: product.brand_id,
+              image: product.image,
             })),
 
-            variants: response.data.productVariants.map((variant) => ({
+            variants: response.data.variants.map((variant) => ({
               id: variant.product_variant_id,
               product_id: variant.product_id,
               product_name: variant.product_name,
               sku: variant.sku,
-
               price: variant.price,
               description: variant.description,
               stock_quantity: variant.stock_quantity,
@@ -668,6 +669,7 @@ const ProductDashboard = () => {
               min_retailer_quantity: variant.min_retailer_quantity,
               bulk_discount_percentage: variant.bulk_discount_percentage,
               bulk_discount_quantity: variant.bulk_discount_quantity,
+              base_variant_image_url: variant.base_variant_image_url,
             })),
 
             attributeValues: response.data.attributeValues.map((attrVal) => ({
@@ -1456,15 +1458,12 @@ const ProductDashboard = () => {
             data={filteredVariants}
             searchPlaceholder="Search variants..."
             fields={[
+              { key: "sku", label: "Variant Name" },
               { key: "product_name", label: "Product" },
-              { key: "sku", label: "SKU" },
               { key: "price", label: "Price" },
               { key: "stock_quantity", label: "Stock" },
               { key: "discount_percentage", label: "Discount %" },
-              { key: "discount_quantity", label: "Discount Qty" },
-              { key: "min_retailer_quantity", label: "Min Retailer Qty" },
-              { key: "bulk_discount_percentage", label: "Bulk Discount %" },
-              { key: "bulk_discount_quantity", label: "Bulk Discount Qty" },
+              { key: "min_retailer_quantity", label: "Min Qty" },
             ]}
             onAdd={() => handleAdd("variant")}
             onEdit={handleEdit}

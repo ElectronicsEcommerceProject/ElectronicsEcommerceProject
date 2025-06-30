@@ -51,6 +51,7 @@ const getProductManagementData = async (req, res) => {
       productAttributes,
       attributeValues,
       variantAttributeValues,
+      productMedia,
     ] = await Promise.all([
       // 1. Categories
       Category.findAll({
@@ -165,6 +166,17 @@ const getProductManagementData = async (req, res) => {
           },
         ],
       }),
+
+      // 8. Product Media with URLs
+      ProductMedia.findAll({
+        attributes: ["product_media_id", "product_id", "product_variant_id", "media_type"],
+        include: [
+          {
+            model: ProductMediaUrl,
+            attributes: ["product_media_url", "media_type"],
+          },
+        ],
+      }),
     ]);
 
     // Create a mapping of product_attribute_id to products that use it
@@ -205,21 +217,42 @@ const getProductManagementData = async (req, res) => {
           .map((product) => product.product_id),
       })),
 
-      products: products.map((product) => ({
-        product_id: product.product_id,
-        name: product.name,
-        slug: product.slug,
-        description: product.description,
-        base_price: product.base_price,
-        rating_average: product.rating_average,
-        category_id: product.category.category_id,
-        category_name: product.category.name,
-        brand_id: product.brand.brand_id,
-        brand_name: product.brand.name,
-        brand_slug: product.brand.slug,
-      })),
+      products: products.map((product) => {
+        // Find media for this product
+        const media = productMedia.find(m => m.product_id === product.product_id);
+        const mediaUrl = media?.ProductMediaURLs?.[0]?.product_media_url || null;
+        
+        return {
+          id: product.product_id,
+          product_id: product.product_id,
+          name: product.name,
+          slug: product.slug,
+          description: product.description,
+          shortDescription: product.description,
+          basePrice: product.base_price,
+          finalPrice: product.base_price,
+          base_price: product.base_price,
+          rating: product.rating_average || 0,
+          rating_average: product.rating_average,
+          ratingCount: 0,
+          category: product.category.name,
+          category_id: product.category.category_id,
+          category_name: product.category.name,
+          brand: product.brand.name,
+          brand_id: product.brand.brand_id,
+          brand_name: product.brand.name,
+          brand_slug: product.brand.slug,
+          image: mediaUrl ? `${process.env.BASE_URL || 'http://localhost:3000'}/${mediaUrl}` : '/default-product-image.jpg',
+          inStock: true,
+          stockLevel: 10,
+          discountPercent: 0,
+          wholesalePrice: product.base_price * 0.8,
+          isFeatured: false,
+          availableOffers: [],
+        };
+      }),
 
-      productVariants: productVariants.map((variant) => ({
+      variants: productVariants.map((variant) => ({
         product_variant_id: variant.product_variant_id,
         product_id: variant.product_id,
         product_name: variant.Product.name,
@@ -232,6 +265,12 @@ const getProductManagementData = async (req, res) => {
         min_retailer_quantity: variant.min_retailer_quantity,
         bulk_discount_percentage: variant.bulk_discount_percentage,
         bulk_discount_quantity: variant.bulk_discount_quantity,
+      })),
+
+      attributes: productAttributes.map((attr) => ({
+        product_attribute_id: attr.product_attribute_id,
+        name: attr.name,
+        data_type: attr.data_type,
       })),
 
       attributeValues: attributeValues.map((attrValue) => {
@@ -253,6 +292,17 @@ const getProductManagementData = async (req, res) => {
           product_ids: [...new Set(productIds)],
         };
       }),
+
+      media: productMedia.map((media) => ({
+        product_media_id: media.product_media_id,
+        product_id: media.product_id,
+        product_variant_id: media.product_variant_id,
+        media_type: media.media_type,
+        urls: media.ProductMediaURLs?.map(url => ({
+          product_media_url: url.product_media_url,
+          media_type: url.media_type,
+        })) || [],
+      })),
     };
 
     return res.status(StatusCodes.OK).json({
@@ -312,28 +362,30 @@ const addProductManagmentData = async (req, res) => {
       });
     }
 
-    // Validate required fields
+    // Validate required fields (media is now part of product)
     if (
       !category ||
       !brand ||
       !product ||
       !variant ||
-      !attributeValue ||
-      !media
+      !attributeValue
     ) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
-        message: "All fields are required",
+        message: "All required fields must be provided",
       });
     }
 
     const created_by = user.user_id;
 
-    // Handle file upload - req.file is available from the upload middleware
-    if (req.file) {
-      // Store relative path in DB - use forward slashes for consistency
+    // Handle file uploads - req.files is available from the upload middleware
+    if (req.files) {
+      if (req.files.media_file) {
+        productImageUrl = `uploads/product_images/${req.files.media_file[0].filename}`;
+      }
+    } else if (req.file) {
+      // Fallback for single file upload
       productImageUrl = `uploads/product_images/${req.file.filename}`;
-      // console.log("Product image URL:", productImageUrl);
     }
 
     // Use transaction to ensure data consistency
@@ -414,6 +466,11 @@ const addProductManagmentData = async (req, res) => {
 
       // Step 4: Create or find Product Variant
       let productVariantRecord;
+      
+      // Prepare variant image URL
+      const variantImageUrl = req.files?.variant_media_file 
+        ? `uploads/product_images/${req.files.variant_media_file[0].filename}`
+        : null;
 
       // Check if variant exists by SKU
       let existingProductVariant = await ProductVariant.findOne({
@@ -423,6 +480,10 @@ const addProductManagmentData = async (req, res) => {
 
       if (existingProductVariant) {
         productVariantRecord = existingProductVariant;
+        // Update variant image if new one is provided
+        if (variantImageUrl) {
+          await productVariantRecord.update({ base_variant_image_url: variantImageUrl }, { transaction: t });
+        }
       } else {
         productVariantRecord = await ProductVariant.create(
           {
@@ -436,6 +497,7 @@ const addProductManagmentData = async (req, res) => {
             min_retailer_quantity: variant.min_retailer_quantity,
             bulk_discount_percentage: variant.bulk_discount_percentage,
             bulk_discount_quantity: variant.bulk_discount_quantity,
+            base_variant_image_url: variantImageUrl,
             created_by,
           },
           { transaction: t }
@@ -516,7 +578,7 @@ const addProductManagmentData = async (req, res) => {
         );
       }
 
-      // Step 8: Create or find Product Media
+      // Step 8: Create or find Product Media (media data is now in product object)
       let productMediaRecord;
 
       // Check if media already exists for this product/variant
@@ -535,29 +597,45 @@ const addProductManagmentData = async (req, res) => {
           {
             product_id: productRecord.product_id,
             product_variant_id: productVariantRecord.product_variant_id,
-            media_type: media?.media_type || "image",
+            media_type: product?.media_type || media?.media_type || "image",
             created_by,
           },
           { transaction: t }
         );
       }
 
-      // Step 9: Create Product Media URL using the uploaded file
-      const mediaUrl =
-        productImageUrl ||
-        (media?.media_file?.fileName
-          ? `uploads/product_images/${media.media_file.fileName}`
-          : "default-product-image.jpg");
-
-      const productMediaUrlRecord = await ProductMediaUrl.create(
-        {
-          product_media_id: productMediaRecord.product_media_id,
-          product_media_url: mediaUrl,
-          media_type: media?.media_type || "image",
-          created_by,
-        },
-        { transaction: t }
-      );
+      // Step 9: Create or update Product Media URL only if media is provided
+      let productMediaUrlRecord = null;
+      
+      if (productImageUrl || (media?.media_file?.fileName)) {
+        const mediaUrl = productImageUrl || `uploads/product_images/${media.media_file.fileName}`;
+        
+        // Check if ProductMediaUrl already exists for this ProductMedia
+        const existingProductMediaUrl = await ProductMediaUrl.findOne({
+          where: { product_media_id: productMediaRecord.product_media_id },
+          transaction: t,
+        });
+        
+        if (existingProductMediaUrl) {
+          // Update existing ProductMediaUrl
+          await existingProductMediaUrl.update({
+            product_media_url: mediaUrl,
+            media_type: product?.media_type || media?.media_type || "image",
+          }, { transaction: t });
+          productMediaUrlRecord = existingProductMediaUrl;
+        } else {
+          // Create new ProductMediaUrl
+          productMediaUrlRecord = await ProductMediaUrl.create(
+            {
+              product_media_id: productMediaRecord.product_media_id,
+              product_media_url: mediaUrl,
+              media_type: product?.media_type || media?.media_type || "image",
+              created_by,
+            },
+            { transaction: t }
+          );
+        }
+      }
 
       // Return all created/found records
       return {
@@ -573,14 +651,25 @@ const addProductManagmentData = async (req, res) => {
       };
     });
 
-    // Convert relative path to full URL for response
+    // Convert relative paths to full URLs for response
     if (
+      result.productMediaUrl &&
       result.productMediaUrl.product_media_url &&
       !result.productMediaUrl.product_media_url.startsWith("http")
     ) {
       result.productMediaUrl.product_media_url = `${req.protocol}://${req.get(
         "host"
       )}/${result.productMediaUrl.product_media_url.replace(/\\/g, "/")}`;
+    }
+
+    // Convert variant image URL to full URL
+    if (
+      result.variant.base_variant_image_url &&
+      !result.variant.base_variant_image_url.startsWith("http")
+    ) {
+      result.variant.base_variant_image_url = `${req.protocol}://${req.get(
+        "host"
+      )}/${result.variant.base_variant_image_url.replace(/\\/g, "/")}`;
     }
 
     return res.status(StatusCodes.CREATED).json({
@@ -591,18 +680,36 @@ const addProductManagmentData = async (req, res) => {
   } catch (error) {
     console.error("Error adding product management data:", error);
 
-    // If there was an error and we uploaded a file, clean it up
-    if (req.file && productImageUrl) {
+    // If there was an error and we uploaded files, clean them up
+    if (req.files) {
+      if (req.files.media_file && req.files.media_file[0]) {
+        try {
+          const filePath = req.files.media_file[0].path;
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            console.log("🗑 Product media file deleted due to error:", filePath);
+          }
+        } catch (cleanupError) {
+          console.error("Error cleaning up product media file:", cleanupError);
+        }
+      }
+      if (req.files.variant_media_file && req.files.variant_media_file[0]) {
+        try {
+          const filePath = req.files.variant_media_file[0].path;
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            console.log("🗑 Variant media file deleted due to error:", filePath);
+          }
+        } catch (cleanupError) {
+          console.error("Error cleaning up variant media file:", cleanupError);
+        }
+      }
+    } else if (req.file && productImageUrl) {
       try {
-        // Use the actual file path from req.file
         const filePath = req.file.path;
-        console.log("Actual file path for cleanup:", filePath);
-
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
           console.log("🗑 Uploaded file deleted due to error:", filePath);
-        } else {
-          console.log("❌ File not found at path:", filePath);
         }
       } catch (cleanupError) {
         console.error("Error cleaning up file:", cleanupError);
@@ -1854,6 +1961,7 @@ const updateProductManagementData = async (req, res) => {
         base_price,
         category_id,
         brand_id,
+        media_type,
       } = req.body;
 
       // Validate required fields
@@ -1861,8 +1969,6 @@ const updateProductManagementData = async (req, res) => {
         !product_id ||
         !name ||
         !slug ||
-        !description ||
-        !rating_average ||
         !base_price ||
         !brand_id ||
         !category_id
@@ -1870,7 +1976,7 @@ const updateProductManagementData = async (req, res) => {
         return res.status(StatusCodes.BAD_REQUEST).json({
           success: false,
           message:
-            "Product ID, name, slug, description, base price, brand ID and category ID are required",
+            "Product ID, name, slug, base price, brand ID and category ID are required",
         });
       }
 
@@ -1923,6 +2029,27 @@ const updateProductManagementData = async (req, res) => {
         category_id,
         brand_id,
       });
+
+      // Update media type if provided and media exists
+      if (media_type) {
+        try {
+          await ProductMedia.update(
+            { media_type },
+            { where: { product_id } }
+          );
+          await ProductMediaUrl.update(
+            { media_type },
+            { 
+              include: [{
+                model: ProductMedia,
+                where: { product_id }
+              }]
+            }
+          );
+        } catch (mediaError) {
+          console.log("Media update skipped:", mediaError.message);
+        }
+      }
 
       // Add missing return statement
       return res.status(StatusCodes.OK).json({
