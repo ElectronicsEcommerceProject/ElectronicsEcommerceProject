@@ -881,49 +881,83 @@ const ProductCatalogManagement = () => {
           Review Product Information
         </h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[
-            "Category",
-            "Brand",
-            "Product",
-            "Variant",
-            "Attribute Value",
-            "Media",
-          ].map((label, i) => (
-            <div key={label} className="bg-gray-50 p-4 rounded-lg border">
-              <h4 className="font-semibold text-gray-700 mb-2">{label}</h4>
-              <div className="space-y-1">
-                <p className="font-medium text-gray-900">
-                  {stepFormData[i + 1]?.[
-                    i < 3
-                      ? "name"
-                      : i === 3
-                      ? "sku"
-                      : i === 4
-                      ? "value"
-                      : "media_type"
-                  ] || "N/A"}
-                </p>
-                {i === 4 && stepFormData[5]?.attribute_name && (
-                  <p className="text-sm text-gray-600">
-                    Attribute: {stepFormData[5].attribute_name}
-                  </p>
-                )}
-                {i === 5 && stepFormData[6]?.media_file && (
-                  <>
-                    <p className="text-sm text-gray-600">
-                      File: {stepFormData[6].media_file.name}
-                    </p>
-                    <img
-                      src={URL.createObjectURL(stepFormData[6].media_file)}
-                      alt="Media preview"
-                      className="mt-2 max-w-full h-auto max-h-32 rounded border"
-                    />
-                  </>
-                )}
-              </div>
+        <div className="space-y-6">
+          {/* Category Section */}
+          <div className="bg-gray-50 p-4 rounded-lg border">
+            <h4 className="font-semibold text-gray-700 mb-3">Category</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div><span className="font-medium">Name:</span> {stepFormData[1]?.name || "N/A"}</div>
+              <div><span className="font-medium">Slug:</span> {stepFormData[1]?.slug || "N/A"}</div>
+              <div><span className="font-medium">Target Role:</span> {stepFormData[1]?.target_role || "N/A"}</div>
             </div>
-          ))}
+          </div>
+
+          {/* Brand Section */}
+          <div className="bg-gray-50 p-4 rounded-lg border">
+            <h4 className="font-semibold text-gray-700 mb-3">Brand</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div><span className="font-medium">Name:</span> {stepFormData[2]?.name || "N/A"}</div>
+              <div><span className="font-medium">Slug:</span> {stepFormData[2]?.slug || "N/A"}</div>
+            </div>
+          </div>
+
+          {/* Product Section */}
+          <div className="bg-gray-50 p-4 rounded-lg border">
+            <h4 className="font-semibold text-gray-700 mb-3">Product</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div><span className="font-medium">Name:</span> {stepFormData[3]?.name || "N/A"}</div>
+              <div><span className="font-medium">Slug:</span> {stepFormData[3]?.slug || "N/A"}</div>
+              <div><span className="font-medium">Base Price:</span> ₹{stepFormData[3]?.base_price || "N/A"}</div>
+              <div><span className="font-medium">Average Rating:</span> {stepFormData[3]?.average_rating || "N/A"}</div>
+              <div className="md:col-span-2"><span className="font-medium">Description:</span> {stepFormData[3]?.description || "N/A"}</div>
+            </div>
+          </div>
+
+          {/* Variant Section */}
+          <div className="bg-gray-50 p-4 rounded-lg border">
+            <h4 className="font-semibold text-gray-700 mb-3">Product Variant</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div><span className="font-medium">SKU:</span> {stepFormData[4]?.sku || "N/A"}</div>
+              <div><span className="font-medium">Price:</span> ₹{stepFormData[4]?.price || "N/A"}</div>
+              <div><span className="font-medium">Stock Quantity:</span> {stepFormData[4]?.stock_quantity || "N/A"}</div>
+              <div><span className="font-medium">Min Order Quantity:</span> {stepFormData[4]?.min_retailer_quantity || "N/A"}</div>
+              <div><span className="font-medium">Discount Quantity:</span> {stepFormData[4]?.discount_quantity || "N/A"}</div>
+              <div><span className="font-medium">Discount %:</span> {stepFormData[4]?.discount_percentage || "N/A"}%</div>
+              <div><span className="font-medium">Bulk Discount Quantity:</span> {stepFormData[4]?.bulk_discount_quantity || "N/A"}</div>
+              <div><span className="font-medium">Bulk Discount %:</span> {stepFormData[4]?.bulk_discount_percentage || "N/A"}%</div>
+              <div className="md:col-span-2"><span className="font-medium">Description:</span> {stepFormData[4]?.description || "N/A"}</div>
+            </div>
+          </div>
+
+          {/* Attribute Value Section */}
+          <div className="bg-gray-50 p-4 rounded-lg border">
+            <h4 className="font-semibold text-gray-700 mb-3">Attribute Value</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div><span className="font-medium">Attribute Name:</span> {stepFormData[5]?.attribute_name || "N/A"}</div>
+              <div><span className="font-medium">Type:</span> {stepFormData[5]?.type || "N/A"}</div>
+              <div><span className="font-medium">Value:</span> {stepFormData[5]?.value || "N/A"}</div>
+            </div>
+          </div>
+
+          {/* Media Section */}
+          <div className="bg-gray-50 p-4 rounded-lg border">
+            <h4 className="font-semibold text-gray-700 mb-3">Media</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div><span className="font-medium">Media Type:</span> {stepFormData[6]?.media_type || "N/A"}</div>
+              {stepFormData[6]?.media_file && (
+                <div><span className="font-medium">File:</span> {stepFormData[6].media_file.name}</div>
+              )}
+            </div>
+            {stepFormData[6]?.media_file && (
+              <div className="mt-3">
+                <img
+                  src={URL.createObjectURL(stepFormData[6].media_file)}
+                  alt="Media preview"
+                  className="max-w-full h-auto max-h-40 rounded border"
+                />
+              </div>
+            )}
+          </div>
         </div>
         
         <div className="mt-8 flex justify-between items-center">
