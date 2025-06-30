@@ -30,7 +30,6 @@ const ProductCatalogManagement = () => {
     4: {},
     5: {},
     6: {},
-    7: {},
   });
   const [relatedSelections, setRelatedSelections] = useState({});
 
@@ -42,7 +41,6 @@ const ProductCatalogManagement = () => {
       variant: 4,
       attribute: 5,
       attributevalue: 5,
-      media: 6,
     };
     if (initialEntityType) {
       setStartedFromStep1(false);
@@ -72,7 +70,6 @@ const ProductCatalogManagement = () => {
         3: selections.products || {},
         4: selections.variants || {},
         5: selections.attributeValues || {},
-        6: selections.media || {},
       }));
       setRelatedSelections(selections);
     }
@@ -206,7 +203,6 @@ const ProductCatalogManagement = () => {
       3: "products",
       4: "variants",
       5: "attributeValues",
-      6: "media",
     };
 
     const currentEntityType = stepToEntityMap[step];
@@ -246,9 +242,9 @@ const ProductCatalogManagement = () => {
           stepFormData[5].id || stepFormData[5].product_attribute_value_id,
       },
       media: {
-        ...stepFormData[6],
+        ...stepFormData[3],
         product_media_id:
-          stepFormData[6].id || stepFormData[6].product_media_id,
+          stepFormData[3].id || stepFormData[3].product_media_id,
       },
     };
 
@@ -293,9 +289,14 @@ const ProductCatalogManagement = () => {
       // Create a FormData object for multipart/form-data submission
       const formData = new FormData();
 
-      // Add the file if it exists
-      if (stepFormData[6]?.media_file instanceof File) {
-        formData.append("media_file", stepFormData[6].media_file);
+      // Add the product media file if it exists
+      if (stepFormData[3]?.media_file instanceof File) {
+        formData.append("media_file", stepFormData[3].media_file);
+      }
+
+      // Add the variant media file if it exists
+      if (stepFormData[4]?.variant_media_file instanceof File) {
+        formData.append("variant_media_file", stepFormData[4].variant_media_file);
       }
 
       // Add all other data as JSON strings
@@ -810,7 +811,6 @@ const ProductCatalogManagement = () => {
       "Product",
       "Variant",
       "Attribute Value",
-      "Media",
       "Review",
     ];
 
@@ -929,6 +929,26 @@ const ProductCatalogManagement = () => {
             </div>
           </div>
 
+          {/* Variant Media Section */}
+          <div className="bg-gray-50 p-4 rounded-lg border">
+            <h4 className="font-semibold text-gray-700 mb-3">Variant Media</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div><span className="font-medium">Media Type:</span> {stepFormData[4]?.variant_media_type || "N/A"}</div>
+              {stepFormData[4]?.variant_media_file && (
+                <div><span className="font-medium">File:</span> {stepFormData[4].variant_media_file.name}</div>
+              )}
+            </div>
+            {stepFormData[4]?.variant_media_file && (
+              <div className="mt-3">
+                <img
+                  src={URL.createObjectURL(stepFormData[4].variant_media_file)}
+                  alt="Variant media preview"
+                  className="max-w-full h-auto max-h-40 rounded border"
+                />
+              </div>
+            )}
+          </div>
+
           {/* Attribute Value Section */}
           <div className="bg-gray-50 p-4 rounded-lg border">
             <h4 className="font-semibold text-gray-700 mb-3">Attribute Value</h4>
@@ -939,19 +959,19 @@ const ProductCatalogManagement = () => {
             </div>
           </div>
 
-          {/* Media Section */}
+          {/* Product Media Section */}
           <div className="bg-gray-50 p-4 rounded-lg border">
-            <h4 className="font-semibold text-gray-700 mb-3">Media</h4>
+            <h4 className="font-semibold text-gray-700 mb-3">Product Media</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              <div><span className="font-medium">Media Type:</span> {stepFormData[6]?.media_type || "N/A"}</div>
-              {stepFormData[6]?.media_file && (
-                <div><span className="font-medium">File:</span> {stepFormData[6].media_file.name}</div>
+              <div><span className="font-medium">Media Type:</span> {stepFormData[3]?.media_type || "N/A"}</div>
+              {stepFormData[3]?.media_file && (
+                <div><span className="font-medium">File:</span> {stepFormData[3].media_file.name}</div>
               )}
             </div>
-            {stepFormData[6]?.media_file && (
+            {stepFormData[3]?.media_file && (
               <div className="mt-3">
                 <img
-                  src={URL.createObjectURL(stepFormData[6].media_file)}
+                  src={URL.createObjectURL(stepFormData[3].media_file)}
                   alt="Media preview"
                   className="max-w-full h-auto max-h-40 rounded border"
                 />
@@ -962,10 +982,10 @@ const ProductCatalogManagement = () => {
         
         <div className="mt-8 flex justify-between items-center">
           <button
-            onClick={() => setStep(6)}
+            onClick={() => setStep(5)}
             className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
           >
-            Back to Media
+            Back to Attribute Value
           </button>
           <button
             onClick={handleSave}
@@ -1081,6 +1101,25 @@ const ProductCatalogManagement = () => {
           placeholder: "Give rating from range 1-5 e.g., 4.5",
           required: false,
         },
+        {
+          name: "media_type",
+          label: "Product Media Type",
+          type: "select",
+          placeholder: "Select media type",
+          required: true,
+          defaultValue: "image",
+          options: [
+            { id: "image", name: "Image" },
+            { id: "video", name: "Video" },
+          ],
+        },
+        {
+          name: "media_file",
+          label: "Upload Media",
+          type: "file",
+          placeholder: "Select media file",
+          required: true,
+        },
       ],
     },
     {
@@ -1152,6 +1191,25 @@ const ProductCatalogManagement = () => {
           placeholder: "e.g., 15",
           required: false,
         },
+        {
+          name: "variant_media_type",
+          label: "Product Variant Media Type",
+          type: "select",
+          placeholder: "Select media type",
+          required: true,
+          defaultValue: "image",
+          options: [
+            { id: "image", name: "Image" },
+            { id: "video", name: "Video" },
+          ],
+        },
+        {
+          name: "variant_media_file",
+          label: "Upload Variant Media",
+          type: "file",
+          placeholder: "Select variant media file",
+          required: true,
+        },
       ],
     },
     {
@@ -1191,33 +1249,6 @@ const ProductCatalogManagement = () => {
         },
       ],
     },
-    {
-      title: "Upload Product Media",
-      endpoint: "{{baseUrl}}/admin/product-media",
-      nextStep: 7,
-      relatedEntities: ["categories", "brands", "products", "variants"],
-      fields: [
-        {
-          name: "media_type",
-          label: "Media Type",
-          type: "select",
-          placeholder: "Select media type",
-          required: true,
-          defaultValue: "image",
-          options: [
-            { id: "image", name: "Image" },
-            { id: "video", name: "Video" },
-          ],
-        },
-        {
-          name: "media_file",
-          label: "Upload Media",
-          type: "file",
-          placeholder: "Upload an image or video",
-          required: true,
-        },
-      ],
-    },
   ];
 
 
@@ -1226,7 +1257,7 @@ const ProductCatalogManagement = () => {
     <div className="min-h-screen bg-gray-100 py-4 px-4 md:px-8">
       <div className="max-w-4xl mx-auto">
         <Stepper />
-        {step === 7 ? (
+        {step === 6 ? (
           <ReviewStep />
         ) : (
           <EnhancedFormComponent {...stepsConfig[step - 1]} />
