@@ -296,7 +296,10 @@ const ProductCatalogManagement = () => {
 
       // Add the variant media file if it exists
       if (stepFormData[4]?.variant_media_file instanceof File) {
-        formData.append("variant_media_file", stepFormData[4].variant_media_file);
+        formData.append(
+          "variant_media_file",
+          stepFormData[4].variant_media_file
+        );
       }
 
       // Add all other data as JSON strings
@@ -539,7 +542,12 @@ const ProductCatalogManagement = () => {
       }
 
       // Validate discount, bulk discount, and minimum order quantities against stock quantity
-      if ((name === "discount_quantity" || name === "bulk_discount_quantity" || name === "min_retailer_quantity") && value !== "") {
+      if (
+        (name === "discount_quantity" ||
+          name === "bulk_discount_quantity" ||
+          name === "min_retailer_quantity") &&
+        value !== ""
+      ) {
         const quantity = parseFloat(value);
         const stockQuantity = parseFloat(localData.stock_quantity) || 0;
         if (stockQuantity > 0 && quantity > stockQuantity) {
@@ -548,7 +556,11 @@ const ProductCatalogManagement = () => {
       }
 
       // Validate percentage fields to not exceed 100
-      if ((name === "discount_percentage" || name === "bulk_discount_percentage") && value !== "") {
+      if (
+        (name === "discount_percentage" ||
+          name === "bulk_discount_percentage") &&
+        value !== ""
+      ) {
         const percentage = parseFloat(value);
         if (percentage > 100) {
           return; // Don't update if percentage exceeds 100
@@ -576,7 +588,7 @@ const ProductCatalogManagement = () => {
         [`selected_${entityType.slice(0, -1)}`]: entity.name,
         [`${entityType.slice(0, -1)}_name`]: entity.name,
       }));
-      
+
       // Generic form pre-filling for any entity selection
       const entityToStepMap = {
         categories: 1,
@@ -584,17 +596,18 @@ const ProductCatalogManagement = () => {
         products: 3,
         variants: 4,
         attributes: 5,
-        attributeValues: 5
+        attributeValues: 5,
       };
-      
+
       const targetStep = entityToStepMap[entityType];
       if (targetStep && targetStep !== step) {
         setStepFormData((prev) => ({
           ...prev,
           [targetStep]: {
             ...entity,
-            [`${entityType.slice(0, -1)}_id`]: entity.id || entity[`${entityType.slice(0, -1)}_id`]
-          }
+            [`${entityType.slice(0, -1)}_id`]:
+              entity.id || entity[`${entityType.slice(0, -1)}_id`],
+          },
         }));
       }
     };
@@ -816,7 +829,9 @@ const ProductCatalogManagement = () => {
 
     const canNavigateToStep = (targetStep) => {
       // Can navigate to any previous step if it has been filled
-      return targetStep < step && Object.keys(stepFormData[targetStep]).length > 0;
+      return (
+        targetStep < step && Object.keys(stepFormData[targetStep]).length > 0
+      );
     };
 
     const handleStepClick = (targetStep) => {
@@ -869,7 +884,7 @@ const ProductCatalogManagement = () => {
       try {
         await submitAllFormData();
       } catch (error) {
-        console.error('Error saving data:', error);
+        console.error("Error saving data:", error);
       } finally {
         setIsSaving(false);
       }
@@ -880,15 +895,24 @@ const ProductCatalogManagement = () => {
         <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
           Review Product Information
         </h2>
-        
+
         <div className="space-y-6">
           {/* Category Section */}
           <div className="bg-gray-50 p-4 rounded-lg border">
             <h4 className="font-semibold text-gray-700 mb-3">Category</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              <div><span className="font-medium">Name:</span> {stepFormData[1]?.name || "N/A"}</div>
-              <div><span className="font-medium">Slug:</span> {stepFormData[1]?.slug || "N/A"}</div>
-              <div><span className="font-medium">Target Role:</span> {stepFormData[1]?.target_role || "N/A"}</div>
+              <div>
+                <span className="font-medium">Name:</span>{" "}
+                {stepFormData[1]?.name || "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Slug:</span>{" "}
+                {stepFormData[1]?.slug || "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Target Role:</span>{" "}
+                {stepFormData[1]?.target_role || "N/A"}
+              </div>
             </div>
           </div>
 
@@ -896,8 +920,14 @@ const ProductCatalogManagement = () => {
           <div className="bg-gray-50 p-4 rounded-lg border">
             <h4 className="font-semibold text-gray-700 mb-3">Brand</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              <div><span className="font-medium">Name:</span> {stepFormData[2]?.name || "N/A"}</div>
-              <div><span className="font-medium">Slug:</span> {stepFormData[2]?.slug || "N/A"}</div>
+              <div>
+                <span className="font-medium">Name:</span>{" "}
+                {stepFormData[2]?.name || "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Slug:</span>{" "}
+                {stepFormData[2]?.slug || "N/A"}
+              </div>
             </div>
           </div>
 
@@ -905,27 +935,71 @@ const ProductCatalogManagement = () => {
           <div className="bg-gray-50 p-4 rounded-lg border">
             <h4 className="font-semibold text-gray-700 mb-3">Product</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              <div><span className="font-medium">Name:</span> {stepFormData[3]?.name || "N/A"}</div>
-              <div><span className="font-medium">Slug:</span> {stepFormData[3]?.slug || "N/A"}</div>
-              <div><span className="font-medium">Base Price:</span> ₹{stepFormData[3]?.base_price || "N/A"}</div>
-              <div><span className="font-medium">Average Rating:</span> {stepFormData[3]?.average_rating || "N/A"}</div>
-              <div className="md:col-span-2"><span className="font-medium">Description:</span> {stepFormData[3]?.description || "N/A"}</div>
+              <div>
+                <span className="font-medium">Name:</span>{" "}
+                {stepFormData[3]?.name || "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Slug:</span>{" "}
+                {stepFormData[3]?.slug || "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Base Price:</span> ₹
+                {stepFormData[3]?.base_price || "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Average Rating:</span>{" "}
+                {stepFormData[3]?.average_rating || "N/A"}
+              </div>
+              <div className="md:col-span-2">
+                <span className="font-medium">Description:</span>{" "}
+                {stepFormData[3]?.description || "N/A"}
+              </div>
             </div>
           </div>
 
           {/* Variant Section */}
           <div className="bg-gray-50 p-4 rounded-lg border">
-            <h4 className="font-semibold text-gray-700 mb-3">Product Variant</h4>
+            <h4 className="font-semibold text-gray-700 mb-3">
+              Product Variant
+            </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              <div><span className="font-medium">SKU:</span> {stepFormData[4]?.sku || "N/A"}</div>
-              <div><span className="font-medium">Price:</span> ₹{stepFormData[4]?.price || "N/A"}</div>
-              <div><span className="font-medium">Stock Quantity:</span> {stepFormData[4]?.stock_quantity || "N/A"}</div>
-              <div><span className="font-medium">Min Order Quantity:</span> {stepFormData[4]?.min_retailer_quantity || "N/A"}</div>
-              <div><span className="font-medium">Discount Quantity:</span> {stepFormData[4]?.discount_quantity || "N/A"}</div>
-              <div><span className="font-medium">Discount %:</span> {stepFormData[4]?.discount_percentage || "N/A"}%</div>
-              <div><span className="font-medium">Bulk Discount Quantity:</span> {stepFormData[4]?.bulk_discount_quantity || "N/A"}</div>
-              <div><span className="font-medium">Bulk Discount %:</span> {stepFormData[4]?.bulk_discount_percentage || "N/A"}%</div>
-              <div className="md:col-span-2"><span className="font-medium">Description:</span> {stepFormData[4]?.description || "N/A"}</div>
+              <div>
+                <span className="font-medium">SKU:</span>{" "}
+                {stepFormData[4]?.sku || "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Price:</span> ₹
+                {stepFormData[4]?.price || "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Stock Quantity:</span>{" "}
+                {stepFormData[4]?.stock_quantity || "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Min Order Quantity:</span>{" "}
+                {stepFormData[4]?.min_retailer_quantity || "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Discount Quantity:</span>{" "}
+                {stepFormData[4]?.discount_quantity || "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Discount %:</span>{" "}
+                {stepFormData[4]?.discount_percentage || "N/A"}%
+              </div>
+              <div>
+                <span className="font-medium">Bulk Discount Quantity:</span>{" "}
+                {stepFormData[4]?.bulk_discount_quantity || "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Bulk Discount %:</span>{" "}
+                {stepFormData[4]?.bulk_discount_percentage || "N/A"}%
+              </div>
+              <div className="md:col-span-2">
+                <span className="font-medium">Description:</span>{" "}
+                {stepFormData[4]?.description || "N/A"}
+              </div>
             </div>
           </div>
 
@@ -933,9 +1007,15 @@ const ProductCatalogManagement = () => {
           <div className="bg-gray-50 p-4 rounded-lg border">
             <h4 className="font-semibold text-gray-700 mb-3">Variant Media</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              <div><span className="font-medium">Media Type:</span> {stepFormData[4]?.variant_media_type || "N/A"}</div>
+              <div>
+                <span className="font-medium">Media Type:</span>{" "}
+                {stepFormData[4]?.variant_media_type || "N/A"}
+              </div>
               {stepFormData[4]?.variant_media_file && (
-                <div><span className="font-medium">File:</span> {stepFormData[4].variant_media_file.name}</div>
+                <div>
+                  <span className="font-medium">File:</span>{" "}
+                  {stepFormData[4].variant_media_file.name}
+                </div>
               )}
             </div>
             {stepFormData[4]?.variant_media_file && (
@@ -951,11 +1031,22 @@ const ProductCatalogManagement = () => {
 
           {/* Attribute Value Section */}
           <div className="bg-gray-50 p-4 rounded-lg border">
-            <h4 className="font-semibold text-gray-700 mb-3">Attribute Value</h4>
+            <h4 className="font-semibold text-gray-700 mb-3">
+              Attribute Value
+            </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              <div><span className="font-medium">Attribute Name:</span> {stepFormData[5]?.attribute_name || "N/A"}</div>
-              <div><span className="font-medium">Type:</span> {stepFormData[5]?.type || "N/A"}</div>
-              <div><span className="font-medium">Value:</span> {stepFormData[5]?.value || "N/A"}</div>
+              <div>
+                <span className="font-medium">Attribute Name:</span>{" "}
+                {stepFormData[5]?.attribute_name || "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Type:</span>{" "}
+                {stepFormData[5]?.type || "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Value:</span>{" "}
+                {stepFormData[5]?.value || "N/A"}
+              </div>
             </div>
           </div>
 
@@ -963,9 +1054,15 @@ const ProductCatalogManagement = () => {
           <div className="bg-gray-50 p-4 rounded-lg border">
             <h4 className="font-semibold text-gray-700 mb-3">Product Media</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              <div><span className="font-medium">Media Type:</span> {stepFormData[3]?.media_type || "N/A"}</div>
+              <div>
+                <span className="font-medium">Media Type:</span>{" "}
+                {stepFormData[3]?.media_type || "N/A"}
+              </div>
               {stepFormData[3]?.media_file && (
-                <div><span className="font-medium">File:</span> {stepFormData[3].media_file.name}</div>
+                <div>
+                  <span className="font-medium">File:</span>{" "}
+                  {stepFormData[3].media_file.name}
+                </div>
               )}
             </div>
             {stepFormData[3]?.media_file && (
@@ -979,7 +1076,7 @@ const ProductCatalogManagement = () => {
             )}
           </div>
         </div>
-        
+
         <div className="mt-8 flex justify-between items-center">
           <button
             onClick={() => setStep(5)}
@@ -991,9 +1088,7 @@ const ProductCatalogManagement = () => {
             onClick={handleSave}
             disabled={isSaving}
             className={`px-8 py-3 bg-green-600 text-white rounded-lg font-semibold transition-colors ${
-              isSaving 
-                ? "opacity-70 cursor-not-allowed" 
-                : "hover:bg-green-700"
+              isSaving ? "opacity-70 cursor-not-allowed" : "hover:bg-green-700"
             }`}
           >
             {isSaving ? "Saving..." : "Save Product"}
@@ -1167,7 +1262,8 @@ const ProductCatalogManagement = () => {
           name: "discount_quantity",
           label: "Discount Quantity for (Customer)",
           type: "number",
-          placeholder: "e.g., 3",
+          placeholder:
+            "Kitne quantity add karne ke baad discount percentage apply hoga",
           required: false,
         },
         {
@@ -1181,7 +1277,7 @@ const ProductCatalogManagement = () => {
           name: "bulk_discount_quantity",
           label: "Bulk Discount Quantity",
           type: "number",
-          placeholder: "e.g., 10",
+          placeholder: "kitna quantity add karne par bulk discount apply hoga",
           required: false,
         },
         {
@@ -1250,8 +1346,6 @@ const ProductCatalogManagement = () => {
       ],
     },
   ];
-
-
 
   return (
     <div className="min-h-screen bg-gray-100 py-4 px-4 md:px-8">

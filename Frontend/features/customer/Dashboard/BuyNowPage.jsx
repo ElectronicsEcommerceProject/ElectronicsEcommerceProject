@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import Footer from "../../../components/Footer/Footer";
 import Header from "../../../components/Header/Header";
+import { AddressForm } from "../../../components/index.js";
 
 import {
   getApiById,
@@ -11,6 +12,8 @@ import {
   cartRoute,
   cartItemFindOrCreateRoute,
   createApi,
+  orderRoute,
+  orderItemRoute,
   userCouponUserRoute,
   getUserIdFromToken,
   userProductReviewRoute,
@@ -23,6 +26,7 @@ const BuyNowPage = () => {
 
   const [productData, setProductData] = useState(null);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [buyingNow, setBuyingNow] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [isRightScrollAtEnd, setIsRightScrollAtEnd] = useState(false);
   const [currentImage, setCurrentImage] = useState("");
@@ -44,7 +48,7 @@ const BuyNowPage = () => {
   // New state for review filtering
   const [selectedRatingFilter, setSelectedRatingFilter] = useState("all");
   const [selectedSortFilter, setSelectedSortFilter] = useState("newest");
-  
+
   // Review form state
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewFormData, setReviewFormData] = useState({
@@ -54,7 +58,11 @@ const BuyNowPage = () => {
     product_variant_id: null,
   });
   const [submittingReview, setSubmittingReview] = useState(false);
-  
+
+  // Address state for Buy Now
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+
   // Update review form data when selected variant changes
   useEffect(() => {
     if (selectedVariant && productData?.mainProduct?.variants) {
@@ -62,9 +70,9 @@ const BuyNowPage = () => {
         (v) => v.description === selectedVariant
       );
       if (variantData) {
-        setReviewFormData(prev => ({
+        setReviewFormData((prev) => ({
           ...prev,
-          product_variant_id: variantData.product_variant_id
+          product_variant_id: variantData.product_variant_id,
         }));
       }
     }
@@ -149,11 +157,13 @@ const BuyNowPage = () => {
         if (quantity < minRetailerQty) {
           setQuantity(minRetailerQty);
         }
-        
+
         // Update current image to variant image if available
-        if (variantData.base_variant_image_url && 
-            variantData.base_variant_image_url.trim() !== "" &&
-            !variantData.base_variant_image_url.includes("placeholder")) {
+        if (
+          variantData.base_variant_image_url &&
+          variantData.base_variant_image_url.trim() !== "" &&
+          !variantData.base_variant_image_url.includes("placeholder")
+        ) {
           setCurrentImage(variantData.base_variant_image_url);
         }
       }
@@ -399,7 +409,9 @@ const BuyNowPage = () => {
       const variantData = mainProduct.variants.find(
         (v) => v.description === selectedVariant
       );
-      return variantData ? parseFloat(variantData.price) : parseFloat(mainProduct.base_price || mainProduct.price || 0);
+      return variantData
+        ? parseFloat(variantData.price)
+        : parseFloat(mainProduct.base_price || mainProduct.price || 0);
     }
     return parseFloat(mainProduct.base_price || mainProduct.price || 0);
   };
@@ -798,10 +810,10 @@ const BuyNowPage = () => {
                     alert(
                       `${action} ${quantity} item(s) in cart successfully!`
                     );
-                    
+
                     // Navigate to cart page after successful add to cart
                     setTimeout(() => {
-                      navigate('/cart');
+                      navigate("/cart");
                     }, 1000);
                   } else {
                     throw new Error(
@@ -825,6 +837,187 @@ const BuyNowPage = () => {
               {addingToCart ? "ADDING..." : `ADD TO CART (${quantity})`}
             </button>
 
+            <button
+              onClick={async () => {
+                const variantData = mainProduct.variants?.find(
+                  (v) => v.description === selectedVariant
+                );
+
+                // Get user_id from JWT token
+                const token = localStorage.getItem("token");
+                if (!token) {
+                  alert("Please login to place order");
+                  return;
+                }
+
+                let user_id;
+                try {
+                  const decodedToken = jwtDecode(token);
+                  user_id = decodedToken.user_id;
+                } catch (error) {
+                  console.error("Error decoding token:", error);
+                  alert("Authentication error. Please login again.");
+                  return;
+                }
+
+                setBuyingNow(true);
+
+                try {
+                  // Calculate discount information
+                  const basePrice = parseFloat(variantData?.price || 0);
+                  const bestDiscount = calculateBestDiscount(
+                    variantData,
+                    quantity,
+                    appliedCouponData
+                  );
+
+                  // Calculate final price
+                  let discountedPrice = basePrice;
+                  if (bestDiscount.discountType === "percentage") {
+                    discountedPrice =
+                      basePrice * (1 - bestDiscount.discountValue / 100);
+                  } else if (bestDiscount.discountType === "fixed") {
+                    discountedPrice = Math.max(
+                      0,
+                      basePrice - bestDiscount.discountValue
+                    );
+                  }
+
+                  const finalPrice = discountedPrice * quantity;
+                  const totalOriginalPrice = basePrice * quantity;
+                  const actualDiscountAmount = totalOriginalPrice - finalPrice;
+
+                  // Check if address is selected
+                  if (!selectedAddress) {
+                    alert("Please select a delivery address");
+                    setShowAddressForm(true);
+                    return;
+                  }
+
+                  const subtotal = finalPrice;
+                  const delivery = subtotal > 5000 ? 0 : 99;
+                  const tax = subtotal * 0.18; // 18% GST
+                  const total = subtotal + delivery + tax;
+
+                  // Prepare order data with original prices
+                  const originalSubtotal = basePrice * quantity;
+                  const orderData = {
+                    user_id: user_id,
+                    address_id: selectedAddress.address_id,
+                    payment_method: "cod", // Default to Cash on Delivery
+                    subtotal: originalSubtotal,
+                    shipping_cost: delivery,
+                    tax_amount: tax,
+                    discount_amount: actualDiscountAmount,
+                    total_amount: originalSubtotal + delivery + tax - actualDiscountAmount,
+                    notes: appliedCouponData
+                      ? `Coupon applied: ${appliedCouponData.code}`
+                      : "",
+                  };
+
+                  // Add coupon_id if a coupon is applied
+                  if (appliedCouponData && appliedCouponData.coupon_id) {
+                    orderData.coupon_id = appliedCouponData.coupon_id;
+                  }
+
+                  // Step 1: Create order
+                  const orderResponse = await createApi(orderRoute, orderData);
+
+                  if (orderResponse && orderResponse.success) {
+                    const orderId = orderResponse.data.order.order_id;
+
+                    // Step 2: Create order item with original pricing
+                    const orderItemData = {
+                      order_id: orderId,
+                      product_id: productId,
+                      product_variant_id:
+                        variantData?.product_variant_id || null,
+                      total_quantity: quantity,
+                      discount_quantity:
+                        bestDiscount.discountSource === "quantity_discount" ||
+                        bestDiscount.discountSource === "bulk_discount"
+                          ? bestDiscount.discountSource === "bulk_discount"
+                            ? variantData?.bulk_discount_quantity
+                            : variantData?.discount_quantity
+                          : 0,
+                      price_at_time: basePrice,
+                      discount_applied: actualDiscountAmount || 0,
+                      final_price: basePrice * quantity,
+                    };
+
+                    const orderItemResponse = await createApi(
+                      orderItemRoute,
+                      orderItemData
+                    );
+
+                    if (orderItemResponse && orderItemResponse.success) {
+                      alert(`Order placed successfully! Total: ₹${total}`);
+                      navigate("/profile/orders");
+                    } else {
+                      throw new Error(
+                        orderItemResponse?.message ||
+                          "Failed to create order item"
+                      );
+                    }
+                  } else {
+                    throw new Error(
+                      orderResponse?.message || "Failed to place order"
+                    );
+                  }
+                } catch (error) {
+                  console.error("Error placing order:", error);
+                  alert(`Failed to place order: ${error.message}`);
+                } finally {
+                  setBuyingNow(false);
+                }
+              }}
+              disabled={buyingNow}
+              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-colors text-sm sm:text-base ${
+                buyingNow
+                  ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                  : "bg-green-600 text-white hover:bg-green-700"
+              }`}
+            >
+              {(() => {
+                if (buyingNow) return "ORDERING...";
+                
+                const variantData = mainProduct.variants?.find(
+                  (v) => v.description === selectedVariant
+                );
+                if (!variantData) return `BUY NOW (₹${getCurrentVariantPrice() * quantity})`;
+                
+                const basePrice = parseFloat(variantData.price);
+                const bestDiscount = calculateBestDiscount(
+                  variantData,
+                  quantity,
+                  appliedCouponData
+                );
+                
+                let discountedPrice = basePrice;
+                if (bestDiscount.discountType === "percentage") {
+                  discountedPrice = basePrice * (1 - bestDiscount.discountValue / 100);
+                } else if (bestDiscount.discountType === "fixed") {
+                  discountedPrice = Math.max(0, basePrice - bestDiscount.discountValue);
+                }
+                
+                const finalPrice = discountedPrice * quantity;
+                const originalPrice = basePrice * quantity;
+                
+                if (finalPrice < originalPrice) {
+                  return (
+                    <div className="text-center">
+                      <div>BUY NOW</div>
+                      <div className="text-xs opacity-90">
+                        <span className="line-through">₹{originalPrice}</span>
+                        <span className="ml-1">₹{finalPrice}</span>
+                      </div>
+                    </div>
+                  );
+                }
+                
+                return `BUY NOW (₹${finalPrice})`;
+              })()}
+            </button>
           </div>
         </div>
 
@@ -1937,7 +2130,7 @@ const BuyNowPage = () => {
 
             {/* Write Review Button */}
             <div className="mt-6 text-center">
-              <button 
+              <button
                 onClick={() => {
                   // Set the selected variant ID if available
                   if (selectedVariant && mainProduct.variants) {
@@ -1945,19 +2138,20 @@ const BuyNowPage = () => {
                       (v) => v.description === selectedVariant
                     );
                     if (variantData) {
-                      setReviewFormData(prev => ({
+                      setReviewFormData((prev) => ({
                         ...prev,
-                        product_variant_id: variantData.product_variant_id
+                        product_variant_id: variantData.product_variant_id,
                       }));
                     }
                   }
                   setShowReviewForm(true);
                 }}
-                className="bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm sm:text-base">
+                className="bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm sm:text-base"
+              >
                 Write a Review
               </button>
             </div>
-            
+
             {/* Review Form Modal */}
             {showReviewForm && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1971,68 +2165,79 @@ const BuyNowPage = () => {
                       ×
                     </button>
                   </div>
-                  
+
                   <div className="p-6">
-                    <form onSubmit={async (e) => {
-                      e.preventDefault();
-                      
-                      // Get user_id from JWT token
-                      const token = localStorage.getItem("token");
-                      if (!token) {
-                        alert("Please login to submit a review");
-                        return;
-                      }
-                      
-                      let user_id;
-                      try {
-                        const decodedToken = jwtDecode(token);
-                        user_id = decodedToken.user_id;
-                      } catch (error) {
-                        console.error("Error decoding token:", error);
-                        alert("Authentication error. Please login again.");
-                        return;
-                      }
-                      
-                      setSubmittingReview(true);
-                      
-                      try {
-                        const reviewData = {
-                          product_id: productId,
-                          product_variant_id: reviewFormData.product_variant_id,
-                          user_id: user_id,
-                          rating: reviewFormData.rating,
-                          title: reviewFormData.title,
-                          review: reviewFormData.review,
-                          is_verified_purchase: false, // This would be determined by the backend
-                          created_by: user_id
-                        };
-                        
-                        console.log("Submitting review:", reviewData);
-                        
-                        const response = await createApi(userProductReviewRoute, reviewData);
-                        
-                        if (response.success) {
-                          alert("Thank you! Your review has been submitted successfully.");
-                          setShowReviewForm(false);
-                          // Reset form data
-                          setReviewFormData({
-                            rating: 5,
-                            title: "",
-                            review: "",
-                            product_variant_id: null,
-                          });
-                          // Refresh product data to show the new review
-                          fetchProductData();
-                        } else {
-                          throw new Error(response.message || "Failed to submit review");
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+
+                        // Get user_id from JWT token
+                        const token = localStorage.getItem("token");
+                        if (!token) {
+                          alert("Please login to submit a review");
+                          return;
                         }
-                      } catch (error) {
-                        console.error("Error submitting review:", error);
-                        alert(`Failed to submit review: ${error.message}`);
-                      } finally {
-                        setSubmittingReview(false);
-                      }
-                    }} className="space-y-4">
+
+                        let user_id;
+                        try {
+                          const decodedToken = jwtDecode(token);
+                          user_id = decodedToken.user_id;
+                        } catch (error) {
+                          console.error("Error decoding token:", error);
+                          alert("Authentication error. Please login again.");
+                          return;
+                        }
+
+                        setSubmittingReview(true);
+
+                        try {
+                          const reviewData = {
+                            product_id: productId,
+                            product_variant_id:
+                              reviewFormData.product_variant_id,
+                            user_id: user_id,
+                            rating: reviewFormData.rating,
+                            title: reviewFormData.title,
+                            review: reviewFormData.review,
+                            is_verified_purchase: false, // This would be determined by the backend
+                            created_by: user_id,
+                          };
+
+                          console.log("Submitting review:", reviewData);
+
+                          const response = await createApi(
+                            userProductReviewRoute,
+                            reviewData
+                          );
+
+                          if (response.success) {
+                            alert(
+                              "Thank you! Your review has been submitted successfully."
+                            );
+                            setShowReviewForm(false);
+                            // Reset form data
+                            setReviewFormData({
+                              rating: 5,
+                              title: "",
+                              review: "",
+                              product_variant_id: null,
+                            });
+                            // Refresh product data to show the new review
+                            fetchProductData();
+                          } else {
+                            throw new Error(
+                              response.message || "Failed to submit review"
+                            );
+                          }
+                        } catch (error) {
+                          console.error("Error submitting review:", error);
+                          alert(`Failed to submit review: ${error.message}`);
+                        } finally {
+                          setSubmittingReview(false);
+                        }
+                      }}
+                      className="space-y-4"
+                    >
                       {/* Rating Selection */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2043,10 +2248,21 @@ const BuyNowPage = () => {
                             <button
                               key={star}
                               type="button"
-                              onClick={() => setReviewFormData(prev => ({ ...prev, rating: star }))}
+                              onClick={() =>
+                                setReviewFormData((prev) => ({
+                                  ...prev,
+                                  rating: star,
+                                }))
+                              }
                               className="text-2xl focus:outline-none"
                             >
-                              <span className={star <= reviewFormData.rating ? "text-yellow-400" : "text-gray-300"}>
+                              <span
+                                className={
+                                  star <= reviewFormData.rating
+                                    ? "text-yellow-400"
+                                    : "text-gray-300"
+                                }
+                              >
                                 ★
                               </span>
                             </button>
@@ -2056,7 +2272,7 @@ const BuyNowPage = () => {
                           </span>
                         </div>
                       </div>
-                      
+
                       {/* Review Title */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2065,13 +2281,18 @@ const BuyNowPage = () => {
                         <input
                           type="text"
                           value={reviewFormData.title}
-                          onChange={(e) => setReviewFormData(prev => ({ ...prev, title: e.target.value }))}
+                          onChange={(e) =>
+                            setReviewFormData((prev) => ({
+                              ...prev,
+                              title: e.target.value,
+                            }))
+                          }
                           className="w-full p-2 border border-gray-300 rounded"
                           placeholder="Summarize your experience"
                           required
                         />
                       </div>
-                      
+
                       {/* Review Content */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2079,47 +2300,63 @@ const BuyNowPage = () => {
                         </label>
                         <textarea
                           value={reviewFormData.review}
-                          onChange={(e) => setReviewFormData(prev => ({ ...prev, review: e.target.value }))}
+                          onChange={(e) =>
+                            setReviewFormData((prev) => ({
+                              ...prev,
+                              review: e.target.value,
+                            }))
+                          }
                           className="w-full p-2 border border-gray-300 rounded h-32"
                           placeholder="Share your experience with this product"
                           required
                         />
                       </div>
-                      
+
                       {/* Variant Selection - Show all product variants */}
-                      {mainProduct.variants && mainProduct.variants.length > 0 && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Product Variant
-                          </label>
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                              Currently reviewing: {selectedVariant || "Standard variant"}
-                            </span>
+                      {mainProduct.variants &&
+                        mainProduct.variants.length > 0 && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Product Variant
+                            </label>
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                Currently reviewing:{" "}
+                                {selectedVariant || "Standard variant"}
+                              </span>
+                            </div>
+                            <select
+                              value={reviewFormData.product_variant_id || ""}
+                              onChange={(e) =>
+                                setReviewFormData((prev) => ({
+                                  ...prev,
+                                  product_variant_id: e.target.value || null,
+                                }))
+                              }
+                              className="w-full p-2 border border-gray-300 rounded"
+                            >
+                              <option value="">Select a variant</option>
+                              {mainProduct.variants.map((variant) => {
+                                const isCurrentVariant =
+                                  variant.description === selectedVariant;
+                                return (
+                                  <option
+                                    key={variant.product_variant_id}
+                                    value={variant.product_variant_id}
+                                    selected={isCurrentVariant}
+                                  >
+                                    {variant.description ||
+                                      `Variant ${variant.product_variant_id}`}
+                                    {isCurrentVariant
+                                      ? " (Currently Selected)"
+                                      : ""}
+                                  </option>
+                                );
+                              })}
+                            </select>
                           </div>
-                          <select
-                            value={reviewFormData.product_variant_id || ""}
-                            onChange={(e) => setReviewFormData(prev => ({ ...prev, product_variant_id: e.target.value || null }))}
-                            className="w-full p-2 border border-gray-300 rounded"
-                          >
-                            <option value="">Select a variant</option>
-                            {mainProduct.variants.map((variant) => {
-                              const isCurrentVariant = variant.description === selectedVariant;
-                              return (
-                                <option 
-                                  key={variant.product_variant_id} 
-                                  value={variant.product_variant_id}
-                                  selected={isCurrentVariant}
-                                >
-                                  {variant.description || `Variant ${variant.product_variant_id}`}
-                                  {isCurrentVariant ? " (Currently Selected)" : ""}
-                                </option>
-                              );
-                            })}
-                          </select>
-                        </div>
-                      )}
-                      
+                        )}
+
                       {/* Submit Button */}
                       <div className="flex justify-end pt-4">
                         <button
@@ -2186,6 +2423,24 @@ const BuyNowPage = () => {
         </div>
       )}
       <Footer />
+
+      {/* Address Form Popup */}
+      <AddressForm
+        isOpen={showAddressForm}
+        onClose={() => {
+          setShowAddressForm(false);
+          // Alert if no address is selected when closing the form
+          if (!selectedAddress) {
+            alert("Please select an address to continue with your order.");
+          }
+        }}
+        onAddressSelect={(address) => {
+          setSelectedAddress(address);
+          setShowAddressForm(false);
+        }}
+        selectedAddressId={selectedAddress?.address_id}
+        mode="select"
+      />
     </div>
   );
 };
