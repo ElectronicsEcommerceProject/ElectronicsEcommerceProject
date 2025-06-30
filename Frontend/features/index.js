@@ -35,18 +35,6 @@ export { default as AdminSidebar } from "./admin/Dashboard/AdminSidebar.jsx";
 export { default as AnalyticsDashboard } from "./admin/AnalyticManagement/AnalyticDashboard.jsx";
 export { default as CouponDashboard } from "./admin/CouponManagement/CouponDashboard.jsx";
 
-// Admin Components from components directory
-export { default as AdminHeader } from "../components/Header/AdminHeader.jsx";
-export { default as Notifications } from "../components/OrderManagement/Notifications.jsx";
-export { default as CustomModal } from "../components/OrderManagement/CustomModal.jsx";
-export { default as FiltersSection } from "../components/OrderManagement/FilterSection.jsx";
-export { default as OrderHeader } from "../components/OrderManagement/Header.jsx";
-export { default as ManualOrderModal } from "../components/OrderManagement/ManualOrderModal.jsx";
-export { default as MetricsSection } from "../components/OrderManagement/MetricsSection.jsx";
-export { default as OrderDetailModal } from "../components/OrderManagement/OrderDetailModal.jsx";
-export { default as OrdersTable } from "../components/OrderManagement/OrdersTable.jsx";
-export { default as QuickActions } from "../components/OrderManagement/QuickActions.jsx";
-
 // Auth utility
 export { isAuthenticated } from "../src/utils/auth.js";
 
@@ -57,3 +45,15 @@ export { default as RazorpayButton } from "./Payment/RazorpayButton.jsx";
 export { default as Login } from "./customer/SignIn/Login.jsx";
 export { default as Signup } from "./customer/SignIn/Signup.jsx";
 export { default as LogoutModal } from "./customer/SignIn/Logout.jsx";
+
+// Order Management Components
+export { default as CustomModal } from "./admin/OrderManagement/CustomModal.jsx";
+export { default as FiltersSection } from "./admin/OrderManagement/FilterSection.jsx";
+export { default as OrderHeader } from "./admin/OrderManagement/Header.jsx";
+export { default as ManualOrderModal } from "./admin/OrderManagement/ManualOrderModal.jsx";
+export { default as MetricsSection } from "./admin/OrderManagement/MetricsSection.jsx";
+export { default as Notifications } from "./admin/OrderManagement/Notifications.jsx";
+export { default as OrderDetailModal } from "./admin/OrderManagement/OrderDetailModal.jsx";
+export { default as OrdersTable } from "./admin/OrderManagement/OrdersTable.jsx";
+export { default as QuickActions } from "./admin/OrderManagement/QuickActions.jsx";
+export { default as AdminHeader } from "../components/Header/AdminHeader.jsx";

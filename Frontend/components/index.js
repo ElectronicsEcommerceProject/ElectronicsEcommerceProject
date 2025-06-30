@@ -44,14 +44,3 @@ export { default as CartService } from "./ShowAllCartItems/CartService.js";
 
 // User Notification Components
 export { default as UserNotification } from "./UserNotification/UserNotification.jsx";
-
-// Order Management Components
-export { default as CustomModal } from "./OrderManagement/CustomModal.jsx";
-export { default as FilterSection } from "./OrderManagement/FilterSection.jsx";
-export { default as OrderHeader } from "./OrderManagement/Header.jsx";
-export { default as ManualOrderModal } from "./OrderManagement/ManualOrderModal.jsx";
-export { default as MetricsSection } from "./OrderManagement/MetricsSection.jsx";
-export { default as Notifications } from "./OrderManagement/Notifications.jsx";
-export { default as OrderDetailModal } from "./OrderManagement/OrderDetailModal.jsx";
-export { default as OrdersTable } from "./OrderManagement/OrdersTable.jsx";
-export { default as QuickActions } from "./OrderManagement/QuickActions.jsx";
