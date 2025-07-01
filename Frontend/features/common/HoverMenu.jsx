@@ -12,10 +12,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import Login from "../customer/SignIn/Login";
-import Signup from "../customer/SignIn/Signup";
-import ForgotPassword from "../customer/SignIn/ForgotPassword";
-import LogoutModal from "../customer/SignIn/Logout";
+import { Login, Signup, ForgotPassword, LogoutModal } from "../index.js";
 
 const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
   const navigate = useNavigate();
@@ -29,7 +26,7 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
   // Check for existing token on component mount and listen for storage changes
   useEffect(() => {
     const checkExistingToken = () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (token) {
         try {
           const decodedToken = jwtDecode(token);
@@ -41,16 +38,16 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
               emailOrMobile: decodedToken.email,
               user_id: decodedToken.user_id,
               role: decodedToken.role,
-              name: decodedToken.name || decodedToken.email
+              name: decodedToken.name || decodedToken.email,
             });
           } else {
             // Token expired, remove it
-            localStorage.removeItem('token');
+            localStorage.removeItem("token");
             setUser(null);
           }
         } catch (error) {
-          console.error('Error decoding token:', error);
-          localStorage.removeItem('token');
+          console.error("Error decoding token:", error);
+          localStorage.removeItem("token");
           setUser(null);
         }
       } else {
@@ -63,23 +60,23 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
 
     // Listen for storage changes (when token is added/removed)
     const handleStorageChange = (e) => {
-      if (e.key === 'token') {
+      if (e.key === "token") {
         checkExistingToken();
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
 
     // Also listen for custom events (for same-tab changes)
     const handleTokenChange = () => {
       checkExistingToken();
     };
 
-    window.addEventListener('tokenChanged', handleTokenChange);
+    window.addEventListener("tokenChanged", handleTokenChange);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('tokenChanged', handleTokenChange);
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("tokenChanged", handleTokenChange);
     };
   }, []);
 
@@ -92,19 +89,19 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
     // Simulate API call
     setTimeout(() => {
       // Clear token from localStorage
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
 
       // Dispatch custom event to notify other components
-      window.dispatchEvent(new Event('tokenChanged'));
+      window.dispatchEvent(new Event("tokenChanged"));
 
       setUser(null); // Reset user to null to show Login/Signup
       setShowLogoutModal(false);
       setModalContent("success");
       setMessage("Logged out successfully!");
       setIsLoading(false);
-      
+
       // Navigate to home page after logout
-      navigate('/');
+      navigate("/");
     }, 1000);
   };
 
@@ -126,7 +123,7 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
           setModalContent(null);
           setMessage("");
           // Check for token after success modal closes (in case of login)
-          const token = localStorage.getItem('token');
+          const token = localStorage.getItem("token");
           if (token && !user) {
             try {
               const decodedToken = jwtDecode(token);
@@ -137,11 +134,11 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
                   emailOrMobile: decodedToken.email,
                   user_id: decodedToken.user_id,
                   role: decodedToken.role,
-                  name: decodedToken.name || decodedToken.email
+                  name: decodedToken.name || decodedToken.email,
                 });
               }
             } catch (error) {
-              console.error('Error decoding token:', error);
+              console.error("Error decoding token:", error);
             }
           }
         }, 300);
@@ -162,7 +159,7 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
   useEffect(() => {
     if (!modalContent && !showLogoutModal) {
       // Modal just closed, check if user logged in
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (token && !user) {
         try {
           const decodedToken = jwtDecode(token);
@@ -173,11 +170,11 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
               emailOrMobile: decodedToken.email,
               user_id: decodedToken.user_id,
               role: decodedToken.role,
-              name: decodedToken.name || decodedToken.email
+              name: decodedToken.name || decodedToken.email,
             });
           }
         } catch (error) {
-          console.error('Error decoding token:', error);
+          console.error("Error decoding token:", error);
         }
       }
     }
@@ -191,8 +188,18 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
   }, [modalContent, showLogoutModal, onModalStateChange]);
 
   const menuItems = [
-    { id: "orders", label: "My Orders", icon: FaShoppingBag, path: "/profile/orders" },
-    { id: "wishlist", label: "Wishlist", icon: FaHeart, path: "/profile/wishlist" },
+    {
+      id: "orders",
+      label: "My Orders",
+      icon: FaShoppingBag,
+      path: "/profile/orders",
+    },
+    {
+      id: "wishlist",
+      label: "Wishlist",
+      icon: FaHeart,
+      path: "/profile/wishlist",
+    },
     { id: "profile", label: "Profile", icon: FaUser, path: "/profile" },
   ];
 
@@ -204,7 +211,9 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
       >
         <div className="flex items-center">
           <item.icon className="text-gray-600 mr-2 text-base" />
-          <span className="text-gray-800 text-sm font-medium">{item.label}</span>
+          <span className="text-gray-800 text-sm font-medium">
+            {item.label}
+          </span>
         </div>
         <FaChevronRight className="text-gray-400 text-[10px]" />
       </Link>
@@ -373,12 +382,12 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
                   setMessage={setMessage}
                 />
               ) : modalContent === "signup" ? (
-                <Signup
-                  setModalContent={setModalContent}
-                  setUser={setUser}
-                />
+                <Signup setModalContent={setModalContent} setUser={setUser} />
               ) : modalContent === "forgotPassword" ? (
-                <ForgotPassword setModalContent={setModalContent} setMessage={setMessage} />
+                <ForgotPassword
+                  setModalContent={setModalContent}
+                  setMessage={setMessage}
+                />
               ) : modalContent === "success" ? (
                 <div className="space-y-4 text-center">
                   <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
