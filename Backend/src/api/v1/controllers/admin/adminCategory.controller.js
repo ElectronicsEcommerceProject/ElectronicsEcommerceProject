@@ -78,7 +78,7 @@ const getAllCategories = async (req, res) => {
     if (!categories.length) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: MESSAGE.get.empty });
+        .json({ status: false, message: MESSAGE.get.empty });
     }
 
     res
