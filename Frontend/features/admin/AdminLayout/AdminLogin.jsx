@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import ForgotPassword from "./AdminForgotPassword";
+import { ForgotPassword } from "../../index.js";
 import admin from "../../../assets/admin.jpg"; // ✅ make sure the image file path is correct
 
 const AdminLogin = () => {
