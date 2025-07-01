@@ -454,8 +454,14 @@ const Header = () => {
                           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                             <FiBell className="w-8 h-8 text-gray-400" />
                           </div>
-                          <h4 className="text-sm font-medium text-gray-900 mb-1">No notifications yet</h4>
-                          <p className="text-xs text-gray-500 text-center">We'll notify you when something arrives!</p>
+                          <h4 className="text-sm font-medium text-gray-900 mb-1">
+                            {getUserIdFromToken() ? "No notifications yet" : "Please sign in"}
+                          </h4>
+                          <p className="text-xs text-gray-500 text-center">
+                            {getUserIdFromToken() 
+                              ? "We'll notify you when something arrives!" 
+                              : "Sign in to view your notifications"}
+                          </p>
                         </div>
                       )}
                     </div>
