@@ -80,6 +80,7 @@ const Header = () => {
   const [isHoveringCategory, setIsHoveringCategory] = useState(false);
   const [categoryHoverTimeout, setCategoryHoverTimeout] = useState(null);
   const [isHoveringSignIn, setIsHoveringSignIn] = useState(false);
+  const [signInHoverTimeout, setSignInHoverTimeout] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -199,14 +200,17 @@ const Header = () => {
     }
   }, [isModalOpen]);
 
-  // Cleanup timeout on unmount
+  // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
       if (categoryHoverTimeout) {
         clearTimeout(categoryHoverTimeout);
       }
+      if (signInHoverTimeout) {
+        clearTimeout(signInHoverTimeout);
+      }
     };
-  }, [categoryHoverTimeout]);
+  }, [categoryHoverTimeout, signInHoverTimeout]);
 
   const handleSearch = () => {
     if (searchInput.trim()) {
@@ -269,19 +273,28 @@ const Header = () => {
     setIsModalOpen(isOpen);
   };
 
-  // Handle mouse leave with modal check
-  const handleMouseLeave = () => {
+  // Handle sign in hover
+  const handleSignInMouseEnter = () => {
+    if (signInHoverTimeout) {
+      clearTimeout(signInHoverTimeout);
+      setSignInHoverTimeout(null);
+    }
+    setIsHoveringSignIn(true);
+  };
+
+  const handleSignInMouseLeave = () => {
     // Don't close if modal is open
     if (isModalOpen) {
       return;
     }
 
-    // Add a small delay to prevent accidental closing
-    setTimeout(() => {
+    // Add delay to prevent accidental closing
+    const timeout = setTimeout(() => {
       if (!isModalOpen) {
         setIsHoveringSignIn(false);
       }
-    }, 800);
+    }, 200);
+    setSignInHoverTimeout(timeout);
   };
 
   // Fetch recent notifications
@@ -355,8 +368,8 @@ const Header = () => {
           <div className="hidden md:flex items-center space-x-6 ml-auto">
             <div
               className="relative group"
-              onMouseEnter={() => setIsHoveringSignIn(true)}
-              onMouseLeave={handleMouseLeave}
+              onMouseEnter={handleSignInMouseEnter}
+              onMouseLeave={handleSignInMouseLeave}
             >
               <div className="flex items-center cursor-pointer hover:text-amber-500 transition-colors duration-200 px-3 py-2">
                 <FiUser className="w-5 h-5 mr-1" />
@@ -371,6 +384,8 @@ const Header = () => {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
                     className="absolute top-full mt-2 left-0 z-50"
+                    onMouseEnter={handleSignInMouseEnter}
+                    onMouseLeave={handleSignInMouseLeave}
                   >
                     <div className="w-3 h-3 bg-white rotate-45 absolute -top-1 left-5 shadow-sm" />
                     <HoverMenu onModalStateChange={handleModalStateChange} />
