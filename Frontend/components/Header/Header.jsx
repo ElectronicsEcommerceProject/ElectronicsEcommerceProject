@@ -402,39 +402,73 @@ const Header = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute top-full mt-2 right-0 z-50 w-80 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto"
+                    className="absolute top-full mt-2 right-0 z-50 w-96 bg-white rounded-xl shadow-2xl border border-gray-100 max-h-[28rem] overflow-hidden backdrop-blur-sm"
                   >
-                    <div className="p-4">
-                      <h3 className="text-sm font-semibold text-gray-800 mb-3">Recent Notifications</h3>
+                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-100">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                          <FiBell className="w-5 h-5 mr-2 text-indigo-600" />
+                          Notifications
+                        </h3>
+                        {notificationCount > 0 && (
+                          <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                            {notificationCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
                       {recentNotifications.length > 0 ? (
-                        <div className="space-y-2">
-                          {recentNotifications.slice(0, 5).map((notification) => (
-                            <div key={notification.notification_id} className="p-2 hover:bg-gray-50 rounded border-b border-gray-100 last:border-b-0">
-                              <div className="text-sm font-medium text-gray-800 truncate">
-                                {notification.title}
-                              </div>
-                              <div className="text-xs text-gray-600 mt-1 line-clamp-2">
-                                {notification.message}
-                              </div>
-                              <div className="text-xs text-gray-400 mt-1">
-                                {new Date(notification.created_at).toLocaleDateString()}
+                        <div className="divide-y divide-gray-100">
+                          {recentNotifications.slice(0, 5).map((notification, index) => (
+                            <div key={notification.notification_id} className="p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 cursor-pointer group">
+                              <div className="flex items-start space-x-3">
+                                <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${!notification.is_read ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <h4 className="text-sm font-semibold text-gray-900 truncate group-hover:text-indigo-700">
+                                      {notification.title}
+                                    </h4>
+                                    <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
+                                      {new Date(notification.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                                    {notification.message}
+                                  </p>
+                                  <div className="flex items-center justify-between mt-2">
+                                    <span className={`text-xs px-2 py-1 rounded-full ${notification.channel === 'in_app' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}`}>
+                                      {notification.channel === 'in_app' ? 'In-App' : notification.channel}
+                                    </span>
+                                    <span className="text-xs text-gray-400">
+                                      {new Date(notification.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <div className="text-sm text-gray-500 text-center py-4">
-                          No notifications
+                        <div className="flex flex-col items-center justify-center py-12 px-6">
+                          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <FiBell className="w-8 h-8 text-gray-400" />
+                          </div>
+                          <h4 className="text-sm font-medium text-gray-900 mb-1">No notifications yet</h4>
+                          <p className="text-xs text-gray-500 text-center">We'll notify you when something arrives!</p>
                         </div>
                       )}
-                      <div className="mt-3 pt-2 border-t border-gray-100">
-                        <Link
-                          to="/notifications"
-                          className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                        >
-                          View all notifications →
-                        </Link>
-                      </div>
+                    </div>
+                    <div className="bg-gray-50 px-6 py-3 border-t border-gray-100">
+                      <Link
+                        to="/notifications"
+                        className="flex items-center justify-center w-full text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors duration-200 group"
+                      >
+                        View all notifications
+                        <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
                     </div>
                   </motion.div>
                 )}
