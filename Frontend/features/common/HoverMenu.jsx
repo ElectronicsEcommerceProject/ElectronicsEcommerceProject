@@ -278,15 +278,15 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
               className="bg-white shadow-lg rounded-md z-50 border border-gray-200"
               style={{ width: "fit-content", minWidth: "160px" }}
             >
-              <div className="p-2 space-y-1">
+              <div className="p-3 space-y-3">
                 <button
-                  className="w-full bg-blue-600 text-white py-1.5 rounded-md text-xs font-medium hover:bg-blue-700 transition-all px-3"
+                  className="w-full bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-all px-4"
                   onClick={() => setModalContent("login")}
                 >
                   Login
                 </button>
                 <button
-                  className="w-full border border-gray-300 text-gray-800 py-1.5 rounded-md text-xs font-medium hover:bg-gray-50 transition-all px-3"
+                  className="w-full border border-gray-300 text-gray-800 py-2 rounded-md text-sm font-medium hover:bg-gray-50 transition-all px-4"
                   onClick={() => setModalContent("signup")}
                 >
                   Sign Up
@@ -297,15 +297,15 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
         ) : (
           <div className="flex flex-col">
             {!user ? (
-              <div className="space-y-1 p-2">
+              <div className="space-y-3 p-3">
                 <button
-                  className="w-full bg-blue-600 text-white py-2 rounded-md text-xs font-medium hover:bg-blue-700 transition-all px-3"
+                  className="w-full bg-blue-600 text-white py-2.5 rounded-md text-sm font-medium hover:bg-blue-700 transition-all px-4"
                   onClick={() => setModalContent("login")}
                 >
                   Login
                 </button>
                 <button
-                  className="w-full border border-gray-300 text-gray-800 py-2 rounded-md text-xs font-medium hover:bg-gray-50 transition-all px-3"
+                  className="w-full border border-gray-300 text-gray-800 py-2.5 rounded-md text-sm font-medium hover:bg-gray-50 transition-all px-4"
                   onClick={() => setModalContent("signup")}
                 >
                   Sign Up
