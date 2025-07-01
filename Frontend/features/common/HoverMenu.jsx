@@ -231,9 +231,14 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
                     Account
                   </h3>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-800 text-sm font-medium truncate max-w-[160px]">
-                      {user?.emailOrMobile || user?.email || "User"}
-                    </span>
+                    <div>
+                      <span className="text-gray-800 text-sm font-medium truncate max-w-[160px] block">
+                        {user?.emailOrMobile || user?.email || "User"}
+                      </span>
+                      <span className="text-green-600 text-xs">
+                        Role: {user?.role || "User"}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -304,9 +309,14 @@ const HoverMenu = ({ isMobile = false, onModalStateChange }) => {
                     Account
                   </h3>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-800 text-sm font-medium truncate max-w-[160px]">
-                      {user?.emailOrMobile || user?.email || "User"}
-                    </span>
+                    <div>
+                      <span className="text-gray-800 text-sm font-medium truncate max-w-[160px] block">
+                        {user?.emailOrMobile || user?.email || "User"}
+                      </span>
+                      <span className="text-green-600 text-xs">
+                        Role: {user?.role || "User"}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
