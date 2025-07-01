@@ -1070,8 +1070,8 @@ const BuyNowPage = () => {
               Array.isArray(mainProduct.variants) &&
               mainProduct.variants.length > 0 ? (
                 mainProduct.variants.map((variantData, index) => {
-                  const variantName =
-                    variantData.description || `Variant ${index + 1}`;
+                  const displayName = variantData.sku || variantData.name || variantData.description || `Variant ${index + 1}`;
+                  const variantName = variantData.description || `Variant ${index + 1}`;
                   return (
                     <button
                       key={variantData.product_variant_id}
@@ -1083,7 +1083,7 @@ const BuyNowPage = () => {
                       onClick={() => setSelectedVariant(variantName)}
                     >
                       <div className="text-center">
-                        <div>{variantName}</div>
+                        <div className="font-medium">{displayName}</div>
                         <div className="text-xs opacity-75">
                           ₹{variantData?.price}
                         </div>
