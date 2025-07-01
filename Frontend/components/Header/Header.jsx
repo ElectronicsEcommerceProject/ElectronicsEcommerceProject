@@ -32,6 +32,7 @@ import {
   getApiById,
   getUserIdFromToken,
   userTotalNumberOfUnReadNotificationsRoute,
+  MESSAGE,
 } from "../../src/index.js";
 
 // Function to map category names to appropriate icons
@@ -164,7 +165,16 @@ const Header = () => {
 
           setCategories(transformedCategories);
         } else {
-          throw new Error("Invalid response format");
+          // Handle specific "No data found" message
+          if (response.message === MESSAGE.get.empty) {
+            throw new Error(
+              "No categories available. Please contact admin to add categories."
+            );
+          } else {
+            throw new Error(
+              "Unable to load categories. Please try again later."
+            );
+          }
         }
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -386,7 +396,7 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden bg-indigo-700 px-4 py-4 space-y-4 rounded-b shadow-lg divide-y divide-indigo-600">
             <div className="space-y-4">
-              <button 
+              <button
                 onClick={() => {
                   setIsHoveringSignIn(true);
                   setIsModalOpen(true);
@@ -397,8 +407,8 @@ const Header = () => {
                 <FiUser className="w-5 h-5 mr-2" />
                 <span>Login</span>
               </button>
-              <Link 
-                to="/notifications" 
+              <Link
+                to="/notifications"
                 className="flex items-center relative hover:bg-indigo-600 p-2 rounded transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -410,8 +420,8 @@ const Header = () => {
                   </span>
                 )}
               </Link>
-              <Link 
-                to="/cart" 
+              <Link
+                to="/cart"
                 className="flex items-center relative hover:bg-indigo-600 p-2 rounded transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -507,7 +517,7 @@ const Header = () => {
                   </div>
                 ) : categoriesError ? (
                   <div className="px-4 py-3 text-center text-red-500">
-                    <span className="text-sm">Failed to load categories</span>
+                    <span className="text-sm">{categoriesError}</span>
                   </div>
                 ) : (
                   <>
@@ -569,7 +579,7 @@ const Header = () => {
               </div>
             ) : categoriesError ? (
               <div className="text-xs md:text-sm text-red-500 px-1 py-1">
-                Error loading categories
+                {categoriesError}
               </div>
             ) : (
               categories.map((item, index) => {

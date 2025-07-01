@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FiUser, FiShoppingBag, FiStar, FiShield } from "react-icons/fi";
 
-import Footer from "../../../components/Footer/Footer.jsx";
-import Header from "../../../components/Header/Header.jsx";
+import { Footer, Header } from "../../../components/index.js";
 import { isAuthenticated } from "../../../src/index.js";
 
 const MainDashboard = () => {
