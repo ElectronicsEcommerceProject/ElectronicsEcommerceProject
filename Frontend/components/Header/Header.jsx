@@ -32,6 +32,7 @@ import {
   getApiById,
   getUserIdFromToken,
   userTotalNumberOfUnReadNotificationsRoute,
+  userNotificationRoute,
   MESSAGE,
 } from "../../src/index.js";
 
@@ -96,6 +97,8 @@ const Header = () => {
 
   const [cartCount, setCartCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [isHoveringNotification, setIsHoveringNotification] = useState(false);
+  const [recentNotifications, setRecentNotifications] = useState([]);
   const navigate = useNavigate();
 
   // Fetch cart count and notification count from API
@@ -281,6 +284,22 @@ const Header = () => {
     }, 800);
   };
 
+  // Fetch recent notifications
+  const fetchRecentNotifications = async () => {
+    try {
+      const user_id = getUserIdFromToken();
+      if (!user_id) return;
+
+      const response = await getApiById(userNotificationRoute, user_id);
+      if (response.success && response.data) {
+        setRecentNotifications(response.data.notifications || []);
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      setRecentNotifications([]);
+    }
+  };
+
   // Handle category dropdown hover
   const handleCategoryMouseEnter = () => {
     // Clear any existing timeout
@@ -360,15 +379,67 @@ const Header = () => {
               </AnimatePresence>
             </div>
 
-            <Link to="/notifications" className="flex items-center relative">
-              <FiBell className="w-5 h-5 mr-2" />
-
-              {notificationCount > 0 && (
-                <span className="absolute top-0 left-3 transform -translate-y-1/2 bg-red-500 text-white text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full animate-pulse">
-                  {notificationCount}
-                </span>
-              )}
-            </Link>
+            <div
+              className="relative"
+              onMouseEnter={() => {
+                setIsHoveringNotification(true);
+                fetchRecentNotifications();
+              }}
+              onMouseLeave={() => setIsHoveringNotification(false)}
+            >
+              <Link to="/notifications" className="flex items-center relative">
+                <FiBell className="w-5 h-5 mr-2" />
+                {notificationCount > 0 && (
+                  <span className="absolute top-0 left-3 transform -translate-y-1/2 bg-red-500 text-white text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full animate-pulse">
+                    {notificationCount}
+                  </span>
+                )}
+              </Link>
+              <AnimatePresence>
+                {isHoveringNotification && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full mt-2 right-0 z-50 w-80 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto"
+                  >
+                    <div className="p-4">
+                      <h3 className="text-sm font-semibold text-gray-800 mb-3">Recent Notifications</h3>
+                      {recentNotifications.length > 0 ? (
+                        <div className="space-y-2">
+                          {recentNotifications.slice(0, 5).map((notification) => (
+                            <div key={notification.notification_id} className="p-2 hover:bg-gray-50 rounded border-b border-gray-100 last:border-b-0">
+                              <div className="text-sm font-medium text-gray-800 truncate">
+                                {notification.title}
+                              </div>
+                              <div className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                {notification.message}
+                              </div>
+                              <div className="text-xs text-gray-400 mt-1">
+                                {new Date(notification.created_at).toLocaleDateString()}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-gray-500 text-center py-4">
+                          No notifications
+                        </div>
+                      )}
+                      <div className="mt-3 pt-2 border-t border-gray-100">
+                        <Link
+                          to="/notifications"
+                          className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                          View all notifications →
+                        </Link>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             <Link to="/cart" className="flex items-center relative">
               <FiShoppingCart className="w-5 h-5 mr-2" />
