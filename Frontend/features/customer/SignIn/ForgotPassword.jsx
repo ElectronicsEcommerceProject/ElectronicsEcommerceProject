@@ -11,13 +11,13 @@ const ForgotPassword = ({ setModalContent, setMessage }) => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [showResetFields, setShowResetFields] = useState(false);
-  const [resetToken, setResetToken] = useState("");
+  const [resetOTP, setResetOTP] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
   const handleForgotPasswordChange = (e) => {
     setForgotPasswordEmail(e.target.value);
-    setErrors((prev) => ({ ...prev, forgotPasswordEmail: "" }));
-    setMessage("");
+    setErrors((prev) => ({ ...prev, email: "" }));
+    if (setMessage) setMessage("");
   };
 
   const handleForgotPasswordSubmit = async (e) => {
@@ -25,7 +25,9 @@ const ForgotPassword = ({ setModalContent, setMessage }) => {
     setIsLoading(true);
     const newErrors = {};
     if (!forgotPasswordEmail) {
-      newErrors.forgotPasswordEmail = "Please enter your email";
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(forgotPasswordEmail)) {
+      newErrors.email = "Please provide a valid email address";
     }
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -38,7 +40,7 @@ const ForgotPassword = ({ setModalContent, setMessage }) => {
         email: forgotPasswordEmail,
       });
       alert(
-        response.message || "Password reset token has been sent to your email"
+        response.message || "Password reset OTP has been sent to your email"
       );
       if (response.success) {
         setShowResetFields(true);
@@ -58,8 +60,19 @@ const ForgotPassword = ({ setModalContent, setMessage }) => {
     e.preventDefault();
     setIsLoading(true);
     const newErrors = {};
-    if (!resetToken) newErrors.resetToken = "Please enter the token";
-    if (!newPassword) newErrors.newPassword = "Please enter a new password";
+    if (!resetOTP) {
+      newErrors.otp = "OTP is required";
+    } else if (resetOTP.length !== 4) {
+      newErrors.otp = "OTP must be exactly 4 digits";
+    } else if (!/^[0-9]+$/.test(resetOTP)) {
+      newErrors.otp = "OTP must contain only numbers";
+    }
+    
+    if (!newPassword) {
+      newErrors.password = "Password is required";
+    } else if (newPassword.length < 6) {
+      newErrors.password = "Password must be at least 6 characters long";
+    }
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       setIsLoading(false);
@@ -67,13 +80,13 @@ const ForgotPassword = ({ setModalContent, setMessage }) => {
     }
     try {
       const response = await createApi(resetPasswordRoute, {
-        token: resetToken,
+        otp: resetOTP,
         password: newPassword,
       });
       if (response.success) {
         alert(response.message || "Password has been reset successfully");
         setShowResetFields(false);
-        setResetToken("");
+        setResetOTP("");
         setNewPassword("");
         setTimeout(() => setModalContent(null), 2000);
       } else {
@@ -93,8 +106,8 @@ const ForgotPassword = ({ setModalContent, setMessage }) => {
       </h2>
       <p className="text-sm text-gray-600 text-center">
         {showResetFields
-          ? "Enter the token sent to your email and your new password."
-          : "Enter your email to receive a password reset token."}
+          ? "Enter the 4-digit OTP sent to your email and your new password."
+          : "If your email is registered, you will receive a password reset OTP."}
       </p>
       {!showResetFields ? (
         <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
@@ -112,9 +125,9 @@ const ForgotPassword = ({ setModalContent, setMessage }) => {
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 transition-all"
               aria-label="Email"
             />
-            {errors.forgotPasswordEmail && (
+            {errors.email && (
               <p className="text-red-500 text-xs mt-1">
-                {errors.forgotPasswordEmail}
+                {errors.email}
               </p>
             )}
           </div>
@@ -148,7 +161,7 @@ const ForgotPassword = ({ setModalContent, setMessage }) => {
                 ></path>
               </svg>
             ) : (
-              "Send Reset Token"
+              "Send Password Reset OTP"
             )}
           </button>
         </form>
@@ -156,18 +169,23 @@ const ForgotPassword = ({ setModalContent, setMessage }) => {
         <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Token
+              OTP
             </label>
             <input
               type="text"
-              value={resetToken}
-              onChange={(e) => setResetToken(e.target.value)}
-              placeholder="Enter the token from your email"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 transition-all"
-              aria-label="Token"
+              value={resetOTP}
+              onChange={(e) => {
+                setResetOTP(e.target.value);
+                setErrors((prev) => ({ ...prev, otp: "" }));
+              }}
+              placeholder="Enter the 4-digit OTP from your email"
+              maxLength="4"
+              pattern="[0-9]{4}"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 transition-all text-center text-lg tracking-widest"
+              aria-label="OTP"
             />
-            {errors.resetToken && (
-              <p className="text-red-500 text-xs mt-1">{errors.resetToken}</p>
+            {errors.otp && (
+              <p className="text-red-500 text-xs mt-1">{errors.otp}</p>
             )}
           </div>
           <div>
@@ -177,13 +195,16 @@ const ForgotPassword = ({ setModalContent, setMessage }) => {
             <input
               type="password"
               value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              onChange={(e) => {
+                setNewPassword(e.target.value);
+                setErrors((prev) => ({ ...prev, password: "" }));
+              }}
               placeholder="Enter your new password"
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 transition-all"
               aria-label="New Password"
             />
-            {errors.newPassword && (
-              <p className="text-red-500 text-xs mt-1">{errors.newPassword}</p>
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
             )}
           </div>
           <button

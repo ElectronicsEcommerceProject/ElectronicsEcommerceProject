@@ -8,10 +8,12 @@ export const forgotPasswordValidator = Joi.object({
   }),
 });
 
-// Validator for resetting password with token
+// Validator for resetting password with OTP
 export const resetPasswordValidator = Joi.object({
-  token: Joi.string().required().messages({
-    "any.required": "Reset token is required",
+  otp: Joi.string().length(4).pattern(/^[0-9]+$/).required().messages({
+    "string.length": "OTP must be exactly 4 digits",
+    "string.pattern.base": "OTP must contain only numbers",
+    "any.required": "OTP is required",
   }),
   password: Joi.string().min(6).required().messages({
     "string.min": "Password must be at least 6 characters long",

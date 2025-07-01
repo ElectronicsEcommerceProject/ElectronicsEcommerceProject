@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { FiUser, FiBell, FiLogOut, FiMenu, FiX, FiChevronDown, FiEye, FiEyeOff } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
-import { getUserFromToken, isAuthenticated, createApi, userPanelLoginRoute, userPanelForgotPasswordRoute } from "../../src/index.js";
+import { getUserFromToken, isAuthenticated, createApi, userPanelLoginRoute } from "../../src/index.js";
+import { ForgotPassword } from "../../features/index.js";
 
 const AdminHeader = ({ notifications, dismissNotification }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -16,7 +17,6 @@ const AdminHeader = ({ notifications, dismissNotification }) => {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [forgotEmail, setForgotEmail] = useState("");
 
   const formatTime = (date) => {
     return date.toLocaleString("en-US", {
@@ -77,7 +77,6 @@ const AdminHeader = ({ notifications, dismissNotification }) => {
     setMessage("");
     setLoginData({ email: "", password: "" });
     setErrors({});
-    setForgotEmail("");
   };
 
   const handleLoginChange = (e) => {
@@ -127,28 +126,7 @@ const AdminHeader = ({ notifications, dismissNotification }) => {
     }
   };
 
-  const handleForgotPassword = async (e) => {
-    e.preventDefault();
-    if (!forgotEmail) {
-      setErrors({ forgotEmail: "Please enter your email address" });
-      return;
-    }
 
-    setIsLoading(true);
-    setErrors({});
-
-    try {
-      const response = await createApi(userPanelForgotPasswordRoute, { email: forgotEmail });
-      setMessage('Password reset link sent to your email!');
-      setModalContent('success');
-      setForgotEmail("");
-    } catch (error) {
-      console.error('Forgot password error:', error);
-      setErrors({ forgotEmail: error.message || 'Failed to send reset link. Please try again.' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Handle success modal auto-close and page refresh
   useEffect(() => {
@@ -409,46 +387,10 @@ const AdminHeader = ({ notifications, dismissNotification }) => {
                 </div>
               )}
               {modalContent === "forgotPassword" && (
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-gray-800 text-center">
-                    Reset Password
-                  </h2>
-                  <p className="text-gray-600 text-center text-sm">
-                    Enter your email to receive a password reset link.
-                  </p>
-                  <form onSubmit={handleForgotPassword} className="space-y-4">
-                    <div>
-                      <input
-                        type="email"
-                        value={forgotEmail}
-                        onChange={(e) => setForgotEmail(e.target.value)}
-                        placeholder="Enter your email"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                        required
-                      />
-                      {errors.forgotEmail && (
-                        <p className="text-red-500 text-xs mt-1">{errors.forgotEmail}</p>
-                      )}
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={isLoading}
-                      className={`w-full px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all ${
-                        isLoading ? "opacity-70 cursor-not-allowed" : ""
-                      }`}
-                    >
-                      {isLoading ? "Sending..." : "Send Reset Link"}
-                    </button>
-                  </form>
-                  <div className="text-center">
-                    <button
-                      className="text-blue-600 text-sm underline hover:text-blue-800"
-                      onClick={() => setModalContent("login")}
-                    >
-                      Back to Login
-                    </button>
-                  </div>
-                </div>
+                <ForgotPassword
+                  setModalContent={setModalContent}
+                  setMessage={setMessage}
+                />
               )}
               {modalContent === "success" && (
                 <div className="space-y-4 text-center">

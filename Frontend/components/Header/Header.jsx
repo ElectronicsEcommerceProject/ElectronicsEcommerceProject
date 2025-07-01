@@ -22,8 +22,8 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { setSearchTerm } from "../Redux/filterSlice";
-import HoverMenu from "../../features/common/HoverMenu"; // Import HoverMenu as specified
+import { filterSlice } from "../index.js";
+import { HoverMenu } from "../../features/index.js"; // Import HoverMenu as specified
 
 import {
   getApi,
@@ -32,6 +32,7 @@ import {
   getApiById,
   getUserIdFromToken,
   userTotalNumberOfUnReadNotificationsRoute,
+  userNotificationRoute,
   MESSAGE,
 } from "../../src/index.js";
 
@@ -79,6 +80,7 @@ const Header = () => {
   const [isHoveringCategory, setIsHoveringCategory] = useState(false);
   const [categoryHoverTimeout, setCategoryHoverTimeout] = useState(null);
   const [isHoveringSignIn, setIsHoveringSignIn] = useState(false);
+  const [signInHoverTimeout, setSignInHoverTimeout] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -96,6 +98,8 @@ const Header = () => {
 
   const [cartCount, setCartCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [isHoveringNotification, setIsHoveringNotification] = useState(false);
+  const [recentNotifications, setRecentNotifications] = useState([]);
   const navigate = useNavigate();
 
   // Fetch cart count and notification count from API
@@ -196,19 +200,22 @@ const Header = () => {
     }
   }, [isModalOpen]);
 
-  // Cleanup timeout on unmount
+  // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
       if (categoryHoverTimeout) {
         clearTimeout(categoryHoverTimeout);
       }
+      if (signInHoverTimeout) {
+        clearTimeout(signInHoverTimeout);
+      }
     };
-  }, [categoryHoverTimeout]);
+  }, [categoryHoverTimeout, signInHoverTimeout]);
 
   const handleSearch = () => {
     if (searchInput.trim()) {
       // Update Redux search term
-      dispatch(setSearchTerm(searchInput.trim()));
+      dispatch(filterSlice(searchInput.trim()));
       // Navigate to MainZone with search
       navigate("/mainzone");
       console.log("Searching for:", searchInput.trim());
@@ -221,7 +228,7 @@ const Header = () => {
     setSearchInput(value);
 
     // Real-time search: Update Redux immediately for live filtering
-    dispatch(setSearchTerm(value));
+    dispatch(filterSlice(value));
     console.log("🔍 Real-time search from Header:", value);
   };
 
@@ -266,19 +273,44 @@ const Header = () => {
     setIsModalOpen(isOpen);
   };
 
-  // Handle mouse leave with modal check
-  const handleMouseLeave = () => {
+  // Handle sign in hover
+  const handleSignInMouseEnter = () => {
+    if (signInHoverTimeout) {
+      clearTimeout(signInHoverTimeout);
+      setSignInHoverTimeout(null);
+    }
+    setIsHoveringSignIn(true);
+  };
+
+  const handleSignInMouseLeave = () => {
     // Don't close if modal is open
     if (isModalOpen) {
       return;
     }
 
-    // Add a small delay to prevent accidental closing
-    setTimeout(() => {
+    // Add delay to prevent accidental closing
+    const timeout = setTimeout(() => {
       if (!isModalOpen) {
         setIsHoveringSignIn(false);
       }
-    }, 800);
+    }, 200);
+    setSignInHoverTimeout(timeout);
+  };
+
+  // Fetch recent notifications
+  const fetchRecentNotifications = async () => {
+    try {
+      const user_id = getUserIdFromToken();
+      if (!user_id) return;
+
+      const response = await getApiById(userNotificationRoute, user_id);
+      if (response.success && response.data) {
+        setRecentNotifications(response.data.notifications || []);
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      setRecentNotifications([]);
+    }
   };
 
   // Handle category dropdown hover
@@ -336,8 +368,8 @@ const Header = () => {
           <div className="hidden md:flex items-center space-x-6 ml-auto">
             <div
               className="relative group"
-              onMouseEnter={() => setIsHoveringSignIn(true)}
-              onMouseLeave={handleMouseLeave}
+              onMouseEnter={handleSignInMouseEnter}
+              onMouseLeave={handleSignInMouseLeave}
             >
               <div className="flex items-center cursor-pointer hover:text-amber-500 transition-colors duration-200 px-3 py-2">
                 <FiUser className="w-5 h-5 mr-1" />
@@ -352,6 +384,8 @@ const Header = () => {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
                     className="absolute top-full mt-2 left-0 z-50"
+                    onMouseEnter={handleSignInMouseEnter}
+                    onMouseLeave={handleSignInMouseLeave}
                   >
                     <div className="w-3 h-3 bg-white rotate-45 absolute -top-1 left-5 shadow-sm" />
                     <HoverMenu onModalStateChange={handleModalStateChange} />
@@ -360,15 +394,148 @@ const Header = () => {
               </AnimatePresence>
             </div>
 
-            <Link to="/notifications" className="flex items-center relative">
-              <FiBell className="w-5 h-5 mr-2" />
-
-              {notificationCount > 0 && (
-                <span className="absolute top-0 left-3 transform -translate-y-1/2 bg-red-500 text-white text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full animate-pulse">
-                  {notificationCount}
-                </span>
-              )}
-            </Link>
+            <div
+              className="relative"
+              onMouseEnter={() => {
+                setIsHoveringNotification(true);
+                fetchRecentNotifications();
+              }}
+              onMouseLeave={() => setIsHoveringNotification(false)}
+            >
+              <Link to="/notifications" className="flex items-center relative">
+                <FiBell className="w-5 h-5 mr-2" />
+                {notificationCount > 0 && (
+                  <span className="absolute top-0 left-3 transform -translate-y-1/2 bg-red-500 text-white text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full animate-pulse">
+                    {notificationCount}
+                  </span>
+                )}
+              </Link>
+              <AnimatePresence>
+                {isHoveringNotification && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full mt-2 right-0 z-50 w-96 bg-white rounded-xl shadow-2xl border border-gray-100 max-h-[28rem] overflow-hidden backdrop-blur-sm"
+                  >
+                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-100">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                          <FiBell className="w-5 h-5 mr-2 text-indigo-600" />
+                          Notifications
+                        </h3>
+                        {notificationCount > 0 && (
+                          <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                            {notificationCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {recentNotifications.length > 0 ? (
+                        <div className="divide-y divide-gray-100">
+                          {recentNotifications
+                            .slice(0, 5)
+                            .map((notification, index) => (
+                              <div
+                                key={notification.notification_id}
+                                className="p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 cursor-pointer group"
+                              >
+                                <div className="flex items-start space-x-3">
+                                  <div
+                                    className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                                      !notification.is_read
+                                        ? "bg-blue-500"
+                                        : "bg-gray-300"
+                                    }`}
+                                  ></div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <h4 className="text-sm font-semibold text-gray-900 truncate group-hover:text-indigo-700">
+                                        {notification.title}
+                                      </h4>
+                                      <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
+                                        {new Date(
+                                          notification.createdAt
+                                        ).toLocaleDateString("en-US", {
+                                          month: "short",
+                                          day: "numeric",
+                                        })}
+                                      </span>
+                                    </div>
+                                    <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                                      {notification.message}
+                                    </p>
+                                    <div className="flex items-center justify-between mt-2">
+                                      <span
+                                        className={`text-xs px-2 py-1 rounded-full ${
+                                          notification.channel === "in_app"
+                                            ? "bg-purple-100 text-purple-700"
+                                            : "bg-gray-100 text-gray-600"
+                                        }`}
+                                      >
+                                        {notification.channel === "in_app"
+                                          ? "In-App"
+                                          : notification.channel}
+                                      </span>
+                                      <span className="text-xs text-gray-400">
+                                        {new Date(
+                                          notification.createdAt
+                                        ).toLocaleTimeString("en-US", {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        })}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-12 px-6">
+                          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <FiBell className="w-8 h-8 text-gray-400" />
+                          </div>
+                          <h4 className="text-sm font-medium text-gray-900 mb-1">
+                            {getUserIdFromToken()
+                              ? "No notifications yet"
+                              : "Please sign in"}
+                          </h4>
+                          <p className="text-xs text-gray-500 text-center">
+                            {getUserIdFromToken()
+                              ? "We'll notify you when something arrives!"
+                              : "Sign in to view your notifications"}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="bg-gray-50 px-6 py-3 border-t border-gray-100">
+                      <Link
+                        to="/notifications"
+                        className="flex items-center justify-center w-full text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors duration-200 group"
+                      >
+                        View all notifications
+                        <svg
+                          className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform duration-200"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             <Link to="/cart" className="flex items-center relative">
               <FiShoppingCart className="w-5 h-5 mr-2" />

@@ -33,33 +33,33 @@ const forgotPassword = async (req, res) => {
       return res.status(StatusCodes.OK).json({
         success: true,
         message:
-          "If your email is registered, you will receive a password reset token",
+          "If your email is registered, you will receive a password reset OTP",
       });
     }
 
-    // Generate a random token
-    const resetToken = crypto.randomBytes(32).toString("hex");
+    // Generate a 4-digit OTP
+    const resetOTP = Math.floor(1000 + Math.random() * 9000).toString();
 
-    // Set token expiration (24 hours from now)
-    const resetTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    // Set OTP expiration (15 minutes from now)
+    const resetTokenExpires = new Date(Date.now() + 15 * 60 * 1000);
 
-    // Store token in database
+    // Store OTP in database
     await user.update({
-      reset_token: resetToken,
+      reset_token: resetOTP,
       reset_token_expires: resetTokenExpires,
     });
 
-    // Send email with just the token
+    // Send email with OTP
     const mailOptions = {
       from: process.env.MAIL_USER,
       to: email,
-      subject: "Password Reset Token",
+      subject: "Password Reset OTP",
       html: `
         <h1>Password Reset</h1>
-        <p>You requested a password reset. Please copy the token below and paste it in the reset form:</p>
-        <p><strong>${resetToken}</strong></p>
+        <p>You requested a password reset. Please use the 4-digit OTP below:</p>
+        <div style="background: #f0f0f0; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">${resetOTP}</div>
         <p>If you didn't request this, please ignore this email.</p>
-        <p>This token will expire in 24 hours.</p>
+        <p>This OTP will expire in 15 minutes.</p>
       `,
     };
 
@@ -68,7 +68,7 @@ const forgotPassword = async (req, res) => {
 
     return res.status(StatusCodes.OK).json({
       success: true,
-      message: "Password reset token has been sent to your email",
+      message: "Password reset OTP has been sent to your email",
     });
   } catch (error) {
     console.error("Error in forgotPassword:", error);
@@ -83,51 +83,29 @@ const forgotPassword = async (req, res) => {
 // Reset password with token
 const resetPassword = async (req, res) => {
   try {
-    const { token, password } = req.body;
+    const { otp, password } = req.body;
 
-    console.log("Attempting password reset with token:", token);
+    console.log("Attempting password reset with OTP:", otp);
 
-    // Find user with this token and check if token is still valid
-    let user = await User.findOne({
+    // Find user with this OTP and check if OTP is still valid
+    const user = await User.findOne({
       where: {
-        reset_token: token,
+        reset_token: otp,
         reset_token_expires: {
           [Sequelize.Op.gt]: new Date(),
         },
       },
     });
 
-    // If no user found, try just finding by token (for debugging)
     if (!user) {
-      console.log("Trying fallback query with just token");
-      user = await User.findOne({
-        where: { reset_token: token },
-      });
-
-      if (user) {
-        console.log(
-          "User found by token only. Token expiry:",
-          user.reset_token_expires
-        );
-        console.log("Current time:", new Date());
-
-        // Check if token is expired
-        if (new Date(user.reset_token_expires) <= new Date()) {
-          console.log("Token is expired");
-          user = null;
-        }
-      }
-    }
-
-    if (!user) {
-      console.log("No user found with valid token:", token);
+      console.log("No user found with valid OTP:", otp);
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
-        message: "Invalid or expired reset token",
+        message: "Invalid or expired OTP",
       });
     }
 
-    console.log("User found with valid token:", user.email);
+    console.log("User found with valid OTP:", user.email);
 
     // Hash the new password
     const hashedPassword = await bcrypt.hash(password, 10);
