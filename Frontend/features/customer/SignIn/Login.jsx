@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-import { createApi, userPanelLoginRoute } from '../../../src/index.js';
+import { ForgotPassword } from "../../index.js";
 
+import { createApi, userPanelLoginRoute } from "../../../src/index.js";
 
 const Login = ({ setModalContent, setUser, setMessage }) => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
@@ -15,7 +16,7 @@ const Login = ({ setModalContent, setUser, setMessage }) => {
     console.log(`Login input change: ${name}=${value}`); // Debug state update
     setLoginData((prev) => {
       const newState = { ...prev, [name]: value };
-      console.log('New loginData:', newState); // Debug new state
+      console.log("New loginData:", newState); // Debug new state
       return newState;
     });
     setErrors((prev) => ({ ...prev, [name]: "" }));
@@ -48,27 +49,27 @@ const Login = ({ setModalContent, setUser, setMessage }) => {
       // Prepare data for API call
       const apiData = {
         email: loginData.email,
-        password: loginData.password
+        password: loginData.password,
       };
 
-      console.warn('Login data:', apiData);
+      console.warn("Login data:", apiData);
 
       // Make API call
       const response = await createApi(userPanelLoginRoute, apiData);
 
-      console.log('Login successful:', response);
+      console.log("Login successful:", response);
 
       // Handle successful login
       if (response.success && response.token) {
         // Store the token in localStorage
-        localStorage.setItem('token', response.token);
+        localStorage.setItem("token", response.token);
 
         // Dispatch custom event to notify other components
-        window.dispatchEvent(new Event('tokenChanged'));
+        window.dispatchEvent(new Event("tokenChanged"));
 
         // Decode token to get user information (optional, for immediate use)
         try {
-          const tokenPayload = JSON.parse(atob(response.token.split('.')[1]));
+          const tokenPayload = JSON.parse(atob(response.token.split(".")[1]));
 
           // Create user object from token data
           setUser({
@@ -79,7 +80,7 @@ const Login = ({ setModalContent, setUser, setMessage }) => {
             // Add other user properties from token
           });
         } catch (tokenError) {
-          console.warn('Could not decode token:', tokenError);
+          console.warn("Could not decode token:", tokenError);
           // Fallback to basic user object
           setUser({
             email: loginData.email,
@@ -87,32 +88,38 @@ const Login = ({ setModalContent, setUser, setMessage }) => {
           });
         }
 
-        setModalContent('success');
-        setMessage('Login successful!');
+        setModalContent("success");
+        setMessage("Login successful!");
         setLoginData({ email: "", password: "" });
-        
+
         // Refresh page after 2 seconds
         setTimeout(() => {
           window.location.reload();
         }, 2000);
       } else {
-        setErrors({ general: response.message || 'Login failed. Please try again.' });
+        setErrors({
+          general: response.message || "Login failed. Please try again.",
+        });
       }
-
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
 
       // Handle API errors
       if (error.message) {
-        if (error.message.includes('email') || error.message.includes('not found')) {
-          setErrors({ email: 'Email not found. Please check your email or sign up.' });
-        } else if (error.message.includes('password')) {
-          setErrors({ password: 'Invalid password. Please try again.' });
+        if (
+          error.message.includes("email") ||
+          error.message.includes("not found")
+        ) {
+          setErrors({
+            email: "Email not found. Please check your email or sign up.",
+          });
+        } else if (error.message.includes("password")) {
+          setErrors({ password: "Invalid password. Please try again." });
         } else {
           setErrors({ general: error.message });
         }
       } else {
-        setErrors({ general: 'Login failed. Please try again.' });
+        setErrors({ general: "Login failed. Please try again." });
       }
     } finally {
       setIsLoading(false);
@@ -180,7 +187,11 @@ const Login = ({ setModalContent, setUser, setMessage }) => {
               onClick={() => setShowLoginPassword(!showLoginPassword)}
               aria-label={showLoginPassword ? "Hide password" : "Show password"}
             >
-              {showLoginPassword ? <FaEyeSlash className="w-5 h-5" /> : <FaEye className="w-5 h-5" />}
+              {showLoginPassword ? (
+                <FaEyeSlash className="w-5 h-5" />
+              ) : (
+                <FaEye className="w-5 h-5" />
+              )}
             </button>
           </div>
           {errors.password && (

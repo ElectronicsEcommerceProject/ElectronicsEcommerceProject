@@ -30,7 +30,7 @@ export { default as StockManagement } from "./admin/StockManagement/StockManagem
 export { default as AdminLayout } from "./admin/AdminLayout/AdminLayout.jsx";
 export { default as ProductForm } from "./admin/ProductManagement/ProductForm.jsx";
 export { default as AdminLogin } from "./admin/AdminLayout/AdminLogin.jsx";
-export { default as ForgotPassword } from "./admin/AdminLayout/ForgotPassword.jsx";
+export { default as AdminForgotPassword } from "./admin/AdminLayout/AdminForgotPassword.jsx";
 export { default as AdminSidebar } from "./admin/Dashboard/AdminSidebar.jsx";
 export { default as AnalyticsDashboard } from "./admin/AnalyticManagement/AnalyticDashboard.jsx";
 export { default as CouponDashboard } from "./admin/CouponManagement/CouponDashboard.jsx";
@@ -45,6 +45,7 @@ export { default as RazorpayButton } from "./Payment/RazorpayButton.jsx";
 export { default as Login } from "./customer/SignIn/Login.jsx";
 export { default as Signup } from "./customer/SignIn/Signup.jsx";
 export { default as LogoutModal } from "./customer/SignIn/Logout.jsx";
+export { default as ForgotPassword } from "./customer/SignIn/ForgotPassword.jsx";
 
 // Order Management Components
 export { default as CustomModal } from "./admin/OrderManagement/CustomModal.jsx";
