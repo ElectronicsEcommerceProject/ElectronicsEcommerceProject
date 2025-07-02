@@ -7,6 +7,7 @@ import { isAuthenticated } from "../../../src/index.js";
 const MainDashboard = () => {
   const [activeBanner, setActiveBanner] = useState(0);
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
+  const [dragState, setDragState] = useState({ isDragging: false, startX: 0, startScrollLeft: 0, section: null });
 
   // Check authentication status
   useEffect(() => {
@@ -54,6 +55,27 @@ const MainDashboard = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleDragStart = (e, section) => {
+    const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+    const container = e.currentTarget.closest('.flex.overflow-x-auto');
+    setDragState({ isDragging: true, startX: clientX, startScrollLeft: container.scrollLeft, section });
+  };
+
+  const handleDragMove = (e) => {
+    if (!dragState.isDragging) return;
+    e.preventDefault();
+    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+    const deltaX = dragState.startX - clientX;
+    const container = document.querySelector(`[data-section="${dragState.section}"]`);
+    if (container) {
+      container.scrollLeft = dragState.startScrollLeft + deltaX;
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDragState({ isDragging: false, startX: 0, startScrollLeft: 0, section: null });
+  };
 
   const mobiles = [
     {
@@ -265,11 +287,13 @@ const MainDashboard = () => {
           <h2 className="text-lg md:text-xl font-bold mb-3 px-2 text-gray-800">
             Featured Mobiles
           </h2>
-          <div className="flex overflow-x-auto gap-3 md:gap-4 px-2 py-4">
+          <div className="flex overflow-x-auto gap-3 md:gap-4 px-2 py-4" data-section="mobiles" onMouseMove={handleDragMove} onMouseUp={handleDragEnd} onTouchMove={handleDragMove} onTouchEnd={handleDragEnd}>
             {mobiles.map((mobile, index) => (
               <div
                 key={index}
-                className="flex-shrink-0 w-40 sm:w-48 p-2 hover:shadow-md rounded-lg transition-all"
+                className="flex-shrink-0 w-40 sm:w-48 p-2 hover:shadow-md rounded-lg transition-all cursor-grab active:cursor-grabbing"
+                onMouseDown={(e) => handleDragStart(e, 'mobiles')}
+                onTouchStart={(e) => handleDragStart(e, 'mobiles')}
               >
                 <div className="h-28 sm:h-32 md:h-40 mb-2 flex items-center justify-center bg-gray-50 rounded-lg">
                   <img
@@ -303,11 +327,13 @@ const MainDashboard = () => {
           <h2 className="text-lg md:text-xl font-bold mb-3 px-2 text-gray-800">
             Top Laptops
           </h2>
-          <div className="flex overflow-x-auto gap-3 md:gap-4 px-2 py-4">
+          <div className="flex overflow-x-auto gap-3 md:gap-4 px-2 py-4" data-section="laptops" onMouseMove={handleDragMove} onMouseUp={handleDragEnd} onTouchMove={handleDragMove} onTouchEnd={handleDragEnd}>
             {laptops.map((laptop, index) => (
               <div
                 key={index}
-                className="flex-shrink-0 w-40 sm:w-48 p-2 hover:shadow-md rounded-lg transition-all"
+                className="flex-shrink-0 w-40 sm:w-48 p-2 hover:shadow-md rounded-lg transition-all cursor-grab active:cursor-grabbing"
+                onMouseDown={(e) => handleDragStart(e, 'laptops')}
+                onTouchStart={(e) => handleDragStart(e, 'laptops')}
               >
                 <div className="h-28 sm:h-32 md:h-40 mb-2 flex items-center justify-center bg-gray-50 rounded-lg">
                   <img
