@@ -519,9 +519,9 @@ const BuyNowPage = () => {
     <div className="min-h-screen bg-gray-100">
       <Header />
       {/* Product Section */}
-      <div className="max-w-7xl mx-auto p-3 sm:p-4 lg:p-6 flex flex-col lg:flex-row gap-4 lg:gap-6">
+      <div className="container mx-auto px-4 py-4 max-w-none sm:max-w-full md:max-w-6xl lg:max-w-7xl flex flex-col lg:flex-row gap-4 lg:gap-8">
         {/* Product Image Section */}
-        <div className="w-full lg:w-1/3 relative">
+        <div className="w-full lg:w-2/5 xl:w-1/3 relative">
           {/* Wishlist button - top right corner */}
           <button
             className="absolute top-2 right-2 z-10 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
@@ -544,15 +544,15 @@ const BuyNowPage = () => {
           </button>
 
           {/* Main Image Container - Dynamic height based on available images */}
-          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm flex flex-col sm:flex-row h-[300px] sm:h-[360px] lg:h-[400px]">
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm flex flex-col md:flex-row h-[350px] md:h-[400px] lg:h-[450px] xl:h-[500px]">
             {/* Thumbnails Row/Column - Shows only valid available images */}
-            <div className="flex sm:flex-col overflow-x-auto sm:overflow-y-auto sm:overflow-x-hidden no-scrollbar w-full sm:w-[60px] h-[60px] sm:h-full border-b sm:border-b-0 sm:border-r border-gray-200">
+            <div className="flex md:flex-col overflow-x-auto md:overflow-y-auto md:overflow-x-hidden no-scrollbar w-full md:w-[80px] h-[80px] md:h-full border-b md:border-b-0 md:border-r border-gray-200">
               {availableImages.length > 0 ? (
                 availableImages.map((imageUrl, index) => (
                   <div
                     key={index}
                     className={`
-                relative flex-shrink-0 w-[60px] h-[60px]
+                relative flex-shrink-0 w-[80px] h-[80px] md:w-[80px] md:h-[80px]
                 border-r sm:border-r-0 sm:border-b border-gray-200 last:border-r-0 sm:last:border-b-0
                 cursor-pointer transition-all duration-100
                 ${hoveredThumbnail === index ? "bg-blue-50" : "bg-white"}
@@ -594,7 +594,7 @@ const BuyNowPage = () => {
             {/* Main Image Area with Magnifier */}
             <div
               ref={imageContainerRef}
-              className="flex-grow flex items-center justify-center p-4 bg-white relative"
+              className="flex-grow flex items-center justify-center p-4 md:p-6 bg-white relative"
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
             >
@@ -605,7 +605,7 @@ const BuyNowPage = () => {
                   "https://via.placeholder.com/400x400/E5E7EB/9CA3AF?text=No+Image"
                 }
                 alt="Main Product"
-                className="max-w-full max-h-[220px] sm:max-h-[280px] lg:max-h-[340px] object-contain"
+                className="w-full h-full max-h-[250px] md:max-h-[300px] lg:max-h-[350px] xl:max-h-[400px] object-contain"
               />
 
               {/* Magnifier Lens */}
@@ -645,7 +645,7 @@ const BuyNowPage = () => {
           )}
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-2 mt-4">
+          <div className="flex flex-col md:flex-row gap-3 mt-4">
             <button
               onClick={async () => {
                 const variantData = mainProduct.variants?.find(
@@ -828,7 +828,7 @@ const BuyNowPage = () => {
                 }
               }}
               disabled={addingToCart}
-              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-colors text-sm sm:text-base ${
+              className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors text-base ${
                 addingToCart
                   ? "bg-gray-400 text-gray-600 cursor-not-allowed"
                   : "bg-orange-600 text-white hover:bg-orange-700"
@@ -973,7 +973,7 @@ const BuyNowPage = () => {
                 }
               }}
               disabled={buyingNow}
-              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-colors text-sm sm:text-base ${
+              className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors text-base ${
                 buyingNow
                   ? "bg-gray-400 text-gray-600 cursor-not-allowed"
                   : "bg-green-600 text-white hover:bg-green-700"
@@ -1030,7 +1030,7 @@ const BuyNowPage = () => {
         {/* Product Details Section */}
         <div
           ref={rightScrollRef}
-          className="w-full lg:w-2/3 max-h-[60vh] lg:max-h-[80vh] overflow-y-auto pr-2 lg:pr-4 no-scrollbar"
+          className="w-full lg:w-3/5 xl:w-2/3 max-h-[60vh] lg:max-h-[80vh] overflow-y-auto px-4 lg:px-0 lg:pr-4 no-scrollbar"
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
@@ -1042,10 +1042,10 @@ const BuyNowPage = () => {
             }}
           />
 
-          <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold leading-tight">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold leading-tight mb-4">
             {mainProduct.title || mainProduct.name}
           </h1>
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-3 mb-4">
             <span className="bg-green-600 text-white text-xs sm:text-sm px-2 py-1 rounded">
               {mainProduct.rating} ★
             </span>
@@ -1086,7 +1086,7 @@ const BuyNowPage = () => {
                   return (
                     <button
                       key={variantData.product_variant_id}
-                      className={`px-3 sm:px-4 py-2 border rounded-md text-xs sm:text-sm font-medium ${
+                      className={`px-4 py-2 border rounded-lg text-sm font-medium ${
                         selectedVariant === variantName
                           ? "bg-blue-500 text-white border-blue-500"
                           : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
@@ -1180,9 +1180,9 @@ const BuyNowPage = () => {
           </div>
 
           {/* Quantity Selector */}
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             <h3 className="font-semibold text-sm sm:text-base">Quantity</h3>
-            <div className="flex items-center gap-4 mt-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mt-3">
               <div className="flex items-center border border-gray-300 rounded-lg">
                 <button
                   onClick={() =>
@@ -2414,11 +2414,11 @@ const BuyNowPage = () => {
       </div>
 
       {isRightScrollAtEnd && (
-        <div className="max-w-7xl mx-auto p-3 sm:p-4 lg:p-6">
-          <h3 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">
+        <div className="max-w-7xl mx-auto px-2 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6">
+          <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-3 sm:mb-4 md:mb-6">
             Related Products
           </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
             {relatedProducts && Array.isArray(relatedProducts) ? (
               relatedProducts.map((product) => (
                 <div
