@@ -265,11 +265,11 @@ const MainDashboard = () => {
           <h2 className="text-lg md:text-xl font-bold mb-3 px-2 text-gray-800">
             Featured Mobiles
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-3 md:gap-4 px-2">
+          <div className="flex overflow-x-auto gap-3 md:gap-4 px-2 py-4">
             {mobiles.map((mobile, index) => (
               <div
                 key={index}
-                className="flex-shrink-0 w-full p-2 hover:shadow-md rounded-lg transition-all"
+                className="flex-shrink-0 w-40 sm:w-48 p-2 hover:shadow-md rounded-lg transition-all"
               >
                 <div className="h-28 sm:h-32 md:h-40 mb-2 flex items-center justify-center bg-gray-50 rounded-lg">
                   <img
@@ -303,11 +303,11 @@ const MainDashboard = () => {
           <h2 className="text-lg md:text-xl font-bold mb-3 px-2 text-gray-800">
             Top Laptops
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-3 md:gap-4 px-2">
+          <div className="flex overflow-x-auto gap-3 md:gap-4 px-2 py-4">
             {laptops.map((laptop, index) => (
               <div
                 key={index}
-                className="flex-shrink-0 w-full p-2 hover:shadow-md rounded-lg transition-all"
+                className="flex-shrink-0 w-40 sm:w-48 p-2 hover:shadow-md rounded-lg transition-all"
               >
                 <div className="h-28 sm:h-32 md:h-40 mb-2 flex items-center justify-center bg-gray-50 rounded-lg">
                   <img
