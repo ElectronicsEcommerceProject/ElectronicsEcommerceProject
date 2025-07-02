@@ -112,7 +112,7 @@ const userProductByIdDetails = async (req, res, next) => {
           model: ProductReview,
           as: "reviews",
           where: {
-            review_action: "approve"
+            review_action: "approve",
           },
           required: false,
           include: [
@@ -269,7 +269,12 @@ const userProductByIdDetails = async (req, res, next) => {
  * @param {Object} req - Express request object
  * @returns {Array} Related products
  */
-const getRelatedProducts = async (categoryId, brandId, currentProductId, req) => {
+const getRelatedProducts = async (
+  categoryId,
+  brandId,
+  currentProductId,
+  req
+) => {
   try {
     const relatedProducts = [];
     const maxProducts = 8; // Total number of related products to return
@@ -569,7 +574,10 @@ const getRelevantCoupons = async (productId, brandId, categoryId) => {
  */
 const convertToFullUrl = (imagePath, req) => {
   if (imagePath && !imagePath.startsWith("http")) {
-    return `${req.protocol}://${req.get("host")}/${imagePath.replace(/\\/g, "/")}`;
+    return `${req.protocol}://${req.get("host")}/${imagePath.replace(
+      /\\/g,
+      "/"
+    )}`;
   }
   return imagePath || "";
 };
@@ -594,17 +602,21 @@ const formatProductResponse = (
   const mediaWithUrls =
     productData.media?.map((media) => ({
       ...media,
-      urls: media.ProductMediaURLs?.map((url) => ({
-        ...url,
-        product_media_url: convertToFullUrl(url.product_media_url, req),
-      })) || [],
+      urls:
+        media.ProductMediaURLs?.map((url) => ({
+          ...url,
+          product_media_url: convertToFullUrl(url.product_media_url, req),
+        })) || [],
     })) || [];
 
   // Process variants with their attributes
   const variantsWithAttributes =
     productData.variants?.map((variant) => ({
       ...variant,
-      base_variant_image_url: convertToFullUrl(variant.base_variant_image_url, req),
+      base_variant_image_url: convertToFullUrl(
+        variant.base_variant_image_url,
+        req
+      ),
       variantAttributes:
         variant.variantAttributeValues?.map((varAttrVal) => ({
           variant_attribute_value_id: varAttrVal.variant_attribute_value_id,
@@ -702,16 +714,21 @@ const formatProductResponse = (
         : null,
 
     // Main image and thumbnails for frontend
-    mainImage: convertToFullUrl(mediaWithUrls?.[0]?.urls?.[0]?.product_media_url, req),
+    mainImage: convertToFullUrl(
+      mediaWithUrls?.[0]?.urls?.[0]?.product_media_url,
+      req
+    ),
     thumbnails:
       mediaWithUrls
-        ?.flatMap((media) => media.urls?.map((url) => convertToFullUrl(url.product_media_url, req)))
+        ?.flatMap((media) =>
+          media.urls?.map((url) => convertToFullUrl(url.product_media_url, req))
+        )
         .filter(Boolean) || [],
 
     // Variant names for frontend compatibility
     variantNames:
       variantsWithAttributes?.map(
-        (v) => v.description || `Variant ${v.product_variant_id}`
+        (v) => v.sku || `Variant ${v.product_variant_id}`
       ) || [],
 
     // Description formatting for frontend

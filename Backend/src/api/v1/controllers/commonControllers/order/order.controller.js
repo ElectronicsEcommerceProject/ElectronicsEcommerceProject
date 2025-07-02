@@ -211,6 +211,14 @@ export const updateOrderById = async (req, res) => {
 
     const previousStatus = order.order_status;
 
+    // Validate return logic - only delivered orders can be returned
+    if (order_status === "returned" && previousStatus !== "delivered") {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "Only delivered orders can be returned",
+      });
+    }
+
     // Update order fields
     if (order_status !== undefined) order.order_status = order_status;
     if (payment_status !== undefined) order.payment_status = payment_status;
@@ -222,10 +230,12 @@ export const updateOrderById = async (req, res) => {
     if (previousStatus !== "cancelled" && order_status === "delivered") {
       const orderItems = await OrderItem.findAll({
         where: { order_id },
-        include: [{
-          model: ProductVariant,
-          as: "productVariant"
-        }]
+        include: [
+          {
+            model: ProductVariant,
+            as: "productVariant",
+          },
+        ],
       });
 
       // For each order item, reduce the stock quantity by the ordered quantity
@@ -233,10 +243,39 @@ export const updateOrderById = async (req, res) => {
         if (item.product_variant_id && item.productVariant) {
           await ProductVariant.update(
             {
-              stock_quantity: item.productVariant.stock_quantity - item.total_quantity
+              stock_quantity:
+                item.productVariant.stock_quantity - item.total_quantity,
             },
             {
-              where: { product_variant_id: item.product_variant_id }
+              where: { product_variant_id: item.product_variant_id },
+            }
+          );
+        }
+      }
+    }
+
+    // Increase stock quantity when order status changes to returned (from delivered)
+    if (previousStatus === "delivered" && order_status === "returned") {
+      const orderItems = await OrderItem.findAll({
+        where: { order_id },
+        include: [
+          {
+            model: ProductVariant,
+            as: "productVariant",
+          },
+        ],
+      });
+
+      // For each order item, increase the stock quantity by the ordered quantity
+      for (const item of orderItems) {
+        if (item.product_variant_id && item.productVariant) {
+          await ProductVariant.update(
+            {
+              stock_quantity:
+                item.productVariant.stock_quantity + item.total_quantity,
+            },
+            {
+              where: { product_variant_id: item.product_variant_id },
             }
           );
         }
@@ -278,28 +317,6 @@ export const cancelOrderById = async (req, res) => {
         success: false,
         message: "Cannot cancel an order that has been shipped or delivered",
       });
-    }
-
-    // Restore stock quantity when order is cancelled
-    const orderItems = await OrderItem.findAll({
-      where: { order_id },
-      include: [{
-        model: ProductVariant,
-        as: "productVariant"
-      }]
-    });
-
-    for (const item of orderItems) {
-      if (item.product_variant_id && item.productVariant) {
-        await ProductVariant.update(
-          {
-            stock_quantity: item.productVariant.stock_quantity + item.total_quantity
-          },
-          {
-            where: { product_variant_id: item.product_variant_id }
-          }
-        );
-      }
     }
 
     // Update order status

@@ -909,7 +909,8 @@ const BuyNowPage = () => {
                     shipping_cost: delivery,
                     tax_amount: tax,
                     discount_amount: actualDiscountAmount,
-                    total_amount: originalSubtotal + delivery + tax - actualDiscountAmount,
+                    total_amount:
+                      originalSubtotal + delivery + tax - actualDiscountAmount,
                     notes: appliedCouponData
                       ? `Coupon applied: ${appliedCouponData.code}`
                       : "",
@@ -980,29 +981,34 @@ const BuyNowPage = () => {
             >
               {(() => {
                 if (buyingNow) return "ORDERING...";
-                
+
                 const variantData = mainProduct.variants?.find(
                   (v) => v.description === selectedVariant
                 );
-                if (!variantData) return `BUY NOW (₹${getCurrentVariantPrice() * quantity})`;
-                
+                if (!variantData)
+                  return `BUY NOW (₹${getCurrentVariantPrice() * quantity})`;
+
                 const basePrice = parseFloat(variantData.price);
                 const bestDiscount = calculateBestDiscount(
                   variantData,
                   quantity,
                   appliedCouponData
                 );
-                
+
                 let discountedPrice = basePrice;
                 if (bestDiscount.discountType === "percentage") {
-                  discountedPrice = basePrice * (1 - bestDiscount.discountValue / 100);
+                  discountedPrice =
+                    basePrice * (1 - bestDiscount.discountValue / 100);
                 } else if (bestDiscount.discountType === "fixed") {
-                  discountedPrice = Math.max(0, basePrice - bestDiscount.discountValue);
+                  discountedPrice = Math.max(
+                    0,
+                    basePrice - bestDiscount.discountValue
+                  );
                 }
-                
+
                 const finalPrice = discountedPrice * quantity;
                 const originalPrice = basePrice * quantity;
-                
+
                 if (finalPrice < originalPrice) {
                   return (
                     <div className="text-center">
@@ -1014,7 +1020,7 @@ const BuyNowPage = () => {
                     </div>
                   );
                 }
-                
+
                 return `BUY NOW (₹${finalPrice})`;
               })()}
             </button>
@@ -1070,8 +1076,13 @@ const BuyNowPage = () => {
               Array.isArray(mainProduct.variants) &&
               mainProduct.variants.length > 0 ? (
                 mainProduct.variants.map((variantData, index) => {
-                  const displayName = variantData.sku || variantData.name || variantData.description || `Variant ${index + 1}`;
-                  const variantName = variantData.description || `Variant ${index + 1}`;
+                  const displayName =
+                    variantData.sku ||
+                    variantData.name ||
+                    variantData.description ||
+                    `Variant ${index + 1}`;
+                  const variantName =
+                    variantData.description || `Variant ${index + 1}`;
                   return (
                     <button
                       key={variantData.product_variant_id}
@@ -1474,10 +1485,19 @@ const BuyNowPage = () => {
                               return;
                             }
 
-                            // Make API call to apply coupon
+                            // Get selected variant data
+                            const variantData = mainProduct.variants?.find(
+                              (v) => v.description === selectedVariant
+                            );
+
+                            // Make API call to apply coupon with additional IDs
                             const couponData = {
                               coupon_id: coupon.coupon_id,
                               user_id: user_id,
+                              category_id: mainProduct.category?.category_id || null,
+                              brand_id: mainProduct.brand?.brand_id || null,
+                              product_id: productId,
+                              product_variant_id: variantData?.product_variant_id || null,
                             };
 
                             console.log(
@@ -1942,7 +1962,13 @@ const BuyNowPage = () => {
                             </span>
                           </div>
                           <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                            {review.variant || "Standard"}
+                            {(() => {
+                              if (review.product_variant_id && mainProduct.variants) {
+                                const variant = mainProduct.variants.find(v => v.product_variant_id === review.product_variant_id);
+                                return variant?.sku || variant?.name || review.variant || "Standard";
+                              }
+                              return review.variant || "Standard";
+                            })()}
                           </span>
                         </div>
 
@@ -2345,7 +2371,7 @@ const BuyNowPage = () => {
                                     value={variant.product_variant_id}
                                     selected={isCurrentVariant}
                                   >
-                                    {variant.description ||
+                                    {variant.sku ||
                                       `Variant ${variant.product_variant_id}`}
                                     {isCurrentVariant
                                       ? " (Currently Selected)"
