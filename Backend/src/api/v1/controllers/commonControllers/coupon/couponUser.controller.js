@@ -7,7 +7,7 @@ const { CouponUser, Coupon, User, CouponRedemption } = db;
 // Create a new coupon-user association
 export const createCouponUser = async (req, res) => {
   try {
-    const { coupon_id, user_id } = req.body;
+    const { coupon_id, user_id, category_id, brand_id, product_id, product_variant_id } = req.body;
 
     // ✅ Check if coupon exists and is active
     const coupon = await Coupon.findByPk(coupon_id);
@@ -15,6 +15,35 @@ export const createCouponUser = async (req, res) => {
       return res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Coupon not found", success: false });
+    }
+
+    // ✅ Verify coupon target eligibility
+    if (coupon.target_type === "category" && coupon.category_id !== category_id) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "This coupon is not valid for the selected category",
+        success: false
+      });
+    }
+    
+    if (coupon.target_type === "brand" && coupon.brand_id !== brand_id) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "This coupon is not valid for the selected brand",
+        success: false
+      });
+    }
+    
+    if (coupon.target_type === "product" && coupon.product_id !== product_id) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "This coupon is not valid for the selected product",
+        success: false
+      });
+    }
+    
+    if (coupon.target_type === "product_variant" && coupon.product_variant_id !== product_variant_id) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "This coupon is not valid for the selected product variant",
+        success: false
+      });
     }
 
     // ✅ Check if coupon is active

@@ -1485,10 +1485,19 @@ const BuyNowPage = () => {
                               return;
                             }
 
-                            // Make API call to apply coupon
+                            // Get selected variant data
+                            const variantData = mainProduct.variants?.find(
+                              (v) => v.description === selectedVariant
+                            );
+
+                            // Make API call to apply coupon with additional IDs
                             const couponData = {
                               coupon_id: coupon.coupon_id,
                               user_id: user_id,
+                              category_id: mainProduct.category?.category_id || null,
+                              brand_id: mainProduct.brand?.brand_id || null,
+                              product_id: productId,
+                              product_variant_id: variantData?.product_variant_id || null,
                             };
 
                             console.log(
