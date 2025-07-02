@@ -1962,7 +1962,13 @@ const BuyNowPage = () => {
                             </span>
                           </div>
                           <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                            {review.variant || "Standard"}
+                            {(() => {
+                              if (review.product_variant_id && mainProduct.variants) {
+                                const variant = mainProduct.variants.find(v => v.product_variant_id === review.product_variant_id);
+                                return variant?.sku || variant?.name || review.variant || "Standard";
+                              }
+                              return review.variant || "Standard";
+                            })()}
                           </span>
                         </div>
 
