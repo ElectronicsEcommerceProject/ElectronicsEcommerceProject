@@ -12,9 +12,7 @@ const MainDashboard = () => {
   const [activeBanner, setActiveBanner] = useState(0);
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState(null);
-  const [selectedChargerBrand, setSelectedChargerBrand] = useState(null);
   const [visibleProducts, setVisibleProducts] = useState(4);
-  const [visibleChargers, setVisibleChargers] = useState(4);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -103,14 +101,8 @@ const MainDashboard = () => {
     ? products.filter((product) => product.brand === selectedBrand)
     : products;
 
-  const filteredChargers = [];
-
   const loadMoreProducts = () => {
     setVisibleProducts((prev) => prev + 4);
-  };
-
-  const loadMoreChargers = () => {
-    setVisibleChargers((prev) => prev + 4);
   };
 
   if (!isUserAuthenticated) {
@@ -224,14 +216,6 @@ const MainDashboard = () => {
 
       <div className="w-full bg-gradient-to-br from-blue-50 to-indigo-50 px-4 sm:px-6 py-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-              🎧 Premium Headphones
-            </h2>
-            <p className="text-gray-600 text-lg">
-              Discover amazing sound quality with top brands
-            </p>
-          </div>
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-6">
             <button
               className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold transition-all transform hover:scale-105 text-sm sm:text-base ${
@@ -364,58 +348,7 @@ const MainDashboard = () => {
         </div>
       </div>
 
-      <div className="h-4 bg-gray-100 flex items-center justify-center">
-        <div className="w-full border-t border-gray-200 mx-4 md:mx-6"></div>
-      </div>
 
-      <div className="w-full bg-gradient-to-br from-purple-50 to-pink-50 px-4 sm:px-6 py-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-              ⚡ Fast Charging Solutions
-            </h2>
-            <p className="text-gray-600 text-lg">
-              Power up your devices with premium chargers
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-6">
-            <button
-              className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold transition-all transform hover:scale-105 text-sm sm:text-base ${
-                selectedChargerBrand === null
-                  ? "bg-purple-600 text-white shadow-lg"
-                  : "bg-white text-purple-600 hover:bg-purple-50 shadow-md"
-              }`}
-              onClick={() => setSelectedChargerBrand(null)}
-            >
-              All Brands
-            </button>
-            <button
-              className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold transition-all transform hover:scale-105 text-sm sm:text-base ${
-                selectedChargerBrand === "Anker"
-                  ? "bg-purple-600 text-white shadow-lg"
-                  : "bg-white text-purple-600 hover:bg-purple-50 shadow-md"
-              }`}
-              onClick={() => setSelectedChargerBrand("Anker")}
-            >
-              🔋 Anker
-            </button>
-            <button
-              className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold transition-all transform hover:scale-105 text-sm sm:text-base ${
-                selectedChargerBrand === "Belkin"
-                  ? "bg-purple-600 text-white shadow-lg"
-                  : "bg-white text-purple-600 hover:bg-purple-50 shadow-md"
-              }`}
-              onClick={() => setSelectedChargerBrand("Belkin")}
-            >
-              ⚡ Belkin
-            </button>
-          </div>
-          <div className="text-center py-8">
-            <p className="text-gray-600">No chargers available at the moment.</p>
-          </div>
-
-        </div>
-      </div>
 
       <Footer />
     </div>
