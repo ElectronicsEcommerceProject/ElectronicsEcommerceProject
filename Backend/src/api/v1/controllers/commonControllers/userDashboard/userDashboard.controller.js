@@ -132,6 +132,7 @@ const getUserDashboardProducts = async (req, res) => {
       });
 
       return {
+        product_id: prod.product_id,
         image,
         title: prod.name,
         price: `₹${sellingPrice.toLocaleString()}`,
