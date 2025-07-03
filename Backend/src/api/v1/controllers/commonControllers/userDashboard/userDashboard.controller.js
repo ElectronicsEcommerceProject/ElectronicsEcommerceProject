@@ -1,0 +1,164 @@
+import { StatusCodes } from "http-status-codes";
+import db from "../../../../../models/index.js";
+import MESSAGE from "../../../../../constants/message.js";
+import { Op } from "sequelize";
+
+const {
+  Product,
+  ProductVariant,
+  ProductMedia,
+  ProductMediaUrl,
+  Brand,
+  ProductReview,
+  Coupon,
+  AttributeValue,
+  Attribute,
+} = db;
+
+// Controller: Fetch products for user dashboard with detailed info
+const getUserDashboardProducts = async (req, res) => {
+  try {
+    // Fetch active products with related data
+    const products = await Product.findAll({
+      where: { is_active: true },
+      include: [
+        {
+          model: ProductVariant,
+          as: "variants",
+          attributes: ["product_variant_id", "stock_quantity"],
+          include: [
+            {
+              model: AttributeValue,
+              attributes: ["value"],
+              include: [
+                {
+                  model: Attribute,
+                  attributes: ["name"],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          model: ProductMedia,
+          as: "media",
+          include: [
+            {
+              model: ProductMediaUrl,
+              attributes: ["product_media_url"],
+              where: { media_type: "image" },
+              required: false,
+            },
+          ],
+        },
+        {
+          model: Brand,
+          as: "brand",
+          attributes: ["name"],
+        },
+        {
+          model: ProductReview,
+          as: "reviews",
+          attributes: ["rating"],
+        },
+        {
+          model: Coupon,
+          as: "coupons",
+          where: {
+            is_active: true,
+            valid_from: { [Op.lte]: new Date() },
+            valid_to: { [Op.gte]: new Date() },
+          },
+          required: false,
+        },
+      ],
+    });
+
+    // Transform data into desired format
+    const data = products.map((prod) => {
+      const variant = prod.variants[0];
+      const basePrice = parseFloat(prod.base_price);
+      const sellingPrice = basePrice;
+
+      // Calculate discount from coupon
+      let discountPercent = 0;
+      if (prod.coupons && prod.coupons.length > 0) {
+        const coupon = prod.coupons[0];
+        if (coupon.type === "percentage") {
+          discountPercent = parseFloat(coupon.discount_value);
+        } else if (coupon.type === "fixed") {
+          discountPercent = (
+            (parseFloat(coupon.discount_value) / basePrice) *
+            100
+          ).toFixed(0);
+        }
+      }
+
+      // Determine image URL from product media
+      let image =
+        prod.media[0]?.ProductMediaUrls?.[0]?.product_media_url ||
+        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop";
+      image = image.replace(/\\/g, "/");
+      if (!image.startsWith("http")) {
+        image = `${req.protocol}://${req.get("host")}/${image}`;
+      }
+
+      // Calculate average rating
+      const ratingCount = prod.reviews.length;
+      const avgRating = ratingCount
+        ? prod.reviews.reduce((sum, r) => sum + r.rating, 0) / ratingCount
+        : 0;
+
+      // Extract features from all variants' attribute values
+      const features = [];
+      const attributeMap = new Map();
+
+      prod.variants.forEach((variant) => {
+        if (variant.AttributeValues?.length) {
+          variant.AttributeValues.forEach((attrValue) => {
+            if (attrValue.Attribute) {
+              const attrName = attrValue.Attribute.name;
+              if (!attributeMap.has(attrName)) {
+                attributeMap.set(attrName, new Set());
+              }
+              attributeMap.get(attrName).add(attrValue.value);
+            }
+          });
+        }
+      });
+
+      attributeMap.forEach((values, attrName) => {
+        features.push(`${attrName}: ${Array.from(values).join(", ")}`);
+      });
+
+      return {
+        image,
+        title: prod.name,
+        price: `₹${sellingPrice.toLocaleString()}`,
+        originalPrice: `₹${basePrice.toLocaleString()}`,
+        stock:
+          variant && variant.stock_quantity > 0 ? "in-stock" : "out-of-stock",
+        brand: prod.brand?.name || "",
+        rating: +avgRating.toFixed(1),
+        discount: `${Math.round(discountPercent)}%`,
+        features,
+      };
+    });
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: MESSAGE.get.succ,
+      data,
+    });
+  } catch (error) {
+    console.error("Error in getUserDashboardProducts:", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: MESSAGE.get.fail,
+      error: error.message,
+    });
+  }
+};
+
+export default {
+  getUserDashboardProducts,
+};
