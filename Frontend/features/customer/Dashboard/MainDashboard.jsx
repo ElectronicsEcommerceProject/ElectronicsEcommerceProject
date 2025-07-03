@@ -12,9 +12,7 @@ const MainDashboard = () => {
   const [activeBanner, setActiveBanner] = useState(0);
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState(null);
-  const [selectedChargerBrand, setSelectedChargerBrand] = useState(null);
   const [visibleProducts, setVisibleProducts] = useState(4);
-  const [visibleChargers, setVisibleChargers] = useState(4);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -99,97 +97,14 @@ const MainDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-
-
-  const allChargers = [
-    {
-      image:
-        "https://images.unsplash.com/photo-1609592806596-4d3b0c3b7e3e?w=200&h=200&fit=crop&crop=center",
-      title: "Anker PowerPort III 20W",
-      price: "₹1,299",
-      originalPrice: "₹1,599",
-      stock: "in-stock",
-      brand: "Anker",
-      rating: 4.6,
-      discount: "19%",
-      features: ["USB-C PD", "Compact Design"],
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1625948515291-69613efd103f?w=200&h=200&fit=crop&crop=center",
-      title: "Anker PowerCore 10000",
-      price: "₹2,499",
-      originalPrice: "₹2,999",
-      stock: "in-stock",
-      brand: "Anker",
-      rating: 4.7,
-      discount: "17%",
-      features: ["10000mAh", "PowerIQ"],
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop&crop=center",
-      title: "Belkin BoostCharge 25W",
-      price: "₹1,799",
-      originalPrice: "₹2,199",
-      stock: "in-stock",
-      brand: "Belkin",
-      rating: 4.4,
-      discount: "18%",
-      features: ["Fast Charge", "Universal"],
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=200&h=200&fit=crop&crop=center",
-      title: "Belkin Wireless Pad 15W",
-      price: "₹2,299",
-      originalPrice: "₹2,799",
-      stock: "in-stock",
-      brand: "Belkin",
-      rating: 4.3,
-      discount: "18%",
-      features: ["Qi Wireless", "LED Indicator"],
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1621768216002-5ac171876625?w=200&h=200&fit=crop&crop=center",
-      title: "Anker PowerWave Stand",
-      price: "₹1,999",
-      originalPrice: "₹2,499",
-      stock: "in-stock",
-      brand: "Anker",
-      rating: 4.5,
-      discount: "20%",
-      features: ["Stand Design", "Case Friendly"],
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?w=200&h=200&fit=crop&crop=center",
-      title: "Belkin Car Charger 36W",
-      price: "₹1,199",
-      originalPrice: "₹1,499",
-      stock: "in-stock",
-      brand: "Belkin",
-      rating: 4.2,
-      discount: "20%",
-      features: ["Dual Port", "Car Compatible"],
-    },
-  ];
-
   const filteredProducts = selectedBrand
     ? products.filter((product) => product.brand === selectedBrand)
     : products;
 
-  const filteredChargers = selectedChargerBrand
-    ? allChargers.filter((charger) => charger.brand === selectedChargerBrand)
-    : allChargers;
+  const uniqueBrands = [...new Set(products.map(product => product.brand))];
 
   const loadMoreProducts = () => {
     setVisibleProducts((prev) => prev + 4);
-  };
-
-  const loadMoreChargers = () => {
-    setVisibleChargers((prev) => prev + 4);
   };
 
   if (!isUserAuthenticated) {
@@ -303,14 +218,6 @@ const MainDashboard = () => {
 
       <div className="w-full bg-gradient-to-br from-blue-50 to-indigo-50 px-4 sm:px-6 py-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-              🎧 Premium Headphones
-            </h2>
-            <p className="text-gray-600 text-lg">
-              Discover amazing sound quality with top brands
-            </p>
-          </div>
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-6">
             <button
               className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold transition-all transform hover:scale-105 text-sm sm:text-base ${
@@ -322,26 +229,19 @@ const MainDashboard = () => {
             >
               All Brands
             </button>
-            <button
-              className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold transition-all transform hover:scale-105 text-sm sm:text-base ${
-                selectedBrand === "Boat"
-                  ? "bg-blue-600 text-white shadow-lg"
-                  : "bg-white text-blue-600 hover:bg-blue-50 shadow-md"
-              }`}
-              onClick={() => setSelectedBrand("Boat")}
-            >
-              🚤 Boat
-            </button>
-            <button
-              className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold transition-all transform hover:scale-105 text-sm sm:text-base ${
-                selectedBrand === "Mivi"
-                  ? "bg-blue-600 text-white shadow-lg"
-                  : "bg-white text-blue-600 hover:bg-blue-50 shadow-md"
-              }`}
-              onClick={() => setSelectedBrand("Mivi")}
-            >
-              🎵 Mivi
-            </button>
+            {uniqueBrands.map((brand) => (
+              <button
+                key={brand}
+                className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold transition-all transform hover:scale-105 text-sm sm:text-base ${
+                  selectedBrand === brand
+                    ? "bg-blue-600 text-white shadow-lg"
+                    : "bg-white text-blue-600 hover:bg-blue-50 shadow-md"
+                }`}
+                onClick={() => setSelectedBrand(brand)}
+              >
+                {brand}
+              </button>
+            ))}
           </div>
           {loading ? (
             <div className="text-center py-8">
@@ -443,144 +343,7 @@ const MainDashboard = () => {
         </div>
       </div>
 
-      <div className="h-4 bg-gray-100 flex items-center justify-center">
-        <div className="w-full border-t border-gray-200 mx-4 md:mx-6"></div>
-      </div>
 
-      <div className="w-full bg-gradient-to-br from-purple-50 to-pink-50 px-4 sm:px-6 py-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-              ⚡ Fast Charging Solutions
-            </h2>
-            <p className="text-gray-600 text-lg">
-              Power up your devices with premium chargers
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-6">
-            <button
-              className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold transition-all transform hover:scale-105 text-sm sm:text-base ${
-                selectedChargerBrand === null
-                  ? "bg-purple-600 text-white shadow-lg"
-                  : "bg-white text-purple-600 hover:bg-purple-50 shadow-md"
-              }`}
-              onClick={() => setSelectedChargerBrand(null)}
-            >
-              All Brands
-            </button>
-            <button
-              className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold transition-all transform hover:scale-105 text-sm sm:text-base ${
-                selectedChargerBrand === "Anker"
-                  ? "bg-purple-600 text-white shadow-lg"
-                  : "bg-white text-purple-600 hover:bg-purple-50 shadow-md"
-              }`}
-              onClick={() => setSelectedChargerBrand("Anker")}
-            >
-              🔋 Anker
-            </button>
-            <button
-              className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold transition-all transform hover:scale-105 text-sm sm:text-base ${
-                selectedChargerBrand === "Belkin"
-                  ? "bg-purple-600 text-white shadow-lg"
-                  : "bg-white text-purple-600 hover:bg-purple-50 shadow-md"
-              }`}
-              onClick={() => setSelectedChargerBrand("Belkin")}
-            >
-              ⚡ Belkin
-            </button>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
-            {filteredChargers
-              .slice(0, visibleChargers)
-              .map((charger, index) => (
-                <div
-                  key={index}
-                  className="w-full p-3 sm:p-4 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-purple-200 group cursor-pointer flex flex-col"
-                >
-                  <div className="relative h-36 sm:h-40 md:h-44 mb-3 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden">
-                    {charger.discount && (
-                      <div className="absolute top-2 left-2 bg-purple-500 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
-                        -{charger.discount}
-                      </div>
-                    )}
-                    <img
-                      src={charger.image}
-                      alt={charger.title}
-                      className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                  </div>
-                  <div className="space-y-2 flex-grow">
-                    <h3 className="text-sm sm:text-base font-semibold text-gray-800 line-clamp-2 group-hover:text-purple-600 transition-colors">
-                      {charger.title}
-                    </h3>
-                    <div className="flex items-center space-x-1">
-                      <div className="flex text-yellow-400">
-                        {[...Array(5)].map((_, i) => (
-                          <span
-                            key={i}
-                            className={
-                              i < Math.floor(charger.rating) ? "★" : "☆"
-                            }
-                          >
-                            ★
-                          </span>
-                        ))}
-                      </div>
-                      <span className="text-xs text-gray-500">
-                        ({charger.rating})
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-base sm:text-lg font-bold text-green-600">
-                          {charger.price}
-                        </div>
-                        {charger.originalPrice && (
-                          <div className="text-xs sm:text-sm text-gray-500 line-through">
-                            {charger.originalPrice}
-                          </div>
-                        )}
-                      </div>
-                      <div
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          charger.stock === "upcoming"
-                            ? "bg-orange-100 text-orange-600"
-                            : "bg-green-100 text-green-600"
-                        }`}
-                      >
-                        {charger.stock === "upcoming"
-                          ? "Coming Soon"
-                          : "In Stock"}
-                      </div>
-                    </div>
-                  </div>
-                  {charger.features && (
-                    <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-gray-100">
-                      {charger.features.map((feature, idx) => (
-                        <span
-                          key={idx}
-                          className="bg-purple-50 text-purple-600 px-2 py-1 rounded-full text-xs"
-                        >
-                          {feature}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-          </div>
-          {visibleChargers < filteredChargers.length && (
-            <div className="text-center mt-8">
-              <button
-                onClick={loadMoreChargers}
-                className="bg-purple-600 text-white hover:bg-purple-700 px-8 py-3 rounded-full transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                Load More
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
 
       <Footer />
     </div>
