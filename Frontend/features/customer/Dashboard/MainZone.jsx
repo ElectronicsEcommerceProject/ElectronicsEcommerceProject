@@ -72,6 +72,9 @@ const MainZone = () => {
   const [availableBrands, setAvailableBrands] = useState([]);
   const [selectedBrandIds, setSelectedBrandIds] = useState([]);
 
+  // State to track current category ID
+  const [currentCategoryId, setCurrentCategoryId] = useState(null);
+
   // Redux state - moved to top to avoid initialization issues
   const dispatch = useDispatch();
   const filterState = useSelector((state) => state.filters);
@@ -222,6 +225,18 @@ const MainZone = () => {
     fetchBrands();
   }, []);
 
+  // Auto-select all brands when category is selected and brands are loaded
+  useEffect(() => {
+    if (currentCategoryId && availableBrands.length > 0) {
+      const brandNames = availableBrands.map((brand) => brand.name);
+      const brandIds = availableBrands.map((brand) => brand.brand_id);
+
+      dispatch(setSelectedBrands(brandNames));
+      setSelectedBrandIds(brandIds);
+      fetchProductsForSelectedBrands(brandIds);
+    }
+  }, [currentCategoryId, availableBrands, dispatch]);
+
   // Watch for brand filter changes and clear products if no brands selected
   useEffect(() => {
     // Only run if selectedBrands is properly initialized (not undefined)
@@ -234,9 +249,6 @@ const MainZone = () => {
       setSelectedBrandIds([]);
     }
   }, [selectedBrands, searchParams]);
-
-  // State to track current category ID
-  const [currentCategoryId, setCurrentCategoryId] = useState(null);
 
   // Sync local search input with Redux search term
   useEffect(() => {
