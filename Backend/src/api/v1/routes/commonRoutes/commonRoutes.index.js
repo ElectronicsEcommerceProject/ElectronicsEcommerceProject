@@ -11,6 +11,7 @@ import couponRedemptionRoutes from "./coupon/couponRedemption.routes.js";
 import productReviewRoutes from "./product/productReview/productReview.routes.js";
 import userProductByIdDetailsPageRoutes from "./product/userProductByIdDetailsPage/userProductByIdDetails.routes.js";
 import userCouponUserRoutes from "./coupon/couponUser.routes.js";
+import userDashboardRoutes from "./userDashboard/userDashboard.routes.js";
 
 export {
   authRoutes,
@@ -26,4 +27,5 @@ export {
   productReviewRoutes,
   userProductByIdDetailsPageRoutes,
   userCouponUserRoutes,
+  userDashboardRoutes,
 };
