@@ -99,10 +99,6 @@ const MainDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-
-
-
-
   const filteredProducts = selectedBrand
     ? products.filter((product) => product.brand === selectedBrand)
     : products;
