@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiUser, FiShoppingBag, FiStar, FiShield } from "react-icons/fi";
 
 import { Footer, Header } from "../../../components/index.js";
@@ -9,6 +10,7 @@ import {
 } from "../../../src/index.js";
 
 const MainDashboard = () => {
+  const navigate = useNavigate();
   const [activeBanner, setActiveBanner] = useState(0);
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState(null);
@@ -31,7 +33,7 @@ const MainDashboard = () => {
             setProducts(response.data);
           }
         } catch (error) {
-          console.error('Error fetching products:', error);
+          console.error("Error fetching products:", error);
         } finally {
           setLoading(false);
         }
@@ -101,10 +103,14 @@ const MainDashboard = () => {
     ? products.filter((product) => product.brand === selectedBrand)
     : products;
 
-  const uniqueBrands = [...new Set(products.map(product => product.brand))];
+  const uniqueBrands = [...new Set(products.map((product) => product.brand))];
 
   const loadMoreProducts = () => {
     setVisibleProducts((prev) => prev + 4);
+  };
+
+  const handleProductClick = (productId) => {
+    navigate(`/product/${productId}`);
   };
 
   if (!isUserAuthenticated) {
@@ -254,8 +260,9 @@ const MainDashboard = () => {
                 .slice(0, visibleProducts)
                 .map((product, index) => (
                   <div
-                    key={index}
+                    key={product.product_id || index}
                     className="w-full p-3 sm:p-4 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-200 group cursor-pointer flex flex-col"
+                    onClick={() => handleProductClick(product.product_id)}
                   >
                     <div className="relative h-36 sm:h-40 md:h-44 mb-3 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden">
                       {product.discount && (
@@ -342,8 +349,6 @@ const MainDashboard = () => {
           )}
         </div>
       </div>
-
-
 
       <Footer />
     </div>
