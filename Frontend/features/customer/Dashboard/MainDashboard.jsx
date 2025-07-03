@@ -101,6 +101,8 @@ const MainDashboard = () => {
     ? products.filter((product) => product.brand === selectedBrand)
     : products;
 
+  const uniqueBrands = [...new Set(products.map(product => product.brand))];
+
   const loadMoreProducts = () => {
     setVisibleProducts((prev) => prev + 4);
   };
@@ -227,26 +229,19 @@ const MainDashboard = () => {
             >
               All Brands
             </button>
-            <button
-              className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold transition-all transform hover:scale-105 text-sm sm:text-base ${
-                selectedBrand === "Boat"
-                  ? "bg-blue-600 text-white shadow-lg"
-                  : "bg-white text-blue-600 hover:bg-blue-50 shadow-md"
-              }`}
-              onClick={() => setSelectedBrand("Boat")}
-            >
-              🚤 Boat
-            </button>
-            <button
-              className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold transition-all transform hover:scale-105 text-sm sm:text-base ${
-                selectedBrand === "Mivi"
-                  ? "bg-blue-600 text-white shadow-lg"
-                  : "bg-white text-blue-600 hover:bg-blue-50 shadow-md"
-              }`}
-              onClick={() => setSelectedBrand("Mivi")}
-            >
-              🎵 Mivi
-            </button>
+            {uniqueBrands.map((brand) => (
+              <button
+                key={brand}
+                className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold transition-all transform hover:scale-105 text-sm sm:text-base ${
+                  selectedBrand === brand
+                    ? "bg-blue-600 text-white shadow-lg"
+                    : "bg-white text-blue-600 hover:bg-blue-50 shadow-md"
+                }`}
+                onClick={() => setSelectedBrand(brand)}
+              >
+                {brand}
+              </button>
+            ))}
           </div>
           {loading ? (
             <div className="text-center py-8">
