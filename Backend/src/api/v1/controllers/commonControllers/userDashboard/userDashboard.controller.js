@@ -25,10 +25,7 @@ const getUserDashboardProducts = async (req, res) => {
         {
           model: ProductVariant,
           as: "variants",
-          attributes: [
-            "product_variant_id",
-            "stock_quantity",
-          ],
+          attributes: ["product_variant_id", "stock_quantity"],
           include: [
             {
               model: AttributeValue,
@@ -74,7 +71,6 @@ const getUserDashboardProducts = async (req, res) => {
           },
           required: false,
         },
-
       ],
     });
 
@@ -88,10 +84,13 @@ const getUserDashboardProducts = async (req, res) => {
       let discountPercent = 0;
       if (prod.coupons && prod.coupons.length > 0) {
         const coupon = prod.coupons[0];
-        if (coupon.type === 'percentage') {
+        if (coupon.type === "percentage") {
           discountPercent = parseFloat(coupon.discount_value);
-        } else if (coupon.type === 'fixed') {
-          discountPercent = ((parseFloat(coupon.discount_value) / basePrice) * 100).toFixed(0);
+        } else if (coupon.type === "fixed") {
+          discountPercent = (
+            (parseFloat(coupon.discount_value) / basePrice) *
+            100
+          ).toFixed(0);
         }
       }
 
@@ -113,7 +112,7 @@ const getUserDashboardProducts = async (req, res) => {
       // Extract features from all variants' attribute values
       const features = [];
       const attributeMap = new Map();
-      
+
       prod.variants.forEach((variant) => {
         if (variant.AttributeValues?.length) {
           variant.AttributeValues.forEach((attrValue) => {
@@ -127,9 +126,9 @@ const getUserDashboardProducts = async (req, res) => {
           });
         }
       });
-      
+
       attributeMap.forEach((values, attrName) => {
-        features.push(`${attrName}: ${Array.from(values).join(', ')}`);
+        features.push(`${attrName}: ${Array.from(values).join(", ")}`);
       });
 
       return {
@@ -147,6 +146,7 @@ const getUserDashboardProducts = async (req, res) => {
     });
 
     return res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.get.succ,
       data,
     });

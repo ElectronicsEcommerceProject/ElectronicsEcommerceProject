@@ -2,7 +2,11 @@ import React, { useState, useEffect } from "react";
 import { FiUser, FiShoppingBag, FiStar, FiShield } from "react-icons/fi";
 
 import { Footer, Header } from "../../../components/index.js";
-import { isAuthenticated } from "../../../src/index.js";
+import {
+  isAuthenticated,
+  userDashboardDataRoute,
+  getApi,
+} from "../../../src/index.js";
 
 const MainDashboard = () => {
   const [activeBanner, setActiveBanner] = useState(0);
@@ -11,18 +15,38 @@ const MainDashboard = () => {
   const [selectedChargerBrand, setSelectedChargerBrand] = useState(null);
   const [visibleProducts, setVisibleProducts] = useState(4);
   const [visibleChargers, setVisibleChargers] = useState(4);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Check authentication status
+  // Check authentication status and fetch products
   useEffect(() => {
     const checkAuth = () => {
       setIsUserAuthenticated(isAuthenticated());
     };
 
+    const fetchProducts = async () => {
+      if (isAuthenticated()) {
+        try {
+          setLoading(true);
+          const response = await getApi(userDashboardDataRoute);
+          if (response.success) {
+            setProducts(response.data);
+          }
+        } catch (error) {
+          console.error('Error fetching products:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
     checkAuth();
+    fetchProducts();
 
     // Listen for auth changes
     const handleAuthChange = () => {
       checkAuth();
+      fetchProducts();
     };
 
     window.addEventListener("tokenChanged", handleAuthChange);
@@ -35,30 +59,36 @@ const MainDashboard = () => {
   const banners = [
     {
       title: "🎧 Premium Headphones",
-      description: "Experience crystal-clear sound with our premium collection of headphones from top brands.",
+      description:
+        "Experience crystal-clear sound with our premium collection of headphones from top brands.",
       price: "Starting ₹1,999",
       discount: "Up to 40% OFF",
       bgClass: "bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700",
       buttonText: "Shop Now",
-      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop&crop=center",
     },
     {
       title: "⚡ Fast Charging Solutions",
-      description: "Power up your devices with our range of high-speed chargers and wireless charging pads.",
+      description:
+        "Power up your devices with our range of high-speed chargers and wireless charging pads.",
       price: "Starting ₹1,199",
       discount: "Up to 35% OFF",
       bgClass: "bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700",
       buttonText: "Explore Now",
-      image: "https://images.unsplash.com/photo-1609592806596-4d3b0c3b7e3e?w=400&h=300&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1609592806596-4d3b0c3b7e3e?w=400&h=300&fit=crop&crop=center",
     },
     {
       title: "🔊 Wireless Speakers",
-      description: "Fill your space with rich, immersive sound from our premium speaker collection.",
+      description:
+        "Fill your space with rich, immersive sound from our premium speaker collection.",
       price: "Starting ₹2,999",
       discount: "Up to 50% OFF",
       bgClass: "bg-gradient-to-br from-orange-500 via-red-600 to-pink-700",
       buttonText: "Listen Now",
-      image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=300&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=300&fit=crop&crop=center",
     },
   ];
 
@@ -69,100 +99,12 @@ const MainDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const allProducts = [
-    {
-      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop&crop=center",
-      title: "Boat Rockerz 400",
-      price: "₹1,999",
-      originalPrice: "₹2,499",
-      stock: "in-stock",
-      brand: "Boat",
-      rating: 4.3,
-      discount: "20%",
-      features: ["Bluetooth 5.0", "40H Playback"],
-    },
-    {
-      image: "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=200&h=200&fit=crop&crop=center",
-      title: "Boat Immortal 100",
-      price: "₹2,999",
-      originalPrice: "₹3,499",
-      stock: "in-stock",
-      brand: "Boat",
-      rating: 4.5,
-      discount: "14%",
-      features: ["Gaming Mode", "Beast Mode"],
-    },
-    {
-      image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=200&h=200&fit=crop&crop=center",
-      title: "Mivi DuoPods A350",
-      price: "₹1,799",
-      originalPrice: "₹2,199",
-      stock: "in-stock",
-      brand: "Mivi",
-      rating: 4.2,
-      discount: "18%",
-      features: ["True Wireless", "Touch Control"],
-    },
-    {
-      image: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=200&h=200&fit=crop&crop=center",
-      title: "Mivi Collar Flash",
-      price: "₹1,499",
-      originalPrice: "₹1,999",
-      stock: "in-stock",
-      brand: "Mivi",
-      rating: 4.4,
-      discount: "25%",
-      features: ["Neckband", "Fast Charge"],
-    },
-    {
-      image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=200&h=200&fit=crop&crop=center",
-      title: "Boat Nirvana Ion",
-      price: "₹3,999",
-      originalPrice: "₹4,499",
-      stock: "upcoming",
-      brand: "Boat",
-      rating: 4.6,
-      discount: "11%",
-      features: ["ANC", "Spatial Audio"],
-    },
-    {
-      image: "https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=200&h=200&fit=crop&crop=center",
-      title: "Mivi Play",
-      price: "₹1,299",
-      originalPrice: "₹1,699",
-      stock: "in-stock",
-      brand: "Mivi",
-      rating: 4.1,
-      discount: "24%",
-      features: ["Compact", "HD Sound"],
-    },
-    {
-      image: "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=200&h=200&fit=crop&crop=center",
-      title: "Boat Airdopes 131",
-      price: "₹1,499",
-      originalPrice: "₹1,999",
-      stock: "in-stock",
-      brand: "Boat",
-      rating: 4.3,
-      discount: "25%",
-      features: ["IPX4", "Voice Assistant"],
-    },
-    {
-      image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=200&h=200&fit=crop&crop=center",
-      title: "Mivi Thunder",
-      price: "₹2,499",
-      originalPrice: "₹2,999",
-      stock: "in-stock",
-      brand: "Mivi",
-      rating: 4.5,
-      discount: "17%",
-      features: ["Wireless", "Deep Bass"],
-    },
-  ];
+
 
   const allChargers = [
     {
-      image: "https://images.unsplash.com/photo-1609592806596-4d3b0c3b7e3e?w=200&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1609592806596-4d3b0c3b7e3e?w=200&h=200&fit=crop&crop=center",
       title: "Anker PowerPort III 20W",
       price: "₹1,299",
       originalPrice: "₹1,599",
@@ -173,7 +115,8 @@ const MainDashboard = () => {
       features: ["USB-C PD", "Compact Design"],
     },
     {
-      image: "https://images.unsplash.com/photo-1625948515291-69613efd103f?w=200&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1625948515291-69613efd103f?w=200&h=200&fit=crop&crop=center",
       title: "Anker PowerCore 10000",
       price: "₹2,499",
       originalPrice: "₹2,999",
@@ -184,7 +127,8 @@ const MainDashboard = () => {
       features: ["10000mAh", "PowerIQ"],
     },
     {
-      image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop&crop=center",
       title: "Belkin BoostCharge 25W",
       price: "₹1,799",
       originalPrice: "₹2,199",
@@ -195,7 +139,8 @@ const MainDashboard = () => {
       features: ["Fast Charge", "Universal"],
     },
     {
-      image: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=200&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=200&h=200&fit=crop&crop=center",
       title: "Belkin Wireless Pad 15W",
       price: "₹2,299",
       originalPrice: "₹2,799",
@@ -206,7 +151,8 @@ const MainDashboard = () => {
       features: ["Qi Wireless", "LED Indicator"],
     },
     {
-      image: "https://images.unsplash.com/photo-1621768216002-5ac171876625?w=200&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1621768216002-5ac171876625?w=200&h=200&fit=crop&crop=center",
       title: "Anker PowerWave Stand",
       price: "₹1,999",
       originalPrice: "₹2,499",
@@ -217,7 +163,8 @@ const MainDashboard = () => {
       features: ["Stand Design", "Case Friendly"],
     },
     {
-      image: "https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?w=200&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?w=200&h=200&fit=crop&crop=center",
       title: "Belkin Car Charger 36W",
       price: "₹1,199",
       originalPrice: "₹1,499",
@@ -230,8 +177,8 @@ const MainDashboard = () => {
   ];
 
   const filteredProducts = selectedBrand
-    ? allProducts.filter((product) => product.brand === selectedBrand)
-    : allProducts;
+    ? products.filter((product) => product.brand === selectedBrand)
+    : products;
 
   const filteredChargers = selectedChargerBrand
     ? allChargers.filter((charger) => charger.brand === selectedChargerBrand)
@@ -298,7 +245,9 @@ const MainDashboard = () => {
             className={`absolute inset-0 ${
               banner.bgClass
             } text-white transition-all duration-1000 flex items-center px-4 sm:px-8 lg:px-16 ${
-              activeBanner === index ? "opacity-100 z-10 scale-100" : "opacity-0 z-0 scale-105"
+              activeBanner === index
+                ? "opacity-100 z-10 scale-100"
+                : "opacity-0 z-0 scale-105"
             }`}
           >
             <div className="absolute inset-0 bg-black/20"></div>
@@ -338,7 +287,9 @@ const MainDashboard = () => {
             <button
               key={index}
               className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
-                activeBanner === index ? "bg-white scale-125" : "bg-white/50 hover:bg-white/75"
+                activeBanner === index
+                  ? "bg-white scale-125"
+                  : "bg-white/50 hover:bg-white/75"
               }`}
               onClick={() => setActiveBanner(index)}
             />
@@ -356,7 +307,9 @@ const MainDashboard = () => {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
               🎧 Premium Headphones
             </h2>
-            <p className="text-gray-600 text-lg">Discover amazing sound quality with top brands</p>
+            <p className="text-gray-600 text-lg">
+              Discover amazing sound quality with top brands
+            </p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-6">
             <button
@@ -390,73 +343,94 @@ const MainDashboard = () => {
               🎵 Mivi
             </button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
-            {filteredProducts.slice(0, visibleProducts).map((product, index) => (
-              <div
-                key={index}
-                className="w-full p-3 sm:p-4 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-200 group cursor-pointer flex flex-col"
-              >
-                <div className="relative h-36 sm:h-40 md:h-44 mb-3 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden">
-                  {product.discount && (
-                    <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
-                      -{product.discount}
-                    </div>
-                  )}
-                  <img
-                    src={product.image}
-                    alt={product.title}
-                    className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                </div>
-                <div className="space-y-2 flex-grow">
-                  <h3 className="text-sm sm:text-base font-semibold text-gray-800 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                    {product.title}
-                  </h3>
-                  <div className="flex items-center space-x-1">
-                    <div className="flex text-yellow-400">
-                      {[...Array(5)].map((_, i) => (
-                        <span key={i} className={i < Math.floor(product.rating) ? "★" : "☆"}>
-                          ★
-                        </span>
-                      ))}
-                    </div>
-                    <span className="text-xs text-gray-500">({product.rating})</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-base sm:text-lg font-bold text-green-600">
-                        {product.price}
-                      </div>
-                      {product.originalPrice && (
-                        <div className="text-xs sm:text-sm text-gray-500 line-through">
-                          {product.originalPrice}
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <p className="mt-2 text-gray-600">Loading products...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
+              {filteredProducts
+                .slice(0, visibleProducts)
+                .map((product, index) => (
+                  <div
+                    key={index}
+                    className="w-full p-3 sm:p-4 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-200 group cursor-pointer flex flex-col"
+                  >
+                    <div className="relative h-36 sm:h-40 md:h-44 mb-3 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden">
+                      {product.discount && (
+                        <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
+                          -{product.discount}
                         </div>
                       )}
+                      <img
+                        src={product.image}
+                        alt={product.title}
+                        className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
                     </div>
-                    <div
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        product.stock === "upcoming"
-                          ? "bg-orange-100 text-orange-600"
-                          : "bg-green-100 text-green-600"
-                      }`}
-                    >
-                      {product.stock === "upcoming" ? "Coming Soon" : "In Stock"}
+                    <div className="space-y-2 flex-grow">
+                      <h3 className="text-sm sm:text-base font-semibold text-gray-800 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                        {product.title}
+                      </h3>
+                      <div className="flex items-center space-x-1">
+                        <div className="flex text-yellow-400">
+                          {[...Array(5)].map((_, i) => (
+                            <span
+                              key={i}
+                              className={
+                                i < Math.floor(product.rating) ? "★" : "☆"
+                              }
+                            >
+                              ★
+                            </span>
+                          ))}
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          ({product.rating})
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-base sm:text-lg font-bold text-green-600">
+                            {product.price}
+                          </div>
+                          {product.originalPrice && (
+                            <div className="text-xs sm:text-sm text-gray-500 line-through">
+                              {product.originalPrice}
+                            </div>
+                          )}
+                        </div>
+                        <div
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            product.stock === "upcoming"
+                              ? "bg-orange-100 text-orange-600"
+                              : "bg-green-100 text-green-600"
+                          }`}
+                        >
+                          {product.stock === "upcoming"
+                            ? "Coming Soon"
+                            : "In Stock"}
+                        </div>
+                      </div>
                     </div>
+                    {product.features && (
+                      <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-gray-100">
+                        {product.features.map((feature, idx) => (
+                          <span
+                            key={idx}
+                            className="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs"
+                          >
+                            {feature}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-                {product.features && (
-                  <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-gray-100">
-                    {product.features.map((feature, idx) => (
-                      <span key={idx} className="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs">
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-          {visibleProducts < filteredProducts.length && (
+                ))}
+            </div>
+          )}
+          {!loading && visibleProducts < filteredProducts.length && (
             <div className="text-center mt-8">
               <button
                 onClick={loadMoreProducts}
@@ -479,7 +453,9 @@ const MainDashboard = () => {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
               ⚡ Fast Charging Solutions
             </h2>
-            <p className="text-gray-600 text-lg">Power up your devices with premium chargers</p>
+            <p className="text-gray-600 text-lg">
+              Power up your devices with premium chargers
+            </p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-6">
             <button
@@ -514,70 +490,84 @@ const MainDashboard = () => {
             </button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
-            {filteredChargers.slice(0, visibleChargers).map((charger, index) => (
-              <div
-                key={index}
-                className="w-full p-3 sm:p-4 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-purple-200 group cursor-pointer flex flex-col"
-              >
-                <div className="relative h-36 sm:h-40 md:h-44 mb-3 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden">
-                  {charger.discount && (
-                    <div className="absolute top-2 left-2 bg-purple-500 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
-                      -{charger.discount}
+            {filteredChargers
+              .slice(0, visibleChargers)
+              .map((charger, index) => (
+                <div
+                  key={index}
+                  className="w-full p-3 sm:p-4 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-purple-200 group cursor-pointer flex flex-col"
+                >
+                  <div className="relative h-36 sm:h-40 md:h-44 mb-3 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden">
+                    {charger.discount && (
+                      <div className="absolute top-2 left-2 bg-purple-500 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
+                        -{charger.discount}
+                      </div>
+                    )}
+                    <img
+                      src={charger.image}
+                      alt={charger.title}
+                      className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="space-y-2 flex-grow">
+                    <h3 className="text-sm sm:text-base font-semibold text-gray-800 line-clamp-2 group-hover:text-purple-600 transition-colors">
+                      {charger.title}
+                    </h3>
+                    <div className="flex items-center space-x-1">
+                      <div className="flex text-yellow-400">
+                        {[...Array(5)].map((_, i) => (
+                          <span
+                            key={i}
+                            className={
+                              i < Math.floor(charger.rating) ? "★" : "☆"
+                            }
+                          >
+                            ★
+                          </span>
+                        ))}
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        ({charger.rating})
+                      </span>
                     </div>
-                  )}
-                  <img
-                    src={charger.image}
-                    alt={charger.title}
-                    className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                </div>
-                <div className="space-y-2 flex-grow">
-                  <h3 className="text-sm sm:text-base font-semibold text-gray-800 line-clamp-2 group-hover:text-purple-600 transition-colors">
-                    {charger.title}
-                  </h3>
-                  <div className="flex items-center space-x-1">
-                    <div className="flex text-yellow-400">
-                      {[...Array(5)].map((_, i) => (
-                        <span key={i} className={i < Math.floor(charger.rating) ? "★" : "☆"}>
-                          ★
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-base sm:text-lg font-bold text-green-600">
+                          {charger.price}
+                        </div>
+                        {charger.originalPrice && (
+                          <div className="text-xs sm:text-sm text-gray-500 line-through">
+                            {charger.originalPrice}
+                          </div>
+                        )}
+                      </div>
+                      <div
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          charger.stock === "upcoming"
+                            ? "bg-orange-100 text-orange-600"
+                            : "bg-green-100 text-green-600"
+                        }`}
+                      >
+                        {charger.stock === "upcoming"
+                          ? "Coming Soon"
+                          : "In Stock"}
+                      </div>
+                    </div>
+                  </div>
+                  {charger.features && (
+                    <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-gray-100">
+                      {charger.features.map((feature, idx) => (
+                        <span
+                          key={idx}
+                          className="bg-purple-50 text-purple-600 px-2 py-1 rounded-full text-xs"
+                        >
+                          {feature}
                         </span>
                       ))}
                     </div>
-                    <span className="text-xs text-gray-500">({charger.rating})</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-base sm:text-lg font-bold text-green-600">
-                        {charger.price}
-                      </div>
-                      {charger.originalPrice && (
-                        <div className="text-xs sm:text-sm text-gray-500 line-through">
-                          {charger.originalPrice}
-                        </div>
-                      )}
-                    </div>
-                    <div
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        charger.stock === "upcoming"
-                          ? "bg-orange-100 text-orange-600"
-                          : "bg-green-100 text-green-600"
-                      }`}
-                    >
-                      {charger.stock === "upcoming" ? "Coming Soon" : "In Stock"}
-                    </div>
-                  </div>
+                  )}
                 </div>
-                {charger.features && (
-                  <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-gray-100">
-                    {charger.features.map((feature, idx) => (
-                      <span key={idx} className="bg-purple-50 text-purple-600 px-2 py-1 rounded-full text-xs">
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+              ))}
           </div>
           {visibleChargers < filteredChargers.length && (
             <div className="text-center mt-8">

@@ -163,6 +163,8 @@ const resetPasswordRoute = import.meta.env.VITE_RESET_PASSWORD_ENDPOINT;
 
 const userAddressesRoute = import.meta.env.VITE_ADDRESSES_ENDPOINT;
 const userProfileRoute = import.meta.env.VITE_PROFILE_ENDPOINT;
+const userDashboardDataRoute = import.meta.env
+  .VITE_USER_DASHBOARD_DATA_ENDPOINT;
 
 //user coupon realted routes
 const userCouponUserRoute = import.meta.env.VITE_USER_COUPON_ENDPOINT;
@@ -248,6 +250,7 @@ export {
   userPanelRegisterRoute,
   userPanelProductByIdDetailsRoute,
   userAddressesRoute,
+  userDashboardDataRoute,
 
   //Auth Routes
   userPanelForgotPasswordRoute,

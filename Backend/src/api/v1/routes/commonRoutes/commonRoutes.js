@@ -80,5 +80,5 @@ app.use("/product-Reviews", productReviewRoutes);
 
 app.use("/notifications", adminNotificationRoutes); // Notification Management Routes
 
-app.use("/userDashboard", userDashboardRoutes);
+app.use("/user-Dashboard-Data", userDashboardRoutes);
 export default app;
