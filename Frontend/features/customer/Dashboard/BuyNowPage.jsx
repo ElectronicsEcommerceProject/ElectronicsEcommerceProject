@@ -5,6 +5,7 @@ import { jwtDecode } from "jwt-decode";
 import Footer from "../../../components/Footer/Footer";
 import Header from "../../../components/Header/Header";
 import { AddressForm } from "../../../components/index.js";
+import { RelatedProducts } from "../../index.js";
 
 import {
   getApiById,
@@ -112,6 +113,10 @@ const BuyNowPage = () => {
 
   useEffect(() => {
     fetchProductData();
+    // Scroll right panel to top when productId changes
+    if (rightScrollRef.current) {
+      rightScrollRef.current.scrollTop = 0;
+    }
   }, [productId]); // Re-run when productId changes
 
   useEffect(() => {
@@ -1494,10 +1499,12 @@ const BuyNowPage = () => {
                             const couponData = {
                               coupon_id: coupon.coupon_id,
                               user_id: user_id,
-                              category_id: mainProduct.category?.category_id || null,
+                              category_id:
+                                mainProduct.category?.category_id || null,
                               brand_id: mainProduct.brand?.brand_id || null,
                               product_id: productId,
-                              product_variant_id: variantData?.product_variant_id || null,
+                              product_variant_id:
+                                variantData?.product_variant_id || null,
                             };
 
                             console.log(
@@ -1963,9 +1970,21 @@ const BuyNowPage = () => {
                           </div>
                           <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
                             {(() => {
-                              if (review.product_variant_id && mainProduct.variants) {
-                                const variant = mainProduct.variants.find(v => v.product_variant_id === review.product_variant_id);
-                                return variant?.sku || variant?.name || review.variant || "Standard";
+                              if (
+                                review.product_variant_id &&
+                                mainProduct.variants
+                              ) {
+                                const variant = mainProduct.variants.find(
+                                  (v) =>
+                                    v.product_variant_id ===
+                                    review.product_variant_id
+                                );
+                                return (
+                                  variant?.sku ||
+                                  variant?.name ||
+                                  review.variant ||
+                                  "Standard"
+                                );
                               }
                               return review.variant || "Standard";
                             })()}
@@ -2413,41 +2432,10 @@ const BuyNowPage = () => {
         </div>
       </div>
 
-      {isRightScrollAtEnd && (
-        <div className="max-w-7xl mx-auto px-2 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6">
-          <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-3 sm:mb-4 md:mb-6">
-            Related Products
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
-            {relatedProducts && Array.isArray(relatedProducts) ? (
-              relatedProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-                >
-                  <div className="aspect-square flex items-center justify-center p-3 sm:p-4">
-                    <img
-                      src={product.image}
-                      alt={product.title}
-                      className="max-h-full max-w-full object-contain"
-                    />
-                  </div>
-                  <div className="p-3 sm:p-4">
-                    <h4 className="text-xs sm:text-sm lg:text-base font-medium line-clamp-2">
-                      {product.title}
-                    </h4>
-                    <p className="text-sm sm:text-base lg:text-lg font-semibold mt-2">
-                      {product.price}
-                    </p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500">No related products available.</p>
-            )}
-          </div>
-        </div>
-      )}
+      <RelatedProducts 
+        isVisible={isRightScrollAtEnd} 
+        categoryId={mainProduct?.category?.category_id} 
+      />
       <Footer />
 
       {/* Address Form Popup */}

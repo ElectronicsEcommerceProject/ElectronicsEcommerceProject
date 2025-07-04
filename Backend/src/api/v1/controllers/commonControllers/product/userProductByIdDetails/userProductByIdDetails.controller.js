@@ -223,7 +223,7 @@ const userProductByIdDetails = async (req, res, next) => {
       req
     );
 
-    console.log("✅ Found related products:", relatedProducts.length);
+    // console.log("✅ Found related products:", relatedProducts.length);
 
     // Fetch relevant coupons for this product
     const relevantCoupons = await getRelevantCoupons(

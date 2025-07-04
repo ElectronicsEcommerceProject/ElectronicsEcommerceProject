@@ -36,6 +36,7 @@ import {
   setInStockOnly,
   setSortOption,
   resetFilters,
+  setSelectedBrandsForCategory,
 } from "../../../components/Redux/filterSlice";
 import FilterSidebar from "../../../components/ProductZone/FilterSidebar";
 import ProductGrid from "../../../components/ProductZone/ProductGrid";
@@ -49,6 +50,7 @@ import {
   getApi,
   getAllBrandsRoute,
   getProductsByBrandRoute,
+  getBrandsByCategoryRoute,
 } from "../../../src/index.js";
 
 const MainZone = () => {
@@ -72,6 +74,9 @@ const MainZone = () => {
   const [availableBrands, setAvailableBrands] = useState([]);
   const [selectedBrandIds, setSelectedBrandIds] = useState([]);
 
+  // State to track current category ID
+  const [currentCategoryId, setCurrentCategoryId] = useState(null);
+
   // Redux state - moved to top to avoid initialization issues
   const dispatch = useDispatch();
   const filterState = useSelector((state) => state.filters);
@@ -85,6 +90,7 @@ const MainZone = () => {
     selectedRating,
     inStockOnly,
     sortOption,
+    selectedCategoryId,
   } = filterState;
 
   const toggleWishlist = (productId) => {
@@ -188,6 +194,37 @@ const MainZone = () => {
     }
   };
 
+  // Fetch all products for a category by getting brands first
+  const fetchProductsByCategory = async (categoryId) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // First get all brands for this category
+      const brandsResponse = await getApiById(getBrandsByCategoryRoute, categoryId);
+      if (brandsResponse.success && brandsResponse.data) {
+        const brandIds = brandsResponse.data.map(brand => brand.brand_id);
+        
+        // Then fetch products for all these brands
+        const productPromises = brandIds.map((brandId) =>
+          fetchProductsForBrand(brandId)
+        );
+        const productArrays = await Promise.all(productPromises);
+        const allProducts = productArrays.flat();
+        
+        setProducts(allProducts);
+      } else {
+        setProducts([]);
+      }
+    } catch (err) {
+      console.error("Error fetching products by category:", err);
+      setError(err.message || "Failed to fetch products");
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch products for multiple selected brands
   const fetchProductsForSelectedBrands = async (brandIds) => {
     try {
@@ -222,21 +259,35 @@ const MainZone = () => {
     fetchBrands();
   }, []);
 
-  // Watch for brand filter changes and clear products if no brands selected
+  // Fetch all products when category is selected
   useEffect(() => {
-    // Only run if selectedBrands is properly initialized (not undefined)
-    if (
-      selectedBrands &&
-      selectedBrands.length === 0 &&
-      !searchParams.get("brand_id")
-    ) {
-      setProducts([]);
+    if (selectedCategoryId) {
+      fetchProductsByCategory(selectedCategoryId);
+    } else {
       setSelectedBrandIds([]);
+      setProducts([]);
     }
-  }, [selectedBrands, searchParams]);
+  }, [selectedCategoryId]);
 
-  // State to track current category ID
-  const [currentCategoryId, setCurrentCategoryId] = useState(null);
+  // Sync local selectedBrandIds with Redux selectedBrands
+  useEffect(() => {
+    if (selectedBrands && availableBrands.length > 0) {
+      // Map brand names to brand IDs
+      const brandIds = selectedBrands
+        .map(brandName => {
+          const brand = availableBrands.find(b => b.name === brandName);
+          return brand ? brand.brand_id : null;
+        })
+        .filter(id => id !== null);
+      
+      setSelectedBrandIds(brandIds);
+      
+      // If no brands selected, clear products
+      if (selectedBrands.length === 0 && !searchParams.get("brand_id")) {
+        setProducts([]);
+      }
+    }
+  }, [selectedBrands, availableBrands, searchParams]);
 
   // Sync local search input with Redux search term
   useEffect(() => {
@@ -545,11 +596,11 @@ const MainZone = () => {
         );
 
       const brandMatch =
-        !selectedBrands ||
-        !selectedBrands.length ||
-        selectedBrands.some((brand) =>
-          product.brand.toLowerCase().includes(brand.toLowerCase())
-        );
+        selectedBrands && selectedBrands.length > 0
+          ? selectedBrands.some((brand) =>
+              product.brand.toLowerCase().includes(brand.toLowerCase())
+            )
+          : true;
 
       const priceMatch =
         (product.basePrice || product.finalPrice) >= customMinPrice &&
@@ -694,7 +745,7 @@ const MainZone = () => {
               setInStockOnly={(value) => dispatch(setInStockOnly(value))}
               resetAllFilters={resetAllFilters}
               mobileView={windowWidth < 768}
-              categoryId={currentCategoryId}
+              categoryId={selectedCategoryId || currentCategoryId}
             />
             {windowWidth < 768 && (
               <div className="sticky bottom-0 bg-white py-4 border-t border-gray-200">

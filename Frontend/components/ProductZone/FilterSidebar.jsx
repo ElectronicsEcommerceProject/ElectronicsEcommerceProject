@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react"; // professional dropdown icon
+import { useDispatch } from "react-redux";
 import {
   getApi,
   getAllBrandsRoute,
   getApiById,
   getBrandsByCategoryRoute,
 } from "../../src/index.js";
+import { setSelectedBrandsForCategory } from "../Redux/filterSlice";
 
 const FilterSidebar = ({
   categoriesData = [],
@@ -40,6 +42,8 @@ const FilterSidebar = ({
   const [brands, setBrands] = useState([]); // Now stores array of { id, name }
   const [brandsLoading, setBrandsLoading] = useState(true);
   const [brandsError, setBrandsError] = useState(null);
+  
+  const dispatch = useDispatch();
 
 
 
@@ -67,6 +71,12 @@ const FilterSidebar = ({
         if (response.success && response.data) {
           // Store full brand objects (id and name)
           setBrands(response.data);
+          
+          // Auto-select all brands for the category
+          if (categoryId && response.data.length > 0) {
+            const brandNames = response.data.map((brand) => brand.name);
+            dispatch(setSelectedBrandsForCategory(brandNames));
+          }
         } else {
           throw new Error("Invalid response format");
         }
@@ -90,6 +100,11 @@ const FilterSidebar = ({
   const displayedBrands = showMoreBrands
     ? filteredBrands
     : filteredBrands.slice(0, 10);
+
+  // Filter selectedBrands to only include brands available for current category
+  const filteredSelectedBrands = selectedBrands.filter(brandName => 
+    brands.some(brand => brand.name === brandName)
+  );
 
   // Handler to show alert with brand id and call parent handler
   const handleBrandClick = (brand) => {
@@ -168,7 +183,7 @@ const FilterSidebar = ({
                 >
                   <input
                     type="checkbox"
-                    checked={selectedBrands.includes(brand.name)}
+                    checked={filteredSelectedBrands.includes(brand.name)}
                     onChange={() => handleBrandClick(brand)}
                     className="mr-2"
                   />

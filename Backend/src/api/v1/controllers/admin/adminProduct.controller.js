@@ -140,10 +140,10 @@ const getProductById = async (req, res) => {
 // ✅ Get products by category ID
 const getProductsByCategoryId = async (req, res) => {
   try {
-    const { categoryId } = req.params;
+    const { category_id } = req.params;
 
     // Check if category exists
-    const category = await Category.findByPk(categoryId);
+    const category = await Category.findByPk(category_id);
     if (!category) {
       return res.status(StatusCodes.NOT_FOUND).json({
         message: "Category not found",
@@ -151,20 +151,131 @@ const getProductsByCategoryId = async (req, res) => {
     }
 
     const products = await Product.findAll({
-      where: { category_id: categoryId },
+      where: { category_id: category_id },
       include: [
-        { model: Brand, attributes: ["brand_id", "name"] },
+        { model: Brand, as: "brand", attributes: ["brand_id", "name"] },
         {
-          model: User,
-          as: "creator",
-          attributes: ["user_id", "name", "email"],
+          model: ProductVariant,
+          as: "variants",
+          attributes: [
+            "product_variant_id",
+            "price",
+            "stock_quantity",
+            "base_variant_image_url",
+          ],
         },
+        {
+          model: ProductMedia,
+          as: "media",
+          include: [
+            {
+              model: ProductMediaUrl,
+              as: "ProductMediaURLs",
+              attributes: ["product_media_url", "media_type"],
+              where: { media_type: "image" },
+              required: false,
+            },
+          ],
+          required: false,
+        },
+        {
+          model: Coupon,
+          as: "coupons",
+          where: {
+            is_active: true,
+            valid_from: { [Op.lte]: new Date() },
+            valid_to: { [Op.gte]: new Date() },
+          },
+          required: false,
+        },
+        { model: ProductReview, as: "reviews", attributes: ["rating"] },
       ],
     });
 
+    const data = products.map((prod) => {
+      const basePrice = parseFloat(prod.base_price);
+      const coupons = prod.coupons || [];
+      const variants = prod.variants || [];
+      const reviews = prod.reviews || [];
+      const media = prod.media || [];
+
+      // Calculate discount from coupons
+      let leastDiscountCoupon = null;
+      coupons.forEach((c) => {
+        if (
+          !leastDiscountCoupon ||
+          parseFloat(c.discount_value) <
+            parseFloat(leastDiscountCoupon.discount_value)
+        ) {
+          leastDiscountCoupon = c;
+        }
+      });
+
+      let discountPercent = 0;
+      let finalPrice = basePrice;
+      if (leastDiscountCoupon) {
+        if (leastDiscountCoupon.type === "percentage") {
+          discountPercent = parseFloat(leastDiscountCoupon.discount_value);
+          finalPrice = basePrice * (1 - discountPercent / 100);
+        } else if (leastDiscountCoupon.type === "fixed") {
+          finalPrice = Math.max(
+            0,
+            basePrice - parseFloat(leastDiscountCoupon.discount_value)
+          );
+          discountPercent = ((basePrice - finalPrice) / basePrice) * 100;
+        }
+      }
+
+      // Get product image
+      let productImage = null;
+      if (media && media.length > 0) {
+        const mediaWithUrl = media.find(
+          (m) => m.ProductMediaURLs && m.ProductMediaURLs.length > 0
+        );
+        if (mediaWithUrl) {
+          productImage = mediaWithUrl.ProductMediaURLs[0].product_media_url;
+        }
+      }
+      if (!productImage && variants && variants.length > 0) {
+        productImage = variants[0]?.base_variant_image_url || null;
+      }
+      if (productImage && !productImage.startsWith("http")) {
+        productImage = `${req.protocol}://${req.get(
+          "host"
+        )}/${productImage.replace(/\\/g, "/")}`;
+      }
+
+      // Calculate ratings
+      const ratingCount = reviews.length;
+      const rating = ratingCount
+        ? reviews.reduce((sum, r) => sum + r.rating, 0) / ratingCount
+        : 0;
+
+      return {
+        id: prod.product_id,
+        product_id: prod.product_id,
+        title: prod.name,
+        name: prod.name,
+        price: `₹${finalPrice.toFixed(2)}`,
+        originalPrice: discountPercent > 0 ? `₹${basePrice.toFixed(2)}` : null,
+        discount:
+          discountPercent > 0 ? `${Math.round(discountPercent)}% off` : null,
+        rating: rating.toFixed(1),
+        ratingCount,
+        image:
+          productImage ||
+          "https://via.placeholder.com/200x200/E5E7EB/9CA3AF?text=No+Image",
+        brand: prod.brand,
+        isFeatured: prod.is_featured || false,
+        inStock: variants.some((v) => v.stock_quantity > 0),
+        stockLevel: variants.reduce((sum, v) => sum + v.stock_quantity, 0),
+      };
+    });
+
     res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.get.succ,
-      data: products,
+      data,
     });
   } catch (error) {
     console.error("Error fetching products by category:", error);
