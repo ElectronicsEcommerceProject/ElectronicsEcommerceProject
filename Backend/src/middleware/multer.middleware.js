@@ -80,48 +80,60 @@ const upload = multer({
 const compressImage = async (filePath, maxSizeBytes = 2 * 1024 * 1024) => {
   try {
     // Wait a bit for file to be fully written
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     const stats = fs.statSync(filePath);
-    
+
     // If file is already under 2MB, no compression needed
     if (stats.size <= maxSizeBytes) {
-      console.log(`File ${filePath} is already under 2MB (${(stats.size / (1024 * 1024)).toFixed(2)}MB)`);
+      console.log(
+        `File ${filePath} is already under 2MB (${(
+          stats.size /
+          (1024 * 1024)
+        ).toFixed(2)}MB)`
+      );
       return;
     }
 
-    console.log(`Compressing image: ${filePath} (${(stats.size / (1024 * 1024)).toFixed(2)}MB)`);
-    
+    console.log(
+      `Compressing image: ${filePath} (${(stats.size / (1024 * 1024)).toFixed(
+        2
+      )}MB)`
+    );
+
     // Start with quality 80 and reduce if needed
     let quality = 80;
     let compressedBuffer;
-    
+
     do {
       compressedBuffer = await sharp(filePath)
         .jpeg({ quality, progressive: true })
         .toBuffer();
-      
+
       if (compressedBuffer.length <= maxSizeBytes) {
         break;
       }
-      
+
       quality -= 10;
     } while (quality > 20 && compressedBuffer.length > maxSizeBytes);
-    
+
     // Create temporary file path
-    const tempPath = filePath + '.temp';
-    
+    const tempPath = filePath + ".temp";
+
     // Write compressed image to temp file first
     fs.writeFileSync(tempPath, compressedBuffer);
-    
+
     // Replace original with compressed
     fs.renameSync(tempPath, filePath);
-    
+
     const newStats = fs.statSync(filePath);
-    console.log(`Image compressed successfully: ${(newStats.size / (1024 * 1024)).toFixed(2)}MB (quality: ${quality})`);
-    
+    console.log(
+      `Image compressed successfully: ${(newStats.size / (1024 * 1024)).toFixed(
+        2
+      )}MB (quality: ${quality})`
+    );
   } catch (error) {
-    console.error('Error compressing image:', error);
+    console.error("Error compressing image:", error);
     throw error;
   }
 };
@@ -143,7 +155,7 @@ export default {
           });
         }
         console.log("File after multer:", req.file);
-        
+
         // Compress image if it exists and is for product upload
         if (req.file && req.originalUrl.includes("product")) {
           try {
@@ -153,13 +165,13 @@ export default {
             // Continue without compression if it fails
           }
         }
-        
+
         next();
       });
     };
   },
   fields: (fields) => {
-    console.log(`Setting up multer for fields:`, fields);
+    // console.log(`Setting up multer for fields:`, fields);
     return async (req, res, next) => {
       console.log("Multer fields middleware running");
       console.log("Request headers:", req.headers);
@@ -173,7 +185,7 @@ export default {
           });
         }
         console.log("Files after multer:", req.files);
-        
+
         // Compress images if they exist and are for product upload
         if (req.files && req.originalUrl.includes("product")) {
           for (const fieldName in req.files) {
@@ -181,13 +193,16 @@ export default {
               try {
                 await compressImage(file.path);
               } catch (compressionError) {
-                console.error(`Image compression failed for ${file.path}:`, compressionError);
+                console.error(
+                  `Image compression failed for ${file.path}:`,
+                  compressionError
+                );
                 // Continue without compression if it fails
               }
             }
           }
         }
-        
+
         next();
       });
     };
