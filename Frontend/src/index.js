@@ -166,6 +166,9 @@ const userProfileRoute = import.meta.env.VITE_PROFILE_ENDPOINT;
 const userDashboardDataRoute = import.meta.env
   .VITE_USER_DASHBOARD_DATA_ENDPOINT;
 
+const userProductsByCategoryId = import.meta.env
+  .VITE_PRODUCT_BY_CATEGORY_ENDPOINT;
+
 //user coupon realted routes
 const userCouponUserRoute = import.meta.env.VITE_USER_COUPON_ENDPOINT;
 
@@ -251,6 +254,7 @@ export {
   userPanelProductByIdDetailsRoute,
   userAddressesRoute,
   userDashboardDataRoute,
+  userProductsByCategoryId,
 
   //Auth Routes
   userPanelForgotPasswordRoute,
