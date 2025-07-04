@@ -113,6 +113,10 @@ const BuyNowPage = () => {
 
   useEffect(() => {
     fetchProductData();
+    // Scroll right panel to top when productId changes
+    if (rightScrollRef.current) {
+      rightScrollRef.current.scrollTop = 0;
+    }
   }, [productId]); // Re-run when productId changes
 
   useEffect(() => {

@@ -82,8 +82,13 @@ const RelatedProducts = ({ isVisible = true, categoryId }) => {
               className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer group"
               onClick={() => {
                 const productId = product.id || product.product_id;
-                alert(`Product ID: ${productId}`);
                 navigate(`/product/${productId}`);
+                window.scrollTo(0, 0);
+                // Also scroll the right panel to top if it exists
+                const rightPanel = document.querySelector('[ref="rightScrollRef"]');
+                if (rightPanel) {
+                  rightPanel.scrollTop = 0;
+                }
               }}
             >
               <div className="aspect-square flex items-center justify-center p-3 sm:p-4 bg-gray-50 group-hover:bg-gray-100 transition-colors">
