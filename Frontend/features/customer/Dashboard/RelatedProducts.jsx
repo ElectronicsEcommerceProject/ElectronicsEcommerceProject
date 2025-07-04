@@ -80,9 +80,11 @@ const RelatedProducts = ({ isVisible = true, categoryId }) => {
             <div
               key={product.id || product.product_id}
               className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer group"
-              onClick={() =>
-                navigate(`/product/${product.id || product.product_id}`)
-              }
+              onClick={() => {
+                const productId = product.id || product.product_id;
+                alert(`Product ID: ${productId}`);
+                navigate(`/product/${productId}`);
+              }}
             >
               <div className="aspect-square flex items-center justify-center p-3 sm:p-4 bg-gray-50 group-hover:bg-gray-100 transition-colors">
                 <img
