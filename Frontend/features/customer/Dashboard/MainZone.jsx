@@ -269,18 +269,25 @@ const MainZone = () => {
     }
   }, [selectedCategoryId]);
 
-  // Watch for brand filter changes and clear products if no brands selected
+  // Sync local selectedBrandIds with Redux selectedBrands
   useEffect(() => {
-    // Only run if selectedBrands is properly initialized (not undefined)
-    if (
-      selectedBrands &&
-      selectedBrands.length === 0 &&
-      !searchParams.get("brand_id")
-    ) {
-      setProducts([]);
-      setSelectedBrandIds([]);
+    if (selectedBrands && availableBrands.length > 0) {
+      // Map brand names to brand IDs
+      const brandIds = selectedBrands
+        .map(brandName => {
+          const brand = availableBrands.find(b => b.name === brandName);
+          return brand ? brand.brand_id : null;
+        })
+        .filter(id => id !== null);
+      
+      setSelectedBrandIds(brandIds);
+      
+      // If no brands selected, clear products
+      if (selectedBrands.length === 0 && !searchParams.get("brand_id")) {
+        setProducts([]);
+      }
     }
-  }, [selectedBrands, searchParams]);
+  }, [selectedBrands, availableBrands, searchParams]);
 
   // Sync local search input with Redux search term
   useEffect(() => {
