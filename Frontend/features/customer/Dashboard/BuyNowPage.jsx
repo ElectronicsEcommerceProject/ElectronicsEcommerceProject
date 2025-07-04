@@ -2428,7 +2428,10 @@ const BuyNowPage = () => {
         </div>
       </div>
 
-      <RelatedProducts isVisible={isRightScrollAtEnd} />
+      <RelatedProducts 
+        isVisible={isRightScrollAtEnd} 
+        categoryId={mainProduct?.category?.category_id} 
+      />
       <Footer />
 
       {/* Address Form Popup */}

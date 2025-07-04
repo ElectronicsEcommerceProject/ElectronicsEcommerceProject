@@ -142,8 +142,6 @@ const getProductsByCategoryId = async (req, res) => {
   try {
     const { category_id } = req.params;
 
-    console.log("Category ID:", category_id);
-
     // Check if category exists
     const category = await Category.findByPk(category_id);
     if (!category) {
@@ -159,7 +157,12 @@ const getProductsByCategoryId = async (req, res) => {
         {
           model: ProductVariant,
           as: "variants",
-          attributes: ["product_variant_id", "price", "stock_quantity", "base_variant_image_url"],
+          attributes: [
+            "product_variant_id",
+            "price",
+            "stock_quantity",
+            "base_variant_image_url",
+          ],
         },
         {
           model: ProductMedia,
@@ -199,7 +202,11 @@ const getProductsByCategoryId = async (req, res) => {
       // Calculate discount from coupons
       let leastDiscountCoupon = null;
       coupons.forEach((c) => {
-        if (!leastDiscountCoupon || parseFloat(c.discount_value) < parseFloat(leastDiscountCoupon.discount_value)) {
+        if (
+          !leastDiscountCoupon ||
+          parseFloat(c.discount_value) <
+            parseFloat(leastDiscountCoupon.discount_value)
+        ) {
           leastDiscountCoupon = c;
         }
       });
@@ -211,7 +218,10 @@ const getProductsByCategoryId = async (req, res) => {
           discountPercent = parseFloat(leastDiscountCoupon.discount_value);
           finalPrice = basePrice * (1 - discountPercent / 100);
         } else if (leastDiscountCoupon.type === "fixed") {
-          finalPrice = Math.max(0, basePrice - parseFloat(leastDiscountCoupon.discount_value));
+          finalPrice = Math.max(
+            0,
+            basePrice - parseFloat(leastDiscountCoupon.discount_value)
+          );
           discountPercent = ((basePrice - finalPrice) / basePrice) * 100;
         }
       }
@@ -219,7 +229,9 @@ const getProductsByCategoryId = async (req, res) => {
       // Get product image
       let productImage = null;
       if (media && media.length > 0) {
-        const mediaWithUrl = media.find(m => m.ProductMediaURLs && m.ProductMediaURLs.length > 0);
+        const mediaWithUrl = media.find(
+          (m) => m.ProductMediaURLs && m.ProductMediaURLs.length > 0
+        );
         if (mediaWithUrl) {
           productImage = mediaWithUrl.ProductMediaURLs[0].product_media_url;
         }
@@ -228,12 +240,16 @@ const getProductsByCategoryId = async (req, res) => {
         productImage = variants[0]?.base_variant_image_url || null;
       }
       if (productImage && !productImage.startsWith("http")) {
-        productImage = `${req.protocol}://${req.get("host")}/${productImage.replace(/\\/g, "/")}`;
+        productImage = `${req.protocol}://${req.get(
+          "host"
+        )}/${productImage.replace(/\\/g, "/")}`;
       }
 
       // Calculate ratings
       const ratingCount = reviews.length;
-      const rating = ratingCount ? reviews.reduce((sum, r) => sum + r.rating, 0) / ratingCount : 0;
+      const rating = ratingCount
+        ? reviews.reduce((sum, r) => sum + r.rating, 0) / ratingCount
+        : 0;
 
       return {
         id: prod.product_id,
@@ -242,13 +258,16 @@ const getProductsByCategoryId = async (req, res) => {
         name: prod.name,
         price: `₹${finalPrice.toFixed(2)}`,
         originalPrice: discountPercent > 0 ? `₹${basePrice.toFixed(2)}` : null,
-        discount: discountPercent > 0 ? `${Math.round(discountPercent)}% off` : null,
+        discount:
+          discountPercent > 0 ? `${Math.round(discountPercent)}% off` : null,
         rating: rating.toFixed(1),
         ratingCount,
-        image: productImage || "https://via.placeholder.com/200x200/E5E7EB/9CA3AF?text=No+Image",
+        image:
+          productImage ||
+          "https://via.placeholder.com/200x200/E5E7EB/9CA3AF?text=No+Image",
         brand: prod.brand,
         isFeatured: prod.is_featured || false,
-        inStock: variants.some(v => v.stock_quantity > 0),
+        inStock: variants.some((v) => v.stock_quantity > 0),
         stockLevel: variants.reduce((sum, v) => sum + v.stock_quantity, 0),
       };
     });
