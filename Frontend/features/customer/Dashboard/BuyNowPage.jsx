@@ -5,7 +5,7 @@ import { jwtDecode } from "jwt-decode";
 import Footer from "../../../components/Footer/Footer";
 import Header from "../../../components/Header/Header";
 import { AddressForm } from "../../../components/index.js";
-import RelatedProducts from "./RelatedProducts";
+import { RelatedProducts } from "../../index.js";
 
 import {
   getApiById,
@@ -64,8 +64,6 @@ const BuyNowPage = () => {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
 
-
-
   // Update review form data when selected variant changes
   useEffect(() => {
     if (selectedVariant && productData?.mainProduct?.variants) {
@@ -116,8 +114,6 @@ const BuyNowPage = () => {
   useEffect(() => {
     fetchProductData();
   }, [productId]); // Re-run when productId changes
-
-
 
   useEffect(() => {
     if (productData && productData.mainProduct) {
@@ -519,8 +515,6 @@ const BuyNowPage = () => {
 
     return { discountValue: 0, discountType: null, discountSource: null };
   };
-
-
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -1501,10 +1495,12 @@ const BuyNowPage = () => {
                             const couponData = {
                               coupon_id: coupon.coupon_id,
                               user_id: user_id,
-                              category_id: mainProduct.category?.category_id || null,
+                              category_id:
+                                mainProduct.category?.category_id || null,
                               brand_id: mainProduct.brand?.brand_id || null,
                               product_id: productId,
-                              product_variant_id: variantData?.product_variant_id || null,
+                              product_variant_id:
+                                variantData?.product_variant_id || null,
                             };
 
                             console.log(
@@ -1970,9 +1966,21 @@ const BuyNowPage = () => {
                           </div>
                           <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
                             {(() => {
-                              if (review.product_variant_id && mainProduct.variants) {
-                                const variant = mainProduct.variants.find(v => v.product_variant_id === review.product_variant_id);
-                                return variant?.sku || variant?.name || review.variant || "Standard";
+                              if (
+                                review.product_variant_id &&
+                                mainProduct.variants
+                              ) {
+                                const variant = mainProduct.variants.find(
+                                  (v) =>
+                                    v.product_variant_id ===
+                                    review.product_variant_id
+                                );
+                                return (
+                                  variant?.sku ||
+                                  variant?.name ||
+                                  review.variant ||
+                                  "Standard"
+                                );
                               }
                               return review.variant || "Standard";
                             })()}
