@@ -22,7 +22,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { filterSlice } from "../index.js";
+import { filterSlice, setCategoryFilter } from "../index.js";
 import { HoverMenu } from "../../features/index.js"; // Import HoverMenu as specified
 
 import {
@@ -252,20 +252,15 @@ const Header = () => {
   // Handle category click
   const handleCategoryClick = (category) => {
     setSelectedCategoryId(category.category_id);
+    dispatch(setCategoryFilter(category.category_id));
     navigate(`/mainzone?category_id=${category.category_id}`);
-    // console.log(
-    //   "🏷️ Category selected:",
-    //   category.label,
-    //   "ID:",
-    //   category.category_id
-    // );
   };
 
   // Clear category selection
   const clearCategorySelection = () => {
     setSelectedCategoryId(null);
+    dispatch(setCategoryFilter(null));
     navigate("/mainzone");
-    console.log("🏷️ Category selection cleared");
   };
 
   // Handle modal state changes from HoverMenu

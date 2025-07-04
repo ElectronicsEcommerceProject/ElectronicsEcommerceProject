@@ -12,6 +12,7 @@ const initialState = {
   inStockOnly: true,
   newArrivals: "",
   sortOption: "popularity", // Default to popular first
+  selectedCategoryId: null, // For category filtering from header
 };
 
 const filterSlice = createSlice({
@@ -49,6 +50,14 @@ const filterSlice = createSlice({
     setSortOption: (state, action) => {
       state.sortOption = action.payload;
     },
+    setCategoryFilter: (state, action) => {
+      // Clear selected brands when category changes
+      state.selectedBrands = [];
+      state.selectedCategoryId = action.payload;
+    },
+    setSelectedBrandsForCategory: (state, action) => {
+      state.selectedBrands = action.payload;
+    },
     resetFilters: () => initialState,
   },
 });
@@ -64,6 +73,8 @@ export const {
   setInStockOnly,
   setNewArrivals,
   setSortOption,
+  setCategoryFilter,
+  setSelectedBrandsForCategory,
   resetFilters,
 } = filterSlice.actions;
 
