@@ -33,7 +33,7 @@ router.get(
 router.get(
   "/category/:category_id",
   verifyJwtToken,
-  validator(validators.product.id, "params"),
+  // validator(validators.product.id, "params"),
   adminProductController.getProductsByCategoryId
 );
 // Get products by brand ID
