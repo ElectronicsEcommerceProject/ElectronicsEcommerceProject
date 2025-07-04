@@ -332,7 +332,10 @@ const Header = () => {
       <header className="bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600 text-white py-2 md:py-3 px-4 md:px-6 shadow-lg">
         <div className="flex items-center justify-between md:justify-start w-full flex-wrap">
           {/* LOGO */}
-          <div className="flex-shrink-0 text-xl md:text-2xl font-bold flex items-center md:mr-8">
+          <div 
+            className="flex-shrink-0 text-xl md:text-2xl font-bold flex items-center md:mr-8 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => navigate('/')}
+          >
             <span className="w-6 h-6 bg-white mr-2 rounded-sm"></span>
             MAA LAXMI STORE
           </div>
