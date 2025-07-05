@@ -651,8 +651,11 @@ const AddressForm = ({
                     name="latitude"
                     value={formData.latitude}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded"
+                    className={`w-full p-2 border border-gray-300 rounded ${
+                      formData.latitude ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
                     placeholder="Auto-filled or enter manually"
+                    readOnly={!!formData.latitude}
                   />
                 </div>
 
@@ -665,8 +668,11 @@ const AddressForm = ({
                     name="longitude"
                     value={formData.longitude}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded"
+                    className={`w-full p-2 border border-gray-300 rounded ${
+                      formData.longitude ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
                     placeholder="Auto-filled or enter manually"
+                    readOnly={!!formData.longitude}
                   />
                 </div>
               </div>
