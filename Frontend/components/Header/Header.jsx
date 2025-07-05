@@ -602,6 +602,27 @@ const Header = () => {
           </div>
         )}
 
+        {/* MOBILE LOGIN MODAL */}
+        <AnimatePresence>
+          {isHoveringSignIn && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+              onClick={() => {
+                setIsHoveringSignIn(false);
+                setIsModalOpen(false);
+              }}
+            >
+              <div onClick={(e) => e.stopPropagation()}>
+                <HoverMenu onModalStateChange={handleModalStateChange} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* MOBILE SEARCH BELOW LOGO */}
         <div className="md:hidden w-full flex justify-center px-2">
           <div className="relative w-10/12 max-w-sm">
