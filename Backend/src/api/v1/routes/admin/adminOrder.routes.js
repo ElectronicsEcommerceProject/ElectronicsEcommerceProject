@@ -37,7 +37,6 @@ router.patch(
 router.patch(
   "/cancel/:order_id/",
   verifyJwtToken,
-  isAdmin,
   orderController.cancelOrderById
 );
 

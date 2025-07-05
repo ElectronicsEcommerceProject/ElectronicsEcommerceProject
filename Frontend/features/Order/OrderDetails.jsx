@@ -7,6 +7,8 @@ import {
   getApiById,
   getUserIdFromToken,
   orderItemByOrderIdRoute,
+  cancelOrderRoute,
+  updateApiById,
 } from "../../src/index.js";
 
 const FilterSidebar = ({
@@ -80,9 +82,10 @@ const FilterSidebar = ({
   );
 };
 
-const OrderCard = ({ order, expanded, onExpand }) => {
+const OrderCard = ({ order, expanded, onExpand, onOrderUpdate }) => {
   const [orderItems, setOrderItems] = useState([]);
   const [loadingItems, setLoadingItems] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   const handleShowItems = async () => {
     // alert(`Order ID: ${order.order_id}`);
@@ -220,6 +223,46 @@ const OrderCard = ({ order, expanded, onExpand }) => {
               )}
             </div>
           )}
+          {/* Cancel Order Button */}
+          {(order.order_status === "pending" ||
+            order.order_status === "processing") && (
+            <div className="mt-4 pt-4 border-t">
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (
+                    window.confirm(
+                      "Are you sure you want to cancel this order?"
+                    )
+                  ) {
+                    setCancelling(true);
+                    try {
+                      const response = await updateApiById(cancelOrderRoute, order.order_id);
+                      if (response && response.success) {
+                        alert("Order cancelled successfully!");
+                        onOrderUpdate();
+                      } else {
+                        alert(response?.message || "Failed to cancel order. Please try again.");
+                      }
+                    } catch (error) {
+                      console.error("Error cancelling order:", error);
+                      alert("Failed to cancel order. Please try again.");
+                    } finally {
+                      setCancelling(false);
+                    }
+                  }
+                }}
+                disabled={cancelling}
+                className={`px-4 py-2 rounded transition-colors ${
+                  cancelling
+                    ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                    : "bg-red-600 text-white hover:bg-red-700"
+                }`}
+              >
+                {cancelling ? "Cancelling..." : "Cancel Order"}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -264,22 +307,23 @@ const OrderDetails = () => {
   });
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const userId = getUserIdFromToken();
-        if (userId) {
-          const response = await getApiById(orderRoute, userId);
-          if (response.success) {
-            setOrders(response.data);
-          }
+  const fetchOrders = async () => {
+    try {
+      const userId = getUserIdFromToken();
+      if (userId) {
+        const response = await getApiById(orderRoute, userId);
+        if (response.success) {
+          setOrders(response.data);
         }
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchOrders();
   }, []);
 
@@ -346,6 +390,7 @@ const OrderDetails = () => {
                     expandedOrderId === order.order_id ? null : order.order_id
                   )
                 }
+                onOrderUpdate={fetchOrders}
               />
             ))
           ) : (
