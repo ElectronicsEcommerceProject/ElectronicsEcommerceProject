@@ -298,10 +298,74 @@ const SearchBar = ({ searchQuery, setSearchQuery, handleSearch }) => (
   </div>
 );
 
+const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+  const getPageNumbers = () => {
+    const pages = [];
+    const showPages = 5;
+    let start = Math.max(1, currentPage - Math.floor(showPages / 2));
+    let end = Math.min(totalPages, start + showPages - 1);
+    
+    if (end - start + 1 < showPages) {
+      start = Math.max(1, end - showPages + 1);
+    }
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
+
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="flex items-center justify-center space-x-2 mt-6 mb-4">
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+          currentPage === 1
+            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+            : "bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 border border-gray-300"
+        }`}
+      >
+        ← Previous
+      </button>
+      
+      {getPageNumbers().map((page) => (
+        <button
+          key={page}
+          onClick={() => onPageChange(page)}
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            currentPage === page
+              ? "bg-blue-600 text-white shadow-md"
+              : "bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 border border-gray-300"
+          }`}
+        >
+          {page}
+        </button>
+      ))}
+      
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+          currentPage === totalPages
+            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+            : "bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 border border-gray-300"
+        }`}
+      >
+        Next →
+      </button>
+    </div>
+  );
+};
+
 const OrderDetails = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [ordersPerPage] = useState(5);
   const [orderStatusFilters, setOrderStatusFilters] = useState({
     onTheWay: false,
     delivered: false,
@@ -371,6 +435,22 @@ const OrderDetails = () => {
     return statusMatch && timeMatch && searchMatch;
   });
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
+  const indexOfLastOrder = currentPage * ordersPerPage;
+  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+  const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    setExpandedOrderId(null); // Close any expanded order when changing pages
+  };
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [orderStatusFilters, orderTimeFilters, searchQuery]);
+
   return (
     <div className="min-h-screen bg-gray-100 font-sans">
       <div className="container mx-auto flex flex-col sm:flex-row p-4 gap-3">
@@ -391,19 +471,31 @@ const OrderDetails = () => {
           {loading ? (
             <p className="text-sm text-gray-600">Loading orders...</p>
           ) : filteredOrders.length > 0 ? (
-            filteredOrders.map((order) => (
-              <OrderCard
-                key={order.order_id}
-                order={order}
-                expanded={expandedOrderId === order.order_id}
-                onExpand={() =>
-                  setExpandedOrderId(
-                    expandedOrderId === order.order_id ? null : order.order_id
-                  )
-                }
-                onOrderUpdate={fetchOrders}
+            <>
+              <div className="mb-4">
+                <p className="text-sm text-gray-600">
+                  Showing {indexOfFirstOrder + 1}-{Math.min(indexOfLastOrder, filteredOrders.length)} of {filteredOrders.length} orders
+                </p>
+              </div>
+              {currentOrders.map((order) => (
+                <OrderCard
+                  key={order.order_id}
+                  order={order}
+                  expanded={expandedOrderId === order.order_id}
+                  onExpand={() =>
+                    setExpandedOrderId(
+                      expandedOrderId === order.order_id ? null : order.order_id
+                    )
+                  }
+                  onOrderUpdate={fetchOrders}
+                />
+              ))}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
               />
-            ))
+            </>
           ) : (
             <p className="text-sm text-gray-600">
               No orders match the selected filters or search query.
