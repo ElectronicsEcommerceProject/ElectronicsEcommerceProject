@@ -332,9 +332,9 @@ const Header = () => {
       <header className="bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600 text-white py-2 md:py-3 px-4 md:px-6 shadow-lg">
         <div className="flex items-center justify-between md:justify-start w-full flex-wrap">
           {/* LOGO */}
-          <div 
+          <div
             className="flex-shrink-0 text-xl md:text-2xl font-bold flex items-center md:mr-8 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
           >
             <span className="w-6 h-6 bg-white mr-2 rounded-sm"></span>
             MAA LAXMI STORE
@@ -601,27 +601,6 @@ const Header = () => {
             </div>
           </div>
         )}
-
-        {/* MOBILE LOGIN MODAL */}
-        <AnimatePresence>
-          {isHoveringSignIn && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="md:hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-              onClick={() => {
-                setIsHoveringSignIn(false);
-                setIsModalOpen(false);
-              }}
-            >
-              <div onClick={(e) => e.stopPropagation()}>
-                <HoverMenu onModalStateChange={handleModalStateChange} />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* MOBILE SEARCH BELOW LOGO */}
         <div className="md:hidden w-full flex justify-center px-2">
