@@ -1011,8 +1011,8 @@ const BuyNowPage = () => {
                   );
                 }
 
-                const finalPrice = discountedPrice * quantity;
-                const originalPrice = basePrice * quantity;
+                const finalPrice = Math.round(discountedPrice * quantity * 1000) / 1000;
+                const originalPrice = Math.round(basePrice * quantity * 1000) / 1000;
 
                 if (finalPrice < originalPrice) {
                   return (
