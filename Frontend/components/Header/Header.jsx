@@ -23,7 +23,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { filterSlice, setCategoryFilter } from "../index.js";
-import { HoverMenu } from "../../features/index.js"; // Import HoverMenu as specified
+import { HoverMenu, Login, Signup } from "../../features/index.js"; // Add Register import
 
 import {
   getApi,
@@ -85,6 +85,9 @@ const Header = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  const [modalContent, setModalContent] = useState(null); // <-- Add this state
+  const [user, setUser] = useState(null); // For login modal
+  const [message, setMessage] = useState(""); // For login modal
 
   // Redux for search functionality
   const dispatch = useDispatch();
@@ -326,6 +329,12 @@ const Header = () => {
     setCategoryHoverTimeout(timeout);
   };
 
+  // Add this function to handle modal close/reset
+  const handleCloseModal = () => {
+    setModalContent(null);
+    setMessage("");
+  };
+
   return (
     <div className="sticky top-0 z-50">
       {/* HEADER */}
@@ -563,14 +572,23 @@ const Header = () => {
             <div className="space-y-4">
               <button
                 onClick={() => {
-                  setIsHoveringSignIn(true);
-                  setIsModalOpen(true);
+                  setModalContent("login"); // <-- Open login modal
                   setIsMenuOpen(false);
                 }}
                 className="flex items-center w-full text-left hover:bg-indigo-600 p-2 rounded transition-colors"
               >
                 <FiUser className="w-5 h-5 mr-2" />
                 <span>Login</span>
+              </button>
+              <button
+                onClick={() => {
+                  setModalContent("signup"); // <-- Open signup modal
+                  setIsMenuOpen(false);
+                }}
+                className="flex items-center w-full text-left hover:bg-indigo-600 p-2 rounded transition-colors"
+              >
+                <FiUser className="w-5 h-5 mr-2" />
+                <span>Create an account</span>
               </button>
               <Link
                 to="/notifications"
@@ -602,188 +620,217 @@ const Header = () => {
           </div>
         )}
 
-        {/* MOBILE SEARCH BELOW LOGO */}
-        <div className="md:hidden w-full flex justify-center px-2">
-          <div className="relative w-10/12 max-w-sm">
-            <FiSearch
-              className={`absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-base transition-opacity duration-200 ${
-                isSearchFocused ? "opacity-0" : "opacity-100"
-              }`}
-            />
-            <input
-              type="text"
-              value={searchInput}
-              onChange={handleSearchInputChange}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              onFocus={() => setIsSearchFocused(true)}
-              onBlur={() => setIsSearchFocused(false)}
-              placeholder="Search for products, brands and more..."
-              className="w-full pl-10 pr-4 py-2 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 shadow-sm text-base transition-all duration-200"
-            />
-          </div>
-        </div>
-      </header>
-
-      {/* NAVIGATION BAR */}
-      <nav className="bg-white shadow-sm py-2 md:py-3">
-        <div className="flex items-center px-4">
-          {/* CATEGORIES DROPDOWN */}
-          <div
-            className="relative group"
-            onMouseEnter={handleCategoryMouseEnter}
-            onMouseLeave={handleCategoryMouseLeave}
-          >
-            <div
-              className={`flex items-center space-x-2 cursor-pointer transition-colors duration-200 relative ${
-                selectedCategoryId
-                  ? "text-indigo-600"
-                  : "group-hover:text-amber-500"
-              }`}
+        {/* LOGIN MODAL (works for both desktop and mobile) */}
+        <AnimatePresence>
+          {modalContent === "login" && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[999] px-4"
+              onClick={handleCloseModal}
             >
-              <FiMenu
-                className={`w-5 h-5 ${
-                  selectedCategoryId ? "text-indigo-600" : "text-gray-600"
-                }`}
-              />
-              <span
-                className={`text-sm font-medium ${
+              <motion.div
+                initial={{ y: 20 }}
+                animate={{ y: 0 }}
+                className="bg-white rounded-xl w-full max-w-sm sm:max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6 relative shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Login
+                  setModalContent={setModalContent}
+                  setUser={setUser}
+                  setMessage={setMessage}
+                />
+              </motion.div>
+            </motion.div>
+          )}
+          {modalContent === "signup" && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[999] px-4"
+              onClick={handleCloseModal}
+            >
+              <motion.div
+                initial={{ y: 20 }}
+                animate={{ y: 0 }}
+                className="bg-white rounded-xl w-full max-w-sm sm:max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6 relative shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Signup
+                  setModalContent={setModalContent}
+                  setUser={setUser}
+                  setMessage={setMessage}
+                />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* NAVIGATION BAR */}
+        <nav className="bg-white shadow-sm py-2 md:py-3">
+          <div className="flex items-center px-4">
+            {/* CATEGORIES DROPDOWN */}
+            <div
+              className="relative group"
+              onMouseEnter={handleCategoryMouseEnter}
+              onMouseLeave={handleCategoryMouseLeave}
+            >
+              <div
+                className={`flex items-center space-x-2 cursor-pointer transition-colors duration-200 relative ${
                   selectedCategoryId
-                    ? "text-indigo-600 font-semibold"
-                    : "text-gray-800"
+                    ? "text-indigo-600"
+                    : "group-hover:text-amber-500"
                 }`}
               >
-                Categories
+                <FiMenu
+                  className={`w-5 h-5 ${
+                    selectedCategoryId ? "text-indigo-600" : "text-gray-600"
+                  }`}
+                />
+                <span
+                  className={`text-sm font-medium ${
+                    selectedCategoryId
+                      ? "text-indigo-600 font-semibold"
+                      : "text-gray-800"
+                  }`}
+                >
+                  Categories
+                  {selectedCategoryId && (
+                    <span className="ml-1 text-xs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">
+                      Active
+                    </span>
+                  )}
+                </span>
+                <FiChevronDown
+                  className={`w-4 h-4 ${
+                    selectedCategoryId ? "text-indigo-600" : "text-gray-600"
+                  }`}
+                />
                 {selectedCategoryId && (
-                  <span className="ml-1 text-xs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">
-                    Active
-                  </span>
+                  <div className="absolute -top-1 -right-1">
+                    <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                  </div>
                 )}
-              </span>
-              <FiChevronDown
-                className={`w-4 h-4 ${
-                  selectedCategoryId ? "text-indigo-600" : "text-gray-600"
-                }`}
-              />
-              {selectedCategoryId && (
-                <div className="absolute -top-1 -right-1">
-                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+              </div>
+              {isHoveringCategory && (
+                <div
+                  className="absolute top-6 left-0 bg-gray-50 text-gray-800 rounded-lg shadow-lg z-50 border border-gray-200 w-48 mt-1"
+                  onMouseEnter={handleCategoryMouseEnter}
+                  onMouseLeave={handleCategoryMouseLeave}
+                >
+                  {categoriesLoading ? (
+                    <div className="px-4 py-3 text-center text-gray-500">
+                      <span className="text-sm">Loading categories...</span>
+                    </div>
+                  ) : categoriesError ? (
+                    <div className="px-4 py-3 text-center text-red-500">
+                      <span className="text-sm">{categoriesError}</span>
+                    </div>
+                  ) : (
+                    <>
+                      {selectedCategoryId && (
+                        <button
+                          onClick={clearCategorySelection}
+                          className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 w-full text-left border-b border-gray-200"
+                        >
+                          <FiX className="w-4 h-4 text-gray-600" />
+                          <span className="text-sm font-medium text-gray-700">
+                            Clear Category Filter
+                          </span>
+                        </button>
+                      )}
+                      {categories.map((item, index) => {
+                        const isSelected =
+                          selectedCategoryId === item.category_id;
+                        return (
+                          <button
+                            key={item.category_id || index}
+                            onClick={() => handleCategoryClick(item)}
+                            className={`flex items-center space-x-2 px-4 py-3 transition-colors duration-200 w-full text-left relative ${
+                              isSelected
+                                ? "bg-indigo-100 text-indigo-700 border-l-4 border-indigo-500"
+                                : "hover:bg-indigo-50 hover:text-indigo-600"
+                            }`}
+                          >
+                            <item.icon
+                              className={`w-5 h-5 ${
+                                isSelected ? "text-indigo-600" : "text-gray-600"
+                              }`}
+                            />
+                            <span
+                              className={`text-sm font-medium ${
+                                isSelected ? "font-semibold" : ""
+                              }`}
+                            >
+                              {item.label}
+                            </span>
+                            {isSelected && (
+                              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </>
+                  )}
                 </div>
               )}
             </div>
-            {isHoveringCategory && (
-              <div
-                className="absolute top-6 left-0 bg-gray-50 text-gray-800 rounded-lg shadow-lg z-50 border border-gray-200 w-48 mt-1"
-                onMouseEnter={handleCategoryMouseEnter}
-                onMouseLeave={handleCategoryMouseLeave}
-              >
-                {categoriesLoading ? (
-                  <div className="px-4 py-3 text-center text-gray-500">
-                    <span className="text-sm">Loading categories...</span>
-                  </div>
-                ) : categoriesError ? (
-                  <div className="px-4 py-3 text-center text-red-500">
-                    <span className="text-sm">{categoriesError}</span>
-                  </div>
-                ) : (
-                  <>
-                    {selectedCategoryId && (
-                      <button
-                        onClick={clearCategorySelection}
-                        className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 w-full text-left border-b border-gray-200"
-                      >
-                        <FiX className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm font-medium text-gray-700">
-                          Clear Category Filter
-                        </span>
-                      </button>
-                    )}
-                    {categories.map((item, index) => {
-                      const isSelected =
-                        selectedCategoryId === item.category_id;
-                      return (
-                        <button
-                          key={item.category_id || index}
-                          onClick={() => handleCategoryClick(item)}
-                          className={`flex items-center space-x-2 px-4 py-3 transition-colors duration-200 w-full text-left relative ${
-                            isSelected
-                              ? "bg-indigo-100 text-indigo-700 border-l-4 border-indigo-500"
-                              : "hover:bg-indigo-50 hover:text-indigo-600"
-                          }`}
-                        >
-                          <item.icon
-                            className={`w-5 h-5 ${
-                              isSelected ? "text-indigo-600" : "text-gray-600"
-                            }`}
-                          />
-                          <span
-                            className={`text-sm font-medium ${
-                              isSelected ? "font-semibold" : ""
-                            }`}
-                          >
-                            {item.label}
-                          </span>
-                          {isSelected && (
-                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                              <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </>
-                )}
-              </div>
-            )}
-          </div>
 
-          {/* NAV LINKS */}
-          <div className="flex overflow-x-auto md:overflow-visible flex-1 justify-start md:justify-center space-x-4 md:space-x-8 scrollbar-hide">
-            {categoriesLoading ? (
-              <div className="text-xs md:text-sm text-gray-500 px-1 py-1">
-                Loading...
-              </div>
-            ) : categoriesError ? (
-              <div className="text-xs md:text-sm text-red-500 px-1 py-1">
-                {categoriesError}
-              </div>
-            ) : (
-              categories.map((item, index) => {
-                const isSelected = selectedCategoryId === item.category_id;
-                return (
-                  <button
-                    key={item.category_id || index}
-                    onClick={() => handleCategoryClick(item)}
-                    className={`text-xs md:text-sm font-medium whitespace-nowrap flex items-center px-1 py-1 relative group transition-colors duration-200 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 ${
-                      isSelected
-                        ? "text-indigo-600 font-semibold"
-                        : "text-gray-800 hover:text-amber-500"
-                    }`}
-                  >
-                    <item.icon
-                      className={`mr-1 md:mr-2 text-base md:text-lg ${
-                        isSelected ? "text-indigo-600" : "text-gray-600"
-                      }`}
-                    />
-                    {item.label}
-                    <span
-                      className={`absolute bottom-0 left-0 h-0.5 transition-all duration-200 ${
+            {/* NAV LINKS */}
+            <div className="flex overflow-x-auto md:overflow-visible flex-1 justify-start md:justify-center space-x-4 md:space-x-8 scrollbar-hide">
+              {categoriesLoading ? (
+                <div className="text-xs md:text-sm text-gray-500 px-1 py-1">
+                  Loading...
+                </div>
+              ) : categoriesError ? (
+                <div className="text-xs md:text-sm text-red-500 px-1 py-1">
+                  {categoriesError}
+                </div>
+              ) : (
+                categories.map((item, index) => {
+                  const isSelected = selectedCategoryId === item.category_id;
+                  return (
+                    <button
+                      key={item.category_id || index}
+                      onClick={() => handleCategoryClick(item)}
+                      className={`text-xs md:text-sm font-medium whitespace-nowrap flex items-center px-1 py-1 relative group transition-colors duration-200 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 ${
                         isSelected
-                          ? "w-full bg-indigo-500"
-                          : "w-0 bg-amber-500 group-hover:w-full"
+                          ? "text-indigo-600 font-semibold"
+                          : "text-gray-800 hover:text-amber-500"
                       }`}
-                    ></span>
-                    {isSelected && (
-                      <div className="absolute -top-1 -right-1">
-                        <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
-                      </div>
-                    )}
-                  </button>
-                );
-              })
-            )}
+                    >
+                      <item.icon
+                        className={`mr-1 md:mr-2 text-base md:text-lg ${
+                          isSelected ? "text-indigo-600" : "text-gray-600"
+                        }`}
+                      />
+                      {item.label}
+                      <span
+                        className={`absolute bottom-0 left-0 h-0.5 transition-all duration-200 ${
+                          isSelected
+                            ? "w-full bg-indigo-500"
+                            : "w-0 bg-amber-500 group-hover:w-full"
+                        }`}
+                      ></span>
+                      {isSelected && (
+                        <div className="absolute -top-1 -right-1">
+                          <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })
+              )}
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+      </header>
     </div>
   );
 };
