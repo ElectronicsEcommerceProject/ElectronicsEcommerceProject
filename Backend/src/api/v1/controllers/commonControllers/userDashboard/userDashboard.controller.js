@@ -137,7 +137,8 @@ const getUserDashboardProducts = async (req, res) => {
       return {
         product_id: prod.product_id,
         image,
-        title: prod.name,
+        name: prod.name,
+        description: prod.description || "",
         price: `₹${sellingPrice.toLocaleString()}`,
         originalPrice: `₹${basePrice.toLocaleString()}`,
         stock:
