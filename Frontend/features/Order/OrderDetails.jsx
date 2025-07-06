@@ -11,6 +11,8 @@ import {
   updateApiById,
 } from "../../src/index.js";
 
+import { Footer, Header } from "../../components/index.js";
+
 const FilterSidebar = ({
   orderStatusFilters,
   setOrderStatusFilters,
@@ -248,12 +250,18 @@ const OrderCard = ({ order, expanded, onExpand, onOrderUpdate }) => {
                   ) {
                     setCancelling(true);
                     try {
-                      const response = await updateApiById(cancelOrderRoute, order.order_id);
+                      const response = await updateApiById(
+                        cancelOrderRoute,
+                        order.order_id
+                      );
                       if (response && response.success) {
                         alert("Order cancelled successfully!");
                         onOrderUpdate();
                       } else {
-                        alert(response?.message || "Failed to cancel order. Please try again.");
+                        alert(
+                          response?.message ||
+                            "Failed to cancel order. Please try again."
+                        );
                       }
                     } catch (error) {
                       console.error("Error cancelling order:", error);
@@ -304,11 +312,11 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     const showPages = 5;
     let start = Math.max(1, currentPage - Math.floor(showPages / 2));
     let end = Math.min(totalPages, start + showPages - 1);
-    
+
     if (end - start + 1 < showPages) {
       start = Math.max(1, end - showPages + 1);
     }
-    
+
     for (let i = start; i <= end; i++) {
       pages.push(i);
     }
@@ -330,7 +338,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
       >
         ← Previous
       </button>
-      
+
       {getPageNumbers().map((page) => (
         <button
           key={page}
@@ -344,7 +352,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
           {page}
         </button>
       ))}
-      
+
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
@@ -439,7 +447,10 @@ const OrderDetails = () => {
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+  const currentOrders = filteredOrders.slice(
+    indexOfFirstOrder,
+    indexOfLastOrder
+  );
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -453,6 +464,7 @@ const OrderDetails = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 font-sans">
+      <Header />
       <div className="container mx-auto flex flex-col sm:flex-row p-4 gap-3">
         <div className="w-full sm:w-48">
           <FilterSidebar
@@ -474,7 +486,9 @@ const OrderDetails = () => {
             <>
               <div className="mb-4">
                 <p className="text-sm text-gray-600">
-                  Showing {indexOfFirstOrder + 1}-{Math.min(indexOfLastOrder, filteredOrders.length)} of {filteredOrders.length} orders
+                  Showing {indexOfFirstOrder + 1}-
+                  {Math.min(indexOfLastOrder, filteredOrders.length)} of{" "}
+                  {filteredOrders.length} orders
                 </p>
               </div>
               {currentOrders.map((order) => (
