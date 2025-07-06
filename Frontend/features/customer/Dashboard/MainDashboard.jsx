@@ -308,11 +308,12 @@ const MainDashboard = () => {
                           <div className="text-base sm:text-lg font-bold text-green-600">
                             {product.price}
                           </div>
-                          {product.originalPrice && product.originalPrice !== product.price && (
-                            <div className="text-xs sm:text-sm text-gray-500 line-through">
-                              {product.originalPrice}
-                            </div>
-                          )}
+                          {product.originalPrice &&
+                            product.originalPrice !== product.price && (
+                              <div className="text-xs sm:text-sm text-gray-500 line-through">
+                                {product.originalPrice}
+                              </div>
+                            )}
                         </div>
                         <div
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
