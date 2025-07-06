@@ -272,14 +272,20 @@ const MainDashboard = () => {
                       )}
                       <img
                         src={product.image}
-                        alt={product.title}
+                        alt={product.name}
                         className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
                     </div>
                     <div className="space-y-2 flex-grow">
                       <h3 className="text-sm sm:text-base font-semibold text-gray-800 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                        {product.title}
+                        {product.name}
                       </h3>
+                      <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                        {product.description}
+                      </p>
+                      <div className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full inline-block">
+                        {product.brand}
+                      </div>
                       <div className="flex items-center space-x-1">
                         <div className="flex text-yellow-400">
                           {[...Array(5)].map((_, i) => (
@@ -302,7 +308,7 @@ const MainDashboard = () => {
                           <div className="text-base sm:text-lg font-bold text-green-600">
                             {product.price}
                           </div>
-                          {product.originalPrice && (
+                          {product.originalPrice && product.originalPrice !== product.price && (
                             <div className="text-xs sm:text-sm text-gray-500 line-through">
                               {product.originalPrice}
                             </div>
@@ -310,13 +316,13 @@ const MainDashboard = () => {
                         </div>
                         <div
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            product.stock === "upcoming"
-                              ? "bg-orange-100 text-orange-600"
+                            product.stock === "out-of-stock"
+                              ? "bg-red-100 text-red-600"
                               : "bg-green-100 text-green-600"
                           }`}
                         >
-                          {product.stock === "upcoming"
-                            ? "Coming Soon"
+                          {product.stock === "out-of-stock"
+                            ? "Out of Stock"
                             : "In Stock"}
                         </div>
                       </div>

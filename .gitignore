@@ -9,6 +9,8 @@ node_modules/
 dist/
 build/
 
+Backend/src/uploads
+
 # Environment files
 .env
 .env.local

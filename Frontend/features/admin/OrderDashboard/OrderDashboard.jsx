@@ -237,8 +237,11 @@ const OrderDashboard = () => {
             };
           });
 
-          setOrders(mappedOrders);
-          setFilteredOrders(mappedOrders);
+          // Sort orders by date (newest first)
+          const sortedOrders = mappedOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
+          
+          setOrders(sortedOrders);
+          setFilteredOrders(sortedOrders);
         } else {
           console.error("Invalid orders response format:", ordersResponse);
           // Keep the initial orders as fallback
