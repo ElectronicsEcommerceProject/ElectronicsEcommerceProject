@@ -95,12 +95,15 @@ const getUserDashboardProducts = async (req, res) => {
       }
 
       // Determine image URL from product media
-      let image =
-        prod.media[0]?.ProductMediaUrls?.[0]?.product_media_url ||
-        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop";
-      image = image.replace(/\\/g, "/");
-      if (!image.startsWith("http")) {
-        image = `${req.protocol}://${req.get("host")}/${image}`;
+      let image = null;
+      if (prod.media && prod.media.length > 0 && prod.media[0].ProductMediaURLs && prod.media[0].ProductMediaURLs.length > 0) {
+        image = prod.media[0].ProductMediaURLs[0].product_media_url;
+        image = image.replace(/\\/g, "/");
+        if (!image.startsWith("http")) {
+          image = `${req.protocol}://${req.get("host")}/${image}`;
+        }
+      } else {
+        image = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop";
       }
 
       // Calculate average rating
