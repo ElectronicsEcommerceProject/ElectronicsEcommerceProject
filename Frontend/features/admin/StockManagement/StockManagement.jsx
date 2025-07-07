@@ -199,7 +199,11 @@ const StockManagement = () => {
       setAnalyticsData(analyticsResponse.data || {});
       setCategories(categoriesResponse.data || []);
       setBrands(brandsResponse.data || []);
-      setLowStockThreshold(analyticsResponse.lowStockThreshold || variantsResponse.lowStockThreshold || 5);
+      setLowStockThreshold(
+        analyticsResponse.lowStockThreshold ||
+          variantsResponse.lowStockThreshold ||
+          5
+      );
     } catch (error) {
       console.error("❌ Error loading stock management data:", error);
       setError(error.message || "Failed to load stock management data");
@@ -779,7 +783,6 @@ const StockManagement = () => {
             value: summaryData.lowStock,
             icon: FaExclamationTriangle,
             color: "yellow",
-
           },
           {
             key: "outStock",
@@ -936,7 +939,9 @@ const StockManagement = () => {
                         : "text-red-600"
                     }`}
                   >
-                    {variant.status === "Low" ? `Low (<${lowStockThreshold})` : variant.status}
+                    {variant.status === "Low"
+                      ? `Low (<${lowStockThreshold})`
+                      : variant.status}
                   </span>
                 </div>
               </div>
@@ -1332,10 +1337,19 @@ const StockManagement = () => {
                     type="number"
                     min="0"
                     className="w-full p-3 border rounded-lg text-lg"
-                    value={newStockQuantity}
-                    onChange={(e) =>
-                      setNewStockQuantity(parseInt(e.target.value) || 0)
-                    }
+                    value={newStockQuantity === 0 ? "" : newStockQuantity}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const numValue = parseInt(value) || 0;
+                      setNewStockQuantity(
+                        value === "" ? 0 : Math.max(0, numValue)
+                      );
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "-" || e.key === "e" || e.key === "E") {
+                        e.preventDefault();
+                      }
+                    }}
                     placeholder="Enter new stock quantity"
                   />
                 </div>
