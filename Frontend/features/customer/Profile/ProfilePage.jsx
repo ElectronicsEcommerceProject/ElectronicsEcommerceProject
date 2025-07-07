@@ -110,7 +110,7 @@ const Profile = () => {
             const BASE_URL =
               import.meta.env.VITE_BASE_URL || "http://localhost:3000";
             const response = await axios.patch(
-              `${BASE_URL}user/profile/${userId}`,
+              `${BASE_URL}/user/profile/${userId}`,
               formData,
               {
                 headers: {
