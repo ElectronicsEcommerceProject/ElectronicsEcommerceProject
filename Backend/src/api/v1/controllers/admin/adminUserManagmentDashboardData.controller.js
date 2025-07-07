@@ -97,7 +97,7 @@ const getUserManagementDashboardData = async (req, res) => {
       attributes: {
         include: [
           [
-            Sequelize.fn("SUM", Sequelize.col("Orders.total_amount")),
+            Sequelize.fn("SUM", Sequelize.col("orders.total_amount")),
             "total_spend",
           ],
           [
