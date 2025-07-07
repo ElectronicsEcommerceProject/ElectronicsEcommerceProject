@@ -13,15 +13,37 @@ const {
   Coupon,
   AttributeValue,
   Attribute,
+  Category,
 } = db;
 
 // Controller: Fetch products for user dashboard with detailed info
 const getUserDashboardProducts = async (req, res) => {
   try {
-    // Fetch active products with related data
+    // Get user role from JWT token
+    const userRole = req.user?.role;
+    
+    if (!userRole) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: "User role not found in token",
+      });
+    }
+
+    // Fetch active products with related data filtered by user role
     const products = await Product.findAll({
       where: { is_active: true },
       include: [
+        {
+          model: Category,
+          as: "category",
+          attributes: ["name", "target_role"],
+          where: {
+            target_role: {
+              [Op.in]: [userRole, "both"]
+            }
+          },
+          required: true, // Only include products with matching category target_role
+        },
         {
           model: ProductVariant,
           as: "variants",
@@ -68,6 +90,9 @@ const getUserDashboardProducts = async (req, res) => {
             is_active: true,
             valid_from: { [Op.lte]: new Date() },
             valid_to: { [Op.gte]: new Date() },
+            target_role: {
+              [Op.in]: [userRole, "both"]
+            }
           },
           required: false,
         },

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiUser, FiShoppingBag, FiStar, FiShield } from "react-icons/fi";
+import { FiUser, FiShoppingBag, FiStar, FiShield, FiPackage, FiSearch } from "react-icons/fi";
 
 import { Footer, Header } from "../../../components/index.js";
 import {
@@ -253,6 +253,51 @@ const MainDashboard = () => {
             <div className="text-center py-8">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <p className="mt-2 text-gray-600">Loading products...</p>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="max-w-md mx-auto">
+                <div className="w-24 h-24 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-6">
+                  {selectedBrand ? (
+                    <FiSearch className="w-12 h-12 text-gray-500" />
+                  ) : (
+                    <FiPackage className="w-12 h-12 text-gray-500" />
+                  )}
+                </div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                  {selectedBrand ? `No products found for "${selectedBrand}"` : "No products available"}
+                </h3>
+                <p className="text-gray-600 mb-8 leading-relaxed">
+                  {selectedBrand 
+                    ? "We couldn't find any products for this brand. Try selecting a different brand or check back later."
+                    : "We're currently updating our inventory. Please check back soon for amazing products and deals!"
+                  }
+                </p>
+                {selectedBrand && (
+                  <button
+                    onClick={() => setSelectedBrand(null)}
+                    className="bg-blue-600 text-white hover:bg-blue-700 px-6 py-3 rounded-full transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                  >
+                    View All Products
+                  </button>
+                )}
+                <div className="mt-8 p-6 bg-white rounded-xl shadow-lg border border-gray-100">
+                  <div className="flex items-center justify-center space-x-6 text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <FiShoppingBag className="w-5 h-5 mr-2 text-blue-500" />
+                      <span>Quality Products</span>
+                    </div>
+                    <div className="flex items-center">
+                      <FiStar className="w-5 h-5 mr-2 text-yellow-500" />
+                      <span>Best Prices</span>
+                    </div>
+                    <div className="flex items-center">
+                      <FiShield className="w-5 h-5 mr-2 text-green-500" />
+                      <span>Secure Shopping</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
