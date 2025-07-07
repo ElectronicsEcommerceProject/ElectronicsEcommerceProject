@@ -22,7 +22,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { filterSlice, setCategoryFilter } from "../index.js";
+import { setSearchTerm, setCategoryFilter } from "../index.js";
 import { HoverMenu, Login, Signup } from "../../features/index.js"; // Add Register import
 
 import {
@@ -214,7 +214,7 @@ const Header = () => {
   const handleSearch = () => {
     if (searchInput.trim()) {
       // Update Redux search term
-      dispatch(filterSlice(searchInput.trim()));
+      dispatch(setSearchTerm(searchInput.trim()));
       // Navigate to MainZone with search
       navigate("/mainzone");
       console.log("Searching for:", searchInput.trim());
@@ -227,7 +227,7 @@ const Header = () => {
     setSearchInput(value);
 
     // Real-time search: Update Redux immediately for live filtering
-    dispatch(filterSlice(value));
+    dispatch(setSearchTerm(value));
     console.log("🔍 Real-time search from Header:", value);
   };
 

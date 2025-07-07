@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import {
   FiUser,
   FiShoppingBag,
@@ -10,6 +11,7 @@ import {
 } from "react-icons/fi";
 
 import { Footer, Header } from "../../../components/index.js";
+import { setSearchTerm } from "../../../components/index.js";
 import {
   isAuthenticated,
   userDashboardDataRoute,
@@ -19,6 +21,8 @@ import logo from "../../../../Frontend/assets/logo.jpg";
 
 const MainDashboard = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const searchTerm = useSelector((state) => state.filters.searchTerm);
   const [activeBanner, setActiveBanner] = useState(0);
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState(null);
@@ -107,9 +111,15 @@ const MainDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const filteredProducts = selectedBrand
-    ? products.filter((product) => product.brand === selectedBrand)
-    : products;
+  const filteredProducts = products.filter((product) => {
+    const matchesBrand = selectedBrand ? product.brand === selectedBrand : true;
+    const matchesSearch = searchTerm
+      ? product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.brand.toLowerCase().includes(searchTerm.toLowerCase())
+      : true;
+    return matchesBrand && matchesSearch;
+  });
 
   const uniqueBrands = [...new Set(products.map((product) => product.brand))];
 
@@ -119,6 +129,24 @@ const MainDashboard = () => {
 
   const handleProductClick = (productId) => {
     navigate(`/product/${productId}`);
+  };
+
+  // Function to highlight matching text
+  const highlightText = (text, searchTerm) => {
+    if (!searchTerm || !text) return text;
+    
+    const regex = new RegExp(`(${searchTerm})`, 'gi');
+    const parts = text.split(regex);
+    
+    return parts.map((part, index) => 
+      regex.test(part) ? (
+        <mark key={index} className="bg-yellow-200 text-yellow-900 px-1 rounded">
+          {part}
+        </mark>
+      ) : (
+        part
+      )
+    );
   };
 
   if (!isUserAuthenticated) {
@@ -237,6 +265,14 @@ const MainDashboard = () => {
 
       <div className="w-full bg-gradient-to-br from-blue-50 to-indigo-50 px-4 sm:px-6 py-8">
         <div className="max-w-7xl mx-auto">
+          {searchTerm && (
+            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center justify-center text-blue-700">
+                <FiSearch className="w-5 h-5 mr-2" />
+                <span className="font-medium">Searching for: "{searchTerm}"</span>
+              </div>
+            </div>
+          )}
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-6">
             <button
               className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold transition-all transform hover:scale-105 text-sm sm:text-base ${
@@ -278,21 +314,32 @@ const MainDashboard = () => {
                   )}
                 </div>
                 <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                  {selectedBrand
+                  {searchTerm && selectedBrand
+                    ? `No products found for "${searchTerm}" in ${selectedBrand}`
+                    : searchTerm
+                    ? `No products found for "${searchTerm}"`
+                    : selectedBrand
                     ? `No products found for "${selectedBrand}"`
                     : "No products available"}
                 </h3>
                 <p className="text-gray-600 mb-8 leading-relaxed">
-                  {selectedBrand
+                  {searchTerm
+                    ? "Try adjusting your search terms or browse our categories to find what you're looking for."
+                    : selectedBrand
                     ? "We couldn't find any products for this brand. Try selecting a different brand or check back later."
                     : "We're currently updating our inventory. Please check back soon for amazing products and deals!"}
                 </p>
-                {selectedBrand && (
+                {(selectedBrand || searchTerm) && (
                   <button
-                    onClick={() => setSelectedBrand(null)}
+                    onClick={() => {
+                      setSelectedBrand(null);
+                      if (searchTerm) {
+                        dispatch(setSearchTerm(''));
+                      }
+                    }}
                     className="bg-blue-600 text-white hover:bg-blue-700 px-6 py-3 rounded-full transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
                   >
-                    View All Products
+                    {searchTerm ? "Clear Search" : "View All Products"}
                   </button>
                 )}
                 <div className="mt-8 p-6 bg-white rounded-xl shadow-lg border border-gray-100">
@@ -345,13 +392,13 @@ const MainDashboard = () => {
                     </div>
                     <div className="space-y-2 flex-grow">
                       <h3 className="text-sm sm:text-base font-semibold text-gray-800 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                        {product.name}
+                        {searchTerm ? highlightText(product.name, searchTerm) : product.name}
                       </h3>
                       <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
-                        {product.description}
+                        {searchTerm ? highlightText(product.description, searchTerm) : product.description}
                       </p>
                       <div className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full inline-block">
-                        {product.brand}
+                        {searchTerm ? highlightText(product.brand, searchTerm) : product.brand}
                       </div>
                       <div className="flex items-center space-x-1">
                         <div className="flex text-yellow-400">
