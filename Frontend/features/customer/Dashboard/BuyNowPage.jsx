@@ -421,14 +421,19 @@ const BuyNowPage = () => {
     return parseFloat(mainProduct.base_price || mainProduct.price || 0);
   };
 
-  // Helper function to calculate the best discount (quantity vs coupon)
-  const calculateBestDiscount = (
+  // Helper function to calculate tiered discounts (quantity + coupon)
+  const calculateStackedDiscounts = (
     variantData,
     quantity,
     appliedCoupon = null
   ) => {
     if (!variantData)
-      return { discountValue: 0, discountType: null, discountSource: null };
+      return {
+        totalDiscountAmount: 0,
+        quantityDiscount: null,
+        couponDiscount: null,
+        finalPrice: 0,
+      };
 
     const basePrice = parseFloat(variantData.price);
     if (isNaN(basePrice) || basePrice <= 0) {
@@ -436,13 +441,24 @@ const BuyNowPage = () => {
         "Invalid base price for discount calculation:",
         variantData.price
       );
-      return { discountValue: 0, discountType: null, discountSource: null };
+      return {
+        totalDiscountAmount: 0,
+        quantityDiscount: null,
+        couponDiscount: null,
+        finalPrice: basePrice * quantity,
+      };
     }
 
     if (!quantity || quantity <= 0) {
       console.warn("Invalid quantity for discount calculation:", quantity);
-      return { discountValue: 0, discountType: null, discountSource: null };
+      return {
+        totalDiscountAmount: 0,
+        quantityDiscount: null,
+        couponDiscount: null,
+        finalPrice: basePrice * quantity,
+      };
     }
+
     const regularDiscountQty = variantData.discount_quantity || 0;
     const regularDiscountPercent = parseFloat(
       variantData.discount_percentage || 0
@@ -452,72 +468,85 @@ const BuyNowPage = () => {
       variantData.bulk_discount_percentage || 0
     );
 
-    // Calculate quantity-based discount
-    let quantityDiscountValue = 0;
-    let quantityDiscountType = null;
-    let quantityDiscountSource = null;
+    // Calculate tiered quantity-based pricing
+    let quantityDiscount = null;
+    let totalQuantityPrice = 0;
+    let averagePricePerUnit = basePrice;
 
     if (quantity >= bulkDiscountQty && bulkDiscountQty > 0) {
-      quantityDiscountValue = bulkDiscountPercent;
-      quantityDiscountType = "percentage";
-      quantityDiscountSource = "bulk_discount";
+      // Apply bulk discount to ALL units when bulk quantity is reached
+      const discountAmount = (basePrice * bulkDiscountPercent) / 100;
+      const discountedPrice = basePrice - discountAmount;
+      totalQuantityPrice = discountedPrice * quantity;
+      averagePricePerUnit = discountedPrice;
+      quantityDiscount = {
+        type: "bulk_discount",
+        percentage: bulkDiscountPercent,
+        amount: discountAmount,
+        quantity: bulkDiscountQty,
+      };
     } else if (quantity >= regularDiscountQty && regularDiscountQty > 0) {
-      quantityDiscountValue = regularDiscountPercent;
-      quantityDiscountType = "percentage";
-      quantityDiscountSource = "quantity_discount";
+      // Tiered pricing: discount applies only to qualifying units
+      const discountAmount = (basePrice * regularDiscountPercent) / 100;
+      const discountedPrice = basePrice - discountAmount;
+      
+      // Calculate price for discounted units and remaining units at base price
+      const discountedUnits = regularDiscountQty;
+      const baseUnits = quantity - regularDiscountQty;
+      
+      totalQuantityPrice = (discountedPrice * discountedUnits) + (basePrice * baseUnits);
+      averagePricePerUnit = totalQuantityPrice / quantity;
+      
+      quantityDiscount = {
+        type: "quantity_discount",
+        percentage: regularDiscountPercent,
+        amount: discountAmount,
+        quantity: regularDiscountQty,
+      };
+    } else {
+      // No quantity discount applies
+      totalQuantityPrice = basePrice * quantity;
+      averagePricePerUnit = basePrice;
     }
 
-    // Calculate coupon discount if applied
-    let couponDiscountValue = 0;
-    let couponDiscountType = null;
-    let couponDiscountSource = null;
+    // Calculate coupon discount on the total after quantity discounts
+    let couponDiscount = null;
+    let finalTotalPrice = totalQuantityPrice;
 
     if (appliedCoupon) {
-      couponDiscountValue = parseFloat(appliedCoupon.discount_value);
-      if (isNaN(couponDiscountValue) || couponDiscountValue < 0) {
-        console.warn(
-          "Invalid coupon discount value:",
-          appliedCoupon.discount_value
-        );
-        couponDiscountValue = 0;
-      } else {
-        couponDiscountType = appliedCoupon.type; // "percentage" or "fixed"
-        couponDiscountSource = "coupon";
+      const couponDiscountValue = parseFloat(appliedCoupon.discount_value);
+      if (!isNaN(couponDiscountValue) && couponDiscountValue > 0) {
+        let couponDiscountAmount = 0;
+
+        if (appliedCoupon.type === "percentage") {
+          couponDiscountAmount = (totalQuantityPrice * couponDiscountValue) / 100;
+        } else if (appliedCoupon.type === "fixed") {
+          couponDiscountAmount = Math.min(couponDiscountValue, totalQuantityPrice);
+        }
+
+        finalTotalPrice = Math.max(0, totalQuantityPrice - couponDiscountAmount);
+        couponDiscount = {
+          type: appliedCoupon.type,
+          value: couponDiscountValue,
+          amount: couponDiscountAmount,
+          code: appliedCoupon.code,
+          coupon_id: appliedCoupon.coupon_id,
+        };
       }
     }
 
-    // Calculate actual discount amounts to compare
-    let quantityDiscountAmount = 0;
-    if (quantityDiscountType === "percentage") {
-      quantityDiscountAmount = (basePrice * quantityDiscountValue) / 100;
-    } else if (quantityDiscountType === "fixed") {
-      quantityDiscountAmount = quantityDiscountValue;
-    }
+    const totalOriginalPrice = basePrice * quantity;
+    const totalDiscountAmount = totalOriginalPrice - finalTotalPrice;
+    const finalPricePerUnit = finalTotalPrice / quantity;
 
-    let couponDiscountAmount = 0;
-    if (couponDiscountType === "percentage") {
-      couponDiscountAmount = (basePrice * couponDiscountValue) / 100;
-    } else if (couponDiscountType === "fixed") {
-      couponDiscountAmount = couponDiscountValue;
-    }
-
-    // Return the better discount
-    if (couponDiscountAmount > quantityDiscountAmount) {
-      return {
-        discountValue: couponDiscountValue,
-        discountType: couponDiscountType,
-        discountSource: couponDiscountSource,
-        couponData: appliedCoupon,
-      };
-    } else if (quantityDiscountAmount > 0) {
-      return {
-        discountValue: quantityDiscountValue,
-        discountType: quantityDiscountType,
-        discountSource: quantityDiscountSource,
-      };
-    }
-
-    return { discountValue: 0, discountType: null, discountSource: null };
+    return {
+      totalDiscountAmount,
+      quantityDiscount,
+      couponDiscount,
+      finalPrice: finalTotalPrice,
+      originalPrice: totalOriginalPrice,
+      pricePerUnit: finalPricePerUnit,
+    };
   };
 
   return (
@@ -680,26 +709,14 @@ const BuyNowPage = () => {
                   // Calculate discount information using the best discount function
                   const basePrice = parseFloat(variantData?.price || 0);
 
-                  // Use calculateBestDiscount to get the best available discount
-                  const bestDiscount = calculateBestDiscount(
+                  // Use calculateStackedDiscounts to get both quantity and coupon discounts
+                  const discountResult = calculateStackedDiscounts(
                     variantData,
                     quantity,
                     appliedCouponData
                   );
 
-                  // Calculate final price based on best discount
-                  let discountedPrice = basePrice;
-                  if (bestDiscount.discountType === "percentage") {
-                    discountedPrice =
-                      basePrice * (1 - bestDiscount.discountValue / 100);
-                  } else if (bestDiscount.discountType === "fixed") {
-                    discountedPrice = Math.max(
-                      0,
-                      basePrice - bestDiscount.discountValue
-                    );
-                  }
-
-                  const finalPrice = discountedPrice * quantity;
+                  const finalPrice = discountResult.finalPrice;
 
                   // Step 1: Find or create cart for user
                   console.log("Finding or creating cart for user:", user_id);
@@ -768,9 +785,9 @@ const BuyNowPage = () => {
                     }
                   }
 
-                  // Calculate the actual discount amount
-                  const totalOriginalPrice = basePrice * quantity;
-                  const actualDiscountAmount = totalOriginalPrice - finalPrice;
+                  // Get discount information from stacked calculation
+                  const actualDiscountAmount =
+                    discountResult.totalDiscountAmount;
 
                   // Step 2: Use findOrCreate for cart item
                   const cartItemData = {
@@ -780,16 +797,14 @@ const BuyNowPage = () => {
                     total_quantity: quantity,
                     price_at_time: basePrice,
                     final_price: finalPrice,
-                    discount_quantity:
-                      bestDiscount.discountSource === "quantity_discount" ||
-                      bestDiscount.discountSource === "bulk_discount"
-                        ? bestDiscount.discountSource === "bulk_discount"
-                          ? variantData?.bulk_discount_quantity
-                          : variantData?.discount_quantity
-                        : null,
+                    discount_quantity: discountResult.quantityDiscount
+                      ? discountResult.quantityDiscount.quantity
+                      : null,
                     discount_applied:
                       actualDiscountAmount > 0 ? actualDiscountAmount : null,
-                    discount_type: bestDiscount.discountType,
+                    discount_type: discountResult.quantityDiscount
+                      ? "percentage"
+                      : null,
                     coupon_id: appliedCouponData
                       ? appliedCouponData.coupon_id
                       : null,
@@ -868,29 +883,17 @@ const BuyNowPage = () => {
                 setBuyingNow(true);
 
                 try {
-                  // Calculate discount information
+                  // Calculate discount information using stacked discounts
                   const basePrice = parseFloat(variantData?.price || 0);
-                  const bestDiscount = calculateBestDiscount(
+                  const discountResult = calculateStackedDiscounts(
                     variantData,
                     quantity,
                     appliedCouponData
                   );
 
-                  // Calculate final price
-                  let discountedPrice = basePrice;
-                  if (bestDiscount.discountType === "percentage") {
-                    discountedPrice =
-                      basePrice * (1 - bestDiscount.discountValue / 100);
-                  } else if (bestDiscount.discountType === "fixed") {
-                    discountedPrice = Math.max(
-                      0,
-                      basePrice - bestDiscount.discountValue
-                    );
-                  }
-
-                  const finalPrice = discountedPrice * quantity;
-                  const totalOriginalPrice = basePrice * quantity;
-                  const actualDiscountAmount = totalOriginalPrice - finalPrice;
+                  const finalPrice = discountResult.finalPrice;
+                  const actualDiscountAmount =
+                    discountResult.totalDiscountAmount;
 
                   // Check if address is selected
                   if (!selectedAddress) {
@@ -939,13 +942,9 @@ const BuyNowPage = () => {
                       product_variant_id:
                         variantData?.product_variant_id || null,
                       total_quantity: quantity,
-                      discount_quantity:
-                        bestDiscount.discountSource === "quantity_discount" ||
-                        bestDiscount.discountSource === "bulk_discount"
-                          ? bestDiscount.discountSource === "bulk_discount"
-                            ? variantData?.bulk_discount_quantity
-                            : variantData?.discount_quantity
-                          : 0,
+                      discount_quantity: discountResult.quantityDiscount
+                        ? discountResult.quantityDiscount.quantity
+                        : 0,
                       price_at_time: basePrice,
                       discount_applied: actualDiscountAmount || 0,
                       final_price: basePrice * quantity,
@@ -994,25 +993,16 @@ const BuyNowPage = () => {
                   return `BUY NOW (₹${getCurrentVariantPrice() * quantity})`;
 
                 const basePrice = parseFloat(variantData.price);
-                const bestDiscount = calculateBestDiscount(
+                const discountResult = calculateStackedDiscounts(
                   variantData,
                   quantity,
                   appliedCouponData
                 );
 
-                let discountedPrice = basePrice;
-                if (bestDiscount.discountType === "percentage") {
-                  discountedPrice =
-                    basePrice * (1 - bestDiscount.discountValue / 100);
-                } else if (bestDiscount.discountType === "fixed") {
-                  discountedPrice = Math.max(
-                    0,
-                    basePrice - bestDiscount.discountValue
-                  );
-                }
-
-                const finalPrice = Math.round(discountedPrice * quantity * 1000) / 1000;
-                const originalPrice = Math.round(basePrice * quantity * 1000) / 1000;
+                const finalPrice =
+                  Math.round(discountResult.finalPrice * 1000) / 1000;
+                const originalPrice =
+                  Math.round(basePrice * quantity * 1000) / 1000;
 
                 if (finalPrice < originalPrice) {
                   return (
@@ -1319,39 +1309,45 @@ const BuyNowPage = () => {
                 if (variantData) {
                   const basePrice = parseFloat(variantData.price);
 
-                  // Use the calculateBestDiscount function to get the best discount
-                  const bestDiscount = calculateBestDiscount(
+                  // Use the calculateStackedDiscounts function to get both discounts
+                  const discountResult = calculateStackedDiscounts(
                     variantData,
                     quantity,
                     appliedCouponData
                   );
 
-                  // Calculate final price based on best discount
-                  let discountedPrice = basePrice;
-                  if (bestDiscount.discountType === "percentage") {
-                    discountedPrice =
-                      basePrice * (1 - bestDiscount.discountValue / 100);
-                  } else if (bestDiscount.discountType === "fixed") {
-                    discountedPrice = Math.max(
-                      0,
-                      basePrice - bestDiscount.discountValue
+                  const totalPrice = discountResult.finalPrice;
+                  const savings = discountResult.totalDiscountAmount;
+
+                  // Determine display type for discounts
+                  let discountDisplayType = "";
+                  const discountParts = [];
+
+                  if (discountResult.quantityDiscount) {
+                    if (
+                      discountResult.quantityDiscount.type === "bulk_discount"
+                    ) {
+                      discountParts.push(
+                        `Bulk Discount (${discountResult.quantityDiscount.percentage}%)`
+                      );
+                    } else {
+                      discountParts.push(
+                        `Quantity Discount (${discountResult.quantityDiscount.percentage}%)`
+                      );
+                    }
+                  }
+
+                  if (discountResult.couponDiscount) {
+                    discountParts.push(
+                      `Coupon ${discountResult.couponDiscount.code} (${
+                        discountResult.couponDiscount.type === "percentage"
+                          ? discountResult.couponDiscount.value + "%"
+                          : "₹" + discountResult.couponDiscount.value
+                      })`
                     );
                   }
 
-                  const totalPrice = discountedPrice * quantity;
-                  const savings = (basePrice - discountedPrice) * quantity;
-
-                  // Determine display type for discount
-                  let discountDisplayType = "";
-                  if (bestDiscount.discountSource === "coupon") {
-                    discountDisplayType = `Coupon (${appliedCouponData.code})`;
-                  } else if (bestDiscount.discountSource === "bulk_discount") {
-                    discountDisplayType = "Bulk Discount";
-                  } else if (
-                    bestDiscount.discountSource === "quantity_discount"
-                  ) {
-                    discountDisplayType = "Quantity Discount";
-                  }
+                  discountDisplayType = discountParts.join(" + ");
 
                   return (
                     <div className="mt-3 p-3 bg-gray-50 rounded-lg">
@@ -1394,15 +1390,11 @@ const BuyNowPage = () => {
                         </div>
                       </div>
                       <div className="text-sm text-gray-600 mt-1">
-                        ₹{discountedPrice.toFixed(2)} × {quantity}{" "}
+                        ₹{discountResult.pricePerUnit.toFixed(2)} × {quantity}{" "}
                         {quantity > 1 ? "items" : "item"}
-                        {bestDiscount.discountValue > 0 && (
+                        {savings > 0 && (
                           <span className="text-green-600 ml-2">
-                            ({discountDisplayType}:{" "}
-                            {bestDiscount.discountType === "percentage"
-                              ? `${bestDiscount.discountValue}%`
-                              : `₹${bestDiscount.discountValue}`}{" "}
-                            OFF)
+                            ({discountDisplayType} OFF)
                           </span>
                         )}
                       </div>
@@ -2432,9 +2424,9 @@ const BuyNowPage = () => {
         </div>
       </div>
 
-      <RelatedProducts 
-        isVisible={isRightScrollAtEnd} 
-        categoryId={mainProduct?.category?.category_id} 
+      <RelatedProducts
+        isVisible={isRightScrollAtEnd}
+        categoryId={mainProduct?.category?.category_id}
       />
       <Footer />
 
