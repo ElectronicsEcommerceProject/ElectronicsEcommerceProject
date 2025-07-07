@@ -5,8 +5,9 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import { ClientSideRowModelModule } from "ag-grid-community";
 import { useNavigate } from "react-router-dom";
 import CouponForm from "../CouponManagement/CouponForm";
+import { OrderDetailModal } from "../../../features/index.js";
 
-import { adminDashboardDataRoute, getApi } from "../../../src/index.js";
+import { adminDashboardDataRoute, getApi, orderRoute, getApiById } from "../../../src/index.js";
 
 const AdminDashboard = () => {
   const [totalUsers, setTotalUsers] = useState({ customers: 0, retailers: 0 });
@@ -27,7 +28,30 @@ const AdminDashboard = () => {
   const [topSellingProducts, setTopSellingProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCouponForm, setShowCouponForm] = useState(false);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const navigate = useNavigate();
+
+  // Function to update order status in dashboard lists
+  const updateOrderInDashboard = (orderId, newStatus) => {
+    // Update customer orders
+    setCustomerOrders(prevOrders => 
+      prevOrders.map(order => 
+        order.id === orderId || order.id.toString() === orderId.toString()
+          ? { ...order, status: newStatus }
+          : order
+      )
+    );
+    
+    // Update retailer orders
+    setRetailerOrders(prevOrders => 
+      prevOrders.map(order => 
+        order.id === orderId || order.id.toString() === orderId.toString()
+          ? { ...order, status: newStatus }
+          : order
+      )
+    );
+  };
 
   const handleAddProduct = () => {
     navigate("/admin/product-form");
@@ -48,6 +72,73 @@ const AdminDashboard = () => {
     // You can add additional logic here like showing a success message
     // or refreshing dashboard data if needed
   };
+
+  const handleOrderClick = async (orderId) => {
+    try {
+      console.log("Fetching order details for:", orderId);
+      
+      // First try to get all orders and find the specific one
+      const response = await getApi(orderRoute);
+      console.log("Orders API response:", response);
+      
+      if (response && response.success && response.data && Array.isArray(response.data)) {
+        // Find the specific order by order_id or order_number
+        const orderData = response.data.find(order => 
+          order.order_id === orderId || 
+          order.order_number === orderId ||
+          order.order_id.toString() === orderId.toString()
+        );
+        
+        if (orderData) {
+          console.log("Found order data:", orderData);
+          
+          // Map API response to the format expected by OrderDetailModal
+          const completeOrder = {
+            id: orderData.order_number || orderData.order_id,
+            orderId: orderData.order_id,
+            customer: orderData.user ? orderData.user.name : "Unknown Customer",
+            email: orderData.user ? orderData.user.email : "No email",
+            phone: orderData.user ? orderData.user.phone_number : "No phone",
+            status: orderData.order_status,
+            amount: parseFloat(orderData.total_amount || 0),
+            date: new Date(orderData.order_date).toISOString().split('T')[0],
+            items: orderData.orderItems && Array.isArray(orderData.orderItems)
+              ? orderData.orderItems.map(item => ({
+                  name: item.product ? item.product.name : "Unknown Product",
+                  qty: item.total_quantity || 1,
+                  price: parseFloat(item.price_at_time || 0)
+                }))
+              : [],
+            address: orderData.address
+              ? `${orderData.address.address_line1}, ${orderData.address.city}, ${orderData.address.state}, ${orderData.address.postal_code}`
+              : "Address not available",
+            latitude: orderData.address ? orderData.address.latitude : null,
+            longitude: orderData.address ? orderData.address.longitude : null,
+            tracking: orderData.tracking_number ? { carrier: "Carrier", number: orderData.tracking_number } : null,
+            refundStatus: null,
+            paymentStatus: orderData.payment_status,
+            paymentMethod: orderData.payment_method,
+            notes: orderData.notes
+          };
+          
+          console.log("Mapped order for modal:", completeOrder);
+          setSelectedOrder(completeOrder);
+          setShowOrderModal(true);
+        } else {
+          console.error("Order not found with ID:", orderId);
+          alert("Order not found. Please try again.");
+        }
+      } else {
+        console.error("Failed to fetch orders:", response);
+        alert("Failed to load order details. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error fetching order details:", error);
+      alert("Error loading order details. Please try again.");
+    }
+  };
+
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -196,6 +287,14 @@ const AdminDashboard = () => {
       filter: true,
       flex: 1,
       minWidth: 100,
+      cellRenderer: (params) => (
+        <button
+          className="text-blue-600 hover:text-blue-800 hover:underline font-medium cursor-pointer"
+          onClick={() => handleOrderClick(params.value)}
+        >
+          {params.value}
+        </button>
+      ),
     },
     {
       headerName: "Customer",
@@ -244,6 +343,14 @@ const AdminDashboard = () => {
       filter: true,
       flex: 1,
       minWidth: 100,
+      cellRenderer: (params) => (
+        <button
+          className="text-blue-600 hover:text-blue-800 hover:underline font-medium cursor-pointer"
+          onClick={() => handleOrderClick(params.value)}
+        >
+          {params.value}
+        </button>
+      ),
     },
     {
       headerName: "Retailer",
@@ -608,6 +715,15 @@ const AdminDashboard = () => {
           onClose={handleCloseCouponForm}
         />
       )}
+
+      {/* Order Detail Modal */}
+      <OrderDetailModal
+        showModal={showOrderModal}
+        setShowModal={setShowOrderModal}
+        selectedOrder={selectedOrder}
+        setSelectedOrder={setSelectedOrder}
+        onOrderStatusUpdate={updateOrderInDashboard}
+      />
     </div>
   );
 };

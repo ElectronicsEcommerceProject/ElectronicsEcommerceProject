@@ -1,15 +1,65 @@
 import React from "react";
+import { updateApiById, orderRoute, cancelOrderRoute, MESSAGE } from "../../../src/index.js";
 
 const OrderDetailModal = ({
   showModal,
   setShowModal,
   selectedOrder,
   setSelectedOrder,
-  updateOrderStatus,
-  handleRefund,
-}) =>
-  showModal &&
-  selectedOrder && (
+  onOrderStatusUpdate,
+}) => {
+  
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const response = await updateApiById(orderRoute, orderId, {
+        order_status: newStatus,
+      });
+
+      if (response?.success) {
+        // Update the selected order status in the modal
+        setSelectedOrder(prev => ({ ...prev, status: newStatus }));
+        
+        // Update the dashboard orders list
+        if (onOrderStatusUpdate) {
+          onOrderStatusUpdate(orderId, newStatus);
+          onOrderStatusUpdate(selectedOrder.id, newStatus);
+        }
+        
+        alert(response?.message || `Order status updated to ${newStatus} successfully!`);
+      } else {
+        alert(response?.message || "Failed to update order status");
+      }
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      // Check if error has response data (API error)
+      if (error.response && error.response.data) {
+        alert(error.response.data.message || "Failed to update order status");
+      } else if (error.message) {
+        alert(error.message);
+      } else {
+        alert("Failed to update order status. Please try again.");
+      }
+    }
+  };
+
+  const handleRefund = async (orderId, action) => {
+    try {
+      alert(`Refund ${action.toLowerCase()}ed for Order ${orderId}`);
+      
+      // Update the refund status in the modal
+      const newRefundStatus = action === "Approve" ? "Approved" : "Denied";
+      setSelectedOrder(prev => ({ ...prev, refundStatus: newRefundStatus }));
+    } catch (error) {
+      console.error("Error handling refund:", error);
+      alert("Failed to process refund. Please try again.");
+    }
+  };
+
+  if (!showModal || !selectedOrder) {
+    return null;
+  }
+
+  return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
@@ -132,5 +182,6 @@ const OrderDetailModal = ({
       </div>
     </div>
   );
+};
 
 export default OrderDetailModal;
