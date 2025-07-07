@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiUser, FiShoppingBag, FiStar, FiShield, FiPackage, FiSearch } from "react-icons/fi";
+import {
+  FiUser,
+  FiShoppingBag,
+  FiStar,
+  FiShield,
+  FiPackage,
+  FiSearch,
+} from "react-icons/fi";
 
 import { Footer, Header } from "../../../components/index.js";
 import {
@@ -8,6 +15,7 @@ import {
   userDashboardDataRoute,
   getApi,
 } from "../../../src/index.js";
+import logo from "../../../../Frontend/assets/logo.jpg";
 
 const MainDashboard = () => {
   const navigate = useNavigate();
@@ -120,8 +128,13 @@ const MainDashboard = () => {
         <div className="flex-1 flex items-center justify-center px-4 py-12">
           <div className="max-w-md w-full">
             <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <FiUser className="w-10 h-10 text-white" />
+              <div className="w-24 h-24 mx-auto mb-6 relative">
+                <img
+                  src={logo}
+                  alt="MAA LAXMI STORE Logo"
+                  className="w-full h-full object-cover rounded-full shadow-lg border-4 border-white"
+                />
+                <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/10 to-transparent"></div>
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-4">
                 Welcome to MAA LAXMI STORE
@@ -265,13 +278,14 @@ const MainDashboard = () => {
                   )}
                 </div>
                 <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                  {selectedBrand ? `No products found for "${selectedBrand}"` : "No products available"}
+                  {selectedBrand
+                    ? `No products found for "${selectedBrand}"`
+                    : "No products available"}
                 </h3>
                 <p className="text-gray-600 mb-8 leading-relaxed">
-                  {selectedBrand 
+                  {selectedBrand
                     ? "We couldn't find any products for this brand. Try selecting a different brand or check back later."
-                    : "We're currently updating our inventory. Please check back soon for amazing products and deals!"
-                  }
+                    : "We're currently updating our inventory. Please check back soon for amazing products and deals!"}
                 </p>
                 {selectedBrand && (
                   <button
@@ -282,7 +296,15 @@ const MainDashboard = () => {
                   </button>
                 )}
                 <div className="mt-8 p-6 bg-white rounded-xl shadow-lg border border-gray-100">
-                  <div className="flex items-center justify-center space-x-6 text-sm text-gray-500">
+                  <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-6 text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <img
+                        src={logo}
+                        alt="Store"
+                        className="w-6 h-6 mr-2 rounded-full object-cover"
+                      />
+                      <span>MAA LAXMI STORE</span>
+                    </div>
                     <div className="flex items-center">
                       <FiShoppingBag className="w-5 h-5 mr-2 text-blue-500" />
                       <span>Quality Products</span>

@@ -35,6 +35,7 @@ import {
   userNotificationRoute,
   MESSAGE,
 } from "../../src/index.js";
+import logo from "../../assets/logo.jpg";
 
 // Function to map category names to appropriate icons
 const getCategoryIcon = (categoryName) => {
@@ -345,8 +346,13 @@ const Header = () => {
             className="flex-shrink-0 text-xl md:text-2xl font-bold flex items-center md:mr-8 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => navigate("/")}
           >
-            <span className="w-6 h-6 bg-white mr-2 rounded-sm"></span>
-            MAA LAXMI STORE
+            <img 
+              src={logo} 
+              alt="MAA LAXMI STORE" 
+              className="w-8 h-8 md:w-10 md:h-10 mr-2 rounded-lg object-cover shadow-sm border border-white/20"
+            />
+            <span className="hidden sm:inline">MAA LAXMI STORE</span>
+            <span className="sm:hidden">MLS</span>
           </div>
 
           {/* DESKTOP SEARCH */}
