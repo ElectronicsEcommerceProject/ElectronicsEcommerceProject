@@ -70,7 +70,7 @@ const getApi = async (routeEndpoint) => {
     );
 
     if (!token || !ROUTE_ENDPOINT) {
-      throw { message: "Authentication required" };
+      throw { message: "Please sign in to view this content" };
     }
 
     const API_ENDPOINT = constructApiUrl(
@@ -83,7 +83,14 @@ const getApi = async (routeEndpoint) => {
     });
     return response.data;
   } catch (error) {
-    throw error.response?.data || { message: "Get API failed" };
+    // Return user-friendly error messages
+    if (error.response?.status === 401) {
+      throw { message: "Your session has expired. Please sign in again." };
+    }
+    if (error.response?.status === 403) {
+      throw { message: "You don't have permission to access this content." };
+    }
+    throw error.response?.data || { message: "Unable to load content. Please try again." };
   }
 };
 
@@ -94,7 +101,7 @@ const getApiById = async (routeEndpoint, id) => {
     const ROUTE_ENDPOINT = getRouteEndpoint();
 
     if (!token || !ROUTE_ENDPOINT) {
-      throw { message: "Authentication required" };
+      throw { message: "Please sign in to view this content" };
     }
 
     const API_ENDPOINT = constructApiUrl(
@@ -106,7 +113,14 @@ const getApiById = async (routeEndpoint, id) => {
     });
     return response.data;
   } catch (error) {
-    throw error.response?.data || { message: "Get API by ID failed" };
+    // Return user-friendly error messages
+    if (error.response?.status === 401) {
+      throw { message: "Your session has expired. Please sign in again." };
+    }
+    if (error.response?.status === 403) {
+      throw { message: "You don't have permission to access this content." };
+    }
+    throw error.response?.data || { message: "Unable to load content. Please try again." };
   }
 };
 

@@ -125,7 +125,6 @@ const Header = () => {
         if (cartResponse.success && cartResponse.data) {
           setCartCount(cartResponse.data.itemCount || 0);
         } else {
-          console.error("Failed to fetch cart count:", cartResponse);
           setCartCount(0);
         }
 
@@ -137,14 +136,10 @@ const Header = () => {
         if (notificationResponse.success && notificationResponse.data) {
           setNotificationCount(notificationResponse.data.unreadCount || 0);
         } else {
-          console.error(
-            "Failed to fetch notification count:",
-            notificationResponse
-          );
           setNotificationCount(0);
         }
       } catch (error) {
-        console.error("Error fetching counts:", error);
+        // Silently handle authentication errors for counts
         setCartCount(0);
         setNotificationCount(0);
       }
@@ -307,7 +302,7 @@ const Header = () => {
         setRecentNotifications(response.data.notifications || []);
       }
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+      // Silently handle authentication errors for notifications
       setRecentNotifications([]);
     }
   };
@@ -733,8 +728,8 @@ const Header = () => {
                       <span className="text-sm">Loading categories...</span>
                     </div>
                   ) : categoriesError ? (
-                    <div className="px-4 py-3 text-center text-red-500">
-                      <span className="text-sm">{categoriesError}</span>
+                    <div className="px-4 py-3 text-center text-gray-500">
+                      <span className="text-sm">Sign in to browse</span>
                     </div>
                   ) : (
                     <>
@@ -795,8 +790,9 @@ const Header = () => {
                   Loading...
                 </div>
               ) : categoriesError ? (
-                <div className="text-xs md:text-sm text-red-500 px-1 py-1">
-                  {categoriesError}
+                <div className="flex items-center space-x-2 px-2 py-1">
+                  <FiUser className="w-4 h-4 text-indigo-600" />
+                  <span className="text-xs md:text-sm text-gray-600">Sign in to browse</span>
                 </div>
               ) : (
                 categories.map((item, index) => {
