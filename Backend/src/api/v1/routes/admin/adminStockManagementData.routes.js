@@ -30,7 +30,7 @@ router.get(
  * @body {number} stock_quantity - New stock quantity
  * @returns {Object} { message: string, data: Object }
  */
-router.put(
+router.patch(
   "/stock-Variants/:variant_id",
   verifyJwtToken,
   isAdmin,
