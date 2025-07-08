@@ -792,14 +792,20 @@ const CartPage = () => {
                               updatingItemId === item.cart_item_id
                                 ? "opacity-50 cursor-not-allowed"
                                 : ""
+                            } ${
+                              stockQuantity > 0 && quantity >= stockQuantity
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
                             }`}
-                            onClick={() =>
-                              handleQuantityChange(item.cart_item_id, 1)
-                            }
+                            onClick={() => {
+                              if (stockQuantity > 0 && quantity >= stockQuantity) {
+                                alert(`Maximum ${stockQuantity} items allowed. Only ${stockQuantity} items available in stock.`);
+                                return;
+                              }
+                              handleQuantityChange(item.cart_item_id, 1);
+                            }}
                             disabled={
                               !isActive ||
-                              (stockQuantity > 0 &&
-                                quantity >= stockQuantity) ||
                               updatingItemId === item.cart_item_id
                             }
                           >
