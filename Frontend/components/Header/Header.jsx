@@ -672,7 +672,7 @@ const Header = () => {
         </AnimatePresence>
 
         {/* NAVIGATION BAR */}
-        <nav className="bg-white shadow-sm py-2 md:py-3">
+        <nav className="bg-white shadow-sm py-2 md:py-3 rounded-xl mx-4 mt-2">
           <div className="flex items-center px-4">
             {/* CATEGORIES DROPDOWN */}
             <div
@@ -719,7 +719,7 @@ const Header = () => {
               </div>
               {isHoveringCategory && (
                 <div
-                  className="absolute top-6 left-0 bg-gray-50 text-gray-800 rounded-lg shadow-lg z-50 border border-gray-200 w-48 mt-1"
+                  className="absolute top-6 left-0 bg-gray-50 text-gray-800 rounded-xl shadow-lg z-50 border border-gray-200 w-48 mt-1"
                   onMouseEnter={handleCategoryMouseEnter}
                   onMouseLeave={handleCategoryMouseLeave}
                 >
@@ -801,10 +801,10 @@ const Header = () => {
                     <button
                       key={item.category_id || index}
                       onClick={() => handleCategoryClick(item)}
-                      className={`text-xs md:text-sm font-medium whitespace-nowrap flex items-center px-1 py-1 relative group transition-colors duration-200 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 ${
+                      className={`text-xs md:text-sm font-medium whitespace-nowrap flex items-center px-3 py-2 rounded-full relative group transition-colors duration-200 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 ${
                         isSelected
-                          ? "text-indigo-600 font-semibold"
-                          : "text-gray-800 hover:text-amber-500"
+                          ? "text-indigo-600 font-semibold bg-indigo-50"
+                          : "text-gray-800 hover:text-amber-500 hover:bg-amber-50"
                       }`}
                     >
                       <item.icon
