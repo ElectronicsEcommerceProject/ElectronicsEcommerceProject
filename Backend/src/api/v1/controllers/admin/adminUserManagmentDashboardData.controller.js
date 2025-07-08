@@ -92,7 +92,7 @@ const getUserManagementDashboardData = async (req, res) => {
       order: [[Sequelize.literal("total_spend"), "DESC"]],
       limit: 3,
       raw: true,
-      having: Sequelize.literal("COUNT(Orders.order_id) > 0"),
+      having: Sequelize.literal("COUNT(orders.order_id) > 0"),
       subQuery: false,
       attributes: {
         include: [
@@ -101,7 +101,7 @@ const getUserManagementDashboardData = async (req, res) => {
             "total_spend",
           ],
           [
-            Sequelize.fn("COUNT", Sequelize.col("Orders.order_id")),
+            Sequelize.fn("COUNT", Sequelize.col("orders.order_id")),
             "order_count",
           ],
         ],

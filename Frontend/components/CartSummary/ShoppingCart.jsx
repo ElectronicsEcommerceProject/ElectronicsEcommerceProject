@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AddressForm } from '../index.js';
+import { AddressForm } from "../index.js";
 import {
   cartItemRoute,
   getApiById,
@@ -416,22 +416,24 @@ const CartPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
+    <div className="min-h-screen flex flex-col bg-gray-100 overflow-x-hidden">
       {/* Header */}
-      <header className="bg-white shadow-md p-4">
+      <header className="bg-white shadow-md p-3 sm:p-4">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold text-gray-800">Shopping Cart</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+            Shopping Cart
+          </h1>
         </div>
 
         {/* Cart Summary Bar */}
         {cartItems.length > 0 && (
-          <div className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
-            <div className="flex items-center gap-4">
+          <div className="bg-gray-50 p-3 rounded-lg flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
               <span className="text-sm text-gray-600">
                 {cartItems.length} item{cartItems.length !== 1 ? "s" : ""} in
                 cart
               </span>
-              <span className="text-sm text-gray-600">•</span>
+              <span className="hidden sm:inline text-sm text-gray-600">•</span>
               <span className="text-sm font-medium">
                 Subtotal: ₹{subtotal.toLocaleString()}
               </span>
@@ -443,35 +445,35 @@ const CartPage = () => {
         )}
 
         {/* Progress Indicator */}
-        <div className="mt-4 flex items-center justify-center">
-          <div className="flex items-center space-x-4">
+        <div className="mt-4 flex items-center justify-center overflow-x-auto">
+          <div className="flex items-center space-x-2 sm:space-x-4 min-w-max">
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-medium">
                 1
               </div>
-              <span className="ml-2 text-sm font-medium text-blue-600">
+              <span className="ml-1 sm:ml-2 text-xs sm:text-sm font-medium text-blue-600">
                 Cart
               </span>
             </div>
             <div
-              className={`w-16 h-1 ${
+              className={`w-8 sm:w-16 h-1 ${
                 selectedAddress ? "bg-blue-600" : "bg-gray-200"
               }`}
             ></div>
             <div className="flex items-center">
               <div
-                className={`w-8 h-8 ${
+                className={`w-6 h-6 sm:w-8 sm:h-8 ${
                   selectedAddress
                     ? "bg-blue-600 text-white"
                     : "bg-gray-200 text-gray-500"
-                } rounded-full flex items-center justify-center text-sm ${
+                } rounded-full flex items-center justify-center text-xs sm:text-sm ${
                   selectedAddress ? "font-medium" : ""
                 }`}
               >
                 2
               </div>
               <span
-                className={`ml-2 text-sm ${
+                className={`ml-1 sm:ml-2 text-xs sm:text-sm ${
                   selectedAddress
                     ? "font-medium text-blue-600"
                     : "text-gray-500"
@@ -480,24 +482,26 @@ const CartPage = () => {
                 Address
               </span>
             </div>
-            <div className="w-16 h-1 bg-gray-200"></div>
+            <div className="w-8 sm:w-16 h-1 bg-gray-200"></div>
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center text-sm">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center text-xs sm:text-sm">
                 3
               </div>
-              <span className="ml-2 text-sm text-gray-500">Payment</span>
+              <span className="ml-1 sm:ml-2 text-xs sm:text-sm text-gray-500">
+                Payment
+              </span>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 flex flex-col md:flex-row gap-6 flex-1">
+      <main className="w-full max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 flex flex-col lg:flex-row gap-4 lg:gap-6 flex-1">
         {/* Left: Cart Items */}
-        <section className="md:w-2/3 bg-white rounded-lg shadow-md p-6">
+        <section className="w-full lg:w-2/3 bg-white rounded-lg shadow-md p-3 sm:p-6">
           {/* Address */}
           <div className="mb-6">
             <h2 className="text-lg font-semibold mb-1">Deliver to:</h2>
-            <div className="bg-gray-50 p-3 rounded border flex flex-col md:flex-row md:items-center md:justify-between">
+            <div className="bg-gray-50 p-3 rounded border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
               <div>
                 <span className="font-semibold">{user?.name || "User"}</span>
                 {user?.phone_number && (
@@ -506,7 +510,7 @@ const CartPage = () => {
                     {user.phone_number}
                   </>
                 )}
-                <div className="text-sm text-gray-700">
+                <div className="text-sm text-gray-700 break-words">
                   {selectedAddress ? (
                     <>
                       {selectedAddress.address_line1}
@@ -582,7 +586,9 @@ const CartPage = () => {
               return (
                 <div
                   key={item.cart_item_id}
-                  className={`flex gap-4 py-6 ${!isActive ? "opacity-60" : ""}`}
+                  className={`flex flex-col sm:flex-row gap-3 sm:gap-4 py-4 sm:py-6 ${
+                    !isActive ? "opacity-60" : ""
+                  }`}
                 >
                   <img
                     src={
@@ -593,18 +599,18 @@ const CartPage = () => {
                       "/assets/placeholder.jpg"
                     }
                     alt={item.product.name}
-                    className="w-24 h-24 object-cover rounded border"
+                    className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded border mx-auto sm:mx-0"
                   />
                   <div className="flex-1">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-semibold">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                      <h3 className="text-base sm:text-lg font-semibold break-words pr-2">
                         {item.product.name}
                       </h3>
-                      <span className="text-xs bg-gray-200 rounded px-2 py-1">
+                      <span className="text-xs bg-gray-200 rounded px-2 py-1 self-start whitespace-nowrap">
                         {item.product.brand.name}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-600 mb-1">
+                    <div className="text-sm text-gray-600 mb-1 break-words">
                       {item.product.short_description}
                     </div>
                     <div className="text-xs text-gray-500 mb-1">
@@ -743,9 +749,9 @@ const CartPage = () => {
                           </div>
                         )}
                     </div>
-                    <div className="flex items-center gap-4 mt-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mt-2">
                       <div className="flex flex-col">
-                        <span className="font-semibold text-lg">
+                        <span className="font-semibold text-base sm:text-lg">
                           ₹{itemPrice.toLocaleString()}
                         </span>
                         {discountApplied > 0 && (
@@ -756,51 +762,60 @@ const CartPage = () => {
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center border rounded">
-                        <button
-                          className={`px-2 py-1 text-gray-600 hover:bg-gray-100 ${
-                            updatingItemId === item.cart_item_id
-                              ? "opacity-50 cursor-not-allowed"
-                              : ""
-                          }`}
-                          onClick={() =>
-                            handleQuantityChange(item.cart_item_id, -1)
-                          }
-                          disabled={
-                            quantity <= minQty ||
-                            updatingItemId === item.cart_item_id
-                          }
-                        >
-                          {updatingItemId === item.cart_item_id ? "..." : "−"}
-                        </button>
-                        <span className="px-3 py-1 min-w-[40px] text-center">
-                          {updatingItemId === item.cart_item_id ? (
-                            <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full mx-auto"></div>
-                          ) : (
-                            quantity
-                          )}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center border rounded flex-shrink-0">
+                          <button
+                            className={`px-2 py-1 text-gray-600 hover:bg-gray-100 ${
+                              updatingItemId === item.cart_item_id
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                            onClick={() =>
+                              handleQuantityChange(item.cart_item_id, -1)
+                            }
+                            disabled={
+                              quantity <= minQty ||
+                              updatingItemId === item.cart_item_id
+                            }
+                          >
+                            {updatingItemId === item.cart_item_id ? "..." : "−"}
+                          </button>
+                          <span className="px-2 py-1 min-w-[32px] text-center text-sm">
+                            {updatingItemId === item.cart_item_id ? (
+                              <div className="animate-spin w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full mx-auto"></div>
+                            ) : (
+                              quantity
+                            )}
+                          </span>
+                          <button
+                            className={`px-2 py-1 text-gray-600 hover:bg-gray-100 ${
+                              updatingItemId === item.cart_item_id
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            } ${
+                              stockQuantity > 0 && quantity >= stockQuantity
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                            onClick={() => {
+                              if (stockQuantity > 0 && quantity >= stockQuantity) {
+                                alert(`Maximum ${stockQuantity} items allowed. Only ${stockQuantity} items available in stock.`);
+                                return;
+                              }
+                              handleQuantityChange(item.cart_item_id, 1);
+                            }}
+                            disabled={
+                              !isActive ||
+                              updatingItemId === item.cart_item_id
+                            }
+                          >
+                            {updatingItemId === item.cart_item_id ? "..." : "+"}
+                          </button>
+                        </div>
+                        <span className="font-semibold text-sm sm:text-base whitespace-nowrap">
+                          ₹{finalPrice.toLocaleString()}
                         </span>
-                        <button
-                          className={`px-2 py-1 text-gray-600 hover:bg-gray-100 ${
-                            updatingItemId === item.cart_item_id
-                              ? "opacity-50 cursor-not-allowed"
-                              : ""
-                          }`}
-                          onClick={() =>
-                            handleQuantityChange(item.cart_item_id, 1)
-                          }
-                          disabled={
-                            !isActive ||
-                            (stockQuantity > 0 && quantity >= stockQuantity) ||
-                            updatingItemId === item.cart_item_id
-                          }
-                        >
-                          {updatingItemId === item.cart_item_id ? "..." : "+"}
-                        </button>
                       </div>
-                      <span className="ml-auto font-semibold">
-                        ₹{finalPrice.toLocaleString()}
-                      </span>
                     </div>
                     {!isActive && (
                       <div className="text-red-600 text-xs mt-2">
@@ -832,15 +847,15 @@ const CartPage = () => {
                         {nextDiscountMsg}
                       </div>
                     )}
-                    <div className="flex gap-4 mt-3">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-3">
                       <button
-                        className="text-purple-600 text-sm hover:underline"
+                        className="text-purple-600 text-sm hover:underline text-left"
                         onClick={() => handleAddToWishlist(item)}
                       >
                         Add to Wishlist
                       </button>
                       <button
-                        className="text-red-600 text-sm hover:underline disabled:opacity-50"
+                        className="text-red-600 text-sm hover:underline disabled:opacity-50 text-left"
                         onClick={() => handleRemove(item.cart_item_id)}
                         disabled={updatingItemId === item.cart_item_id}
                       >
@@ -857,10 +872,10 @@ const CartPage = () => {
         </section>
 
         {/* Right: Price Details & Coupon */}
-        <section className="md:w-1/3 flex flex-col gap-4">
-          <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
-            <h2 className="text-xl font-bold mb-4">Price Details</h2>
-            <div className="space-y-2">
+        <section className="w-full lg:w-1/3 flex flex-col gap-4">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 lg:sticky lg:top-4">
+            <h2 className="text-lg sm:text-xl font-bold mb-4">Price Details</h2>
+            <div className="space-y-2 text-sm sm:text-base">
               <div className="flex justify-between">
                 <span>Subtotal ({cartItems.length} items)</span>
                 <span>₹{subtotal.toLocaleString()}</span>
@@ -879,7 +894,7 @@ const CartPage = () => {
                 <span>Tax (GST 18%)</span>
                 <span>₹{tax.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between font-bold border-t pt-2 text-lg">
+              <div className="flex justify-between font-bold border-t pt-2 text-base sm:text-lg">
                 <span>Total</span>
                 <span>₹{total.toLocaleString()}</span>
               </div>
@@ -888,7 +903,7 @@ const CartPage = () => {
               </div>
             </div>
             <button
-              className={`w-full mt-6 py-2 rounded ${
+              className={`w-full mt-6 py-3 sm:py-2 rounded text-sm sm:text-base font-medium ${
                 loading || cartItems.length === 0 || !selectedAddress
                   ? "bg-gray-400 text-gray-600 cursor-not-allowed"
                   : "bg-blue-600 text-white hover:bg-blue-700"
@@ -917,17 +932,17 @@ const CartPage = () => {
             <div className="mt-6 border-t pt-4">
               <h3 className="font-semibold mb-2">Apply Coupon</h3>
 
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
                   value={couponInput}
                   onChange={(e) => setCouponInput(e.target.value)}
-                  placeholder="Enter cart coupon code"
-                  className="flex-1 border rounded px-3 py-2 text-sm"
+                  placeholder="Enter coupon code"
+                  className="flex-1 border rounded px-3 py-2 text-sm min-w-0"
                 />
                 <button
                   onClick={handleApplyCoupon}
-                  className="bg-gray-200 px-3 py-2 rounded text-sm hover:bg-gray-300"
+                  className="bg-gray-200 px-4 py-2 rounded text-sm hover:bg-gray-300 whitespace-nowrap"
                 >
                   Apply
                 </button>

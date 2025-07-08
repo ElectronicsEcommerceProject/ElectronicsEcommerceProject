@@ -35,7 +35,7 @@ export { default as SortOptions } from "./ProductZone/SortOptions.jsx";
 
 // Redux Components
 export { default as cartSlice } from "./Redux/cartSlice.js";
-export { default as filterSlice, setCategoryFilter, setSelectedBrandsForCategory } from "./Redux/filterSlice.jsx";
+export { default as filterSlice, setSearchTerm, setCategoryFilter, setSelectedBrandsForCategory } from "./Redux/filterSlice.jsx";
 export { selectFilteredProducts } from "./Redux/selectors.jsx";
 export { default as Store } from "./Redux/Store.js";
 
