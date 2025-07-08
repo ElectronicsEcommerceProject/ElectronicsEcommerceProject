@@ -897,7 +897,6 @@ const BuyNowPage = () => {
 
                   // Check if address is selected
                   if (!selectedAddress) {
-                    alert("Please select a delivery address");
                     setShowAddressForm(true);
                     return;
                   }
@@ -2434,9 +2433,101 @@ const BuyNowPage = () => {
       <AddressForm
         isOpen={showAddressForm}
         onClose={() => setShowAddressForm(false)}
-        onAddressSelect={(address) => {
+        onAddressSelect={async (address) => {
           setSelectedAddress(address);
           setShowAddressForm(false);
+          
+          // Auto-trigger buy now after address selection
+          if (buyingNow) return; // Prevent double execution
+          
+          const variantData = mainProduct.variants?.find(
+            (v) => v.description === selectedVariant
+          );
+          
+          const token = localStorage.getItem("token");
+          if (!token) {
+            alert("Please login to place order");
+            return;
+          }
+          
+          let user_id;
+          try {
+            const decodedToken = jwtDecode(token);
+            user_id = decodedToken.user_id;
+          } catch (error) {
+            console.error("Error decoding token:", error);
+            alert("Authentication error. Please login again.");
+            return;
+          }
+          
+          setBuyingNow(true);
+          
+          try {
+            const basePrice = parseFloat(variantData?.price || 0);
+            const discountResult = calculateStackedDiscounts(
+              variantData,
+              quantity,
+              appliedCouponData
+            );
+            
+            const finalPrice = discountResult.finalPrice;
+            const actualDiscountAmount = discountResult.totalDiscountAmount;
+            
+            const subtotal = finalPrice;
+            const delivery = subtotal > 5000 ? 0 : 99;
+            const tax = subtotal * 0.18;
+            const total = subtotal + delivery + tax;
+            
+            const originalSubtotal = basePrice * quantity;
+            const orderData = {
+              user_id: user_id,
+              address_id: address.address_id,
+              payment_method: "cod",
+              subtotal: originalSubtotal,
+              shipping_cost: delivery,
+              tax_amount: tax,
+              discount_amount: actualDiscountAmount,
+              total_amount: originalSubtotal + delivery + tax - actualDiscountAmount,
+              notes: appliedCouponData ? `Coupon applied: ${appliedCouponData.code}` : "",
+            };
+            
+            if (appliedCouponData && appliedCouponData.coupon_id) {
+              orderData.coupon_id = appliedCouponData.coupon_id;
+            }
+            
+            const orderResponse = await createApi(orderRoute, orderData);
+            
+            if (orderResponse && orderResponse.success) {
+              const orderId = orderResponse.data.order.order_id;
+              
+              const orderItemData = {
+                order_id: orderId,
+                product_id: productId,
+                product_variant_id: variantData?.product_variant_id || null,
+                total_quantity: quantity,
+                discount_quantity: discountResult.quantityDiscount ? discountResult.quantityDiscount.quantity : 0,
+                price_at_time: basePrice,
+                discount_applied: actualDiscountAmount || 0,
+                final_price: basePrice * quantity,
+              };
+              
+              const orderItemResponse = await createApi(orderItemRoute, orderItemData);
+              
+              if (orderItemResponse && orderItemResponse.success) {
+                alert(`Order placed successfully! Total: ₹${total}`);
+                navigate("/profile/orders");
+              } else {
+                throw new Error(orderItemResponse?.message || "Failed to create order item");
+              }
+            } else {
+              throw new Error(orderResponse?.message || "Failed to place order");
+            }
+          } catch (error) {
+            console.error("Error placing order:", error);
+            alert(`Failed to place order: ${error.message}`);
+          } finally {
+            setBuyingNow(false);
+          }
         }}
         selectedAddressId={selectedAddress?.address_id}
         mode="select"
