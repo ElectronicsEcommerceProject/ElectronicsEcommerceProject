@@ -89,6 +89,8 @@ const Header = () => {
   const [modalContent, setModalContent] = useState(null); // <-- Add this state
   const [user, setUser] = useState(null); // For login modal
   const [message, setMessage] = useState(""); // For login modal
+  const [showMobileProfile, setShowMobileProfile] = useState(false); // For mobile profile menu
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Redux for search functionality
   const dispatch = useDispatch();
@@ -105,6 +107,19 @@ const Header = () => {
   const [isHoveringNotification, setIsHoveringNotification] = useState(false);
   const [recentNotifications, setRecentNotifications] = useState([]);
   const navigate = useNavigate();
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = () => {
+      const userId = getUserIdFromToken();
+      setIsAuthenticated(!!userId);
+    };
+    
+    checkAuth();
+    // Listen for auth changes
+    window.addEventListener('tokenChanged', checkAuth);
+    return () => window.removeEventListener('tokenChanged', checkAuth);
+  }, []);
 
   // Fetch cart count and notification count from API
   useEffect(() => {
@@ -571,26 +586,83 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden bg-indigo-700 px-4 py-4 space-y-4 rounded-b shadow-lg divide-y divide-indigo-600">
             <div className="space-y-4">
-              <button
-                onClick={() => {
-                  setModalContent("login"); // <-- Open login modal
-                  setIsMenuOpen(false);
-                }}
-                className="flex items-center w-full text-left hover:bg-indigo-600 p-2 rounded transition-colors"
-              >
-                <FiUser className="w-5 h-5 mr-2" />
-                <span>Login</span>
-              </button>
-              <button
-                onClick={() => {
-                  setModalContent("signup"); // <-- Open signup modal
-                  setIsMenuOpen(false);
-                }}
-                className="flex items-center w-full text-left hover:bg-indigo-600 p-2 rounded transition-colors"
-              >
-                <FiUser className="w-5 h-5 mr-2" />
-                <span>Create an account</span>
-              </button>
+              {!isAuthenticated ? (
+                <>
+                  <button
+                    onClick={() => {
+                      setModalContent("login");
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex items-center w-full text-left hover:bg-indigo-600 p-2 rounded transition-colors"
+                  >
+                    <FiUser className="w-5 h-5 mr-2" />
+                    <span>Login</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setModalContent("signup");
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex items-center w-full text-left hover:bg-indigo-600 p-2 rounded transition-colors"
+                  >
+                    <FiUser className="w-5 h-5 mr-2" />
+                    <span>Create an account</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setShowMobileProfile(!showMobileProfile)}
+                    className="flex items-center justify-between w-full text-left hover:bg-indigo-600 p-2 rounded transition-colors"
+                  >
+                    <div className="flex items-center">
+                      <FiUser className="w-5 h-5 mr-2" />
+                      <span>My Profile</span>
+                    </div>
+                    <FiChevronDown className={`w-4 h-4 transition-transform ${showMobileProfile ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showMobileProfile && (
+                    <div className="ml-4 space-y-2 border-l-2 border-indigo-500 pl-4">
+                      <Link
+                        to="/profile"
+                        className="flex items-center hover:bg-indigo-600 p-2 rounded transition-colors text-sm"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <FiUser className="w-4 h-4 mr-2" />
+                        <span>Profile</span>
+                      </Link>
+                      <Link
+                        to="/profile/orders"
+                        className="flex items-center hover:bg-indigo-600 p-2 rounded transition-colors text-sm"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <FiShoppingBag className="w-4 h-4 mr-2" />
+                        <span>My Orders</span>
+                      </Link>
+                      <Link
+                        to="/profile/wishlist"
+                        className="flex items-center hover:bg-indigo-600 p-2 rounded transition-colors text-sm"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <FiPackage className="w-4 h-4 mr-2" />
+                        <span>Wishlist</span>
+                      </Link>
+                      <button
+                        onClick={() => {
+                          localStorage.removeItem('token');
+                          window.dispatchEvent(new Event('tokenChanged'));
+                          setIsMenuOpen(false);
+                          navigate('/');
+                        }}
+                        className="flex items-center hover:bg-red-600 p-2 rounded transition-colors text-sm w-full text-left"
+                      >
+                        <FiX className="w-4 h-4 mr-2" />
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
               <Link
                 to="/notifications"
                 className="flex items-center relative hover:bg-indigo-600 p-2 rounded transition-colors"
