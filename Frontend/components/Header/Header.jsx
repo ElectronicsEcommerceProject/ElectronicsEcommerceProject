@@ -582,6 +582,26 @@ const Header = () => {
           </div>
         </div>
 
+        {/* MOBILE SEARCH */}
+        <div className="md:hidden px-4 pb-3">
+          <div className="relative w-full">
+            <FiSearch
+              onClick={handleSearch}
+              className={`absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-lg cursor-pointer hover:text-indigo-600 hover:scale-110 transition duration-200 ${isSearchFocused ? "opacity-0" : "opacity-100"}`}
+            />
+            <input
+              type="text"
+              value={searchInput}
+              onChange={handleSearchInputChange}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
+              placeholder="Search for products..."
+              className="w-full pl-10 pr-4 py-2 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 shadow-sm text-sm transition-all duration-200"
+            />
+          </div>
+        </div>
+
         {/* MOBILE MENU */}
         {isMenuOpen && (
           <div className="md:hidden bg-indigo-700 px-4 py-4 space-y-4 rounded-b shadow-lg divide-y divide-indigo-600">
