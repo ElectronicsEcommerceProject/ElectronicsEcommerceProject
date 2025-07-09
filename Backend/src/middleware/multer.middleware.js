@@ -18,12 +18,10 @@ const productImagesDir = path.join(projectRoot, "uploads/product_images");
 // Create directories if they don't exist
 if (!fs.existsSync(profileImagesDir)) {
   fs.mkdirSync(profileImagesDir, { recursive: true });
-  console.log(`Created directory: ${profileImagesDir}`);
 }
 
 if (!fs.existsSync(productImagesDir)) {
   fs.mkdirSync(productImagesDir, { recursive: true });
-  console.log(`Created directory: ${productImagesDir}`);
 }
 
 // Set storage engine
@@ -37,8 +35,7 @@ const storage = multer.diskStorage({
       uploadPath = profileImagesDir;
     }
 
-    console.log("Multer saving file to:", uploadPath);
-    console.log("Directory exists:", fs.existsSync(uploadPath));
+
 
     cb(null, uploadPath);
   },
@@ -48,7 +45,7 @@ const storage = multer.diskStorage({
       file.originalname
     )}`;
 
-    console.log("Generated filename:", filename);
+
 
     cb(null, filename);
   },
@@ -86,19 +83,8 @@ const compressImage = async (filePath, maxSizeBytes = 400 * 1024) => {
 
     // If file is already under 400KB, no compression needed
     if (stats.size <= maxSizeBytes) {
-      console.log(
-        `File ${filePath} is already under 400KB (${(
-          stats.size / 1024
-        ).toFixed(2)}KB)`
-      );
       return;
     }
-
-    console.log(
-      `Compressing image: ${filePath} (${(stats.size / 1024).toFixed(
-        2
-      )}KB)`
-    );
 
     // Start with quality 70 and reduce if needed
     let quality = 70;
@@ -126,11 +112,6 @@ const compressImage = async (filePath, maxSizeBytes = 400 * 1024) => {
     fs.renameSync(tempPath, filePath);
 
     const newStats = fs.statSync(filePath);
-    console.log(
-      `Image compressed successfully: ${(newStats.size / 1024).toFixed(
-        2
-      )}KB (quality: ${quality})`
-    );
   } catch (error) {
     console.error("Error compressing image:", error);
     throw error;
@@ -140,11 +121,7 @@ const compressImage = async (filePath, maxSizeBytes = 400 * 1024) => {
 // Export the middleware with console logging for debugging
 export default {
   single: (fieldName) => {
-    console.log(`Setting up multer for field: ${fieldName}`);
     return async (req, res, next) => {
-      console.log("Multer middleware running");
-      console.log("Request headers:", req.headers);
-
       upload.single(fieldName)(req, res, async (err) => {
         if (err) {
           console.error("Multer error:", err);
@@ -153,14 +130,12 @@ export default {
             message: err.message,
           });
         }
-        console.log("File after multer:", req.file);
 
         // Compress image if it exists (for all uploads: product, variant, and profile)
         if (req.file) {
           try {
             await compressImage(req.file.path);
           } catch (compressionError) {
-            console.error("Image compression failed:", compressionError);
             // Continue without compression if it fails
           }
         }
@@ -170,11 +145,7 @@ export default {
     };
   },
   fields: (fields) => {
-    // console.log(`Setting up multer for fields:`, fields);
     return async (req, res, next) => {
-      console.log("Multer fields middleware running");
-      console.log("Request headers:", req.headers);
-
       upload.fields(fields)(req, res, async (err) => {
         if (err) {
           console.error("Multer error:", err);
@@ -183,7 +154,6 @@ export default {
             message: err.message,
           });
         }
-        console.log("Files after multer:", req.files);
 
         // Compress images if they exist (for all uploads: product, variant, and profile)
         if (req.files) {
@@ -192,10 +162,6 @@ export default {
               try {
                 await compressImage(file.path);
               } catch (compressionError) {
-                console.error(
-                  `Image compression failed for ${file.path}:`,
-                  compressionError
-                );
                 // Continue without compression if it fails
               }
             }
