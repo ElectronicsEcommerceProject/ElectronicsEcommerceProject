@@ -56,6 +56,7 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: "mysql",
+    logging: false, // Disable logging for production
     dialectOptions: {
       ssl: {
         rejectUnauthorized: false, // Accept self-signed/unknown CA certs for dev

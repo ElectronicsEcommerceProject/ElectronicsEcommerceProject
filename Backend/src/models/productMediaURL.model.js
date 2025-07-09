@@ -1,4 +1,5 @@
 import { DataTypes } from "sequelize";
+import { deleteImage } from "../utils/imageUtils.js";
 
 export default (sequelize) => {
   const ProductMediaURL = sequelize.define(
@@ -43,6 +44,17 @@ export default (sequelize) => {
       as: "updater",
     });
   };
+
+  // Add hooks for automatic image cleanup
+  ProductMediaURL.addHook('beforeDestroy', async (mediaUrl, options) => {
+    try {
+      if (mediaUrl.product_media_url) {
+        deleteImage(mediaUrl.product_media_url);
+      }
+    } catch (error) {
+      console.error('Error cleaning up media URL image:', error);
+    }
+  });
 
   return ProductMediaURL;
 };

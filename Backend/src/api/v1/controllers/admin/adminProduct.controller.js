@@ -3,6 +3,7 @@ import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
 import slugify from "slugify";
 import { Op } from "sequelize";
+import { deleteImages } from "../../../../utils/imageUtils.js";
 
 const {
   Product,
@@ -410,15 +411,62 @@ const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check if product exists
-    const product = await Product.findByPk(id);
+    // Check if product exists and get related data
+    const product = await Product.findByPk(id, {
+      include: [
+        {
+          model: ProductVariant,
+          as: "variants",
+          attributes: ["base_variant_image_url"]
+        },
+        {
+          model: ProductMedia,
+          as: "media",
+          include: [{
+            model: ProductMediaUrl,
+            attributes: ["product_media_url"]
+          }]
+        }
+      ]
+    });
+    
     if (!product) {
       return res.status(StatusCodes.NOT_FOUND).json({
         message: MESSAGE.get.none,
       });
     }
 
-    // Delete the product
+    // Collect all image paths to delete
+    const imagesToDelete = [];
+    
+    // Add variant images
+    if (product.variants) {
+      product.variants.forEach(variant => {
+        if (variant.base_variant_image_url) {
+          imagesToDelete.push(variant.base_variant_image_url);
+        }
+      });
+    }
+    
+    // Add product media images
+    if (product.media) {
+      product.media.forEach(media => {
+        if (media.ProductMediaURLs) {
+          media.ProductMediaURLs.forEach(mediaUrl => {
+            if (mediaUrl.product_media_url) {
+              imagesToDelete.push(mediaUrl.product_media_url);
+            }
+          });
+        }
+      });
+    }
+
+    // Delete associated images from filesystem FIRST
+    if (imagesToDelete.length > 0) {
+      deleteImages(imagesToDelete);
+    }
+
+    // Then delete the product (cascade will handle related records)
     await product.destroy();
 
     res.status(StatusCodes.OK).json({

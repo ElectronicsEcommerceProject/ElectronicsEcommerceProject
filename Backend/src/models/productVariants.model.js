@@ -1,4 +1,5 @@
 import { DataTypes } from "sequelize";
+import { deleteImage } from "../utils/imageUtils.js";
 
 export default (sequelize) => {
   const ProductVariant = sequelize.define(
@@ -105,6 +106,17 @@ export default (sequelize) => {
       as: "stockAlerts",
     });
   };
+
+  // Add hooks for automatic image cleanup
+  ProductVariant.addHook('beforeDestroy', async (variant, options) => {
+    try {
+      if (variant.base_variant_image_url) {
+        deleteImage(variant.base_variant_image_url);
+      }
+    } catch (error) {
+      console.error('Error cleaning up variant image:', error);
+    }
+  });
 
   return ProductVariant;
 };

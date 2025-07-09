@@ -6,6 +6,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import Sequelize from "sequelize";
+import { deleteImages } from "../../../../utils/imageUtils.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -169,7 +170,12 @@ const getProductManagementData = async (req, res) => {
 
       // 8. Product Media with URLs
       ProductMedia.findAll({
-        attributes: ["product_media_id", "product_id", "product_variant_id", "media_type"],
+        attributes: [
+          "product_media_id",
+          "product_id",
+          "product_variant_id",
+          "media_type",
+        ],
         include: [
           {
             model: ProductMediaUrl,
@@ -219,9 +225,12 @@ const getProductManagementData = async (req, res) => {
 
       products: products.map((product) => {
         // Find media for this product
-        const media = productMedia.find(m => m.product_id === product.product_id);
-        const mediaUrl = media?.ProductMediaURLs?.[0]?.product_media_url || null;
-        
+        const media = productMedia.find(
+          (m) => m.product_id === product.product_id
+        );
+        const mediaUrl =
+          media?.ProductMediaURLs?.[0]?.product_media_url || null;
+
         return {
           id: product.product_id,
           product_id: product.product_id,
@@ -242,7 +251,9 @@ const getProductManagementData = async (req, res) => {
           brand_id: product.brand.brand_id,
           brand_name: product.brand.name,
           brand_slug: product.brand.slug,
-          image: mediaUrl ? `${process.env.BASE_URL || 'http://localhost:3000'}/${mediaUrl}` : '/default-product-image.jpg',
+          image: mediaUrl
+            ? `${process.env.BASE_URL || "http://localhost:3000"}/${mediaUrl}`
+            : "/default-product-image.jpg",
           inStock: true,
           stockLevel: 10,
           discountPercent: 0,
@@ -298,10 +309,11 @@ const getProductManagementData = async (req, res) => {
         product_id: media.product_id,
         product_variant_id: media.product_variant_id,
         media_type: media.media_type,
-        urls: media.ProductMediaURLs?.map(url => ({
-          product_media_url: url.product_media_url,
-          media_type: url.media_type,
-        })) || [],
+        urls:
+          media.ProductMediaURLs?.map((url) => ({
+            product_media_url: url.product_media_url,
+            media_type: url.media_type,
+          })) || [],
       })),
     };
 
@@ -363,13 +375,7 @@ const addProductManagmentData = async (req, res) => {
     }
 
     // Validate required fields (media is now part of product)
-    if (
-      !category ||
-      !brand ||
-      !product ||
-      !variant ||
-      !attributeValue
-    ) {
+    if (!category || !brand || !product || !variant || !attributeValue) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
         message: "All required fields must be provided",
@@ -466,9 +472,9 @@ const addProductManagmentData = async (req, res) => {
 
       // Step 4: Create or find Product Variant
       let productVariantRecord;
-      
+
       // Prepare variant image URL
-      const variantImageUrl = req.files?.variant_media_file 
+      const variantImageUrl = req.files?.variant_media_file
         ? `uploads/product_images/${req.files.variant_media_file[0].filename}`
         : null;
 
@@ -482,7 +488,10 @@ const addProductManagmentData = async (req, res) => {
         productVariantRecord = existingProductVariant;
         // Update variant image if new one is provided
         if (variantImageUrl) {
-          await productVariantRecord.update({ base_variant_image_url: variantImageUrl }, { transaction: t });
+          await productVariantRecord.update(
+            { base_variant_image_url: variantImageUrl },
+            { transaction: t }
+          );
         }
       } else {
         productVariantRecord = await ProductVariant.create(
@@ -606,22 +615,27 @@ const addProductManagmentData = async (req, res) => {
 
       // Step 9: Create or update Product Media URL only if media is provided
       let productMediaUrlRecord = null;
-      
-      if (productImageUrl || (media?.media_file?.fileName)) {
-        const mediaUrl = productImageUrl || `uploads/product_images/${media.media_file.fileName}`;
-        
+
+      if (productImageUrl || media?.media_file?.fileName) {
+        const mediaUrl =
+          productImageUrl ||
+          `uploads/product_images/${media.media_file.fileName}`;
+
         // Check if ProductMediaUrl already exists for this ProductMedia
         const existingProductMediaUrl = await ProductMediaUrl.findOne({
           where: { product_media_id: productMediaRecord.product_media_id },
           transaction: t,
         });
-        
+
         if (existingProductMediaUrl) {
           // Update existing ProductMediaUrl
-          await existingProductMediaUrl.update({
-            product_media_url: mediaUrl,
-            media_type: product?.media_type || media?.media_type || "image",
-          }, { transaction: t });
+          await existingProductMediaUrl.update(
+            {
+              product_media_url: mediaUrl,
+              media_type: product?.media_type || media?.media_type || "image",
+            },
+            { transaction: t }
+          );
           productMediaUrlRecord = existingProductMediaUrl;
         } else {
           // Create new ProductMediaUrl
@@ -730,7 +744,7 @@ const deleteProductManagementData = async (req, res) => {
     const { data } = req.body;
     let formattedData = data.toLowerCase().replace(/\s+/g, "-");
 
-    console.log("Formatted data:", formattedData);
+
 
     if (formattedData == "attribute-values") {
       const product_attribute_value_id = id;
@@ -924,6 +938,55 @@ const deleteProductManagementData = async (req, res) => {
         });
       }
 
+      // Get product with its images BEFORE deletion
+      const productWithImages = await Product.findByPk(product_id, {
+        include: [
+          {
+            model: ProductVariant,
+            as: "variants",
+            attributes: ["base_variant_image_url"]
+          },
+          {
+            model: ProductMedia,
+            as: "media",
+            include: [{
+              model: ProductMediaUrl,
+              attributes: ["product_media_url"]
+            }]
+          }
+        ]
+      });
+
+      // Collect all image paths
+      const imagesToDelete = [];
+      
+      // Add variant images
+      if (productWithImages.variants) {
+        productWithImages.variants.forEach(variant => {
+          if (variant.base_variant_image_url) {
+            imagesToDelete.push(variant.base_variant_image_url);
+          }
+        });
+      }
+      
+      // Add product media images
+      if (productWithImages.media) {
+        productWithImages.media.forEach(media => {
+          if (media.ProductMediaURLs) {
+            media.ProductMediaURLs.forEach(mediaUrl => {
+              if (mediaUrl.product_media_url) {
+                imagesToDelete.push(mediaUrl.product_media_url);
+              }
+            });
+          }
+        });
+      }
+
+      // Delete associated images from filesystem FIRST
+      if (imagesToDelete.length > 0) {
+        deleteImages(imagesToDelete);
+      }
+
       // Use a transaction to ensure data consistency
       await db.sequelize.transaction(async (t) => {
         // MANDATORY DELETIONS - These must succeed
@@ -1111,6 +1174,59 @@ const deleteProductManagementData = async (req, res) => {
           success: false,
           message: "Brand not found",
         });
+      }
+
+      // Get all products of this brand with their images BEFORE deletion
+      const productsWithImages = await Product.findAll({
+        where: { brand_id },
+        include: [
+          {
+            model: ProductVariant,
+            as: "variants",
+            attributes: ["base_variant_image_url"],
+          },
+          {
+            model: ProductMedia,
+            as: "media",
+            include: [
+              {
+                model: ProductMediaUrl,
+                attributes: ["product_media_url"],
+              },
+            ],
+          },
+        ],
+      });
+
+      // Collect all image paths
+      const imagesToDelete = [];
+      productsWithImages.forEach((product) => {
+        // Add variant images
+        if (product.variants) {
+          product.variants.forEach((variant) => {
+            if (variant.base_variant_image_url) {
+              imagesToDelete.push(variant.base_variant_image_url);
+            }
+          });
+        }
+
+        // Add product media images
+        if (product.media) {
+          product.media.forEach((media) => {
+            if (media.ProductMediaURLs) {
+              media.ProductMediaURLs.forEach((mediaUrl) => {
+                if (mediaUrl.product_media_url) {
+                  imagesToDelete.push(mediaUrl.product_media_url);
+                }
+              });
+            }
+          });
+        }
+      });
+
+      // Delete associated images from filesystem FIRST
+      if (imagesToDelete.length > 0) {
+        deleteImages(imagesToDelete);
       }
 
       // Use a transaction to ensure data consistency
@@ -1475,6 +1591,81 @@ const deleteProductManagementData = async (req, res) => {
           success: false,
           message: "Category not found",
         });
+      }
+
+      console.log(
+        `🔍 Starting deletion process for category: ${category.name}`
+      );
+
+      // Get all products in this category with their images BEFORE deletion
+      const productsWithImages = await Product.findAll({
+        where: { category_id },
+        include: [
+          {
+            model: ProductVariant,
+            as: "variants",
+            attributes: ["base_variant_image_url"],
+          },
+          {
+            model: ProductMedia,
+            as: "media",
+            include: [
+              {
+                model: ProductMediaUrl,
+                attributes: ["product_media_url"],
+              },
+            ],
+          },
+        ],
+      });
+
+      console.log(`🔍 Found ${productsWithImages.length} products in category`);
+
+      // Collect all image paths
+      const imagesToDelete = [];
+      productsWithImages.forEach((product) => {
+        console.log(`🔍 Processing product: ${product.name}`);
+
+        // Add variant images
+        if (product.variants) {
+          console.log(`🔍 Found ${product.variants.length} variants`);
+          product.variants.forEach((variant) => {
+            if (variant.base_variant_image_url) {
+              console.log(
+                `🔍 Adding variant image: ${variant.base_variant_image_url}`
+              );
+              imagesToDelete.push(variant.base_variant_image_url);
+            }
+          });
+        }
+
+        // Add product media images
+        if (product.media) {
+          console.log(`🔍 Found ${product.media.length} media items`);
+          product.media.forEach((media) => {
+            console.log('🔍 Media object:', media);
+            if (media.ProductMediaURLs) {
+              media.ProductMediaURLs.forEach((mediaUrl) => {
+                if (mediaUrl.product_media_url) {
+                  console.log(
+                    `🔍 Adding media image: ${mediaUrl.product_media_url}`
+                  );
+                  imagesToDelete.push(mediaUrl.product_media_url);
+                }
+              });
+            } else {
+              console.log('🔍 No ProductMediaURLs found for this media');
+            }
+          });
+        }
+      });
+
+      console.log(`🔍 Total images to delete: ${imagesToDelete.length}`);
+      console.log("🔍 Image paths:", imagesToDelete);
+
+      // Delete associated images from filesystem FIRST
+      if (imagesToDelete.length > 0) {
+        deleteImages(imagesToDelete);
       }
 
       // Use a transaction to ensure data consistency
@@ -1869,6 +2060,8 @@ const deleteProductManagementData = async (req, res) => {
         }
       });
 
+
+
       return res.status(StatusCodes.OK).json({
         success: true,
         message: MESSAGE.delete.succ,
@@ -2033,19 +2226,7 @@ const updateProductManagementData = async (req, res) => {
       // Update media type if provided and media exists
       if (media_type) {
         try {
-          await ProductMedia.update(
-            { media_type },
-            { where: { product_id } }
-          );
-          await ProductMediaUrl.update(
-            { media_type },
-            { 
-              include: [{
-                model: ProductMedia,
-                where: { product_id }
-              }]
-            }
-          );
+          await ProductMedia.update({ media_type }, { where: { product_id } });
         } catch (mediaError) {
           console.log("Media update skipped:", mediaError.message);
         }

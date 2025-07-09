@@ -1,4 +1,5 @@
 import { DataTypes } from "sequelize";
+import { deleteImages } from "../utils/imageUtils.js";
 
 export default (sequelize) => {
   const Product = sequelize.define(
@@ -96,10 +97,12 @@ export default (sequelize) => {
     Product.hasMany(models.ProductVariant, {
       foreignKey: "product_id",
       as: "variants",
+      onDelete: "CASCADE"
     });
     Product.hasMany(models.ProductMedia, {
       foreignKey: "product_id",
       as: "media",
+      onDelete: "CASCADE"
     });
     Product.hasMany(models.ProductReview, {
       foreignKey: "product_id",
@@ -130,6 +133,62 @@ export default (sequelize) => {
       as: "stockAlerts",
     });
   };
+
+  // Add hooks for automatic image cleanup
+  Product.addHook('beforeDestroy', async (product, options) => {
+    try {
+      // Get all related images before deletion
+      const productWithImages = await Product.findByPk(product.product_id, {
+        include: [
+          {
+            model: sequelize.models.ProductVariant,
+            as: "variants",
+            attributes: ["base_variant_image_url"]
+          },
+          {
+            model: sequelize.models.ProductMedia,
+            as: "media",
+            include: [{
+              model: sequelize.models.ProductMediaUrl,
+              as: "ProductMediaURLs",
+              attributes: ["product_media_url"]
+            }]
+          }
+        ]
+      });
+      
+      if (productWithImages) {
+        const imagesToDelete = [];
+        
+        // Collect variant images
+        if (productWithImages.variants) {
+          productWithImages.variants.forEach(variant => {
+            if (variant.base_variant_image_url) {
+              imagesToDelete.push(variant.base_variant_image_url);
+            }
+          });
+        }
+        
+        // Collect product media images
+        if (productWithImages.media) {
+          productWithImages.media.forEach(media => {
+            if (media.ProductMediaURLs) {
+              media.ProductMediaURLs.forEach(mediaUrl => {
+                if (mediaUrl.product_media_url) {
+                  imagesToDelete.push(mediaUrl.product_media_url);
+                }
+              });
+            }
+          });
+        }
+        
+        // Delete images from filesystem
+        deleteImages(imagesToDelete);
+      }
+    } catch (error) {
+      console.error('Error cleaning up product images:', error);
+    }
+  });
 
   return Product;
 };

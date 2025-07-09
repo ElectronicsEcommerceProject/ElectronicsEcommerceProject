@@ -1,8 +1,9 @@
 import { StatusCodes } from "http-status-codes";
 import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
+import { deleteImages } from "../../../../utils/imageUtils.js";
 
-const { ProductMedia, Product, ProductVariant, User } = db;
+const { ProductMedia, Product, ProductVariant, User, ProductMediaUrl } = db;
 
 // Add a new product media
 const addProductMedia = async (req, res) => {
@@ -242,14 +243,34 @@ const deleteProductMedia = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const productMedia = await ProductMedia.findByPk(id);
+    const productMedia = await ProductMedia.findByPk(id, {
+      include: [{
+        model: ProductMediaUrl,
+        as: "ProductMediaURLs",
+        attributes: ["product_media_url"]
+      }]
+    });
+    
     if (!productMedia) {
       return res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: MESSAGE.get.none });
     }
 
+    // Collect image URLs to delete
+    const imagesToDelete = [];
+    if (productMedia.ProductMediaURLs) {
+      productMedia.ProductMediaURLs.forEach(mediaUrl => {
+        if (mediaUrl.product_media_url) {
+          imagesToDelete.push(mediaUrl.product_media_url);
+        }
+      });
+    }
+
     await productMedia.destroy();
+    
+    // Delete associated images from filesystem
+    deleteImages(imagesToDelete);
 
     res.status(StatusCodes.OK).json({ message: MESSAGE.delete.succ });
   } catch (error) {
