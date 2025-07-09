@@ -902,9 +902,7 @@ const BuyNowPage = () => {
                   }
 
                   const subtotal = finalPrice;
-                  const delivery = subtotal > 5000 ? 0 : 99;
-                  const tax = subtotal * 0.18; // 18% GST
-                  const total = subtotal + delivery + tax;
+                  const total = subtotal;
 
                   // Prepare order data with original prices
                   const originalSubtotal = basePrice * quantity;
@@ -913,11 +911,10 @@ const BuyNowPage = () => {
                     address_id: selectedAddress.address_id,
                     payment_method: "cod", // Default to Cash on Delivery
                     subtotal: originalSubtotal,
-                    shipping_cost: delivery,
-                    tax_amount: tax,
+                    shipping_cost: 0,
+                    tax_amount: 0,
                     discount_amount: actualDiscountAmount,
-                    total_amount:
-                      originalSubtotal + delivery + tax - actualDiscountAmount,
+                    total_amount: originalSubtotal - actualDiscountAmount,
                     notes: appliedCouponData
                       ? `Coupon applied: ${appliedCouponData.code}`
                       : "",
