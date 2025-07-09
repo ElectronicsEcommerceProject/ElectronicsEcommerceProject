@@ -77,32 +77,31 @@ const upload = multer({
 });
 
 // Image compression function
-const compressImage = async (filePath, maxSizeBytes = 2 * 1024 * 1024) => {
+const compressImage = async (filePath, maxSizeBytes = 400 * 1024) => {
   try {
     // Wait a bit for file to be fully written
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     const stats = fs.statSync(filePath);
 
-    // If file is already under 2MB, no compression needed
+    // If file is already under 400KB, no compression needed
     if (stats.size <= maxSizeBytes) {
       console.log(
-        `File ${filePath} is already under 2MB (${(
-          stats.size /
-          (1024 * 1024)
-        ).toFixed(2)}MB)`
+        `File ${filePath} is already under 400KB (${(
+          stats.size / 1024
+        ).toFixed(2)}KB)`
       );
       return;
     }
 
     console.log(
-      `Compressing image: ${filePath} (${(stats.size / (1024 * 1024)).toFixed(
+      `Compressing image: ${filePath} (${(stats.size / 1024).toFixed(
         2
-      )}MB)`
+      )}KB)`
     );
 
-    // Start with quality 80 and reduce if needed
-    let quality = 80;
+    // Start with quality 70 and reduce if needed
+    let quality = 70;
     let compressedBuffer;
 
     do {
@@ -115,7 +114,7 @@ const compressImage = async (filePath, maxSizeBytes = 2 * 1024 * 1024) => {
       }
 
       quality -= 10;
-    } while (quality > 20 && compressedBuffer.length > maxSizeBytes);
+    } while (quality > 10 && compressedBuffer.length > maxSizeBytes);
 
     // Create temporary file path
     const tempPath = filePath + ".temp";
@@ -128,9 +127,9 @@ const compressImage = async (filePath, maxSizeBytes = 2 * 1024 * 1024) => {
 
     const newStats = fs.statSync(filePath);
     console.log(
-      `Image compressed successfully: ${(newStats.size / (1024 * 1024)).toFixed(
+      `Image compressed successfully: ${(newStats.size / 1024).toFixed(
         2
-      )}MB (quality: ${quality})`
+      )}KB (quality: ${quality})`
     );
   } catch (error) {
     console.error("Error compressing image:", error);
@@ -156,8 +155,8 @@ export default {
         }
         console.log("File after multer:", req.file);
 
-        // Compress image if it exists and is for product upload
-        if (req.file && req.originalUrl.includes("product")) {
+        // Compress image if it exists (for all uploads: product, variant, and profile)
+        if (req.file) {
           try {
             await compressImage(req.file.path);
           } catch (compressionError) {
@@ -186,8 +185,8 @@ export default {
         }
         console.log("Files after multer:", req.files);
 
-        // Compress images if they exist and are for product upload
-        if (req.files && req.originalUrl.includes("product")) {
+        // Compress images if they exist (for all uploads: product, variant, and profile)
+        if (req.files) {
           for (const fieldName in req.files) {
             for (const file of req.files[fieldName]) {
               try {
