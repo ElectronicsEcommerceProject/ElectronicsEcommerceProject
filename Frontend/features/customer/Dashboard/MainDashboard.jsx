@@ -232,12 +232,12 @@ const MainDashboard = () => {
                 </button>
               </div>
               <div className="md:w-1/2 flex justify-center mt-6 md:mt-0">
-                <div className="relative">
+                <div className="relative w-full max-w-sm md:max-w-md">
                   <div className="absolute inset-0 bg-white/10 rounded-3xl blur-3xl"></div>
                   <img
                     src={banner.image}
                     alt={banner.title}
-                    className="relative h-48 sm:h-64 md:h-80 w-auto object-contain rounded-2xl shadow-2xl transition-transform duration-500 hover:scale-105"
+                    className="relative w-full h-48 sm:h-64 md:h-80 object-cover rounded-2xl shadow-2xl transition-transform duration-500 hover:scale-105"
                   />
                 </div>
               </div>
