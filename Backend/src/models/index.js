@@ -96,6 +96,7 @@ import Store from "./store.model.js";
 import Payment from "./payment.model.js";
 import Notification from "./notification.model.js";
 import NotificationTemplate from "./notificationTemplate.js";
+import Banner from "./banner.model.js";
 
 // Initialize models
 db.User = User(sequelize);
@@ -126,6 +127,7 @@ db.Store = Store(sequelize);
 db.Payment = Payment(sequelize);
 db.Notification = Notification(sequelize);
 db.NotificationTemplate = NotificationTemplate(sequelize);
+db.Banner = Banner(sequelize);
 
 // Set up associations
 Object.keys(db).forEach((modelName) => {
