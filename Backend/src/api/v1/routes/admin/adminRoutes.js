@@ -22,6 +22,7 @@ import {
   adminAnalyticsDashboardDataRoutes,
   adminStockManagementDataRoutes,
   adminNotificationRoutes,
+  adminBannerRoutes,
 } from "./adminRoutes.index.js";
 
 const app = express();
@@ -73,5 +74,7 @@ app.use("/stock-Alert", adminStockAlertRoutes);
 app.use("/stock-management", adminStockManagementDataRoutes);
 
 app.use("/product-Reviews", adminProductReviewRoutes);
+
+app.use("/banners", adminBannerRoutes);
 
 export default app;

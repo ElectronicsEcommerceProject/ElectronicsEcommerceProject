@@ -14,6 +14,7 @@ const __dirname = dirname(__filename);
 const projectRoot = path.join(__dirname, "../");
 const profileImagesDir = path.join(projectRoot, "uploads/profile_images");
 const productImagesDir = path.join(projectRoot, "uploads/product_images");
+const bannerImagesDir = path.join(projectRoot, "uploads/banner_images");
 
 // Create directories if they don't exist
 if (!fs.existsSync(profileImagesDir)) {
@@ -24,6 +25,10 @@ if (!fs.existsSync(productImagesDir)) {
   fs.mkdirSync(productImagesDir, { recursive: true });
 }
 
+if (!fs.existsSync(bannerImagesDir)) {
+  fs.mkdirSync(bannerImagesDir, { recursive: true });
+}
+
 // Set storage engine
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -31,11 +36,11 @@ const storage = multer.diskStorage({
     let uploadPath;
     if (req.originalUrl.includes("product")) {
       uploadPath = productImagesDir;
+    } else if (req.originalUrl.includes("banner")) {
+      uploadPath = bannerImagesDir;
     } else {
       uploadPath = profileImagesDir;
     }
-
-
 
     cb(null, uploadPath);
   },
@@ -53,7 +58,7 @@ const storage = multer.diskStorage({
 
 // File filter to allow only images
 const fileFilter = (req, file, cb) => {
-  const allowedFileTypes = /jpeg|jpg|png/;
+  const allowedFileTypes = /jpeg|jpg|png|webp|gif/;
   const extname = allowedFileTypes.test(
     path.extname(file.originalname).toLowerCase()
   );
@@ -62,7 +67,7 @@ const fileFilter = (req, file, cb) => {
   if (extname && mimetype) {
     cb(null, true);
   } else {
-    cb(new Error("Only images (jpeg, jpg, png) are allowed!"));
+    cb(new Error("Only images (jpeg, jpg, png, webp, gif) are allowed!"));
   }
 };
 
