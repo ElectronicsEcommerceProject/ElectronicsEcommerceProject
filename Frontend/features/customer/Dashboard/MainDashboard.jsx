@@ -29,6 +29,8 @@ const MainDashboard = () => {
   const [visibleProducts, setVisibleProducts] = useState(4);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
 
   // Check authentication status and fetch products
   useEffect(() => {
@@ -110,6 +112,50 @@ const MainDashboard = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // Touch handlers for swipe functionality
+  const handleTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      setActiveBanner((prev) => (prev + 1) % banners.length);
+    }
+    if (isRightSwipe) {
+      setActiveBanner((prev) => (prev - 1 + banners.length) % banners.length);
+    }
+  };
+
+  // Mouse handlers for desktop scrolling
+  const handleMouseDown = (e) => {
+    setTouchStart(e.clientX);
+  };
+
+  const handleMouseUp = (e) => {
+    if (!touchStart) return;
+    const distance = touchStart - e.clientX;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      setActiveBanner((prev) => (prev + 1) % banners.length);
+    }
+    if (isRightSwipe) {
+      setActiveBanner((prev) => (prev - 1 + banners.length) % banners.length);
+    }
+    setTouchStart(null);
+  };
 
   const filteredProducts = products.filter((product) => {
     const matchesBrand = selectedBrand ? product.brand === selectedBrand : true;
@@ -200,7 +246,14 @@ const MainDashboard = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       <Header />
 
-      <div className="relative h-[60vh] md:h-[500px] overflow-hidden">
+      <div 
+        className="relative h-[50vh] sm:h-[55vh] md:h-[500px] overflow-hidden cursor-grab active:cursor-grabbing select-none"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+      >
         {banners.map((banner, index) => (
           <div
             key={index}
@@ -214,36 +267,55 @@ const MainDashboard = () => {
           >
             <div className="absolute inset-0 bg-black/20"></div>
             <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row items-center justify-between relative z-10">
-              <div className="md:w-1/2 text-center md:text-left mb-6 md:mb-0">
-                <div className="inline-block bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium mb-4">
+              <div className="md:w-1/2 text-center md:text-left mb-4 md:mb-0">
+                <div className="inline-block bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium mb-3">
                   {banner.discount}
                 </div>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
+                <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold mb-3 leading-tight">
                   {banner.title}
                 </h1>
-                <p className="text-base sm:text-lg opacity-90 mb-6 max-w-lg mx-auto md:mx-0 leading-relaxed">
+                <p className="text-sm sm:text-base lg:text-lg opacity-90 mb-4 max-w-lg mx-auto md:mx-0 leading-relaxed">
                   {banner.description}
                 </p>
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6">
+                <div className="text-xl sm:text-2xl lg:text-4xl font-bold mb-4">
                   {banner.price}
                 </div>
-                <button className="bg-white text-gray-800 hover:bg-gray-100 px-6 py-3 sm:px-8 sm:py-4 rounded-full transition-all font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-105">
+                <button className="bg-white text-gray-800 hover:bg-gray-100 px-4 py-2 sm:px-6 sm:py-3 lg:px-8 lg:py-4 rounded-full transition-all font-semibold text-sm sm:text-base lg:text-lg shadow-lg hover:shadow-xl transform hover:scale-105">
                   {banner.buttonText} →
                 </button>
               </div>
-              <div className="md:w-1/2 flex justify-center mt-6 md:mt-0">
-                <div className="relative w-full max-w-sm md:max-w-md">
+              <div className="md:w-1/2 flex justify-center mt-4 md:mt-0">
+                <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md">
                   <div className="absolute inset-0 bg-white/10 rounded-3xl blur-3xl"></div>
                   <img
                     src={banner.image}
                     alt={banner.title}
-                    className="relative w-full h-48 sm:h-64 md:h-80 object-cover rounded-2xl shadow-2xl transition-transform duration-500 hover:scale-105"
+                    className="relative w-full h-32 sm:h-48 md:h-80 object-cover rounded-2xl shadow-2xl transition-transform duration-500 hover:scale-105"
                   />
                 </div>
               </div>
             </div>
           </div>
         ))}
+        {/* Navigation arrows */}
+        <button
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 rounded-full transition-all duration-300 hover:scale-110"
+          onClick={() => setActiveBanner((prev) => (prev - 1 + banners.length) % banners.length)}
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <button
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 rounded-full transition-all duration-300 hover:scale-110"
+          onClick={() => setActiveBanner((prev) => (prev + 1) % banners.length)}
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+        
+        {/* Dots indicator */}
         <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
           {banners.map((_, index) => (
             <button
@@ -256,6 +328,11 @@ const MainDashboard = () => {
               onClick={() => setActiveBanner(index)}
             />
           ))}
+        </div>
+        
+        {/* Swipe instruction for mobile */}
+        <div className="absolute top-4 right-4 z-20 bg-black/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs sm:hidden">
+          👈 Swipe to navigate
         </div>
       </div>
 
