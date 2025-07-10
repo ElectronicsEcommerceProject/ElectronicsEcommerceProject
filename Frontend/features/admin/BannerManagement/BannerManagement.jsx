@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { FiEdit, FiTrash2, FiPlus, FiSave, FiX } from "react-icons/fi";
 
-import { createApi, getApi, adminBannerRoute } from "../../../src/index.js";
+import {
+  createApi,
+  getApi,
+  updateApiById,
+  deleteApiById,
+  adminBannerRoute,
+} from "../../../src/index.js";
 
 const BannerManagement = () => {
   const [banners, setBanners] = useState([]);
@@ -67,46 +73,70 @@ const BannerManagement = () => {
   ];
 
   const handleEdit = (banner) => {
-    setEditingBanner(banner.id);
-    setFormData(banner);
+    setEditingBanner(banner.banner_id);
+    setFormData({
+      title: banner.title,
+      description: banner.description,
+      price: banner.price,
+      discount: banner.discount,
+      bg_class: banner.bg_class,
+      button_text: banner.button_text,
+      image: null,
+      is_active: banner.is_active,
+      display_order: banner.display_order,
+    });
   };
 
   const handleSave = async () => {
     try {
       setLoading(true);
       const bannerData = new FormData();
-      bannerData.append('title', formData.title);
-      bannerData.append('description', formData.description);
-      bannerData.append('price', formData.price);
-      bannerData.append('discount', formData.discount);
-      bannerData.append('bg_class', formData.bg_class);
-      bannerData.append('button_text', formData.button_text);
-      bannerData.append('is_active', formData.is_active);
-      bannerData.append('display_order', formData.display_order);
+      bannerData.append("title", formData.title);
+      bannerData.append("description", formData.description);
+      bannerData.append("price", formData.price);
+      bannerData.append("discount", formData.discount);
+      bannerData.append("bg_class", formData.bg_class);
+      bannerData.append("button_text", formData.button_text);
+      bannerData.append("is_active", formData.is_active);
+      bannerData.append("display_order", formData.display_order);
       if (formData.image) {
-        bannerData.append('image', formData.image);
+        bannerData.append("image", formData.image);
       }
 
-      const response = await createApi(adminBannerRoute, bannerData);
-      if (response.success) {
-        // Add new banner to state without API call
-        const newBanner = {
-          banner_id: Date.now(),
-          title: formData.title,
-          description: formData.description,
-          price: formData.price,
-          discount: formData.discount,
-          bg_class: formData.bg_class,
-          button_text: formData.button_text,
-          image_url: formData.image ? URL.createObjectURL(formData.image) : null,
-          is_active: formData.is_active,
-          display_order: formData.display_order,
-          createdAt: new Date().toISOString(),
-          creator: { name: 'Current User' }
-        };
-        setBanners([newBanner, ...banners]);
-        setShowAddForm(false);
-        resetForm();
+      if (editingBanner) {
+        // Update existing banner
+        const response = await updateApiById(adminBannerRoute, editingBanner, bannerData);
+        if (response.success) {
+          setBanners(banners.map(banner => 
+            banner.banner_id === editingBanner 
+              ? { ...banner, ...formData, image_url: formData.image ? URL.createObjectURL(formData.image) : banner.image_url }
+              : banner
+          ));
+          setEditingBanner(null);
+          resetForm();
+        }
+      } else {
+        // Create new banner
+        const response = await createApi(adminBannerRoute, bannerData);
+        if (response.success) {
+          const newBanner = {
+            banner_id: Date.now(),
+            title: formData.title,
+            description: formData.description,
+            price: formData.price,
+            discount: formData.discount,
+            bg_class: formData.bg_class,
+            button_text: formData.button_text,
+            image_url: formData.image ? URL.createObjectURL(formData.image) : null,
+            is_active: formData.is_active,
+            display_order: formData.display_order,
+            createdAt: new Date().toISOString(),
+            creator: { name: "Current User" },
+          };
+          setBanners([newBanner, ...banners]);
+          setShowAddForm(false);
+          resetForm();
+        }
       }
     } catch (error) {
       console.error("Error saving banner:", error);
@@ -115,9 +145,19 @@ const BannerManagement = () => {
     }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this banner?")) {
-      setBanners(banners.filter((banner) => banner.id !== id));
+      try {
+        setLoading(true);
+        const response = await deleteApiById(adminBannerRoute, id);
+        if (response.success) {
+          setBanners(banners.filter((banner) => banner.banner_id !== id));
+        }
+      } catch (error) {
+        console.error("Error deleting banner:", error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -141,12 +181,25 @@ const BannerManagement = () => {
     });
   };
 
-  const toggleActive = (id) => {
-    setBanners(
-      banners.map((banner) =>
-        banner.banner_id === id ? { ...banner, is_active: !banner.is_active } : banner
-      )
-    );
+  const toggleActive = async (id) => {
+    try {
+      const banner = banners.find(b => b.banner_id === id);
+      const updateData = new FormData();
+      updateData.append('is_active', !banner.is_active);
+      
+      const response = await updateApiById(adminBannerRoute, id, updateData);
+      if (response.success) {
+        setBanners(
+          banners.map((banner) =>
+            banner.banner_id === id
+              ? { ...banner, is_active: !banner.is_active }
+              : banner
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error toggling banner status:", error);
+    }
   };
 
   return (
@@ -476,10 +529,11 @@ const BannerManagement = () => {
                   <strong>ID:</strong> {banner.banner_id}
                 </p>
                 <p>
-                  <strong>Created:</strong> {new Date(banner.createdAt).toLocaleDateString()}
+                  <strong>Created:</strong>{" "}
+                  {new Date(banner.createdAt).toLocaleDateString()}
                 </p>
                 <p>
-                  <strong>Creator:</strong> {banner.creator?.name || 'Unknown'}
+                  <strong>Creator:</strong> {banner.creator?.name || "Unknown"}
                 </p>
               </div>
             </div>

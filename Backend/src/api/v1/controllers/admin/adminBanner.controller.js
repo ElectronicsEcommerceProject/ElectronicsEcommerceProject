@@ -109,13 +109,11 @@ const getAllBanners = async (req, res) => {
       return banner;
     });
 
-    res
-      .status(StatusCodes.OK)
-      .json({
-        success: true,
-        message: MESSAGE.get.succ,
-        data: bannersWithFullUrls,
-      });
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: MESSAGE.get.succ,
+      data: bannersWithFullUrls,
+    });
   } catch (error) {
     console.error("Error fetching banners:", error);
     res
@@ -145,13 +143,11 @@ const getActiveBanners = async (req, res) => {
       return banner;
     });
 
-    res
-      .status(StatusCodes.OK)
-      .json({
-        success: true,
-        message: MESSAGE.get.succ,
-        data: bannersWithFullUrls,
-      });
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: MESSAGE.get.succ,
+      data: bannersWithFullUrls,
+    });
   } catch (error) {
     console.error("Error fetching active banners:", error);
     res
@@ -218,7 +214,7 @@ const updateBannerById = async (req, res) => {
 
     res
       .status(StatusCodes.OK)
-      .json({ success: true, message: MESSAGE.put.succ, data: banner });
+      .json({ success: true, message: MESSAGE.put.succ });
   } catch (error) {
     console.error("Error updating banner:", error);
     res

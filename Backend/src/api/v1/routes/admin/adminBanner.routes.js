@@ -17,7 +17,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Banner-specific multer configuration
-const bannerImagesDir = path.join(__dirname, "../../../../uploads/banner_images");
+const bannerImagesDir = path.join(
+  __dirname,
+  "../../../../uploads/banner_images"
+);
 if (!fs.existsSync(bannerImagesDir)) {
   fs.mkdirSync(bannerImagesDir, { recursive: true });
 }
@@ -27,13 +30,18 @@ const bannerUpload = multer({
     destination: (req, file, cb) => cb(null, bannerImagesDir),
     filename: (req, file, cb) => {
       const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-      cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
+      cb(
+        null,
+        `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`
+      );
     },
   }),
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|webp|gif/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const extname = allowedTypes.test(
+      path.extname(file.originalname).toLowerCase()
+    );
     const mimetype = allowedTypes.test(file.mimetype);
     if (extname && mimetype) {
       cb(null, true);
@@ -55,13 +63,18 @@ router.post(
 );
 
 // Get all banners
-router.get("/", verifyJwtToken, adminRoleCheck, adminBannerController.getAllBanners);
+router.get(
+  "/",
+  verifyJwtToken,
+  adminRoleCheck,
+  adminBannerController.getAllBanners
+);
 
 // Get active banners (public route for frontend)
 router.get("/active", adminBannerController.getActiveBanners);
 
 // Update a banner
-router.put(
+router.patch(
   "/:banner_id",
   verifyJwtToken,
   adminRoleCheck,
