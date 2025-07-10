@@ -85,11 +85,13 @@ const MainDashboard = () => {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveBanner((prev) => (prev + 1) % banners.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    if (banners.length > 0) {
+      const interval = setInterval(() => {
+        setActiveBanner((prev) => (prev + 1) % banners.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [banners.length]);
 
   // Touch handlers for swipe functionality
   const handleTouchStart = (e) => {
@@ -279,61 +281,67 @@ const MainDashboard = () => {
           </div>
         ))}
         {/* Navigation arrows */}
-        <button
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 rounded-full transition-all duration-300 hover:scale-110"
-          onClick={() =>
-            setActiveBanner(
-              (prev) => (prev - 1 + banners.length) % banners.length
-            )
-          }
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </button>
-        <button
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 rounded-full transition-all duration-300 hover:scale-110"
-          onClick={() => setActiveBanner((prev) => (prev + 1) % banners.length)}
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        </button>
+        {banners.length > 1 && (
+          <>
+            <button
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 rounded-full transition-all duration-300 hover:scale-110"
+              onClick={() =>
+                setActiveBanner(
+                  (prev) => (prev - 1 + banners.length) % banners.length
+                )
+              }
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+            <button
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 rounded-full transition-all duration-300 hover:scale-110"
+              onClick={() => setActiveBanner((prev) => (prev + 1) % banners.length)}
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          </>
+        )}
 
         {/* Dots indicator */}
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
-          {banners.map((_, index) => (
-            <button
-              key={index}
-              className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
-                activeBanner === index
-                  ? "bg-white scale-125"
-                  : "bg-white/50 hover:bg-white/75"
-              }`}
-              onClick={() => setActiveBanner(index)}
-            />
-          ))}
-        </div>
+        {banners.length > 1 && (
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+            {banners.map((_, index) => (
+              <button
+                key={index}
+                className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
+                  activeBanner === index
+                    ? "bg-white scale-125"
+                    : "bg-white/50 hover:bg-white/75"
+                }`}
+                onClick={() => setActiveBanner(index)}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Swipe instruction for mobile */}
         <div className="absolute top-4 right-4 z-20 bg-black/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs sm:hidden">
