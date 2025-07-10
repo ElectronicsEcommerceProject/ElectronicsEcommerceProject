@@ -14,6 +14,7 @@ import {
 
 import {
   Dashboard,
+  BannerManagement,
   ProductManagement,
   OrderManagement,
   UserManagement,
@@ -73,6 +74,11 @@ const AdminLayout = () => {
       label: "Dashboard",
       section: "dashboard",
       icon: <House size={24} weight="bold" className="text-blue-600" />,
+    },
+    {
+      label: "Banner Management",
+      section: "banners",
+      icon: <Package size={24} weight="duotone" className="text-indigo-500" />,
     },
     {
       label: "Product Management",
@@ -252,6 +258,7 @@ const AdminLayout = () => {
         {/* Main Content Area - padded below fixed header */}
         <main className="flex-1 pt-[130px] md:ml-64 px-4 pb-6">
           {activeSection === "dashboard" && <Dashboard />}
+          {activeSection === "banners" && <BannerManagement />}
           {activeSection === "products" && <ProductManagement />}
           {activeSection === "orders" && <OrderManagement />}
           {activeSection === "stock" && <StockManagement />}

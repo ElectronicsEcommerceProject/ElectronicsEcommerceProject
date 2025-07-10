@@ -19,6 +19,7 @@ export { default as RelatedProducts } from "./customer/Dashboard/RelatedProducts
 
 // 🛡️ Admin Features
 export { default as Dashboard } from "./admin/Dashboard/AdminDashboard.jsx";
+export { default as BannerManagement } from "./admin/BannerManagement/BannerManagement.jsx";
 export { default as ProductManagement } from "./admin/ProductManagement/ProductDashboard.jsx";
 export { default as OrderManagement } from "./admin/OrderDashboard/OrderDashboard.jsx";
 export { default as UserManagement } from "./admin/UserManagement/UserDashboard.jsx";
