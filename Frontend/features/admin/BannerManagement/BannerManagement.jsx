@@ -47,7 +47,7 @@ const BannerManagement = () => {
     discount: "",
     bgClass: "bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700",
     buttonText: "",
-    image: "",
+    image: null,
     isActive: true,
   });
 
@@ -98,7 +98,7 @@ const BannerManagement = () => {
       discount: "",
       bgClass: "bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700",
       buttonText: "",
-      image: "",
+      image: null,
       isActive: true,
     });
   };
@@ -113,12 +113,14 @@ const BannerManagement = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Banner Management</h1>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
-        >
-          <FiPlus /> Add New Banner
-        </button>
+        {!showAddForm && !editingBanner && (
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+          >
+            <FiPlus /> Add New Banner
+          </button>
+        )}
       </div>
 
       {/* Add/Edit Form */}
@@ -193,14 +195,46 @@ const BannerManagement = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Image URL</label>
+              <label className="block text-sm font-medium mb-2">Banner Image</label>
               <input
-                type="url"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                className="w-full p-2 border rounded-lg"
-                placeholder="Enter image URL"
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    const maxSize = 10 * 1024 * 1024; // 10MB
+                    const allowedExtensions = ["jpeg", "jpg", "png"];
+                    const fileExtension = file.name.split(".").pop().toLowerCase();
+                    
+                    if (file.size > maxSize) {
+                      alert(`Image size is ${(file.size / (1024 * 1024)).toFixed(2)}MB. Maximum allowed size is 10MB.`);
+                      e.target.value = "";
+                      return;
+                    }
+                    
+                    if (!allowedExtensions.includes(fileExtension)) {
+                      alert(`File extension '${fileExtension}' is not allowed. Only jpeg, jpg, png are allowed.`);
+                      e.target.value = "";
+                      return;
+                    }
+                    
+                    setFormData({ ...formData, image: file });
+                  }
+                }}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
               />
+              {formData.image && typeof formData.image === 'object' && (
+                <div className="mt-2">
+                  <div className="text-xs text-gray-500 mb-2">
+                    Selected: {formData.image.name}
+                  </div>
+                  <img
+                    src={URL.createObjectURL(formData.image)}
+                    alt="Banner preview"
+                    className="max-w-full h-32 object-cover rounded border"
+                  />
+                </div>
+              )}
             </div>
             <div className="flex items-center">
               <input
@@ -227,6 +261,53 @@ const BannerManagement = () => {
               <FiX /> Cancel
             </button>
           </div>
+
+          {/* Real-time Banner Preview */}
+          {(formData.title || formData.description || formData.image) && (
+            <div className="mt-6 border-t pt-6">
+              <h3 className="text-lg font-semibold mb-4">Live Preview (MainDashboard Style)</h3>
+              <div className="max-w-4xl mx-auto">
+                <div className={`${formData.bgClass} text-white p-6 relative rounded-lg overflow-hidden flex items-center`}>
+                  <div className="absolute inset-0 bg-black/20"></div>
+                  <div className="w-full flex flex-col md:flex-row items-center justify-between relative z-10">
+                    <div className="md:w-1/2 text-center md:text-left mb-4 md:mb-0">
+                      {formData.discount && (
+                        <div className="inline-block bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium mb-3">
+                          {formData.discount}
+                        </div>
+                      )}
+                      <h1 className="text-2xl lg:text-3xl font-bold mb-3 leading-tight">
+                        {formData.title || "Banner Title"}
+                      </h1>
+                      <p className="text-sm lg:text-base opacity-90 mb-4 leading-relaxed">
+                        {formData.description || "Banner description will appear here"}
+                      </p>
+                      {formData.price && (
+                        <div className="text-xl lg:text-2xl font-bold mb-4">
+                          {formData.price}
+                        </div>
+                      )}
+                      <button className="bg-white text-gray-800 hover:bg-gray-100 px-6 py-3 rounded-full transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105">
+                        {formData.buttonText || "Button Text"} →
+                      </button>
+                    </div>
+                    {formData.image && (
+                      <div className="md:w-1/2 flex justify-center mt-4 md:mt-0">
+                        <div className="relative w-full max-w-sm">
+                          <div className="absolute inset-0 bg-white/10 rounded-3xl blur-3xl"></div>
+                          <img
+                            src={typeof formData.image === 'object' ? URL.createObjectURL(formData.image) : formData.image}
+                            alt={formData.title || "Banner"}
+                            className="relative w-full h-48 md:h-64 object-cover rounded-2xl shadow-2xl transition-transform duration-500 hover:scale-105"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -235,24 +316,33 @@ const BannerManagement = () => {
         {banners.map((banner) => (
           <div key={banner.id} className="bg-white rounded-lg shadow-md overflow-hidden">
             {/* Banner Preview */}
-            <div className={`${banner.bgClass} text-white p-4 relative`}>
+            <div className={`${banner.bgClass} text-white p-4 relative flex items-center min-h-[200px]`}>
               <div className="absolute inset-0 bg-black/20"></div>
-              <div className="relative z-10">
-                <div className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium mb-2 inline-block">
-                  {banner.discount}
+              <div className="w-full flex flex-col sm:flex-row items-center justify-between relative z-10">
+                <div className="sm:w-1/2 text-center sm:text-left mb-4 sm:mb-0">
+                  <div className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium mb-2 inline-block">
+                    {banner.discount}
+                  </div>
+                  <h3 className="text-lg font-bold mb-2">{banner.title}</h3>
+                  <p className="text-sm opacity-90 mb-2 line-clamp-2">{banner.description}</p>
+                  <div className="text-lg font-bold mb-2">{banner.price}</div>
+                  <button className="bg-white text-gray-800 px-3 py-1 rounded-full text-sm font-semibold">
+                    {banner.buttonText} →
+                  </button>
                 </div>
-                <h3 className="text-lg font-bold mb-2">{banner.title}</h3>
-                <p className="text-sm opacity-90 mb-2 line-clamp-2">{banner.description}</p>
-                <div className="text-lg font-bold mb-2">{banner.price}</div>
-                <button className="bg-white text-gray-800 px-3 py-1 rounded-full text-sm font-semibold">
-                  {banner.buttonText} →
-                </button>
+                {banner.image && (
+                  <div className="sm:w-1/2 flex justify-center mt-4 sm:mt-0">
+                    <div className="relative w-full max-w-[150px]">
+                      <div className="absolute inset-0 bg-white/10 rounded-2xl blur-2xl"></div>
+                      <img 
+                        src={banner.image} 
+                        alt="Banner" 
+                        className="relative w-full h-24 sm:h-32 object-cover rounded-xl shadow-xl" 
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
-              {banner.image && (
-                <div className="absolute right-2 top-2 w-16 h-16 rounded-lg overflow-hidden">
-                  <img src={banner.image} alt="Banner" className="w-full h-full object-cover" />
-                </div>
-              )}
             </div>
 
             {/* Banner Controls */}
