@@ -58,6 +58,10 @@ const adminDashboardDataRoute = import.meta.env
 const adminProductManagementDashboardDataRoute = import.meta.env
   .VITE_PRODUCT_MANAGMENT_DASHBOARD_DATA_ENDPOINT;
 
+//Admin Banner Management Routes
+const adminBannerRoute = import.meta.env.VITE_ADMIN_BANNER_ENDPOINT;
+const userBannerRoute = import.meta.env.VITE_USER_BANNER_ENDPOINT;
+
 const allUserRoute = import.meta.env.VITE_USER_ENDPOINT;
 const allCustomerRoute = import.meta.env.VITE_CUSTOMER_ENDPOINT;
 const allRetailerRoute = import.meta.env.VITE_RETAILER_ENDPOINT;
@@ -283,4 +287,8 @@ export {
 
   //components
   UserNotification,
+
+  //Banner routes
+  adminBannerRoute,
+  userBannerRoute,
 };

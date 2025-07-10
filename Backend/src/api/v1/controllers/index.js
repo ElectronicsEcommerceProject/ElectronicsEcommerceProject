@@ -40,3 +40,4 @@ export { default as adminDashboardController } from "./admin/adminDashboard.cont
 export { default as adminProductManagmentDashboardDataController } from "./admin/adminProductManagment.controller.js";
 export { default as adminAnalyticsDashboardDataController } from "./admin/adminReportsAndAnalyticsData.controller.js";
 export { default as adminStockManagementController } from "./admin/adminStockManagment.controller.js";
+export { default as adminBannerController } from "./admin/adminBanner.controller.js";

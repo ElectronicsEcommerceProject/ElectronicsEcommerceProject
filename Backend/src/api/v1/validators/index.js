@@ -133,6 +133,12 @@ import {
   forgotPasswordValidator,
 } from "./auth/resetPassword.validators.js";
 
+import {
+  bannerValidator,
+  bannerUpdateValidator,
+  banner_id,
+} from "./banner/banner.validators.js";
+
 export const validators = {
   auth: {
     register: registerValidator,
@@ -259,5 +265,10 @@ export const validators = {
   },
   productManagement: {
     addProductManagementValidator,
+  },
+  banner: {
+    bannerValidator,
+    bannerUpdateValidator,
+    banner_id,
   },
 };

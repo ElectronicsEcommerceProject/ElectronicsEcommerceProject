@@ -13,6 +13,7 @@ import {
   userProductByIdDetailsPageRoutes,
   userCouponUserRoutes,
   userDashboardRoutes,
+  bannerRoutes,
 } from "./commonRoutes.index.js";
 
 import {
@@ -81,4 +82,6 @@ app.use("/product-Reviews", productReviewRoutes);
 app.use("/notifications", adminNotificationRoutes); // Notification Management Routes
 
 app.use("/user-Dashboard-Data", userDashboardRoutes);
+
+app.use("/banners", bannerRoutes);
 export default app;

@@ -16,6 +16,7 @@ import {
   isAuthenticated,
   userDashboardDataRoute,
   getApi,
+  userBannerRoute,
 } from "../../../src/index.js";
 import logo from "../../../../Frontend/assets/logo.jpg";
 
@@ -28,11 +29,12 @@ const MainDashboard = () => {
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [visibleProducts, setVisibleProducts] = useState(4);
   const [products, setProducts] = useState([]);
+  const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
 
-  // Check authentication status and fetch products
+  // Check authentication status and fetch data
   useEffect(() => {
     const checkAuth = () => {
       setIsUserAuthenticated(isAuthenticated());
@@ -54,8 +56,20 @@ const MainDashboard = () => {
       }
     };
 
+    const fetchBanners = async () => {
+      try {
+        const response = await getApi(userBannerRoute);
+        if (response.success) {
+          setBanners(response.data.filter((banner) => banner.is_active));
+        }
+      } catch (error) {
+        console.error("Error fetching banners:", error);
+      }
+    };
+
     checkAuth();
     fetchProducts();
+    fetchBanners();
 
     // Listen for auth changes
     const handleAuthChange = () => {
@@ -70,48 +84,14 @@ const MainDashboard = () => {
     };
   }, []);
 
-  const banners = [
-    {
-      title: "🎧 Premium Headphones",
-      description:
-        "Experience crystal-clear sound with our premium collection of headphones from top brands.",
-      price: "Starting ₹1,999",
-      discount: "Up to 40% OFF",
-      bgClass: "bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700",
-      buttonText: "Shop Now",
-      image:
-        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop&crop=center",
-    },
-    {
-      title: "⚡ Fast Charging Solutions",
-      description:
-        "Power up your devices with our range of high-speed chargers and wireless charging pads.",
-      price: "Starting ₹1,199",
-      discount: "Up to 35% OFF",
-      bgClass: "bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700",
-      buttonText: "Explore Now",
-      image:
-        "https://images.unsplash.com/photo-1609592806596-4d3b0c3b7e3e?w=400&h=300&fit=crop&crop=center",
-    },
-    {
-      title: "🔊 Wireless Speakers",
-      description:
-        "Fill your space with rich, immersive sound from our premium speaker collection.",
-      price: "Starting ₹2,999",
-      discount: "Up to 50% OFF",
-      bgClass: "bg-gradient-to-br from-orange-500 via-red-600 to-pink-700",
-      buttonText: "Listen Now",
-      image:
-        "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=300&fit=crop&crop=center",
-    },
-  ];
-
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveBanner((prev) => (prev + 1) % banners.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    if (banners.length > 0) {
+      const interval = setInterval(() => {
+        setActiveBanner((prev) => (prev + 1) % banners.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [banners.length]);
 
   // Touch handlers for swipe functionality
   const handleTouchStart = (e) => {
@@ -180,13 +160,16 @@ const MainDashboard = () => {
   // Function to highlight matching text
   const highlightText = (text, searchTerm) => {
     if (!searchTerm || !text) return text;
-    
-    const regex = new RegExp(`(${searchTerm})`, 'gi');
+
+    const regex = new RegExp(`(${searchTerm})`, "gi");
     const parts = text.split(regex);
-    
-    return parts.map((part, index) => 
+
+    return parts.map((part, index) =>
       regex.test(part) ? (
-        <mark key={index} className="bg-yellow-200 text-yellow-900 px-1 rounded">
+        <mark
+          key={index}
+          className="bg-yellow-200 text-yellow-900 px-1 rounded"
+        >
           {part}
         </mark>
       ) : (
@@ -246,7 +229,7 @@ const MainDashboard = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       <Header />
 
-      <div 
+      <div
         className="relative h-[50vh] sm:h-[55vh] md:h-[500px] overflow-hidden cursor-grab active:cursor-grabbing select-none"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -256,9 +239,9 @@ const MainDashboard = () => {
       >
         {banners.map((banner, index) => (
           <div
-            key={index}
+            key={banner.banner_id}
             className={`absolute inset-0 ${
-              banner.bgClass
+              banner.bg_class
             } text-white transition-all duration-1000 flex items-center px-4 sm:px-8 lg:px-16 ${
               activeBanner === index
                 ? "opacity-100 z-10 scale-100"
@@ -281,14 +264,14 @@ const MainDashboard = () => {
                   {banner.price}
                 </div>
                 <button className="bg-white text-gray-800 hover:bg-gray-100 px-4 py-2 sm:px-6 sm:py-3 lg:px-8 lg:py-4 rounded-full transition-all font-semibold text-sm sm:text-base lg:text-lg shadow-lg hover:shadow-xl transform hover:scale-105">
-                  {banner.buttonText} →
+                  {banner.button_text} →
                 </button>
               </div>
               <div className="md:w-1/2 flex justify-center mt-4 md:mt-0">
                 <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md">
                   <div className="absolute inset-0 bg-white/10 rounded-3xl blur-3xl"></div>
                   <img
-                    src={banner.image}
+                    src={banner.image_url}
                     alt={banner.title}
                     className="relative w-full h-32 sm:h-48 md:h-80 object-cover rounded-2xl shadow-2xl transition-transform duration-500 hover:scale-105"
                   />
@@ -298,38 +281,68 @@ const MainDashboard = () => {
           </div>
         ))}
         {/* Navigation arrows */}
-        <button
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 rounded-full transition-all duration-300 hover:scale-110"
-          onClick={() => setActiveBanner((prev) => (prev - 1 + banners.length) % banners.length)}
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <button
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 rounded-full transition-all duration-300 hover:scale-110"
-          onClick={() => setActiveBanner((prev) => (prev + 1) % banners.length)}
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-        
-        {/* Dots indicator */}
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
-          {banners.map((_, index) => (
+        {banners.length > 1 && (
+          <>
             <button
-              key={index}
-              className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
-                activeBanner === index
-                  ? "bg-white scale-125"
-                  : "bg-white/50 hover:bg-white/75"
-              }`}
-              onClick={() => setActiveBanner(index)}
-            />
-          ))}
-        </div>
-        
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 rounded-full transition-all duration-300 hover:scale-110"
+              onClick={() =>
+                setActiveBanner(
+                  (prev) => (prev - 1 + banners.length) % banners.length
+                )
+              }
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+            <button
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 rounded-full transition-all duration-300 hover:scale-110"
+              onClick={() => setActiveBanner((prev) => (prev + 1) % banners.length)}
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          </>
+        )}
+
+        {/* Dots indicator */}
+        {banners.length > 1 && (
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+            {banners.map((_, index) => (
+              <button
+                key={index}
+                className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
+                  activeBanner === index
+                    ? "bg-white scale-125"
+                    : "bg-white/50 hover:bg-white/75"
+                }`}
+                onClick={() => setActiveBanner(index)}
+              />
+            ))}
+          </div>
+        )}
+
         {/* Swipe instruction for mobile */}
         <div className="absolute top-4 right-4 z-20 bg-black/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs sm:hidden">
           👈 Swipe to navigate
@@ -346,7 +359,9 @@ const MainDashboard = () => {
             <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-center justify-center text-blue-700">
                 <FiSearch className="w-5 h-5 mr-2" />
-                <span className="font-medium">Searching for: "{searchTerm}"</span>
+                <span className="font-medium">
+                  Searching for: "{searchTerm}"
+                </span>
               </div>
             </div>
           )}
@@ -411,7 +426,7 @@ const MainDashboard = () => {
                     onClick={() => {
                       setSelectedBrand(null);
                       if (searchTerm) {
-                        dispatch(setSearchTerm(''));
+                        dispatch(setSearchTerm(""));
                       }
                     }}
                     className="bg-blue-600 text-white hover:bg-blue-700 px-6 py-3 rounded-full transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -469,13 +484,19 @@ const MainDashboard = () => {
                     </div>
                     <div className="space-y-2 flex-grow">
                       <h3 className="text-sm sm:text-base font-semibold text-gray-800 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                        {searchTerm ? highlightText(product.name, searchTerm) : product.name}
+                        {searchTerm
+                          ? highlightText(product.name, searchTerm)
+                          : product.name}
                       </h3>
                       <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
-                        {searchTerm ? highlightText(product.description, searchTerm) : product.description}
+                        {searchTerm
+                          ? highlightText(product.description, searchTerm)
+                          : product.description}
                       </p>
                       <div className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full inline-block">
-                        {searchTerm ? highlightText(product.brand, searchTerm) : product.brand}
+                        {searchTerm
+                          ? highlightText(product.brand, searchTerm)
+                          : product.brand}
                       </div>
                       <div className="flex items-center space-x-1">
                         <div className="flex text-yellow-400">

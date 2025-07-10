@@ -21,6 +21,7 @@ import adminProductManagmentDataRoutes from "./adminProductManagmentData.routes.
 import adminAnalyticsDashboardDataRoutes from "./adminReportsAndAnalyticsData.routes.js";
 import adminStockManagementDataRoutes from "./adminStockManagementData.routes.js";
 import adminNotificationRoutes from "./adminNotification.routes.js";
+import adminBannerRoutes from "./adminBanner.routes.js";
 
 // Export all route modules
 export {
@@ -46,4 +47,5 @@ export {
   adminAnalyticsDashboardDataRoutes,
   adminStockManagementDataRoutes,
   adminNotificationRoutes,
+  adminBannerRoutes,
 };
