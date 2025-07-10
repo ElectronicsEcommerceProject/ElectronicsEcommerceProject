@@ -10,6 +10,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { StatusCodes } from "http-status-codes";
 import MESSAGE from "../../../../../constants/message.js";
+import { deleteImage } from "../../../../../utils/imageUtils.js";
 
 // ✅ Fix for __dirname in ES Module
 const __filename = fileURLToPath(import.meta.url);
@@ -96,22 +97,17 @@ const updateProfile = async (req, res) => {
     // ✅ Handle profile image
     if (req.file) {
       console.log("Processing uploaded file:", req.file.filename);
+      console.log("Current user profile image URL:", user.profileImage_url);
 
-      // Delete old image if stored as relative path
-      if (user.profileImage_url && !user.profileImage_url.startsWith("http")) {
-        const oldImagePath = path.join(
-          __dirname,
-          "../../../../../",
-          user.profileImage_url
-        );
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
-          console.log("🗑 Old profile image deleted:", oldImagePath);
-        }
+      // Delete old image using utility function
+      if (user.profileImage_url) {
+        console.log("Attempting to delete old profile image:", user.profileImage_url);
+        deleteImage(user.profileImage_url);
       }
 
       // Store only relative path in DB
       user.profileImage_url = `uploads/profile_images/${req.file.filename}`;
+      console.log("New profile image URL:", user.profileImage_url);
     }
 
     await user.save();

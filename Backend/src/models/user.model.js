@@ -1,4 +1,5 @@
 import { DataTypes } from "sequelize";
+import { deleteImage } from "../utils/imageUtils.js";
 
 export default (sequelize) => {
   const User = sequelize.define(
@@ -82,6 +83,34 @@ export default (sequelize) => {
     User.hasMany(models.NotificationTemplate, { foreignKey: "created_by" });
     User.hasMany(models.NotificationTemplate, { foreignKey: "updated_by" });
   };
+
+  // Add hooks for automatic profile image cleanup
+  User.addHook('beforeUpdate', async (user, options) => {
+    try {
+      // Check if profileImage_url is being changed
+      if (user.changed('profileImage_url') && user._previousDataValues.profileImage_url) {
+        const oldImageUrl = user._previousDataValues.profileImage_url;
+        const newImageUrl = user.profileImage_url;
+        
+        // Only delete if the URL actually changed and old URL exists
+        if (oldImageUrl !== newImageUrl && oldImageUrl) {
+          deleteImage(oldImageUrl);
+        }
+      }
+    } catch (error) {
+      console.error('Error cleaning up old profile image:', error);
+    }
+  });
+
+  User.addHook('beforeDestroy', async (user, options) => {
+    try {
+      if (user.profileImage_url) {
+        deleteImage(user.profileImage_url);
+      }
+    } catch (error) {
+      console.error('Error cleaning up profile image on user deletion:', error);
+    }
+  });
 
   return User;
 };

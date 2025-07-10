@@ -1,8 +1,9 @@
 import db from "../../../../models/index.js";
 import { StatusCodes } from "http-status-codes";
 import MESSAGE from "../../../../constants/message.js";
+import { deleteImages } from "../../../../utils/imageUtils.js";
 
-const { Brand, User, Category, Product } = db;
+const { Brand, User, Category, Product, ProductVariant, ProductMedia, ProductMediaUrl } = db;
 
 // Add a new brand
 const addBrand = async (req, res) => {
@@ -97,7 +98,60 @@ const deleteBrand = async (req, res) => {
         .json({ message: MESSAGE.get.none });
     }
 
+    // Get all products of this brand with their images BEFORE deletion
+    const products = await Product.findAll({
+      where: { brand_id },
+      include: [
+        {
+          model: ProductVariant,
+          as: "variants",
+          attributes: ["base_variant_image_url"]
+        },
+        {
+          model: ProductMedia,
+          as: "media",
+          include: [{
+            model: ProductMediaUrl,
+            attributes: ["product_media_url"]
+          }]
+        }
+      ]
+    });
+
+    // Collect all image paths
+    const imagesToDelete = [];
+    products.forEach(product => {
+      // Add variant images
+      if (product.variants) {
+        product.variants.forEach(variant => {
+          if (variant.base_variant_image_url) {
+            imagesToDelete.push(variant.base_variant_image_url);
+          }
+        });
+      }
+      
+      // Add product media images
+      if (product.media) {
+        product.media.forEach(media => {
+          if (media.ProductMediaURLs) {
+            media.ProductMediaURLs.forEach(mediaUrl => {
+              if (mediaUrl.product_media_url) {
+                imagesToDelete.push(mediaUrl.product_media_url);
+              }
+            });
+          }
+        });
+      }
+    });
+
+    // Delete associated images from filesystem FIRST
+    if (imagesToDelete.length > 0) {
+      deleteImages(imagesToDelete);
+    }
+
+    // Then delete the brand (cascade will handle related records)
     await brand.destroy();
+
     res.status(StatusCodes.OK).json({ message: MESSAGE.delete.succ });
   } catch (error) {
     console.error("Error deleting brand:", error);

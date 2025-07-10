@@ -1,8 +1,9 @@
 import db from "../../../../models/index.js"; // Import the database models
 import { StatusCodes } from "http-status-codes"; // Import HTTP status codes
 import MESSAGE from "../../../../constants/message.js"; // Import messages
+import { deleteImages } from "../../../../utils/imageUtils.js";
 
-const { Category, User } = db;
+const { Category, User, Product, ProductVariant, ProductMedia, ProductMediaUrl, WishListItem } = db;
 
 // Add a new category
 const addCategory = async (req, res) => {
@@ -130,6 +131,7 @@ const updateCategoryById = async (req, res) => {
 
 // Delete a category
 const deleteCategory = async (req, res) => {
+
   try {
     const { category_id } = req.params;
 
@@ -138,7 +140,60 @@ const deleteCategory = async (req, res) => {
       return res.status(StatusCodes.NOT_FOUND).json({ message: MESSAGE.none });
     }
 
+    // Get all products in this category with their images BEFORE deletion
+    const products = await Product.findAll({
+      where: { category_id },
+      include: [
+        {
+          model: ProductVariant,
+          as: "variants",
+          attributes: ["base_variant_image_url"]
+        },
+        {
+          model: ProductMedia,
+          as: "media",
+          include: [{
+            model: ProductMediaUrl,
+            attributes: ["product_media_url"]
+          }]
+        }
+      ]
+    });
+
+    // Collect all image paths
+    const imagesToDelete = [];
+    products.forEach(product => {
+      // Add variant images
+      if (product.variants) {
+        product.variants.forEach(variant => {
+          if (variant.base_variant_image_url) {
+            imagesToDelete.push(variant.base_variant_image_url);
+          }
+        });
+      }
+      
+      // Add product media images
+      if (product.media) {
+        product.media.forEach(media => {
+          if (media.ProductMediaURLs) {
+            media.ProductMediaURLs.forEach(mediaUrl => {
+              if (mediaUrl.product_media_url) {
+                imagesToDelete.push(mediaUrl.product_media_url);
+              }
+            });
+          }
+        });
+      }
+    });
+
+    // Delete associated images from filesystem FIRST
+    if (imagesToDelete.length > 0) {
+      deleteImages(imagesToDelete);
+    }
+
+    // Then delete the category (cascade will handle related records)
     await category.destroy();
+
     res.status(StatusCodes.OK).json({ message: MESSAGE.delete.succ });
   } catch (error) {
     console.error("Error deleting category:", error);

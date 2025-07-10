@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
+import { deleteImage } from "../../../../utils/imageUtils.js";
 
 const { ProductMediaUrl, ProductMedia, User } = db;
 
@@ -159,6 +160,12 @@ const updateProductMediaURL = async (req, res) => {
         .json({ message: MESSAGE.get.none });
     }
 
+    // Handle image replacement - delete old image if new one is provided
+    if (product_media_url && productMediaURL.product_media_url && 
+        product_media_url !== productMediaURL.product_media_url) {
+      deleteImage(productMediaURL.product_media_url);
+    }
+
     // Update fields
     if (product_media_id) productMediaURL.product_media_id = product_media_id;
     if (product_media_url)
@@ -191,7 +198,16 @@ const deleteProductMediaURL = async (req, res) => {
         .json({ message: MESSAGE.get.none });
     }
 
+    // Store image path before deletion
+    const imagePath = productMediaURL.product_media_url;
+
     await productMediaURL.destroy();
+    
+    // Delete associated image from filesystem
+    if (imagePath) {
+      deleteImage(imagePath);
+    }
+    
     res.status(StatusCodes.OK).json({ message: MESSAGE.delete.succ });
   } catch (error) {
     console.error("Error deleting product media URL:", error);

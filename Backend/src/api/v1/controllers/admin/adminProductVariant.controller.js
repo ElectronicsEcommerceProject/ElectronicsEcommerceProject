@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
+import { deleteImage } from "../../../../utils/imageUtils.js";
 
 // Change AttributeValues to AttributeValue (singular)
 const { ProductVariant, Product, User, AttributeValue } = db;
@@ -198,6 +199,12 @@ const updateProductVariant = async (req, res) => {
       }
     }
 
+    // Handle image replacement - delete old image if new one is provided
+    if (req.body.base_variant_image_url && variant.base_variant_image_url && 
+        req.body.base_variant_image_url !== variant.base_variant_image_url) {
+      deleteImage(variant.base_variant_image_url);
+    }
+
     // Update the variant
     await variant.update({
       ...req.body,
@@ -256,6 +263,8 @@ const deleteProductVariant = async (req, res) => {
   try {
     const { id } = req.params;
 
+    console.log(`🔍 Starting deletion process for variant ID: ${id}`);
+    
     // Check if variant exists
     const variant = await ProductVariant.findByPk(id);
     if (!variant) {
@@ -264,8 +273,19 @@ const deleteProductVariant = async (req, res) => {
       });
     }
 
-    // Delete the variant
+    // Store image path before deletion
+    const variantImagePath = variant.base_variant_image_url;
+    console.log(`🔍 Variant image to delete: ${variantImagePath}`);
+
+    // Delete associated image from filesystem FIRST
+    if (variantImagePath) {
+      deleteImage(variantImagePath);
+    }
+
+    // Then delete the variant
     await variant.destroy();
+    
+    console.log(`✅ Variant and its image deleted`);
 
     res.status(StatusCodes.OK).json({
       message: MESSAGE.delete.succ,

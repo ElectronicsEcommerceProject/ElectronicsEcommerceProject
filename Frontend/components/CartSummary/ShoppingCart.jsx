@@ -91,9 +91,7 @@ const CartPage = () => {
     0
   );
   const discount = appliedCoupon ? parseFloat(appliedCoupon.discount_value) : 0;
-  const delivery = subtotal > 5000 ? 0 : 99;
-  const tax = subtotal * 0.18; // 18% GST
-  const total = subtotal - discount + delivery + tax;
+  const total = subtotal - discount;
 
   // Handlers
   const handleRemove = async (id) => {
@@ -294,8 +292,8 @@ const CartPage = () => {
         address_id: selectedAddress.address_id,
         payment_method: "cod", // Default to Cash on Delivery
         subtotal: subtotal,
-        shipping_cost: delivery,
-        tax_amount: tax,
+        shipping_cost: 0,
+        tax_amount: 0,
         discount_amount: discount,
         total_amount: total,
         notes: appliedCoupon ? `Coupon applied: ${appliedCoupon.code}` : "",
@@ -438,9 +436,7 @@ const CartPage = () => {
                 Subtotal: ₹{subtotal.toLocaleString()}
               </span>
             </div>
-            <div className="text-sm text-gray-600">
-              {delivery === 0 ? "Free delivery" : `+₹${delivery} delivery`}
-            </div>
+
           </div>
         )}
 
@@ -886,14 +882,7 @@ const CartPage = () => {
                   -₹{discount.toLocaleString()}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span>Delivery</span>
-                <span>{delivery === 0 ? "Free" : `₹${delivery}`}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Tax (GST 18%)</span>
-                <span>₹{tax.toLocaleString()}</span>
-              </div>
+
               <div className="flex justify-between font-bold border-t pt-2 text-base sm:text-lg">
                 <span>Total</span>
                 <span>₹{total.toLocaleString()}</span>
