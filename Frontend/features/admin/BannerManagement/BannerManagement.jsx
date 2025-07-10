@@ -105,13 +105,25 @@ const BannerManagement = () => {
 
       if (editingBanner) {
         // Update existing banner
-        const response = await updateApiById(adminBannerRoute, editingBanner, bannerData);
+        const response = await updateApiById(
+          adminBannerRoute,
+          editingBanner,
+          bannerData
+        );
         if (response.success) {
-          setBanners(banners.map(banner => 
-            banner.banner_id === editingBanner 
-              ? { ...banner, ...formData, image_url: formData.image ? URL.createObjectURL(formData.image) : banner.image_url }
-              : banner
-          ));
+          setBanners(
+            banners.map((banner) =>
+              banner.banner_id === editingBanner
+                ? {
+                    ...banner,
+                    ...formData,
+                    image_url: formData.image
+                      ? URL.createObjectURL(formData.image)
+                      : banner.image_url,
+                  }
+                : banner
+            )
+          );
           setEditingBanner(null);
           resetForm();
         }
@@ -127,7 +139,9 @@ const BannerManagement = () => {
             discount: formData.discount,
             bg_class: formData.bg_class,
             button_text: formData.button_text,
-            image_url: formData.image ? URL.createObjectURL(formData.image) : null,
+            image_url: formData.image
+              ? URL.createObjectURL(formData.image)
+              : null,
             is_active: formData.is_active,
             display_order: formData.display_order,
             createdAt: new Date().toISOString(),
@@ -183,10 +197,10 @@ const BannerManagement = () => {
 
   const toggleActive = async (id) => {
     try {
-      const banner = banners.find(b => b.banner_id === id);
+      const banner = banners.find((b) => b.banner_id === id);
       const updateData = new FormData();
-      updateData.append('is_active', !banner.is_active);
-      
+      updateData.append("is_active", !banner.is_active);
+
       const response = await updateApiById(adminBannerRoute, id, updateData);
       if (response.success) {
         setBanners(

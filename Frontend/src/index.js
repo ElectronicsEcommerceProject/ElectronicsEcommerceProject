@@ -60,6 +60,7 @@ const adminProductManagementDashboardDataRoute = import.meta.env
 
 //Admin Banner Management Routes
 const adminBannerRoute = import.meta.env.VITE_ADMIN_BANNER_ENDPOINT;
+const userBannerRoute = import.meta.env.VITE_USER_BANNER_ENDPOINT;
 
 const allUserRoute = import.meta.env.VITE_USER_ENDPOINT;
 const allCustomerRoute = import.meta.env.VITE_CUSTOMER_ENDPOINT;
@@ -289,4 +290,5 @@ export {
 
   //Banner routes
   adminBannerRoute,
+  userBannerRoute,
 };

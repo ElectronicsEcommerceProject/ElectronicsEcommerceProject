@@ -79,18 +79,6 @@ const getAllBanners = async (req, res) => {
         ["display_order", "ASC"],
         ["createdAt", "DESC"],
       ],
-      include: [
-        {
-          model: User,
-          as: "creator",
-          attributes: ["user_id", "name", "email"],
-        },
-        {
-          model: User,
-          as: "updater",
-          attributes: ["user_id", "name", "email"],
-        },
-      ],
     });
 
     if (!banners.length) {
