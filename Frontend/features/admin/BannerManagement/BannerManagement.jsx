@@ -540,14 +540,8 @@ const BannerManagement = () => {
               </div>
               <div className="text-sm text-gray-600">
                 <p>
-                  <strong>ID:</strong> {banner.banner_id}
-                </p>
-                <p>
-                  <strong>Created:</strong>{" "}
-                  {new Date(banner.createdAt).toLocaleDateString()}
-                </p>
-                <p>
-                  <strong>Creator:</strong> {banner.creator?.name || "Unknown"}
+                  <strong>{banner.updatedAt && banner.updatedAt !== banner.createdAt ? 'Updated:' : 'Created:'}</strong>{" "}
+                  {new Date(banner.updatedAt && banner.updatedAt !== banner.createdAt ? banner.updatedAt : banner.createdAt).toLocaleDateString()}
                 </p>
               </div>
             </div>
