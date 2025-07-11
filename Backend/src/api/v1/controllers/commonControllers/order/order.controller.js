@@ -65,7 +65,6 @@ export const createOrder = async (req, res) => {
           discount_amount: discount_amount || 0,
           redeemed_at: new Date(),
         });
-        console.log(`✅ Coupon redemption created for coupon_id: ${coupon_id}, order_id: ${order.order_id}`);
       } catch (couponErr) {
         console.error("❌ Error creating coupon redemption:", couponErr);
         // Continue with order creation even if coupon redemption fails
