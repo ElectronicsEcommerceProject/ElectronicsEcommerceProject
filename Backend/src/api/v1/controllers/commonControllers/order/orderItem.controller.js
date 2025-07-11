@@ -373,9 +373,26 @@ export const deleteOrderItem = async (req, res) => {
       });
     }
 
+    const order_id = orderItem.order_id;
+    const itemFinalPrice = parseFloat(orderItem.final_price);
+
+    // Delete the order item
     await orderItem.destroy();
 
+    // Update order totals
+    const order = await Order.findByPk(order_id);
+    if (order) {
+      const newTotalAmount = parseFloat(order.total_amount) - itemFinalPrice;
+      const newSubtotal = parseFloat(order.subtotal) - itemFinalPrice;
+      
+      await order.update({
+        total_amount: Math.max(0, newTotalAmount),
+        subtotal: Math.max(0, newSubtotal)
+      });
+    }
+
     return res.status(StatusCodes.OK).json({
+      success: true,
       message: MESSAGE.delete.succ,
     });
   } catch (err) {

@@ -9,6 +9,8 @@ import {
   orderItemByOrderIdRoute,
   cancelOrderRoute,
   updateApiById,
+  orderItemRoute,
+  deleteApiById,
 } from "../../src/index.js";
 
 import { Footer, Header } from "../../components/index.js";
@@ -223,22 +225,32 @@ const OrderCard = ({ order, expanded, onExpand, onOrderUpdate }) => {
                       order.order_status === "processing") && (
                       <div className="mt-2">
                         <button
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.stopPropagation();
-                            alert(`Order Item Details:
-
-Order ID: ${order.order_id}
-Order Number: ${order.order_number}
-Product: ${item.product?.name}
-Variant: ${item.productVariant?.description || 'N/A'}
-Quantity: ${item.total_quantity}
-Price per unit: ₹${item.price_at_time}
-Discount: ₹${item.discount_applied || 0}
-Final Price: ₹${item.final_price}
-Order Status: ${order.order_status}
-Order Date: ${new Date(order.order_date).toLocaleDateString()}
-Payment Method: ${order.payment_method}
-Payment Status: ${order.payment_status}`);
+                            if (
+                              window.confirm(
+                                `Are you sure you want to cancel this item?\n\nProduct: ${item.product?.name}\nVariant: ${item.productVariant?.description || "N/A"}\nQuantity: ${item.total_quantity}\nOriginal Price: ₹${item.price_at_time}${item.discount_applied > 0 ? `\nDiscount: ₹${item.discount_applied}` : ''}\nFinal Price: ₹${item.final_price}${item.discount_applied > 0 ? '\n\n⚠️ You will lose the discount on this item!' : ''}`
+                              )
+                            ) {
+                              try {
+                                const response = await deleteApiById(
+                                  orderItemRoute,
+                                  item.order_item_id
+                                );
+                                if (response && response.success !== false) {
+                                  alert("Order item cancelled successfully!");
+                                  onOrderUpdate();
+                                } else {
+                                  alert(
+                                    response?.message ||
+                                      "Failed to cancel order item. Please try again."
+                                  );
+                                }
+                              } catch (error) {
+                                console.error("Error cancelling order item:", error);
+                                alert("Failed to cancel order item. Please try again.");
+                              }
+                            }
                           }}
                           className="px-3 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 transition-colors"
                         >
