@@ -1,7 +1,8 @@
 import express from "express";
 
-import { verifyJwtToken, isAdmin } from "../../../../middleware/index.js";
-import { orderController } from "../../controllers/index.js";
+import { verifyJwtToken, isAdmin, validator } from "../../../../middleware/index.js";
+import { orderController, orderItemController } from "../../controllers/index.js";
+import { validators } from "../../validators/index.js";
 
 const router = express.Router();
 
@@ -38,6 +39,23 @@ router.patch(
   "/cancel/:order_id/",
   verifyJwtToken,
   orderController.cancelOrderById
+);
+
+// Order Items routes for admin
+router.get(
+  "/order/:order_id",
+  verifyJwtToken,
+  isAdmin,
+  validator(validators.order.orderIdValidator, "params"),
+  orderItemController.getOrderItemsByOrderId
+);
+
+router.delete(
+  "/:order_item_id",
+  verifyJwtToken,
+  isAdmin,
+  validator(validators.orderItem.orderItemIdValidator, "params"),
+  orderItemController.deleteOrderItem
 );
 
 export default router;
