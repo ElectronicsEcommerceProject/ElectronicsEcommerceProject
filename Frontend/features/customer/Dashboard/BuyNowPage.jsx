@@ -87,7 +87,7 @@ const BuyNowPage = () => {
   const fetchProductData = async () => {
     if (productId) {
       try {
-        console.log("🛍️ BuyNowPage loaded for Product ID:", productId);
+
 
         // Call the API to get product details
         const response = await getApiById(
@@ -810,10 +810,6 @@ const BuyNowPage = () => {
                       : null,
                   };
 
-                  console.log(
-                    "Finding or creating cart item with data:",
-                    cartItemData
-                  );
                   const cartItemResponse = await createApi(
                     cartItemFindOrCreateRoute,
                     cartItemData
@@ -894,13 +890,7 @@ const BuyNowPage = () => {
                   const finalPrice = Math.round(discountResult.finalPrice * 100) / 100;
                   const actualDiscountAmount = Math.round(discountResult.totalDiscountAmount * 100) / 100;
 
-                  console.log("🔍 Buy Now Price Debug:");
-                  console.log("Base Price:", basePrice);
-                  console.log("Quantity:", quantity);
-                  console.log("Original Total:", basePrice * quantity);
-                  console.log("Final Price (rounded):", finalPrice);
-                  console.log("Discount Amount (rounded):", actualDiscountAmount);
-                  console.log("Applied Coupon:", appliedCouponData);
+
 
                   // Check if address is selected
                   if (!selectedAddress) {
@@ -925,7 +915,7 @@ const BuyNowPage = () => {
                     coupon_id: appliedCouponData ? appliedCouponData.coupon_id : null,
                   };
 
-                  console.log("📦 Order Data:", orderData);
+
 
                   // Step 1: Create order
                   const orderResponse = await createApi(orderRoute, orderData);
@@ -949,7 +939,7 @@ const BuyNowPage = () => {
                       final_price: finalPrice, // Use discounted final price
                     };
 
-                    console.log("📦 Order Item Data:", orderItemData);
+
 
                     const orderItemResponse = await createApi(
                       orderItemRoute,

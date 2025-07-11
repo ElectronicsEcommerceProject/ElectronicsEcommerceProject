@@ -9,6 +9,8 @@ import {
   orderItemByOrderIdRoute,
   cancelOrderRoute,
   updateApiById,
+  orderItemRoute,
+  deleteApiById,
 } from "../../src/index.js";
 
 import { Footer, Header } from "../../components/index.js";
@@ -188,7 +190,7 @@ const OrderCard = ({ order, expanded, onExpand, onOrderUpdate }) => {
               {orderItems.map((item) => (
                 <div
                   key={item.order_item_id}
-                  className="flex items-center mb-4 p-3 bg-gray-50 rounded"
+                  className="flex flex-col sm:flex-row items-start sm:items-center mb-4 p-3 bg-gray-50 rounded"
                 >
                   <img
                     src={
@@ -196,9 +198,9 @@ const OrderCard = ({ order, expanded, onExpand, onOrderUpdate }) => {
                       "https://via.placeholder.com/80"
                     }
                     alt="Product"
-                    className="w-16 h-16 rounded mr-4 object-cover"
+                    className="w-16 h-16 rounded mr-0 sm:mr-4 mb-3 sm:mb-0 object-cover"
                   />
-                  <div className="flex-1">
+                  <div className="flex-1 w-full">
                     <div className="font-medium text-gray-800">
                       {item.product?.name}
                     </div>
@@ -217,6 +219,43 @@ const OrderCard = ({ order, expanded, onExpand, onOrderUpdate }) => {
                     {item.discount_applied > 0 && (
                       <div className="text-sm text-green-600">
                         Discount: ₹{item.discount_applied}
+                      </div>
+                    )}
+                    {(order.order_status === "pending" ||
+                      order.order_status === "processing") && (
+                      <div className="mt-2">
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (
+                              window.confirm(
+                                `Are you sure you want to cancel this item?\n\nProduct: ${item.product?.name}\nVariant: ${item.productVariant?.description || "N/A"}\nQuantity: ${item.total_quantity}\nOriginal Price: ₹${item.price_at_time}${item.discount_applied > 0 ? `\nDiscount: ₹${item.discount_applied}` : ''}\nFinal Price: ₹${item.final_price}${item.discount_applied > 0 ? '\n\n⚠️ You will lose the discount on this item!' : ''}`
+                              )
+                            ) {
+                              try {
+                                const response = await deleteApiById(
+                                  orderItemRoute,
+                                  item.order_item_id
+                                );
+                                if (response && response.success !== false) {
+                                  alert("Order item cancelled successfully!");
+                                  onOrderUpdate();
+                                } else {
+                                  alert(
+                                    response?.message ||
+                                      "Failed to cancel order item. Please try again."
+                                  );
+                                }
+                              } catch (error) {
+                                console.error("Error cancelling order item:", error);
+                                alert("Failed to cancel order item. Please try again.");
+                              }
+                            }
+                          }}
+                          className="px-3 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 transition-colors"
+                        >
+                          Cancel Item
+                        </button>
                       </div>
                     )}
                   </div>
@@ -278,7 +317,7 @@ const OrderCard = ({ order, expanded, onExpand, onOrderUpdate }) => {
                     : "bg-red-600 text-white hover:bg-red-700"
                 }`}
               >
-                {cancelling ? "Cancelling..." : "Cancel Order"}
+                {cancelling ? "Cancelling..." : "Cancel Complete Order"}
               </button>
             </div>
           )}

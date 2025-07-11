@@ -61,24 +61,19 @@ const AddressForm = ({
     try {
       setLoading(true);
       const response = await getApi(userAddressesRoute);
-      console.log("Address API response:", response);
+
 
       if (response && response.success) {
         if (response.addresses) {
-          console.log("Setting addresses from response.addresses:", response.addresses);
           setAddresses(response.addresses);
         } else if (response.data && response.data.addresses) {
-          console.log("Setting addresses from response.data.addresses:", response.data.addresses);
           setAddresses(response.data.addresses);
         } else if (Array.isArray(response.data)) {
-          console.log("Setting addresses from response.data array:", response.data);
           setAddresses(response.data);
         } else {
-          console.log("No valid addresses found in successful response");
           setAddresses([]);
         }
       } else {
-        console.log("API request was not successful:", response?.message);
         setAddresses([]);
       }
     } catch (error) {
@@ -124,7 +119,6 @@ const AddressForm = ({
   // Load addresses when component mounts
   useEffect(() => {
     if (isOpen) {
-      console.log("AddressForm opened, fetching addresses from:", userAddressesRoute);
       fetchAddresses();
       requestLocation();
     }
@@ -148,11 +142,7 @@ const AddressForm = ({
   // Get active addresses only
   const activeAddresses = addresses.filter(addr => addr && addr.is_active);
 
-  // Debug log addresses
-  useEffect(() => {
-    console.log("Current addresses:", addresses);
-    console.log("Active addresses:", activeAddresses);
-  }, [addresses, activeAddresses]);
+
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -205,7 +195,7 @@ const AddressForm = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Form Data:", formData);
+
 
     if (!validateForm()) {
       return;
