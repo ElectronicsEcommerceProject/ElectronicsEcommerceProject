@@ -20,17 +20,20 @@ const CouponForm = ({ coupon = null, onSave, onClose }) => {
     discountValue: coupon?.discount
       ? parseFloat(coupon.discount.replace(/%|\$/g, "")) || 0
       : 20,
-    // Initialize targetType: if variantId exists, it's product_variant. If productId, it's product. Else, cart.
-    // This assumes coupon object from props doesn't yet have distinct categoryId/brandId or a specific target_type field.
+    // Initialize targetType based on what IDs are present
     targetType: coupon?.productVariantId
       ? "product_variant"
       : coupon?.productId
       ? "product"
+      : coupon?.categoryId
+      ? "category"
+      : coupon?.brandId
+      ? "brand"
       : "cart",
     productId: coupon?.productId || null,
     productVariantId: coupon?.productVariantId || null,
-    categoryId: null, // Will be populated if editing a coupon that was category-specific (requires API support)
-    brandId: null, // Will be populated if editing a coupon that was brand-specific (requires API support)
+    categoryId: coupon?.categoryId || null,
+    brandId: coupon?.brandId || null,
     role: coupon?.role?.toLowerCase() || "customer",
     minCartValue: coupon?.minOrder || 1000,
     maxDiscountValue: coupon?.maxDiscountValue || 500,
@@ -289,8 +292,8 @@ const CouponForm = ({ coupon = null, onSave, onClose }) => {
             ? formData.productVariantId
             : null,
         target_role: formData.role,
-        min_cart_value: parseFloat(formData.minCartValue) || 0,
-        max_discount_value: formData.maxDiscountValue
+        min_cart_value: formData.targetType === "cart" ? parseFloat(formData.minCartValue) || 0 : null,
+        max_discount_value: formData.targetType === "cart" && formData.maxDiscountValue
           ? parseFloat(formData.maxDiscountValue)
           : null,
         usage_limit: formData.usageLimit ? parseInt(formData.usageLimit) : null,
@@ -763,40 +766,42 @@ const CouponForm = ({ coupon = null, onSave, onClose }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
-                MINIMUM CART VALUE (₹)
-              </label>
-              <input
-                type="number"
-                name="minCartValue"
-                value={formData.minCartValue}
-                onChange={handleChange}
-                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm"
-                min="0"
-                step="0.01"
-              />
-            </div>
-
-            {formData.discountType === "percentage" && (
+          {formData.targetType === "cart" && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
-                  MAX DISCOUNT VALUE (₹)
+                  MINIMUM CART VALUE (₹)
                 </label>
                 <input
                   type="number"
-                  name="maxDiscountValue"
-                  value={formData.maxDiscountValue || ""}
+                  name="minCartValue"
+                  value={formData.minCartValue}
                   onChange={handleChange}
                   className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm"
                   min="0"
                   step="0.01"
-                  placeholder="No maximum"
                 />
               </div>
-            )}
-          </div>
+
+              {formData.discountType === "percentage" && (
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1">
+                    MAX DISCOUNT VALUE (₹)
+                  </label>
+                  <input
+                    type="number"
+                    name="maxDiscountValue"
+                    value={formData.maxDiscountValue || ""}
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-sm"
+                    min="0"
+                    step="0.01"
+                    placeholder="No maximum"
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

@@ -56,6 +56,8 @@ const CouponManagement = () => {
             description: coupon.description,
             productId: coupon.product_id,
             productVariantId: coupon.product_variant_id,
+            categoryId: coupon.category_id,
+            brandId: coupon.brand_id,
             maxDiscountValue: coupon.max_discount_value,
             usagePerUser: coupon.usage_per_user,
             validFrom: coupon.valid_from,
