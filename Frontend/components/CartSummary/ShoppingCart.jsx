@@ -286,6 +286,10 @@ const CartPage = () => {
         return;
       }
 
+      // Extract coupon_id from cart items (if any item has a coupon applied)
+      const cartItemWithCoupon = cartItems.find(item => item.coupon_id);
+      const couponIdFromCart = cartItemWithCoupon?.coupon_id;
+      
       // Prepare order data
       const orderData = {
         user_id: userId,
@@ -299,9 +303,11 @@ const CartPage = () => {
         notes: appliedCoupon ? `Coupon applied: ${appliedCoupon.code}` : "",
       };
 
-      // Add coupon_id if a coupon is applied
+      // Add coupon_id if a coupon is applied (prioritize UI coupon, then cart item coupon)
       if (appliedCoupon && appliedCoupon.coupon_id) {
         orderData.coupon_id = appliedCoupon.coupon_id;
+      } else if (couponIdFromCart) {
+        orderData.coupon_id = couponIdFromCart;
       }
 
       // Set loading state
