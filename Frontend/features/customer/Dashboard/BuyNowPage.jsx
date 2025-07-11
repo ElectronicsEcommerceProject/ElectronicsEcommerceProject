@@ -891,9 +891,16 @@ const BuyNowPage = () => {
                     appliedCouponData
                   );
 
-                  const finalPrice = discountResult.finalPrice;
-                  const actualDiscountAmount =
-                    discountResult.totalDiscountAmount;
+                  const finalPrice = Math.round(discountResult.finalPrice * 100) / 100;
+                  const actualDiscountAmount = Math.round(discountResult.totalDiscountAmount * 100) / 100;
+
+                  console.log("🔍 Buy Now Price Debug:");
+                  console.log("Base Price:", basePrice);
+                  console.log("Quantity:", quantity);
+                  console.log("Original Total:", basePrice * quantity);
+                  console.log("Final Price (rounded):", finalPrice);
+                  console.log("Discount Amount (rounded):", actualDiscountAmount);
+                  console.log("Applied Coupon:", appliedCouponData);
 
                   // Check if address is selected
                   if (!selectedAddress) {
@@ -901,10 +908,7 @@ const BuyNowPage = () => {
                     return;
                   }
 
-                  const subtotal = finalPrice;
-                  const total = subtotal;
-
-                  // Prepare order data with original prices
+                  // Use consistent pricing - finalPrice is the actual amount customer pays
                   const originalSubtotal = basePrice * quantity;
                   const orderData = {
                     user_id: user_id,
@@ -914,24 +918,23 @@ const BuyNowPage = () => {
                     shipping_cost: 0,
                     tax_amount: 0,
                     discount_amount: actualDiscountAmount,
-                    total_amount: originalSubtotal - actualDiscountAmount,
+                    total_amount: finalPrice, // Use finalPrice directly
                     notes: appliedCouponData
                       ? `Coupon applied: ${appliedCouponData.code}`
                       : "",
+                    coupon_id: appliedCouponData ? appliedCouponData.coupon_id : null,
                   };
 
-                  // Add coupon_id if a coupon is applied
-                  if (appliedCouponData && appliedCouponData.coupon_id) {
-                    orderData.coupon_id = appliedCouponData.coupon_id;
-                  }
+                  console.log("📦 Order Data:", orderData);
 
                   // Step 1: Create order
                   const orderResponse = await createApi(orderRoute, orderData);
+                  console.log("📦 Order Response:", orderResponse);
 
                   if (orderResponse && orderResponse.success) {
                     const orderId = orderResponse.data.order.order_id;
 
-                    // Step 2: Create order item with original pricing
+                    // Step 2: Create order item with correct final pricing
                     const orderItemData = {
                       order_id: orderId,
                       product_id: productId,
@@ -943,8 +946,10 @@ const BuyNowPage = () => {
                         : 0,
                       price_at_time: basePrice,
                       discount_applied: actualDiscountAmount || 0,
-                      final_price: basePrice * quantity,
+                      final_price: finalPrice, // Use discounted final price
                     };
+
+                    console.log("📦 Order Item Data:", orderItemData);
 
                     const orderItemResponse = await createApi(
                       orderItemRoute,
@@ -952,7 +957,7 @@ const BuyNowPage = () => {
                     );
 
                     if (orderItemResponse && orderItemResponse.success) {
-                      alert(`Order placed successfully! Total: ₹${total}`);
+                      alert(`Order placed successfully! Total: ₹${finalPrice}`);
                       navigate("/profile/orders");
                     } else {
                       throw new Error(
@@ -2470,21 +2475,16 @@ const BuyNowPage = () => {
             const finalPrice = discountResult.finalPrice;
             const actualDiscountAmount = discountResult.totalDiscountAmount;
             
-            const subtotal = finalPrice;
-            const delivery = subtotal > 5000 ? 0 : 99;
-            const tax = subtotal * 0.18;
-            const total = subtotal + delivery + tax;
-            
             const originalSubtotal = basePrice * quantity;
             const orderData = {
               user_id: user_id,
               address_id: address.address_id,
               payment_method: "cod",
               subtotal: originalSubtotal,
-              shipping_cost: delivery,
-              tax_amount: tax,
+              shipping_cost: 0,
+              tax_amount: 0,
               discount_amount: actualDiscountAmount,
-              total_amount: originalSubtotal + delivery + tax - actualDiscountAmount,
+              total_amount: finalPrice,
               notes: appliedCouponData ? `Coupon applied: ${appliedCouponData.code}` : "",
             };
             
@@ -2511,7 +2511,7 @@ const BuyNowPage = () => {
               const orderItemResponse = await createApi(orderItemRoute, orderItemData);
               
               if (orderItemResponse && orderItemResponse.success) {
-                alert(`Order placed successfully! Total: ₹${total}`);
+                alert(`Order placed successfully! Total: ₹${finalPrice}`);
                 navigate("/profile/orders");
               } else {
                 throw new Error(orderItemResponse?.message || "Failed to create order item");
