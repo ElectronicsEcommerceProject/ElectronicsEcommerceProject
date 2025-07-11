@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   House,
   Package,
@@ -55,6 +55,7 @@ const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [accordionOpen, setAccordionOpen] = useState(true);
+  const sidebarRef = useRef(null);
   const [notifications, setNotifications] = useState([
     {
       id: 1,
@@ -161,6 +162,20 @@ const AdminLayout = () => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
+  // Close sidebar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target) && sidebarOpen) {
+        setSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [sidebarOpen]);
+
   return (
     <div className="bg-gray-100 font-sans min-h-screen flex flex-col">
       {/* Fixed Header (height: 72px) */}
@@ -204,6 +219,7 @@ const AdminLayout = () => {
       <div className="flex flex-1">
         {/* Sidebar - starts just below header */}
         <aside
+          ref={sidebarRef}
           className={`w-64 bg-white shadow-md p-4 fixed left-0 top-[72px] h-[calc(100vh-72px)] z-40 transition-transform duration-300 ease-in-out overflow-y-auto ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0`}
