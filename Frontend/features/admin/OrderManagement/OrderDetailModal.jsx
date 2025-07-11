@@ -1,5 +1,5 @@
-import React from "react";
-import { updateApiById, orderRoute, cancelOrderRoute, MESSAGE } from "../../../src/index.js";
+import React, { useState, useEffect } from "react";
+import { updateApiById, orderRoute, cancelOrderRoute, orderItemRoute, deleteApiById, getApiById, orderItemByOrderIdRoute, MESSAGE } from "../../../src/index.js";
 
 const OrderDetailModal = ({
   showModal,
@@ -8,6 +8,29 @@ const OrderDetailModal = ({
   setSelectedOrder,
   onOrderStatusUpdate,
 }) => {
+  const [orderItems, setOrderItems] = useState([]);
+  const [loadingItems, setLoadingItems] = useState(false);
+
+  // Fetch real order items when modal opens
+  useEffect(() => {
+    if (showModal && selectedOrder?.orderId) {
+      fetchOrderItems();
+    }
+  }, [showModal, selectedOrder?.orderId]);
+
+  const fetchOrderItems = async () => {
+    setLoadingItems(true);
+    try {
+      const response = await getApiById(orderItemByOrderIdRoute, selectedOrder.orderId);
+      if (response.data) {
+        setOrderItems(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching order items:", error);
+    } finally {
+      setLoadingItems(false);
+    }
+  };
   
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
@@ -106,13 +129,47 @@ const OrderDetailModal = ({
             <h3 className="text-sm sm:text-base font-semibold text-gray-700 mb-2 sm:mb-3">
               Order Items
             </h3>
-            <div className="space-y-1">
-              {selectedOrder.items &&
-                selectedOrder.items.map((item, index) => (
-                  <p key={index} className="text-sm">
-                    {item.name} x {item.qty} - ₹{item.price.toFixed(2)}
-                  </p>
-                ))}
+            <div className="space-y-2">
+              {loadingItems ? (
+                <p className="text-sm text-gray-600">Loading order items...</p>
+              ) : orderItems.length > 0 ? (
+                orderItems.map((item, index) => (
+                  <div key={item.order_item_id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                    <div className="text-sm">
+                      {item.product?.name} x {item.total_quantity} - ₹{item.final_price}
+                    </div>
+                    {(selectedOrder.status === "pending" || selectedOrder.status === "processing") && (
+                      <button
+                        onClick={async () => {
+                          if (window.confirm(`Cancel item: ${item.product?.name}?`)) {
+                            try {
+                              const response = await deleteApiById(
+                                orderItemRoute,
+                                item.order_item_id
+                              );
+                              if (response && response.success !== false) {
+                                alert("Order item cancelled successfully!");
+                                // Remove item from local state
+                                setOrderItems(prev => prev.filter(i => i.order_item_id !== item.order_item_id));
+                              } else {
+                                alert("Failed to cancel order item.");
+                              }
+                            } catch (error) {
+                              console.error("Error cancelling order item:", error);
+                              alert("Failed to cancel order item.");
+                            }
+                          }
+                        }}
+                        className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors"
+                      >
+                        Cancel Item
+                      </button>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-600">No items found</p>
+              )}
             </div>
             <p className="font-semibold mt-3 text-sm border-t pt-2">
               Total: ₹{selectedOrder.amount.toFixed(2)}

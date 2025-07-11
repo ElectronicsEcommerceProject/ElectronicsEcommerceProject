@@ -52,6 +52,8 @@ app.use("/notifications", adminNotificationRoutes); // Notification Management R
 
 app.use("/order", adminOrderRoutes);
 
+app.use("/order-Item", adminOrderRoutes);
+
 app.use("/coupon", adminCouponRoutes);
 
 app.use("/users", adminUserRoutes);

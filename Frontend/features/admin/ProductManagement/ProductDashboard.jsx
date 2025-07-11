@@ -58,16 +58,16 @@ const EntityCard = ({
   const entityType = title.toLowerCase().replace(/\s+/g, " ");
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 h-full flex flex-col">
-      <div className="flex justify-between items-center mb-3">
+    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-5 h-full flex flex-col hover:shadow-xl transition-shadow duration-300">
+      <div className="flex justify-between items-center mb-4">
         <div className="flex items-center">
-          <h2 className="text-lg sm:text-xl font-bold">{title}</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{title}</h2>
           {activeFilter && (
-            <div className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center">
-              <span className="mr-1">Filtered</span>
+            <div className="ml-3 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 text-xs px-3 py-1.5 rounded-full flex items-center shadow-sm">
+              <span className="mr-1 font-medium">Filtered</span>
               <button
                 onClick={onClearFilter}
-                className="text-blue-600 hover:text-blue-800"
+                className="text-blue-600 hover:text-blue-800 ml-1 hover:bg-white rounded-full p-0.5 transition-colors"
                 aria-label="Clear filter"
               >
                 <FaTimes size={10} />
@@ -77,91 +77,87 @@ const EntityCard = ({
         </div>
         <button
           onClick={onAdd}
-          className="bg-blue-600 text-white p-1.5 sm:p-2 rounded-full hover:bg-blue-700 flex-shrink-0"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 sm:p-2.5 rounded-full hover:from-blue-700 hover:to-purple-700 flex-shrink-0 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
           aria-label={`Add new ${title.toLowerCase()}`}
         >
-          <FaPlus className="text-xs sm:text-sm" />
+          <FaPlus className="text-sm" />
         </button>
       </div>
 
-      <div className="relative mb-3">
+      <div className="relative mb-4">
         <input
           type="text"
           placeholder={searchPlaceholder}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full p-1.5 sm:p-2 pl-7 sm:pl-8 border rounded text-sm"
+          className="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
         />
-        <FaSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs sm:text-sm" />
       </div>
 
-      <div className="overflow-x-auto overflow-y-auto flex-grow max-h-48 sm:max-h-64 custom-scrollbar">
+      <div className="overflow-x-auto overflow-y-auto flex-grow max-h-48 sm:max-h-64 rounded-lg border border-gray-100">
         <table className="min-w-full">
           <thead>
-            <tr className="bg-gray-50">
+            <tr className="bg-gradient-to-r from-gray-50 to-gray-100">
               {fields.map((field, index) => (
                 <th
                   key={index}
-                  className="p-1.5 sm:p-2 text-left text-xs sm:text-sm font-medium text-gray-600"
+                  className="p-3 sm:p-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider"
                 >
                   {field.label}
                 </th>
               ))}
-              <th className="p-1.5 sm:p-2 text-left text-xs sm:text-sm font-medium text-gray-600">
+              <th className="p-3 sm:p-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider w-24">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-100">
             {filteredData.length > 0 ? (
-              filteredData.map((item) => {
-                // Fix the highlighting logic
+              filteredData.map((item, rowIndex) => {
                 const isSelected = selectedItem && selectedItem.id === item.id;
-                // console.log(
-                //   `Row ${item.id} selected:`,
-                //   isSelected,
-                //   `(selectedItem?.id: ${selectedItem?.id}, item.id: ${item.id})`
-                // );
-
                 return (
                   <tr
                     key={item.id}
-                    className={`cursor-pointer ${
+                    className={`cursor-pointer transition-all duration-200 ${
                       isSelected
-                        ? "bg-blue-100 hover:bg-blue-100"
-                        : "hover:bg-gray-50"
+                        ? "bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-500"
+                        : rowIndex % 2 === 0 ? "bg-white hover:bg-gray-50" : "bg-gray-25 hover:bg-gray-50"
                     }`}
                     onClick={() => onSelect(entityType, item)}
                   >
                     {fields.map((field, index) => (
                       <td
                         key={index}
-                        className="p-1.5 sm:p-2 text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none"
+                        className="p-3 sm:p-4 text-xs sm:text-sm text-gray-800 font-medium"
                       >
-                        {item[field.key]}
+                        <div className="truncate max-w-[80px] sm:max-w-none">
+                          {item[field.key]}
+                        </div>
                       </td>
                     ))}
-                    <td className="p-1.5 sm:p-2 text-xs sm:text-sm whitespace-nowrap">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEdit(title.toLowerCase(), item.id, item);
-                        }}
-                        className="text-blue-600 hover:text-blue-800 mr-2"
-                        aria-label={`Edit ${title.toLowerCase()}`}
-                      >
-                        <FaEdit className="text-xs sm:text-sm" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDelete(title.toLowerCase(), item.id);
-                        }}
-                        className="text-red-600 hover:text-red-800"
-                        aria-label={`Delete ${title.toLowerCase()}`}
-                      >
-                        <FaTrash className="text-xs sm:text-sm" />
-                      </button>
+                    <td className="p-2 sm:p-4 text-xs sm:text-sm">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(title.toLowerCase(), item.id, item);
+                          }}
+                          className="p-2 text-blue-600 hover:text-white hover:bg-blue-600 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md"
+                          aria-label={`Edit ${title.toLowerCase()}`}
+                        >
+                          <FaEdit className="text-xs sm:text-sm" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(title.toLowerCase(), item.id);
+                          }}
+                          className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md"
+                          aria-label={`Delete ${title.toLowerCase()}`}
+                        >
+                          <FaTrash className="text-xs sm:text-sm" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -170,9 +166,14 @@ const EntityCard = ({
               <tr>
                 <td
                   colSpan={fields.length + 1}
-                  className="p-2 text-center text-gray-500 italic"
+                  className="p-8 text-center text-gray-500 italic bg-gray-50"
                 >
-                  No data available
+                  <div className="flex flex-col items-center">
+                    <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mb-2">
+                      <FaSearch className="text-gray-400" />
+                    </div>
+                    No data available
+                  </div>
                 </td>
               </tr>
             )}

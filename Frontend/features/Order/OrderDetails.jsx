@@ -239,7 +239,8 @@ const OrderCard = ({ order, expanded, onExpand, onOrderUpdate }) => {
                                 );
                                 if (response && response.success !== false) {
                                   alert("Order item cancelled successfully!");
-                                  onOrderUpdate();
+                                  // Remove item from local state instead of API call
+                                  setOrderItems(prev => prev.filter(i => i.order_item_id !== item.order_item_id));
                                 } else {
                                   alert(
                                     response?.message ||
