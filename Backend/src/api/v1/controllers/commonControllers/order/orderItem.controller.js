@@ -379,16 +379,24 @@ export const deleteOrderItem = async (req, res) => {
     // Delete the order item
     await orderItem.destroy();
 
-    // Update order totals
-    const order = await Order.findByPk(order_id);
-    if (order) {
-      const newTotalAmount = parseFloat(order.total_amount) - itemFinalPrice;
-      const newSubtotal = parseFloat(order.subtotal) - itemFinalPrice;
-      
-      await order.update({
-        total_amount: Math.max(0, newTotalAmount),
-        subtotal: Math.max(0, newSubtotal)
-      });
+    // Check if this was the last item in the order
+    const remainingItems = await OrderItem.count({ where: { order_id } });
+    
+    if (remainingItems === 0) {
+      // Delete the entire order if no items remain
+      await Order.destroy({ where: { order_id } });
+    } else {
+      // Update order totals if items remain
+      const order = await Order.findByPk(order_id);
+      if (order) {
+        const newTotalAmount = parseFloat(order.total_amount) - itemFinalPrice;
+        const newSubtotal = parseFloat(order.subtotal) - itemFinalPrice;
+        
+        await order.update({
+          total_amount: Math.max(0, newTotalAmount),
+          subtotal: Math.max(0, newSubtotal)
+        });
+      }
     }
 
     return res.status(StatusCodes.OK).json({
