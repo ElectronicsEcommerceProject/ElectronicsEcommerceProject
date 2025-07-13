@@ -3,7 +3,7 @@ import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
 import slugify from "slugify";
 import { Op } from "sequelize";
-import { deleteImages } from "../../../../utils/imageUtils.js";
+import { deleteImages, getPaginationParams, createPaginationResponse } from "../../../../utils/index.js";
 
 const {
   Product,
@@ -20,6 +20,8 @@ const {
   AttributeValue,
   Attribute,
 } = db;
+
+
 
 // ✅ Create a new product
 const createProduct = async (req, res) => {
@@ -86,12 +88,17 @@ const createProduct = async (req, res) => {
 // ✅ Get all products
 const getAllProducts = async (req, res) => {
   try {
-    //i want to get all products from product table..
-    const products = await Product.findAll({});
+    const { page, limit, offset } = getPaginationParams(req);
+
+    const { count, rows: products } = await Product.findAndCountAll({
+      limit,
+      offset,
+    });
 
     res.status(StatusCodes.OK).json({
       message: MESSAGE.get.succ,
       data: products,
+      pagination: createPaginationResponse(count, page, limit)
     });
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -142,6 +149,7 @@ const getProductById = async (req, res) => {
 const getProductsByCategoryId = async (req, res) => {
   try {
     const { category_id } = req.params;
+    const { page, limit, offset } = getPaginationParams(req);
 
     // Check if category exists
     const category = await Category.findByPk(category_id);
@@ -151,7 +159,9 @@ const getProductsByCategoryId = async (req, res) => {
       });
     }
 
-    const products = await Product.findAll({
+    const { count, rows: products } = await Product.findAndCountAll({
+      limit,
+      offset,
       where: { category_id: category_id },
       include: [
         { model: Brand, as: "brand", attributes: ["brand_id", "name"] },
@@ -277,6 +287,7 @@ const getProductsByCategoryId = async (req, res) => {
       success: true,
       message: MESSAGE.get.succ,
       data,
+      pagination: createPaginationResponse(count, page, limit)
     });
   } catch (error) {
     console.error("Error fetching products by category:", error);
@@ -291,13 +302,16 @@ const getProductsByCategoryId = async (req, res) => {
 const getProductsByCategoryAndBrand = async (req, res) => {
   try {
     const { category_id, brand_id } = req.params;
+    const { page, limit, offset } = getPaginationParams(req);
 
     // Build the filter dynamically
     const filter = {};
     if (category_id) filter.category_id = category_id;
     if (brand_id) filter.brand_id = brand_id;
 
-    const products = await Product.findAll({
+    const { count, rows: products } = await Product.findAndCountAll({
+      limit,
+      offset,
       where: filter,
       include: [
         {
@@ -317,6 +331,7 @@ const getProductsByCategoryAndBrand = async (req, res) => {
     res.status(StatusCodes.OK).json({
       message: MESSAGE.get.succ,
       data: products,
+      pagination: createPaginationResponse(count, page, limit)
     });
   } catch (error) {
     console.error("Error fetching products by category and brand:", error);
@@ -486,8 +501,7 @@ const deleteProduct = async (req, res) => {
 const getProductsByBrandId = async (req, res) => {
   try {
     const { brand_id } = req.params;
-
-    // console.log("testing", brand_id);
+    const { page, limit, offset } = getPaginationParams(req);
 
     // 1. Validate brand exists
     const brand = await Brand.findByPk(brand_id);
@@ -498,7 +512,9 @@ const getProductsByBrandId = async (req, res) => {
     }
 
     // 2. Fetch all products for this brand
-    const products = await Product.findAll({
+    const { count, rows: products } = await Product.findAndCountAll({
+      limit,
+      offset,
       where: { brand_id },
       include: [
         { model: Category, as: "category", attributes: ["name"] },
@@ -715,6 +731,7 @@ const getProductsByBrandId = async (req, res) => {
       success: true,
       message: MESSAGE.get.succ,
       data,
+      pagination: createPaginationResponse(count, page, limit)
     });
   } catch (err) {
     console.error("getProductsByBrand error:", err);
