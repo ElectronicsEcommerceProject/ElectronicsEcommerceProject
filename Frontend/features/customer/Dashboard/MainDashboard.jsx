@@ -12,7 +12,7 @@ import {
 
 // Lazy Image Component
 const LazyImage = ({ src, alt, className, ...props }) => {
-  const [imageSrc, setImageSrc] = useState('');
+  const [imageSrc, setImageSrc] = useState("");
   const [imageRef, setImageRef] = useState();
 
   useEffect(() => {
@@ -20,8 +20,8 @@ const LazyImage = ({ src, alt, className, ...props }) => {
     if (imageRef && imageSrc !== src) {
       if (IntersectionObserver) {
         observer = new IntersectionObserver(
-          entries => {
-            entries.forEach(entry => {
+          (entries) => {
+            entries.forEach((entry) => {
               if (entry.isIntersecting) {
                 setImageSrc(src);
                 observer.unobserve(imageRef);
@@ -72,33 +72,50 @@ const MainDashboard = () => {
   const [activeBanner, setActiveBanner] = useState(0);
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState(null);
-  const [visibleProducts, setVisibleProducts] = useState(4);
   const [products, setProducts] = useState([]);
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10,
+  });
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+
+  // Fetch products function
+  const fetchProducts = useCallback(async (page = 1, append = false) => {
+    if (isAuthenticated()) {
+      try {
+        if (!append) setLoading(true);
+        else setLoadingMore(true);
+
+        const response = await getApi(
+          `${userDashboardDataRoute}?page=${page}&limit=10`
+        );
+        if (response.success) {
+          if (append) {
+            setProducts((prev) => [...prev, ...response.data]);
+          } else {
+            setProducts(response.data);
+          }
+          setPagination(response.pagination);
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    }
+  }, []);
 
   // Check authentication status and fetch data
   useEffect(() => {
     const checkAuth = () => {
       setIsUserAuthenticated(isAuthenticated());
-    };
-
-    const fetchProducts = async () => {
-      if (isAuthenticated()) {
-        try {
-          setLoading(true);
-          const response = await getApi(userDashboardDataRoute);
-          if (response.success) {
-            setProducts(response.data);
-          }
-        } catch (error) {
-          console.error("Error fetching products:", error);
-        } finally {
-          setLoading(false);
-        }
-      }
     };
 
     const fetchBanners = async () => {
@@ -195,7 +212,9 @@ const MainDashboard = () => {
   const uniqueBrands = [...new Set(products.map((product) => product.brand))];
 
   const loadMoreProducts = () => {
-    setVisibleProducts((prev) => prev + 4);
+    if (pagination.currentPage < pagination.totalPages) {
+      fetchProducts(pagination.currentPage + 1, true);
+    }
   };
 
   const handleProductClick = (productId) => {
@@ -352,7 +371,9 @@ const MainDashboard = () => {
             </button>
             <button
               className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 rounded-full transition-all duration-300 hover:scale-110"
-              onClick={() => setActiveBanner((prev) => (prev + 1) % banners.length)}
+              onClick={() =>
+                setActiveBanner((prev) => (prev + 1) % banners.length)
+              }
             >
               <svg
                 className="w-6 h-6"
@@ -507,107 +528,115 @@ const MainDashboard = () => {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
-              {filteredProducts
-                .slice(0, visibleProducts)
-                .map((product, index) => (
-                  <div
-                    key={product.product_id || index}
-                    className="w-full p-3 sm:p-4 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-200 group cursor-pointer flex flex-col"
-                    onClick={() => handleProductClick(product.product_id)}
-                  >
-                    <div className="relative h-36 sm:h-40 md:h-44 mb-3 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden">
-                      {product.discount && (
-                        <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
-                          -{product.discount}
-                        </div>
-                      )}
-                      <LazyImage
-                        src={product.image}
-                        alt={product.name}
-                        className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
+              {filteredProducts.map((product, index) => (
+                <div
+                  key={product.product_id || index}
+                  className="w-full p-3 sm:p-4 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-200 group cursor-pointer flex flex-col"
+                  onClick={() => handleProductClick(product.product_id)}
+                >
+                  <div className="relative h-36 sm:h-40 md:h-44 mb-3 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden">
+                    {product.discount && (
+                      <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
+                        -{product.discount}
+                      </div>
+                    )}
+                    <LazyImage
+                      src={product.image}
+                      alt={product.name}
+                      className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="space-y-2 flex-grow">
+                    <h3 className="text-sm sm:text-base font-semibold text-gray-800 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                      {searchTerm
+                        ? highlightText(product.name, searchTerm)
+                        : product.name}
+                    </h3>
+                    <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                      {searchTerm
+                        ? highlightText(product.description, searchTerm)
+                        : product.description}
+                    </p>
+                    <div className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full inline-block">
+                      {searchTerm
+                        ? highlightText(product.brand, searchTerm)
+                        : product.brand}
                     </div>
-                    <div className="space-y-2 flex-grow">
-                      <h3 className="text-sm sm:text-base font-semibold text-gray-800 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                        {searchTerm
-                          ? highlightText(product.name, searchTerm)
-                          : product.name}
-                      </h3>
-                      <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
-                        {searchTerm
-                          ? highlightText(product.description, searchTerm)
-                          : product.description}
-                      </p>
-                      <div className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full inline-block">
-                        {searchTerm
-                          ? highlightText(product.brand, searchTerm)
-                          : product.brand}
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <div className="flex text-yellow-400">
-                          {[...Array(5)].map((_, i) => (
-                            <span
-                              key={i}
-                              className={
-                                i < Math.floor(product.rating) ? "★" : "☆"
-                              }
-                            >
-                              ★
-                            </span>
-                          ))}
-                        </div>
-                        <span className="text-xs text-gray-500">
-                          ({product.rating})
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-base sm:text-lg font-bold text-green-600">
-                            {product.price}
-                          </div>
-                          {product.originalPrice &&
-                            product.originalPrice !== product.price && (
-                              <div className="text-xs sm:text-sm text-gray-500 line-through">
-                                {product.originalPrice}
-                              </div>
-                            )}
-                        </div>
-                        <div
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            product.stock === "out-of-stock"
-                              ? "bg-red-100 text-red-600"
-                              : "bg-green-100 text-green-600"
-                          }`}
-                        >
-                          {product.stock === "out-of-stock"
-                            ? "Out of Stock"
-                            : "In Stock"}
-                        </div>
-                      </div>
-                    </div>
-                    {product.features && (
-                      <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-gray-100">
-                        {product.features.map((feature, idx) => (
+                    <div className="flex items-center space-x-1">
+                      <div className="flex text-yellow-400">
+                        {[...Array(5)].map((_, i) => (
                           <span
-                            key={idx}
-                            className="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs"
+                            key={i}
+                            className={
+                              i < Math.floor(product.rating) ? "★" : "☆"
+                            }
                           >
-                            {feature}
+                            ★
                           </span>
                         ))}
                       </div>
-                    )}
+                      <span className="text-xs text-gray-500">
+                        ({product.rating})
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-base sm:text-lg font-bold text-green-600">
+                          {product.price}
+                        </div>
+                        {product.originalPrice &&
+                          product.originalPrice !== product.price && (
+                            <div className="text-xs sm:text-sm text-gray-500 line-through">
+                              {product.originalPrice}
+                            </div>
+                          )}
+                      </div>
+                      <div
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          product.stock === "out-of-stock"
+                            ? "bg-red-100 text-red-600"
+                            : "bg-green-100 text-green-600"
+                        }`}
+                      >
+                        {product.stock === "out-of-stock"
+                          ? "Out of Stock"
+                          : "In Stock"}
+                      </div>
+                    </div>
                   </div>
-                ))}
+                  {product.features && (
+                    <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-gray-100">
+                      {product.features.map((feature, idx) => (
+                        <span
+                          key={idx}
+                          className="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs"
+                        >
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
-          {!loading && visibleProducts < filteredProducts.length && (
+          {!loading && pagination.currentPage < pagination.totalPages && (
             <div className="text-center mt-8">
               <button
                 onClick={loadMoreProducts}
-                className="bg-blue-600 text-white hover:bg-blue-700 px-8 py-3 rounded-full transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                disabled={loadingMore}
+                className="bg-blue-600 text-white hover:bg-blue-700 px-8 py-3 rounded-full transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Load More
+                {loadingMore ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Loading...</span>
+                  </div>
+                ) : (
+                  `Load More (${
+                    pagination.totalItems - products.length
+                  } remaining)`
+                )}
               </button>
             </div>
           )}

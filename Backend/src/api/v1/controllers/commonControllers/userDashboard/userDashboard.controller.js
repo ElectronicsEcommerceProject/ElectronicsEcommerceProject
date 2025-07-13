@@ -29,8 +29,15 @@ const getUserDashboardProducts = async (req, res) => {
       });
     }
 
+    // Pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
     // Fetch active products with related data filtered by user role
-    const products = await Product.findAll({
+    const { count, rows: products } = await Product.findAndCountAll({
+      limit,
+      offset,
       where: { is_active: true },
       include: [
         {
@@ -179,6 +186,12 @@ const getUserDashboardProducts = async (req, res) => {
       success: true,
       message: MESSAGE.get.succ,
       data,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+        totalItems: count,
+        itemsPerPage: limit
+      }
     });
   } catch (error) {
     console.error("Error in getUserDashboardProducts:", error);
