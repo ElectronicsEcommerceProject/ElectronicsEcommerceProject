@@ -32,12 +32,29 @@ const getUserDashboardProducts = async (req, res) => {
 
     // Pagination parameters
     const { page, limit, offset } = getPaginationParams(req);
+    
+    // Search parameters
+    const search = req.query.search?.trim();
+    const brand = req.query.brand?.trim();
+
+    // Build where conditions
+    const whereConditions = { is_active: true };
+    const includeConditions = [];
+
+    // Add search conditions
+    if (search) {
+      whereConditions[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } },
+        { short_description: { [Op.like]: `%${search}%` } }
+      ];
+    }
 
     // Fetch active products with related data filtered by user role
     const { count, rows: products } = await Product.findAndCountAll({
       limit,
       offset,
-      where: { is_active: true },
+      where: whereConditions,
       include: [
         {
           model: Category,
@@ -83,6 +100,8 @@ const getUserDashboardProducts = async (req, res) => {
           model: Brand,
           as: "brand",
           attributes: ["name"],
+          where: brand ? { name: { [Op.like]: `%${brand}%` } } : undefined,
+          required: brand ? true : false,
         },
         {
           model: ProductReview,

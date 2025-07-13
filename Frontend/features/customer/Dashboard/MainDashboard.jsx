@@ -86,31 +86,41 @@ const MainDashboard = () => {
   const [touchEnd, setTouchEnd] = useState(null);
 
   // Fetch products function
-  const fetchProducts = useCallback(async (page = 1, append = false) => {
-    if (isAuthenticated()) {
-      try {
-        if (!append) setLoading(true);
-        else setLoadingMore(true);
+  const fetchProducts = useCallback(
+    async (page = 1, append = false, searchQuery = "", brandFilter = null) => {
+      if (isAuthenticated()) {
+        try {
+          if (!append) setLoading(true);
+          else setLoadingMore(true);
 
-        const response = await getApi(
-          `${userDashboardDataRoute}?page=${page}&limit=10`
-        );
-        if (response.success) {
-          if (append) {
-            setProducts((prev) => [...prev, ...response.data]);
-          } else {
-            setProducts(response.data);
+          // Build query parameters
+          const params = new URLSearchParams({
+            page: page.toString(),
+            limit: "9",
+          });
+
+          if (searchQuery) params.append("search", searchQuery);
+          if (brandFilter) params.append("brand", brandFilter);
+
+          const response = await getApi(`${userDashboardDataRoute}?${params}`);
+          if (response.success) {
+            if (append) {
+              setProducts((prev) => [...prev, ...response.data]);
+            } else {
+              setProducts(response.data);
+            }
+            setPagination(response.pagination);
           }
-          setPagination(response.pagination);
+        } catch (error) {
+          console.error("Error fetching products:", error);
+        } finally {
+          setLoading(false);
+          setLoadingMore(false);
         }
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
       }
-    }
-  }, []);
+    },
+    []
+  );
 
   // Check authentication status and fetch data
   useEffect(() => {
@@ -130,13 +140,13 @@ const MainDashboard = () => {
     };
 
     checkAuth();
-    fetchProducts();
+    fetchProducts(1, false, searchTerm, selectedBrand);
     fetchBanners();
 
     // Listen for auth changes
     const handleAuthChange = () => {
       checkAuth();
-      fetchProducts();
+      fetchProducts(1, false, searchTerm, selectedBrand);
     };
 
     window.addEventListener("tokenChanged", handleAuthChange);
@@ -144,7 +154,7 @@ const MainDashboard = () => {
     return () => {
       window.removeEventListener("tokenChanged", handleAuthChange);
     };
-  }, []);
+  }, [searchTerm, selectedBrand]);
 
   useEffect(() => {
     if (banners.length > 0) {
@@ -199,21 +209,16 @@ const MainDashboard = () => {
     setTouchStart(null);
   };
 
-  const filteredProducts = products.filter((product) => {
-    const matchesBrand = selectedBrand ? product.brand === selectedBrand : true;
-    const matchesSearch = searchTerm
-      ? product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.brand.toLowerCase().includes(searchTerm.toLowerCase())
-      : true;
-    return matchesBrand && matchesSearch;
-  });
-
   const uniqueBrands = [...new Set(products.map((product) => product.brand))];
 
   const loadMoreProducts = () => {
     if (pagination.currentPage < pagination.totalPages) {
-      fetchProducts(pagination.currentPage + 1, true);
+      fetchProducts(
+        pagination.currentPage + 1,
+        true,
+        searchTerm,
+        selectedBrand
+      );
     }
   };
 
@@ -438,7 +443,11 @@ const MainDashboard = () => {
                   ? "bg-blue-600 text-white shadow-lg"
                   : "bg-white text-blue-600 hover:bg-blue-50 shadow-md"
               }`}
-              onClick={() => setSelectedBrand(null)}
+              onClick={() => {
+                setSelectedBrand(null);
+                setProducts([]);
+                fetchProducts(1, false, searchTerm, null);
+              }}
             >
               All Brands
             </button>
@@ -450,7 +459,11 @@ const MainDashboard = () => {
                     ? "bg-blue-600 text-white shadow-lg"
                     : "bg-white text-blue-600 hover:bg-blue-50 shadow-md"
                 }`}
-                onClick={() => setSelectedBrand(brand)}
+                onClick={() => {
+                  setSelectedBrand(brand);
+                  setProducts([]);
+                  fetchProducts(1, false, searchTerm, brand);
+                }}
               >
                 {brand}
               </button>
@@ -461,7 +474,7 @@ const MainDashboard = () => {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <p className="mt-2 text-gray-600">Loading products...</p>
             </div>
-          ) : filteredProducts.length === 0 ? (
+          ) : products.length === 0 ? (
             <div className="text-center py-16">
               <div className="max-w-md mx-auto">
                 <div className="w-24 h-24 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -528,7 +541,7 @@ const MainDashboard = () => {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
-              {filteredProducts.map((product, index) => (
+              {products.map((product, index) => (
                 <div
                   key={product.product_id || index}
                   className="w-full p-3 sm:p-4 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-200 group cursor-pointer flex flex-col"
