@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -9,6 +9,51 @@ import {
   FiPackage,
   FiSearch,
 } from "react-icons/fi";
+
+// Lazy Image Component
+const LazyImage = ({ src, alt, className, ...props }) => {
+  const [imageSrc, setImageSrc] = useState('');
+  const [imageRef, setImageRef] = useState();
+
+  useEffect(() => {
+    let observer;
+    if (imageRef && imageSrc !== src) {
+      if (IntersectionObserver) {
+        observer = new IntersectionObserver(
+          entries => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                setImageSrc(src);
+                observer.unobserve(imageRef);
+              }
+            });
+          },
+          { threshold: 0.1 }
+        );
+        observer.observe(imageRef);
+      } else {
+        // Fallback for browsers without IntersectionObserver
+        setImageSrc(src);
+      }
+    }
+    return () => {
+      if (observer && observer.unobserve) {
+        observer.unobserve(imageRef);
+      }
+    };
+  }, [imageRef, imageSrc, src]);
+
+  return (
+    <img
+      ref={setImageRef}
+      src={imageSrc}
+      alt={alt}
+      className={className}
+      {...props}
+      loading="lazy"
+    />
+  );
+};
 
 import { Footer, Header } from "../../../components/index.js";
 import { setSearchTerm } from "../../../components/index.js";
@@ -186,7 +231,7 @@ const MainDashboard = () => {
           <div className="max-w-md w-full">
             <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
               <div className="w-24 h-24 mx-auto mb-6 relative">
-                <img
+                <LazyImage
                   src={logo}
                   alt="MAA LAXMI STORE Logo"
                   className="w-full h-full object-cover rounded-full shadow-lg border-4 border-white"
@@ -270,7 +315,7 @@ const MainDashboard = () => {
               <div className="md:w-1/2 flex justify-center mt-4 md:mt-0">
                 <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md">
                   <div className="absolute inset-0 bg-white/10 rounded-3xl blur-3xl"></div>
-                  <img
+                  <LazyImage
                     src={banner.image_url}
                     alt={banner.title}
                     className="relative w-full h-32 sm:h-48 md:h-80 object-cover rounded-2xl shadow-2xl transition-transform duration-500 hover:scale-105"
@@ -437,7 +482,7 @@ const MainDashboard = () => {
                 <div className="mt-8 p-6 bg-white rounded-xl shadow-lg border border-gray-100">
                   <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-6 text-sm text-gray-500">
                     <div className="flex items-center">
-                      <img
+                      <LazyImage
                         src={logo}
                         alt="Store"
                         className="w-6 h-6 mr-2 rounded-full object-cover"
@@ -476,7 +521,7 @@ const MainDashboard = () => {
                           -{product.discount}
                         </div>
                       )}
-                      <img
+                      <LazyImage
                         src={product.image}
                         alt={product.name}
                         className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
