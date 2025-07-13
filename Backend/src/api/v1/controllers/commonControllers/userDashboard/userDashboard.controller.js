@@ -2,6 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import db from "../../../../../models/index.js";
 import MESSAGE from "../../../../../constants/message.js";
 import { Op } from "sequelize";
+import { getPaginationParams, createPaginationResponse } from "../../../../../utils/index.js";
 
 const {
   Product,
@@ -30,9 +31,7 @@ const getUserDashboardProducts = async (req, res) => {
     }
 
     // Pagination parameters
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit;
+    const { page, limit, offset } = getPaginationParams(req);
 
     // Fetch active products with related data filtered by user role
     const { count, rows: products } = await Product.findAndCountAll({
@@ -186,12 +185,7 @@ const getUserDashboardProducts = async (req, res) => {
       success: true,
       message: MESSAGE.get.succ,
       data,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(count / limit),
-        totalItems: count,
-        itemsPerPage: limit
-      }
+      pagination: createPaginationResponse(count, page, limit)
     });
   } catch (error) {
     console.error("Error in getUserDashboardProducts:", error);
