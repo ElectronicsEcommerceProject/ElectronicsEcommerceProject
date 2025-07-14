@@ -580,12 +580,20 @@ const OrderDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Call AdminHeader Component */}
-      <AdminHeader />
+    <div className="w-full">
+      {/* Back Button for Mobile */}
+      <div className="mb-4 md:hidden">
+        <button
+          onClick={() => window.history.back()}
+          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 bg-white rounded-lg shadow-sm border"
+        >
+          <i className="fas fa-arrow-left"></i>
+          Back
+        </button>
+      </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-4 px-4 sm:py-6 sm:px-6 lg:px-8">
+      <div className="w-full">
         {/* Call FiltersSection Component */}
         <FiltersSection
           searchQuery={searchQuery}
@@ -624,7 +632,7 @@ const OrderDashboard = () => {
             paginate={paginate}
           />
         )}
-      </main>
+      </div>
 
       {/* Call OrderDetailModal Component */}
       <OrderDetailModal

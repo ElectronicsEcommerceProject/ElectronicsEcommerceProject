@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
+import { getPaginationParams, createPaginationResponse } from "../../../../utils/index.js";
 
 const {
   ProductReview,
@@ -21,8 +22,6 @@ export const getAllProductReviews = async (req, res) => {
       rating,
       product_id,
       user_id,
-      page = 1,
-      limit = 10,
       sort_by = "createdAt",
       sort_order = "DESC",
     } = req.query;
@@ -35,8 +34,8 @@ export const getAllProductReviews = async (req, res) => {
     if (product_id) whereConditions.product_id = product_id;
     if (user_id) whereConditions.user_id = user_id;
 
-    // Calculate pagination
-    const offset = (page - 1) * limit;
+    // Get pagination parameters
+    const { page, limit, offset } = getPaginationParams(req);
 
     // Get reviews with pagination
     const { count, rows: reviews } = await ProductReview.findAndCountAll({
@@ -129,12 +128,7 @@ export const getAllProductReviews = async (req, res) => {
       message: MESSAGE.get.succ,
       data: {
         reviews: formattedReviews,
-        pagination: {
-          total: count,
-          page: parseInt(page),
-          limit: parseInt(limit),
-          pages: Math.ceil(count / limit),
-        },
+        pagination: createPaginationResponse(count, page, limit),
       },
     });
   } catch (err) {
