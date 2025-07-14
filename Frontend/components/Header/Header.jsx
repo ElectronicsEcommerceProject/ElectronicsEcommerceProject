@@ -230,8 +230,8 @@ const Header = () => {
     if (searchInput.trim()) {
       // Update Redux search term
       dispatch(setSearchTerm(searchInput.trim()));
-      // Navigate to MainZone with search
-      navigate("/mainzone");
+      // Navigate to home route with search
+      navigate("/");
       console.log("Searching for:", searchInput.trim());
     }
   };
@@ -268,6 +268,8 @@ const Header = () => {
     setSelectedCategoryId(category.category_id);
     dispatch(setCategoryFilter(category.category_id));
     navigate(`/mainzone?category_id=${category.category_id}`);
+    setIsMenuOpen(false); // Close mobile menu
+    setIsHoveringCategory(false); // Close category dropdown
   };
 
   // Clear category selection
@@ -876,7 +878,7 @@ const Header = () => {
             </div>
 
             {/* NAV LINKS */}
-            <div className="flex overflow-x-auto md:overflow-visible flex-1 justify-start md:justify-center space-x-4 md:space-x-8 scrollbar-hide">
+            <div className="flex overflow-x-auto flex-1 justify-start md:justify-center space-x-4 md:space-x-8 scrollbar-thin scrollbar-thumb-gray-400">
               {categoriesLoading ? (
                 <div className="text-xs md:text-sm text-gray-500 px-1 py-1">
                   Loading...

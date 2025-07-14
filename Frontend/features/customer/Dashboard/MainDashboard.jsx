@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -10,6 +10,51 @@ import {
   FiSearch,
 } from "react-icons/fi";
 
+// Lazy Image Component
+const LazyImage = ({ src, alt, className, ...props }) => {
+  const [imageSrc, setImageSrc] = useState("");
+  const [imageRef, setImageRef] = useState();
+
+  useEffect(() => {
+    let observer;
+    if (imageRef && imageSrc !== src) {
+      if (IntersectionObserver) {
+        observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                setImageSrc(src);
+                observer.unobserve(imageRef);
+              }
+            });
+          },
+          { threshold: 0.1 }
+        );
+        observer.observe(imageRef);
+      } else {
+        // Fallback for browsers without IntersectionObserver
+        setImageSrc(src);
+      }
+    }
+    return () => {
+      if (observer && observer.unobserve) {
+        observer.unobserve(imageRef);
+      }
+    };
+  }, [imageRef, imageSrc, src]);
+
+  return (
+    <img
+      ref={setImageRef}
+      src={imageSrc}
+      alt={alt}
+      className={className}
+      {...props}
+      loading="lazy"
+    />
+  );
+};
+
 import { Footer, Header } from "../../../components/index.js";
 import { setSearchTerm } from "../../../components/index.js";
 import {
@@ -18,6 +63,7 @@ import {
   getApi,
   userBannerRoute,
 } from "../../../src/index.js";
+import { usePagination, buildQueryParams, LoadMoreButton, LoadingSpinner } from "../../../src/utils/index.js";
 import logo from "../../../../Frontend/assets/logo.jpg";
 
 const MainDashboard = () => {
@@ -27,33 +73,43 @@ const MainDashboard = () => {
   const [activeBanner, setActiveBanner] = useState(0);
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState(null);
-  const [visibleProducts, setVisibleProducts] = useState(4);
-  const [products, setProducts] = useState([]);
   const [banners, setBanners] = useState([]);
-  const [loading, setLoading] = useState(true);
+  
+  // API call function for pagination
+  const fetchProductsAPI = useCallback(async (page, limit, searchQuery = '', brandFilter = null) => {
+    if (!isAuthenticated()) return { success: false, data: [], pagination: {} };
+    
+    const params = buildQueryParams({
+      page,
+      limit,
+      search: searchQuery,
+      brand: brandFilter
+    });
+    
+    const response = await getApi(`${userDashboardDataRoute}?${params}`);
+    return response;
+  }, []);
+  
+  // Use pagination hook
+  const {
+    data: products,
+    loading,
+    loadingMore,
+    pagination,
+    fetchData: fetchProducts,
+    loadMore: loadMoreProducts,
+    hasMore,
+    remainingItems
+  } = usePagination(fetchProductsAPI);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+
+
 
   // Check authentication status and fetch data
   useEffect(() => {
     const checkAuth = () => {
       setIsUserAuthenticated(isAuthenticated());
-    };
-
-    const fetchProducts = async () => {
-      if (isAuthenticated()) {
-        try {
-          setLoading(true);
-          const response = await getApi(userDashboardDataRoute);
-          if (response.success) {
-            setProducts(response.data);
-          }
-        } catch (error) {
-          console.error("Error fetching products:", error);
-        } finally {
-          setLoading(false);
-        }
-      }
     };
 
     const fetchBanners = async () => {
@@ -68,13 +124,13 @@ const MainDashboard = () => {
     };
 
     checkAuth();
-    fetchProducts();
+    fetchProducts(1, false, searchTerm, selectedBrand);
     fetchBanners();
 
     // Listen for auth changes
     const handleAuthChange = () => {
       checkAuth();
-      fetchProducts();
+      fetchProducts(1, false, searchTerm, selectedBrand);
     };
 
     window.addEventListener("tokenChanged", handleAuthChange);
@@ -82,7 +138,7 @@ const MainDashboard = () => {
     return () => {
       window.removeEventListener("tokenChanged", handleAuthChange);
     };
-  }, []);
+  }, [searchTerm, selectedBrand]);
 
   useEffect(() => {
     if (banners.length > 0) {
@@ -137,21 +193,9 @@ const MainDashboard = () => {
     setTouchStart(null);
   };
 
-  const filteredProducts = products.filter((product) => {
-    const matchesBrand = selectedBrand ? product.brand === selectedBrand : true;
-    const matchesSearch = searchTerm
-      ? product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.brand.toLowerCase().includes(searchTerm.toLowerCase())
-      : true;
-    return matchesBrand && matchesSearch;
-  });
-
   const uniqueBrands = [...new Set(products.map((product) => product.brand))];
 
-  const loadMoreProducts = () => {
-    setVisibleProducts((prev) => prev + 4);
-  };
+
 
   const handleProductClick = (productId) => {
     navigate(`/product/${productId}`);
@@ -186,7 +230,7 @@ const MainDashboard = () => {
           <div className="max-w-md w-full">
             <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
               <div className="w-24 h-24 mx-auto mb-6 relative">
-                <img
+                <LazyImage
                   src={logo}
                   alt="MAA LAXMI STORE Logo"
                   className="w-full h-full object-cover rounded-full shadow-lg border-4 border-white"
@@ -270,7 +314,7 @@ const MainDashboard = () => {
               <div className="md:w-1/2 flex justify-center mt-4 md:mt-0">
                 <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md">
                   <div className="absolute inset-0 bg-white/10 rounded-3xl blur-3xl"></div>
-                  <img
+                  <LazyImage
                     src={banner.image_url}
                     alt={banner.title}
                     className="relative w-full h-32 sm:h-48 md:h-80 object-cover rounded-2xl shadow-2xl transition-transform duration-500 hover:scale-105"
@@ -307,7 +351,9 @@ const MainDashboard = () => {
             </button>
             <button
               className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 rounded-full transition-all duration-300 hover:scale-110"
-              onClick={() => setActiveBanner((prev) => (prev + 1) % banners.length)}
+              onClick={() =>
+                setActiveBanner((prev) => (prev + 1) % banners.length)
+              }
             >
               <svg
                 className="w-6 h-6"
@@ -372,7 +418,10 @@ const MainDashboard = () => {
                   ? "bg-blue-600 text-white shadow-lg"
                   : "bg-white text-blue-600 hover:bg-blue-50 shadow-md"
               }`}
-              onClick={() => setSelectedBrand(null)}
+              onClick={() => {
+                setSelectedBrand(null);
+                fetchProducts(1, false, searchTerm, null);
+              }}
             >
               All Brands
             </button>
@@ -384,18 +433,18 @@ const MainDashboard = () => {
                     ? "bg-blue-600 text-white shadow-lg"
                     : "bg-white text-blue-600 hover:bg-blue-50 shadow-md"
                 }`}
-                onClick={() => setSelectedBrand(brand)}
+                onClick={() => {
+                  setSelectedBrand(brand);
+                  fetchProducts(1, false, searchTerm, brand);
+                }}
               >
                 {brand}
               </button>
             ))}
           </div>
           {loading ? (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="mt-2 text-gray-600">Loading products...</p>
-            </div>
-          ) : filteredProducts.length === 0 ? (
+            <LoadingSpinner text="Loading products..." />
+          ) : products.length === 0 ? (
             <div className="text-center py-16">
               <div className="max-w-md mx-auto">
                 <div className="w-24 h-24 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -437,7 +486,7 @@ const MainDashboard = () => {
                 <div className="mt-8 p-6 bg-white rounded-xl shadow-lg border border-gray-100">
                   <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-6 text-sm text-gray-500">
                     <div className="flex items-center">
-                      <img
+                      <LazyImage
                         src={logo}
                         alt="Store"
                         className="w-6 h-6 mr-2 rounded-full object-cover"
@@ -462,110 +511,104 @@ const MainDashboard = () => {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
-              {filteredProducts
-                .slice(0, visibleProducts)
-                .map((product, index) => (
-                  <div
-                    key={product.product_id || index}
-                    className="w-full p-3 sm:p-4 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-200 group cursor-pointer flex flex-col"
-                    onClick={() => handleProductClick(product.product_id)}
-                  >
-                    <div className="relative h-36 sm:h-40 md:h-44 mb-3 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden">
-                      {product.discount && (
-                        <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
-                          -{product.discount}
-                        </div>
-                      )}
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
+              {products.map((product, index) => (
+                <div
+                  key={product.product_id || index}
+                  className="w-full p-3 sm:p-4 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-200 group cursor-pointer flex flex-col"
+                  onClick={() => handleProductClick(product.product_id)}
+                >
+                  <div className="relative h-36 sm:h-40 md:h-44 mb-3 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden">
+                    {product.discount && (
+                      <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
+                        -{product.discount}
+                      </div>
+                    )}
+                    <LazyImage
+                      src={product.image}
+                      alt={product.name}
+                      className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="space-y-2 flex-grow">
+                    <h3 className="text-sm sm:text-base font-semibold text-gray-800 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                      {searchTerm
+                        ? highlightText(product.name, searchTerm)
+                        : product.name}
+                    </h3>
+                    <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                      {searchTerm
+                        ? highlightText(product.description, searchTerm)
+                        : product.description}
+                    </p>
+                    <div className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full inline-block">
+                      {searchTerm
+                        ? highlightText(product.brand, searchTerm)
+                        : product.brand}
                     </div>
-                    <div className="space-y-2 flex-grow">
-                      <h3 className="text-sm sm:text-base font-semibold text-gray-800 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                        {searchTerm
-                          ? highlightText(product.name, searchTerm)
-                          : product.name}
-                      </h3>
-                      <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
-                        {searchTerm
-                          ? highlightText(product.description, searchTerm)
-                          : product.description}
-                      </p>
-                      <div className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full inline-block">
-                        {searchTerm
-                          ? highlightText(product.brand, searchTerm)
-                          : product.brand}
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <div className="flex text-yellow-400">
-                          {[...Array(5)].map((_, i) => (
-                            <span
-                              key={i}
-                              className={
-                                i < Math.floor(product.rating) ? "★" : "☆"
-                              }
-                            >
-                              ★
-                            </span>
-                          ))}
-                        </div>
-                        <span className="text-xs text-gray-500">
-                          ({product.rating})
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-base sm:text-lg font-bold text-green-600">
-                            {product.price}
-                          </div>
-                          {product.originalPrice &&
-                            product.originalPrice !== product.price && (
-                              <div className="text-xs sm:text-sm text-gray-500 line-through">
-                                {product.originalPrice}
-                              </div>
-                            )}
-                        </div>
-                        <div
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            product.stock === "out-of-stock"
-                              ? "bg-red-100 text-red-600"
-                              : "bg-green-100 text-green-600"
-                          }`}
-                        >
-                          {product.stock === "out-of-stock"
-                            ? "Out of Stock"
-                            : "In Stock"}
-                        </div>
-                      </div>
-                    </div>
-                    {product.features && (
-                      <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-gray-100">
-                        {product.features.map((feature, idx) => (
+                    <div className="flex items-center space-x-1">
+                      <div className="flex text-yellow-400">
+                        {[...Array(5)].map((_, i) => (
                           <span
-                            key={idx}
-                            className="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs"
+                            key={i}
+                            className={
+                              i < Math.floor(product.rating) ? "★" : "☆"
+                            }
                           >
-                            {feature}
+                            ★
                           </span>
                         ))}
                       </div>
-                    )}
+                      <span className="text-xs text-gray-500">
+                        ({product.rating})
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-base sm:text-lg font-bold text-green-600">
+                          {product.price}
+                        </div>
+                        {product.originalPrice &&
+                          product.originalPrice !== product.price && (
+                            <div className="text-xs sm:text-sm text-gray-500 line-through">
+                              {product.originalPrice}
+                            </div>
+                          )}
+                      </div>
+                      <div
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          product.stock === "out-of-stock"
+                            ? "bg-red-100 text-red-600"
+                            : "bg-green-100 text-green-600"
+                        }`}
+                      >
+                        {product.stock === "out-of-stock"
+                          ? "Out of Stock"
+                          : "In Stock"}
+                      </div>
+                    </div>
                   </div>
-                ))}
+                  {product.features && (
+                    <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-gray-100">
+                      {product.features.map((feature, idx) => (
+                        <span
+                          key={idx}
+                          className="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs"
+                        >
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
-          {!loading && visibleProducts < filteredProducts.length && (
-            <div className="text-center mt-8">
-              <button
-                onClick={loadMoreProducts}
-                className="bg-blue-600 text-white hover:bg-blue-700 px-8 py-3 rounded-full transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                Load More
-              </button>
-            </div>
-          )}
+          <LoadMoreButton
+            onClick={loadMoreProducts}
+            loading={loadingMore}
+            hasMore={hasMore}
+            remainingItems={remainingItems}
+          />
         </div>
       </div>
 

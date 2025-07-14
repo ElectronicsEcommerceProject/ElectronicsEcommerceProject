@@ -38,12 +38,15 @@ import {
   resetFilters,
   setSelectedBrandsForCategory,
 } from "../../../components/Redux/filterSlice";
-import FilterSidebar from "../../../components/ProductZone/FilterSidebar";
-import ProductGrid from "../../../components/ProductZone/ProductGrid";
-import SortOptions from "../../../components/ProductZone/SortOptions";
-import Footer from "../../../components/Footer/Footer";
-import Header from "../../../components/Header/Header";
-import { priceRanges, ratings } from "../../../components/Data/filters";
+import {
+  FilterSidebar,
+  ProductGrid,
+  SortOptions,
+  Footer,
+  Header,
+  priceRanges,
+  ratings,
+} from "../../../components/index.js";
 
 import {
   getApiById,
@@ -52,6 +55,7 @@ import {
   getProductsByBrandRoute,
   getBrandsByCategoryRoute,
 } from "../../../src/index.js";
+import { LoadingSpinner, usePagination, LoadMoreButton, buildQueryParams, PAGINATION_CONFIG } from "../../../src/utils/index.js";
 
 const MainZone = () => {
   const [searchParams] = useSearchParams();
@@ -65,9 +69,14 @@ const MainZone = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [wishlist, setWishlist] = useState([]);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState(null);
+  
   // API state
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
 
   // Brand state for API calls
@@ -158,32 +167,67 @@ const MainZone = () => {
   };
 
   // Fetch products by single brand_id (for URL parameter)
-  const fetchProductsByBrand = async (brandId) => {
+  const fetchProductsByBrand = async (brandId, searchQuery = '', page = 1, append = false) => {
     try {
-      setLoading(true);
-      setError(null);
+      if (!append) {
+        setLoading(true);
+        setError(null);
+      } else {
+        setLoadingMore(true);
+      }
 
-      const response = await getApiById(getProductsByBrandRoute, brandId);
+      // Build URL with search and pagination parameters
+      const params = buildQueryParams({
+        search: searchQuery.trim() || undefined,
+        page,
+        limit: PAGINATION_CONFIG.DEFAULT_LIMIT
+      });
+      
+      let url = `${getProductsByBrandRoute}/${brandId}`;
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+
+      const response = await getApi(url);
       console.warn("response", response);
 
       if (response.success && response.data) {
-        setProducts(response.data);
+        if (append) {
+          setProducts(prev => [...prev, ...response.data]);
+        } else {
+          setProducts(response.data);
+        }
+        setPagination(response.pagination);
+        setCurrentPage(page);
       } else {
         throw new Error(response.message || "Failed to fetch products");
       }
     } catch (err) {
       console.error("Error fetching products by brand:", err);
       setError(err.message || "Failed to fetch products");
-      setProducts([]);
+      if (!append) setProducts([]);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   // Fetch products by single brand_id (helper function)
-  const fetchProductsForBrand = async (brandId) => {
+  const fetchProductsForBrand = async (brandId, searchQuery = '', page = 1) => {
     try {
-      const response = await getApiById(getProductsByBrandRoute, brandId);
+      // Build URL with search and pagination parameters
+      const params = buildQueryParams({
+        search: searchQuery.trim() || undefined,
+        page,
+        limit: PAGINATION_CONFIG.DEFAULT_LIMIT
+      });
+      
+      let url = `${getProductsByBrandRoute}/${brandId}`;
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+
+      const response = await getApi(url);
       if (response.success && response.data) {
         return response.data;
       }
@@ -195,23 +239,26 @@ const MainZone = () => {
   };
 
   // Fetch all products for a category by getting brands first
-  const fetchProductsByCategory = async (categoryId) => {
+  const fetchProductsByCategory = async (categoryId, searchQuery = '') => {
     try {
       setLoading(true);
       setError(null);
 
       // First get all brands for this category
-      const brandsResponse = await getApiById(getBrandsByCategoryRoute, categoryId);
+      const brandsResponse = await getApiById(
+        getBrandsByCategoryRoute,
+        categoryId
+      );
       if (brandsResponse.success && brandsResponse.data) {
-        const brandIds = brandsResponse.data.map(brand => brand.brand_id);
-        
-        // Then fetch products for all these brands
+        const brandIds = brandsResponse.data.map((brand) => brand.brand_id);
+
+        // Then fetch products for all these brands with search query
         const productPromises = brandIds.map((brandId) =>
-          fetchProductsForBrand(brandId)
+          fetchProductsForBrand(brandId, searchQuery)
         );
         const productArrays = await Promise.all(productPromises);
         const allProducts = productArrays.flat();
-        
+
         setProducts(allProducts);
       } else {
         setProducts([]);
@@ -226,7 +273,7 @@ const MainZone = () => {
   };
 
   // Fetch products for multiple selected brands
-  const fetchProductsForSelectedBrands = async (brandIds) => {
+  const fetchProductsForSelectedBrands = async (brandIds, searchQuery = '') => {
     try {
       setLoading(true);
       setError(null);
@@ -236,9 +283,9 @@ const MainZone = () => {
         return;
       }
 
-      // Fetch products for each selected brand
+      // Fetch products for each selected brand with search query
       const productPromises = brandIds.map((brandId) =>
-        fetchProductsForBrand(brandId)
+        fetchProductsForBrand(brandId, searchQuery)
       );
       const productArrays = await Promise.all(productPromises);
 
@@ -262,7 +309,7 @@ const MainZone = () => {
   // Fetch all products when category is selected
   useEffect(() => {
     if (selectedCategoryId) {
-      fetchProductsByCategory(selectedCategoryId);
+      fetchProductsByCategory(selectedCategoryId, searchInput);
     } else {
       setSelectedBrandIds([]);
       setProducts([]);
@@ -274,14 +321,14 @@ const MainZone = () => {
     if (selectedBrands && availableBrands.length > 0) {
       // Map brand names to brand IDs
       const brandIds = selectedBrands
-        .map(brandName => {
-          const brand = availableBrands.find(b => b.name === brandName);
+        .map((brandName) => {
+          const brand = availableBrands.find((b) => b.name === brandName);
           return brand ? brand.brand_id : null;
         })
-        .filter(id => id !== null);
-      
+        .filter((id) => id !== null);
+
       setSelectedBrandIds(brandIds);
-      
+
       // If no brands selected, clear products
       if (selectedBrands.length === 0 && !searchParams.get("brand_id")) {
         setProducts([]);
@@ -295,11 +342,34 @@ const MainZone = () => {
     console.log("🔍 Search term updated in MainZone:", searchTerm);
   }, [searchTerm]);
 
-  // Real-time search: Update Redux search term when local input changes
+  // Debounced search: Wait 1.5 seconds after user stops typing
   useEffect(() => {
-    dispatch(setSearchTerm(searchInput));
-    console.log("🔍 Real-time search triggered:", searchInput);
-  }, [searchInput, dispatch]);
+    const timeoutId = setTimeout(() => {
+      dispatch(setSearchTerm(searchInput));
+      console.log("🔍 Debounced search triggered:", searchInput);
+      
+      // Trigger search on backend after delay (reset to page 1)
+      const brandId = searchParams.get("brand_id");
+      if (brandId) {
+        setCurrentPage(1);
+        fetchProductsByBrand(brandId, searchInput, 1, false);
+      } else if (selectedCategoryId) {
+        fetchProductsByCategory(selectedCategoryId, searchInput);
+      } else if (selectedBrandIds.length > 0) {
+        fetchProductsForSelectedBrands(selectedBrandIds, searchInput);
+      }
+    }, 1500); // 1.5 second delay
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput, dispatch, searchParams, selectedCategoryId, selectedBrandIds]);
+
+  // Load more products function
+  const handleLoadMore = () => {
+    const brandId = searchParams.get("brand_id");
+    if (brandId && pagination && currentPage < pagination.totalPages) {
+      fetchProductsByBrand(brandId, searchInput, currentPage + 1, true);
+    }
+  };
 
   useEffect(() => {
     const categoryId = searchParams.get("category_id");
@@ -313,7 +383,8 @@ const MainZone = () => {
     }
 
     if (brandId) {
-      fetchProductsByBrand(brandId);
+      setCurrentPage(1);
+      fetchProductsByBrand(brandId, searchInput, 1, false);
     }
   }, [searchParams]);
 
@@ -351,6 +422,17 @@ const MainZone = () => {
     e.preventDefault();
     dispatch(setSearchTerm(searchInput));
     setShowSuggestions(false);
+    
+    // Immediate search on Enter key press (reset to page 1)
+    const brandId = searchParams.get("brand_id");
+    if (brandId) {
+      setCurrentPage(1);
+      fetchProductsByBrand(brandId, searchInput, 1, false);
+    } else if (selectedCategoryId) {
+      fetchProductsByCategory(selectedCategoryId, searchInput);
+    } else if (selectedBrandIds.length > 0) {
+      fetchProductsForSelectedBrands(selectedBrandIds, searchInput);
+    }
   };
 
   const handleClearSearch = () => {
@@ -379,8 +461,8 @@ const MainZone = () => {
       : [...selectedBrandIds, brandId];
     setSelectedBrandIds(newSelectedBrandIds);
 
-    // Fetch products for selected brands
-    fetchProductsForSelectedBrands(newSelectedBrandIds);
+    // Fetch products for selected brands with current search term
+    fetchProductsForSelectedBrands(newSelectedBrandIds, searchInput);
   };
 
   const handlePriceRange = (range) => {
@@ -774,13 +856,15 @@ const MainZone = () => {
           <div className="mb-6">
             <div className="relative max-w-md">
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="🔍 Search products in real-time..."
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-sm"
-              />
+              <form onSubmit={handleSearchSubmit}>
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder="🔍 Search products (auto-search after 1.5s or press Enter)..."
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-sm"
+                />
+              </form>
               {searchInput && (
                 <button
                   onClick={() => setSearchInput("")}
@@ -840,10 +924,7 @@ const MainZone = () => {
             </h2>
           )}
           {loading ? (
-            <div className="text-center py-10">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-              <p className="text-gray-600 text-lg">Loading products...</p>
-            </div>
+            <LoadingSpinner text="Loading products..." size="h-12 w-12" className="py-10" />
           ) : error ? (
             <div className="text-center py-10">
               <div className="text-red-500 mb-4">
@@ -854,7 +935,10 @@ const MainZone = () => {
               <button
                 onClick={() => {
                   const brandId = searchParams.get("brand_id");
-                  if (brandId) fetchProductsByBrand(brandId);
+                  if (brandId) {
+                    setCurrentPage(1);
+                    fetchProductsByBrand(brandId, searchInput, 1, false);
+                  }
                 }}
                 className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
               >
@@ -902,8 +986,9 @@ const MainZone = () => {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map((product) => (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredProducts.map((product) => (
                 <div
                   key={product.id}
                   className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer"
@@ -1198,9 +1283,23 @@ const MainZone = () => {
                       🛍️ View Product Details
                     </button>
                   </div>
-                </div>
-              ))}
-            </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Load More Button */}
+              {pagination && (
+                <LoadMoreButton
+                  onClick={handleLoadMore}
+                  loading={loadingMore}
+                  hasMore={currentPage < pagination.totalPages}
+                  remainingItems={pagination.totalItems - products.length}
+                  className="mt-8"
+                  loadingText="Loading more products..."
+                  buttonText="Load More Products"
+                />
+              )}
+            </>
           )}
         </div>
       </div>

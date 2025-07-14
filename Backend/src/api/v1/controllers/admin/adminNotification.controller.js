@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import { StatusCodes } from "http-status-codes";
 import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
+import { getPaginationParams, createPaginationResponse } from "../../../../utils/index.js";
 
 const { Notification, NotificationTemplate, User } = db;
 
@@ -136,17 +137,8 @@ export const addNotification = async (req, res) => {
 // Get Notification Logs with Filtering
 export const getNotificationLogs = async (req, res) => {
   try {
-    const {
-      channel,
-      status,
-      audience,
-      page = 1,
-      limit = 10,
-      startDate,
-      endDate,
-    } = req.query;
-
-    const offset = (page - 1) * limit;
+    const { channel, status, audience, startDate, endDate } = req.query;
+    const { page, limit, offset } = getPaginationParams(req);
     const whereClause = {};
 
     // Apply filters
@@ -218,12 +210,7 @@ export const getNotificationLogs = async (req, res) => {
       message: MESSAGE.get.succ,
       data: {
         logs: formattedLogs,
-        pagination: {
-          total: count,
-          page: parseInt(page),
-          limit: parseInt(limit),
-          totalPages: Math.ceil(count / limit),
-        },
+        pagination: createPaginationResponse(count, page, limit),
         stats,
       },
     });
@@ -330,8 +317,8 @@ const formatChannelType = (channel) => {
 // Get All Templates
 export const getTemplates = async (req, res) => {
   try {
-    const { page = 1, limit = 10, type } = req.query;
-    const offset = (page - 1) * limit;
+    const { type } = req.query;
+    const { page, limit, offset } = getPaginationParams(req);
     const whereClause = {};
 
     if (type && type !== "All Types") {
@@ -373,12 +360,7 @@ export const getTemplates = async (req, res) => {
       message: MESSAGE.get.succ,
       data: {
         templates: formattedTemplates,
-        pagination: {
-          total: count,
-          page: parseInt(page),
-          limit: parseInt(limit),
-          totalPages: Math.ceil(count / limit),
-        },
+        pagination: createPaginationResponse(count, page, limit),
       },
     });
   } catch (error) {

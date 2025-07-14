@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -14,15 +14,23 @@ import {
 } from "../../src/index.js";
 
 import { Footer, Header } from "../../components/index.js";
+import { usePagination, LoadMoreButton, LoadingSpinner, buildQueryParams, PAGINATION_CONFIG } from "../../src/utils/index.js";
 
 const FilterSidebar = ({
   orderStatusFilters,
   setOrderStatusFilters,
   orderTimeFilters,
   setOrderTimeFilters,
+  dateRange,
+  setDateRange,
 }) => {
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const [isTimeOpen, setIsTimeOpen] = useState(false);
+  const [isDateOpen, setIsDateOpen] = useState(false);
   const statusOptions = [
-    { key: "onTheWay", label: "On the way" },
+    { key: "pending", label: "Pending" },
+    { key: "processing", label: "Processing" },
+    { key: "shipped", label: "Shipped" },
     { key: "delivered", label: "Delivered" },
     { key: "cancelled", label: "Cancelled" },
     { key: "returned", label: "Returned" },
@@ -41,46 +49,113 @@ const FilterSidebar = ({
     <div className="w-full p-4 bg-white rounded-lg shadow-md">
       <h3 className="text-lg font-semibold text-gray-800 mb-3">FILTERS</h3>
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">
+        <button
+          onClick={() => setIsStatusOpen(!isStatusOpen)}
+          className="flex items-center justify-between w-full text-sm font-semibold text-gray-700 mb-2 hover:text-blue-600 transition-colors text-left"
+        >
           ORDER STATUS
-        </h4>
-        {statusOptions.map(({ key, label }) => (
-          <label key={key} className="block mb-1 text-sm text-gray-600">
-            <input
-              type="checkbox"
-              className="mr-2 cursor-pointer"
-              checked={orderStatusFilters[key]}
-              onChange={() =>
-                setOrderStatusFilters({
-                  ...orderStatusFilters,
-                  [key]: !orderStatusFilters[key],
-                })
-              }
-            />
-            {label}
-          </label>
-        ))}
+          <svg className={`w-4 h-4 transform transition-transform ${isStatusOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {isStatusOpen && (
+          <div className="mb-3">
+            {statusOptions.map(({ key, label }) => (
+              <label key={key} className="block mb-1 text-sm text-gray-600">
+                <input
+                  type="checkbox"
+                  className="mr-2 cursor-pointer"
+                  checked={orderStatusFilters[key]}
+                  onChange={() =>
+                    setOrderStatusFilters({
+                      ...orderStatusFilters,
+                      [key]: !orderStatusFilters[key],
+                    })
+                  }
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+        )}
       </div>
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-2 mt-3">
+        <button
+          onClick={() => setIsTimeOpen(!isTimeOpen)}
+          className="flex items-center justify-between w-full text-sm font-semibold text-gray-700 mb-2 hover:text-blue-600 transition-colors text-left"
+        >
           ORDER TIME
-        </h4>
-        {timeOptions.map(({ key, label }) => (
-          <label key={key} className="block mb-1 text-sm text-gray-600">
-            <input
-              type="checkbox"
-              className="mr-2 cursor-pointer"
-              checked={orderTimeFilters[key]}
-              onChange={() =>
-                setOrderTimeFilters({
-                  ...orderTimeFilters,
-                  [key]: !orderTimeFilters[key],
-                })
-              }
-            />
-            {label}
-          </label>
-        ))}
+          <svg className={`w-4 h-4 transform transition-transform ${isTimeOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {isTimeOpen && (
+          <div className="mb-3">
+            {timeOptions.map(({ key, label }) => (
+              <label key={key} className="block mb-1 text-sm text-gray-600">
+                <input
+                  type="checkbox"
+                  className="mr-2 cursor-pointer"
+                  checked={orderTimeFilters[key]}
+                  onChange={() =>
+                    setOrderTimeFilters({
+                      ...orderTimeFilters,
+                      [key]: !orderTimeFilters[key],
+                    })
+                  }
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      {/* Custom Date Range Picker */}
+      <div className="mt-4">
+        <button
+          onClick={() => setIsDateOpen(!isDateOpen)}
+          className="flex items-center justify-between w-full text-sm font-semibold text-gray-700 mb-2 hover:text-blue-600 transition-colors text-left"
+        >
+          CUSTOM DATE RANGE
+          <svg className={`w-4 h-4 transform transition-transform ${isDateOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {isDateOpen && (
+          <div className="space-y-2">
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">From Date</label>
+              <input
+                type="date"
+                value={dateRange.startDate}
+                onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                className="w-full p-2 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">To Date</label>
+              <input
+                type="date"
+                value={dateRange.endDate}
+                onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                min={dateRange.startDate}
+                className="w-full p-2 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            {dateRange.startDate && dateRange.endDate && (
+              <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                📅 {new Date(dateRange.startDate).toLocaleDateString()} - {new Date(dateRange.endDate).toLocaleDateString()}
+              </div>
+            )}
+            <button
+              onClick={() => setDateRange({ startDate: '', endDate: '' })}
+              className="w-full text-xs text-gray-500 hover:text-red-600 transition-colors"
+            >
+              Clear Date Range
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -328,94 +403,48 @@ const OrderCard = ({ order, expanded, onExpand, onOrderUpdate }) => {
   );
 };
 
-const SearchBar = ({ searchQuery, setSearchQuery, handleSearch }) => (
-  <div className="w-full flex items-center mb-4 space-x-2">
-    <input
-      type="text"
-      placeholder="Search your orders here"
-      className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-    />
-    <button
-      className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-      onClick={handleSearch}
-    >
-      Search Orders
-    </button>
+const SearchBar = ({ searchInput, setSearchInput }) => (
+  <div className="w-full mb-4">
+    <div className="relative max-w-md">
+      <input
+        type="text"
+        placeholder="🔍 Search orders (auto-search after 1.5s)..."
+        className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+      />
+      {searchInput && (
+        <button
+          onClick={() => setSearchInput("")}
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      )}
+    </div>
+    {searchInput && (
+      <div className="mt-2 text-sm text-gray-600">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-medium">Searching for:</span>
+          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded font-medium">
+            "{searchInput}"
+          </span>
+        </div>
+      </div>
+    )}
   </div>
 );
 
-const Pagination = ({ currentPage, totalPages, onPageChange }) => {
-  const getPageNumbers = () => {
-    const pages = [];
-    const showPages = 5;
-    let start = Math.max(1, currentPage - Math.floor(showPages / 2));
-    let end = Math.min(totalPages, start + showPages - 1);
 
-    if (end - start + 1 < showPages) {
-      start = Math.max(1, end - showPages + 1);
-    }
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
-  };
-
-  if (totalPages <= 1) return null;
-
-  return (
-    <div className="flex items-center justify-center space-x-2 mt-6 mb-4">
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-          currentPage === 1
-            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-            : "bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 border border-gray-300"
-        }`}
-      >
-        ← Previous
-      </button>
-
-      {getPageNumbers().map((page) => (
-        <button
-          key={page}
-          onClick={() => onPageChange(page)}
-          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-            currentPage === page
-              ? "bg-blue-600 text-white shadow-md"
-              : "bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 border border-gray-300"
-          }`}
-        >
-          {page}
-        </button>
-      ))}
-
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-          currentPage === totalPages
-            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-            : "bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 border border-gray-300"
-        }`}
-      >
-        Next →
-      </button>
-    </div>
-  );
-};
 
 const OrderDetails = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [ordersPerPage] = useState(5);
+  const [searchInput, setSearchInput] = useState("");
   const [orderStatusFilters, setOrderStatusFilters] = useState({
-    onTheWay: false,
+    pending: false,
+    processing: false,
+    shipped: false,
     delivered: false,
     cancelled: false,
     returned: false,
@@ -428,79 +457,58 @@ const OrderDetails = () => {
     year2021: false,
     older: false,
   });
+  const [dateRange, setDateRange] = useState({
+    startDate: '',
+    endDate: ''
+  });
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 
-  const fetchOrders = async () => {
-    try {
-      const userId = getUserIdFromToken();
-      if (userId) {
-        const response = await getApiById(orderRoute, userId);
-        if (response.success) {
-          setOrders(response.data);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchOrders();
+  // API call function for pagination
+  const fetchOrdersAPI = useCallback(async (page, limit, searchQuery = '', statusFilters = {}, timeFilters = {}, customDateRange = {}) => {
+    const userId = getUserIdFromToken();
+    if (!userId) return { success: false, data: [], pagination: {} };
+    
+    const params = buildQueryParams({
+      page,
+      limit,
+      search: searchQuery,
+      ...statusFilters,
+      ...timeFilters,
+      startDate: customDateRange.startDate,
+      endDate: customDateRange.endDate
+    });
+    
+    const url = `${orderRoute}/${userId}?${params.toString()}`;
+    const response = await getApi(url);
+    
+    return response;
   }, []);
+  
+  // Use pagination hook
+  const {
+    data: orders,
+    loading,
+    loadingMore,
+    pagination,
+    fetchData: fetchOrders,
+    loadMore: loadMoreOrders,
+    hasMore,
+    remainingItems
+  } = usePagination(fetchOrdersAPI, { limit: PAGINATION_CONFIG.DEFAULT_LIMIT });
 
-  const handleSearch = () => {
-    console.log("Search query:", searchQuery);
-  };
-
-  const filteredOrders = orders.filter((order) => {
-    const statusMatch =
-      !Object.values(orderStatusFilters).some(Boolean) ||
-      (orderStatusFilters.delivered && order.order_status === "delivered") ||
-      (orderStatusFilters.cancelled && order.order_status === "cancelled") ||
-      (orderStatusFilters.onTheWay && order.order_status === "pending") ||
-      (orderStatusFilters.returned && order.order_status === "returned");
-
-    const orderDate = new Date(order.order_date);
-    const now = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(now.getDate() - 30);
-
-    const timeMatch =
-      !Object.values(orderTimeFilters).some(Boolean) ||
-      (orderTimeFilters.last30Days && orderDate >= thirtyDaysAgo) ||
-      (orderTimeFilters.year2024 && orderDate.getFullYear() === 2024) ||
-      (orderTimeFilters.year2023 && orderDate.getFullYear() === 2023) ||
-      (orderTimeFilters.year2022 && orderDate.getFullYear() === 2022) ||
-      (orderTimeFilters.year2021 && orderDate.getFullYear() === 2021) ||
-      (orderTimeFilters.older && orderDate.getFullYear() < 2021);
-
-    const searchMatch = searchQuery
-      ? order.order_number.toLowerCase().includes(searchQuery.toLowerCase())
-      : true;
-
-    return statusMatch && timeMatch && searchMatch;
-  });
-
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
-  const indexOfLastOrder = currentPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = filteredOrders.slice(
-    indexOfFirstOrder,
-    indexOfLastOrder
-  );
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    setExpandedOrderId(null); // Close any expanded order when changing pages
-  };
-
-  // Reset to first page when filters change
+  // Debounced search: Wait 1.5 seconds after user stops typing
   useEffect(() => {
-    setCurrentPage(1);
-  }, [orderStatusFilters, orderTimeFilters, searchQuery]);
+    const timeoutId = setTimeout(() => {
+      console.log("🔍 Debounced search triggered:", searchInput);
+      fetchOrders(1, false, searchInput, orderStatusFilters, orderTimeFilters, dateRange);
+    }, 1500); // 1.5 second delay
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput, orderStatusFilters, orderTimeFilters, dateRange]);
+
+  const handleOrderUpdate = () => {
+    fetchOrders(1, false, searchInput, orderStatusFilters, orderTimeFilters, dateRange);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 font-sans">
@@ -512,26 +520,25 @@ const OrderDetails = () => {
             setOrderStatusFilters={setOrderStatusFilters}
             orderTimeFilters={orderTimeFilters}
             setOrderTimeFilters={setOrderTimeFilters}
+            dateRange={dateRange}
+            setDateRange={setDateRange}
           />
         </div>
         <div className="w-full flex-1 p-4 pt-0">
           <SearchBar
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            handleSearch={handleSearch}
+            searchInput={searchInput}
+            setSearchInput={setSearchInput}
           />
           {loading ? (
-            <p className="text-sm text-gray-600">Loading orders...</p>
-          ) : filteredOrders.length > 0 ? (
+            <LoadingSpinner text="Loading orders..." />
+          ) : orders.length > 0 ? (
             <>
               <div className="mb-4">
                 <p className="text-sm text-gray-600">
-                  Showing {indexOfFirstOrder + 1}-
-                  {Math.min(indexOfLastOrder, filteredOrders.length)} of{" "}
-                  {filteredOrders.length} orders
+                  Showing {orders.length} of {pagination?.totalItems || 0} orders
                 </p>
               </div>
-              {currentOrders.map((order) => (
+              {orders.map((order) => (
                 <OrderCard
                   key={order.order_id}
                   order={order}
@@ -541,19 +548,97 @@ const OrderDetails = () => {
                       expandedOrderId === order.order_id ? null : order.order_id
                     )
                   }
-                  onOrderUpdate={fetchOrders}
+                  onOrderUpdate={handleOrderUpdate}
                 />
               ))}
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
+              <LoadMoreButton
+                onClick={loadMoreOrders}
+                loading={loadingMore}
+                hasMore={hasMore}
+                remainingItems={remainingItems}
+                buttonText="Load More Orders"
+                loadingText="Loading more orders..."
               />
             </>
           ) : (
-            <p className="text-sm text-gray-600">
-              No orders match the selected filters or search query.
-            </p>
+            <div className="text-center py-16">
+              <div className="max-w-md mx-auto">
+                <div className="w-24 h-24 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                  {searchInput 
+                    ? `No orders found for "${searchInput}"`
+                    : "No orders found"
+                  }
+                </h3>
+                <p className="text-gray-600 mb-8 leading-relaxed">
+                  {searchInput
+                    ? "Try adjusting your search terms or clearing filters to find your orders."
+                    : "It looks like you haven't placed any orders yet, or they don't match your current filters."
+                  }
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  {searchInput && (
+                    <button
+                      onClick={() => setSearchInput("")}
+                      className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                    >
+                      Clear Search
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setSearchInput("");
+                      setOrderStatusFilters({
+                        pending: false,
+                        processing: false,
+                        shipped: false,
+                        delivered: false,
+                        cancelled: false,
+                        returned: false,
+                      });
+                      setOrderTimeFilters({
+                        last30Days: false,
+                        year2024: false,
+                        year2023: false,
+                        year2022: false,
+                        year2021: false,
+                        older: false,
+                      });
+                      setDateRange({ startDate: '', endDate: '' });
+                    }}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                  >
+                    Reset All Filters
+                  </button>
+                </div>
+                <div className="mt-8 p-6 bg-white rounded-xl shadow-lg border border-gray-100">
+                  <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-6 text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                      </svg>
+                      <span>MAA LAXMI STORE</span>
+                    </div>
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>Secure Orders</span>
+                    </div>
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>Fast Delivery</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
