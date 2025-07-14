@@ -3,6 +3,7 @@ import { Op } from "sequelize";
 import MESSAGE from "../../../../../constants/message.js";
 import db from "../../../../../models/index.js";
 import { generateOrderNumber } from "../../../../../utils/orderUtils.js";
+import { getPaginationParams, createPaginationResponse } from "../../../../../utils/index.js";
 
 const { Order, OrderItem, User, Address, Product, ProductVariant, Payment } =
   db;
@@ -390,7 +391,7 @@ export const getLatestOrder = async (req, res) => {
   }
 };
 
-// 📋 Get all orders by user ID
+// 📋 Get all orders by user ID with pagination and filters
 const getAllOrdersByUserId = async (req, res) => {
   try {
     const { user_id } = req.params;
@@ -400,6 +401,7 @@ const getAllOrdersByUserId = async (req, res) => {
         message: "User ID is required",
       });
     }
+    
     const user = await User.findOne({ where: { user_id } });
     if (!user) {
       return res.status(StatusCodes.NOT_FOUND).json({
@@ -408,15 +410,100 @@ const getAllOrdersByUserId = async (req, res) => {
       });
     }
 
-    const orders = await Order.findAll({
-      where: { user_id },
+    // Get pagination parameters
+    const { page, limit, offset } = getPaginationParams(req);
+    
+    // Build where conditions
+    const whereConditions = { user_id };
+    
+    // Search filter
+    if (req.query.search) {
+      whereConditions.order_number = {
+        [Op.like]: `%${req.query.search}%`
+      };
+    }
+    
+    // Status filters
+    const statusFilters = [];
+    if (req.query.pending === 'true') statusFilters.push('pending');
+    if (req.query.processing === 'true') statusFilters.push('processing');
+    if (req.query.shipped === 'true') statusFilters.push('shipped');
+    if (req.query.delivered === 'true') statusFilters.push('delivered');
+    if (req.query.cancelled === 'true') statusFilters.push('cancelled');
+    if (req.query.returned === 'true') statusFilters.push('returned');
+    
+    if (statusFilters.length > 0) {
+      whereConditions.order_status = {
+        [Op.in]: statusFilters
+      };
+    }
+    
+    // Date range filter
+    if (req.query.startDate && req.query.endDate) {
+      const startDate = new Date(req.query.startDate);
+      const endDate = new Date(req.query.endDate);
+      endDate.setHours(23, 59, 59, 999);
+      
+      whereConditions.order_date = {
+        [Op.between]: [startDate, endDate]
+      };
+    }
+    
+    // Time-based filters
+    if (req.query.last30Days === 'true') {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      whereConditions.order_date = {
+        [Op.gte]: thirtyDaysAgo
+      };
+    }
+    
+    if (req.query.year2024 === 'true') {
+      whereConditions.order_date = {
+        [Op.between]: [new Date('2024-01-01'), new Date('2024-12-31 23:59:59')]
+      };
+    }
+    
+    if (req.query.year2023 === 'true') {
+      whereConditions.order_date = {
+        [Op.between]: [new Date('2023-01-01'), new Date('2023-12-31 23:59:59')]
+      };
+    }
+    
+    if (req.query.year2022 === 'true') {
+      whereConditions.order_date = {
+        [Op.between]: [new Date('2022-01-01'), new Date('2022-12-31 23:59:59')]
+      };
+    }
+    
+    if (req.query.year2021 === 'true') {
+      whereConditions.order_date = {
+        [Op.between]: [new Date('2021-01-01'), new Date('2021-12-31 23:59:59')]
+      };
+    }
+    
+    if (req.query.older === 'true') {
+      whereConditions.order_date = {
+        [Op.lt]: new Date('2021-01-01')
+      };
+    }
+
+    // Get orders with pagination and filters
+    const { count, rows: orders } = await Order.findAndCountAll({
+      where: whereConditions,
       order: [["createdAt", "DESC"]],
+      limit,
+      offset,
     });
+
+    // Create pagination response
+    const pagination = createPaginationResponse(count, page, limit);
 
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
       data: orders,
+      pagination,
     });
   } catch (error) {
     console.error("❌ Error fetching orders by user ID:", error);

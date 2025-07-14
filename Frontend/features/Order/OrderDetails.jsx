@@ -403,28 +403,44 @@ const OrderCard = ({ order, expanded, onExpand, onOrderUpdate }) => {
   );
 };
 
-const SearchBar = ({ searchQuery, setSearchQuery, handleSearch }) => (
-  <div className="w-full flex items-center mb-4 space-x-2">
-    <input
-      type="text"
-      placeholder="Search your orders here"
-      className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-    />
-    <button
-      className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-      onClick={handleSearch}
-    >
-      Search Orders
-    </button>
+const SearchBar = ({ searchInput, setSearchInput }) => (
+  <div className="w-full mb-4">
+    <div className="relative max-w-md">
+      <input
+        type="text"
+        placeholder="🔍 Search orders (auto-search after 1.5s)..."
+        className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+      />
+      {searchInput && (
+        <button
+          onClick={() => setSearchInput("")}
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      )}
+    </div>
+    {searchInput && (
+      <div className="mt-2 text-sm text-gray-600">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-medium">Searching for:</span>
+          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded font-medium">
+            "{searchInput}"
+          </span>
+        </div>
+      </div>
+    )}
   </div>
 );
 
 
 
 const OrderDetails = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [orderStatusFilters, setOrderStatusFilters] = useState({
     pending: false,
     processing: false,
@@ -457,72 +473,13 @@ const OrderDetails = () => {
       limit,
       search: searchQuery,
       ...statusFilters,
-      ...timeFilters
+      ...timeFilters,
+      startDate: customDateRange.startDate,
+      endDate: customDateRange.endDate
     });
     
-    const response = await getApiById(orderRoute, userId);
-    
-    if (response.success) {
-      // Apply client-side filtering since backend might not support all filters
-      let filteredData = response.data.filter((order) => {
-        const statusMatch =
-          !Object.values(statusFilters).some(Boolean) ||
-          (statusFilters.pending && order.order_status === "pending") ||
-          (statusFilters.processing && order.order_status === "processing") ||
-          (statusFilters.shipped && order.order_status === "shipped") ||
-          (statusFilters.delivered && order.order_status === "delivered") ||
-          (statusFilters.cancelled && order.order_status === "cancelled") ||
-          (statusFilters.returned && order.order_status === "returned");
-
-        const orderDate = new Date(order.order_date);
-        const now = new Date();
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(now.getDate() - 30);
-
-        // Custom date range filter
-        const dateRangeMatch = (() => {
-          if (customDateRange.startDate && customDateRange.endDate) {
-            const startDate = new Date(customDateRange.startDate);
-            const endDate = new Date(customDateRange.endDate);
-            endDate.setHours(23, 59, 59, 999);
-            return orderDate >= startDate && orderDate <= endDate;
-          }
-          return true;
-        })();
-
-        const timeMatch =
-          !Object.values(timeFilters).some(Boolean) ||
-          (timeFilters.last30Days && orderDate >= thirtyDaysAgo) ||
-          (timeFilters.year2024 && orderDate.getFullYear() === 2024) ||
-          (timeFilters.year2023 && orderDate.getFullYear() === 2023) ||
-          (timeFilters.year2022 && orderDate.getFullYear() === 2022) ||
-          (timeFilters.year2021 && orderDate.getFullYear() === 2021) ||
-          (timeFilters.older && orderDate.getFullYear() < 2021);
-
-        const searchMatch = searchQuery
-          ? order.order_number.toLowerCase().includes(searchQuery.toLowerCase())
-          : true;
-
-        return statusMatch && timeMatch && searchMatch && dateRangeMatch;
-      });
-      
-      // Manual pagination
-      const totalItems = filteredData.length;
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedData = filteredData.slice(startIndex, endIndex);
-      
-      return {
-        success: true,
-        data: paginatedData,
-        pagination: {
-          currentPage: page,
-          totalPages: Math.ceil(totalItems / limit),
-          totalItems,
-          itemsPerPage: limit
-        }
-      };
-    }
+    const url = `${orderRoute}/${userId}?${params.toString()}`;
+    const response = await getApi(url);
     
     return response;
   }, []);
@@ -537,18 +494,20 @@ const OrderDetails = () => {
     loadMore: loadMoreOrders,
     hasMore,
     remainingItems
-  } = usePagination(fetchOrdersAPI, { limit: 5 });
+  } = usePagination(fetchOrdersAPI, { limit: PAGINATION_CONFIG.DEFAULT_LIMIT });
 
+  // Debounced search: Wait 1.5 seconds after user stops typing
   useEffect(() => {
-    fetchOrders(1, false, searchQuery, orderStatusFilters, orderTimeFilters, dateRange);
-  }, [searchQuery, orderStatusFilters, orderTimeFilters, dateRange]);
+    const timeoutId = setTimeout(() => {
+      console.log("🔍 Debounced search triggered:", searchInput);
+      fetchOrders(1, false, searchInput, orderStatusFilters, orderTimeFilters, dateRange);
+    }, 1500); // 1.5 second delay
 
-  const handleSearch = () => {
-    console.log("Search query:", searchQuery);
-  };
+    return () => clearTimeout(timeoutId);
+  }, [searchInput, orderStatusFilters, orderTimeFilters, dateRange]);
 
   const handleOrderUpdate = () => {
-    fetchOrders(1, false, searchQuery, orderStatusFilters, orderTimeFilters, dateRange);
+    fetchOrders(1, false, searchInput, orderStatusFilters, orderTimeFilters, dateRange);
   };
 
   return (
@@ -567,9 +526,8 @@ const OrderDetails = () => {
         </div>
         <div className="w-full flex-1 p-4 pt-0">
           <SearchBar
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            handleSearch={handleSearch}
+            searchInput={searchInput}
+            setSearchInput={setSearchInput}
           />
           {loading ? (
             <LoadingSpinner text="Loading orders..." />
@@ -603,9 +561,84 @@ const OrderDetails = () => {
               />
             </>
           ) : (
-            <p className="text-sm text-gray-600">
-              No orders match the selected filters or search query.
-            </p>
+            <div className="text-center py-16">
+              <div className="max-w-md mx-auto">
+                <div className="w-24 h-24 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                  {searchInput 
+                    ? `No orders found for "${searchInput}"`
+                    : "No orders found"
+                  }
+                </h3>
+                <p className="text-gray-600 mb-8 leading-relaxed">
+                  {searchInput
+                    ? "Try adjusting your search terms or clearing filters to find your orders."
+                    : "It looks like you haven't placed any orders yet, or they don't match your current filters."
+                  }
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  {searchInput && (
+                    <button
+                      onClick={() => setSearchInput("")}
+                      className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                    >
+                      Clear Search
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setSearchInput("");
+                      setOrderStatusFilters({
+                        pending: false,
+                        processing: false,
+                        shipped: false,
+                        delivered: false,
+                        cancelled: false,
+                        returned: false,
+                      });
+                      setOrderTimeFilters({
+                        last30Days: false,
+                        year2024: false,
+                        year2023: false,
+                        year2022: false,
+                        year2021: false,
+                        older: false,
+                      });
+                      setDateRange({ startDate: '', endDate: '' });
+                    }}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                  >
+                    Reset All Filters
+                  </button>
+                </div>
+                <div className="mt-8 p-6 bg-white rounded-xl shadow-lg border border-gray-100">
+                  <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-6 text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                      </svg>
+                      <span>MAA LAXMI STORE</span>
+                    </div>
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>Secure Orders</span>
+                    </div>
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>Fast Delivery</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
