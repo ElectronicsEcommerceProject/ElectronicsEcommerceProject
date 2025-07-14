@@ -38,12 +38,15 @@ import {
   resetFilters,
   setSelectedBrandsForCategory,
 } from "../../../components/Redux/filterSlice";
-import FilterSidebar from "../../../components/ProductZone/FilterSidebar";
-import ProductGrid from "../../../components/ProductZone/ProductGrid";
-import SortOptions from "../../../components/ProductZone/SortOptions";
-import Footer from "../../../components/Footer/Footer";
-import Header from "../../../components/Header/Header";
-import { priceRanges, ratings } from "../../../components/Data/filters";
+import {
+  FilterSidebar,
+  ProductGrid,
+  SortOptions,
+  Footer,
+  Header,
+  priceRanges,
+  ratings,
+} from "../../../components/index.js";
 
 import {
   getApiById,
@@ -201,17 +204,20 @@ const MainZone = () => {
       setError(null);
 
       // First get all brands for this category
-      const brandsResponse = await getApiById(getBrandsByCategoryRoute, categoryId);
+      const brandsResponse = await getApiById(
+        getBrandsByCategoryRoute,
+        categoryId
+      );
       if (brandsResponse.success && brandsResponse.data) {
-        const brandIds = brandsResponse.data.map(brand => brand.brand_id);
-        
+        const brandIds = brandsResponse.data.map((brand) => brand.brand_id);
+
         // Then fetch products for all these brands
         const productPromises = brandIds.map((brandId) =>
           fetchProductsForBrand(brandId)
         );
         const productArrays = await Promise.all(productPromises);
         const allProducts = productArrays.flat();
-        
+
         setProducts(allProducts);
       } else {
         setProducts([]);
@@ -274,14 +280,14 @@ const MainZone = () => {
     if (selectedBrands && availableBrands.length > 0) {
       // Map brand names to brand IDs
       const brandIds = selectedBrands
-        .map(brandName => {
-          const brand = availableBrands.find(b => b.name === brandName);
+        .map((brandName) => {
+          const brand = availableBrands.find((b) => b.name === brandName);
           return brand ? brand.brand_id : null;
         })
-        .filter(id => id !== null);
-      
+        .filter((id) => id !== null);
+
       setSelectedBrandIds(brandIds);
-      
+
       // If no brands selected, clear products
       if (selectedBrands.length === 0 && !searchParams.get("brand_id")) {
         setProducts([]);
