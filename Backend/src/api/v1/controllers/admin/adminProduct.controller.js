@@ -502,6 +502,7 @@ const getProductsByBrandId = async (req, res) => {
   try {
     const { brand_id } = req.params;
     const { page, limit, offset } = getPaginationParams(req);
+    const { search } = req.query;
 
     // 1. Validate brand exists
     const brand = await Brand.findByPk(brand_id);
@@ -511,11 +512,21 @@ const getProductsByBrandId = async (req, res) => {
         .json({ message: "Brand not found" });
     }
 
-    // 2. Fetch all products for this brand
+    // 2. Build where conditions with search
+    const whereConditions = { brand_id };
+    if (search) {
+      whereConditions[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } },
+        { short_description: { [Op.like]: `%${search}%` } }
+      ];
+    }
+
+    // 3. Fetch all products for this brand
     const { count, rows: products } = await Product.findAndCountAll({
       limit,
       offset,
-      where: { brand_id },
+      where: whereConditions,
       include: [
         { model: Category, as: "category", attributes: ["name"] },
         {
@@ -577,7 +588,7 @@ const getProductsByBrandId = async (req, res) => {
       ],
     });
 
-    // 3. Map into desired shape
+    // 4. Map into desired shape
     const data = products.map((prod) => {
       const basePrice = parseFloat(prod.base_price);
       const coupons = prod.coupons || []; // Fixed: use correct alias
