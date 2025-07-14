@@ -876,7 +876,7 @@ const Header = () => {
             </div>
 
             {/* NAV LINKS */}
-            <div className="flex overflow-x-auto md:overflow-visible flex-1 justify-start md:justify-center space-x-4 md:space-x-8 scrollbar-hide">
+            <div className="flex overflow-x-auto flex-1 justify-start md:justify-center space-x-4 md:space-x-8 scrollbar-thin scrollbar-thumb-gray-400">
               {categoriesLoading ? (
                 <div className="text-xs md:text-sm text-gray-500 px-1 py-1">
                   Loading...
