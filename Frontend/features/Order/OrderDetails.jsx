@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -14,15 +14,23 @@ import {
 } from "../../src/index.js";
 
 import { Footer, Header } from "../../components/index.js";
+import { usePagination, LoadMoreButton, LoadingSpinner, buildQueryParams, PAGINATION_CONFIG } from "../../src/utils/index.js";
 
 const FilterSidebar = ({
   orderStatusFilters,
   setOrderStatusFilters,
   orderTimeFilters,
   setOrderTimeFilters,
+  dateRange,
+  setDateRange,
 }) => {
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const [isTimeOpen, setIsTimeOpen] = useState(false);
+  const [isDateOpen, setIsDateOpen] = useState(false);
   const statusOptions = [
-    { key: "onTheWay", label: "On the way" },
+    { key: "pending", label: "Pending" },
+    { key: "processing", label: "Processing" },
+    { key: "shipped", label: "Shipped" },
     { key: "delivered", label: "Delivered" },
     { key: "cancelled", label: "Cancelled" },
     { key: "returned", label: "Returned" },
@@ -41,46 +49,113 @@ const FilterSidebar = ({
     <div className="w-full p-4 bg-white rounded-lg shadow-md">
       <h3 className="text-lg font-semibold text-gray-800 mb-3">FILTERS</h3>
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">
+        <button
+          onClick={() => setIsStatusOpen(!isStatusOpen)}
+          className="flex items-center justify-between w-full text-sm font-semibold text-gray-700 mb-2 hover:text-blue-600 transition-colors text-left"
+        >
           ORDER STATUS
-        </h4>
-        {statusOptions.map(({ key, label }) => (
-          <label key={key} className="block mb-1 text-sm text-gray-600">
-            <input
-              type="checkbox"
-              className="mr-2 cursor-pointer"
-              checked={orderStatusFilters[key]}
-              onChange={() =>
-                setOrderStatusFilters({
-                  ...orderStatusFilters,
-                  [key]: !orderStatusFilters[key],
-                })
-              }
-            />
-            {label}
-          </label>
-        ))}
+          <svg className={`w-4 h-4 transform transition-transform ${isStatusOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {isStatusOpen && (
+          <div className="mb-3">
+            {statusOptions.map(({ key, label }) => (
+              <label key={key} className="block mb-1 text-sm text-gray-600">
+                <input
+                  type="checkbox"
+                  className="mr-2 cursor-pointer"
+                  checked={orderStatusFilters[key]}
+                  onChange={() =>
+                    setOrderStatusFilters({
+                      ...orderStatusFilters,
+                      [key]: !orderStatusFilters[key],
+                    })
+                  }
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+        )}
       </div>
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-2 mt-3">
+        <button
+          onClick={() => setIsTimeOpen(!isTimeOpen)}
+          className="flex items-center justify-between w-full text-sm font-semibold text-gray-700 mb-2 hover:text-blue-600 transition-colors text-left"
+        >
           ORDER TIME
-        </h4>
-        {timeOptions.map(({ key, label }) => (
-          <label key={key} className="block mb-1 text-sm text-gray-600">
-            <input
-              type="checkbox"
-              className="mr-2 cursor-pointer"
-              checked={orderTimeFilters[key]}
-              onChange={() =>
-                setOrderTimeFilters({
-                  ...orderTimeFilters,
-                  [key]: !orderTimeFilters[key],
-                })
-              }
-            />
-            {label}
-          </label>
-        ))}
+          <svg className={`w-4 h-4 transform transition-transform ${isTimeOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {isTimeOpen && (
+          <div className="mb-3">
+            {timeOptions.map(({ key, label }) => (
+              <label key={key} className="block mb-1 text-sm text-gray-600">
+                <input
+                  type="checkbox"
+                  className="mr-2 cursor-pointer"
+                  checked={orderTimeFilters[key]}
+                  onChange={() =>
+                    setOrderTimeFilters({
+                      ...orderTimeFilters,
+                      [key]: !orderTimeFilters[key],
+                    })
+                  }
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      {/* Custom Date Range Picker */}
+      <div className="mt-4">
+        <button
+          onClick={() => setIsDateOpen(!isDateOpen)}
+          className="flex items-center justify-between w-full text-sm font-semibold text-gray-700 mb-2 hover:text-blue-600 transition-colors text-left"
+        >
+          CUSTOM DATE RANGE
+          <svg className={`w-4 h-4 transform transition-transform ${isDateOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {isDateOpen && (
+          <div className="space-y-2">
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">From Date</label>
+              <input
+                type="date"
+                value={dateRange.startDate}
+                onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                className="w-full p-2 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">To Date</label>
+              <input
+                type="date"
+                value={dateRange.endDate}
+                onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                min={dateRange.startDate}
+                className="w-full p-2 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            {dateRange.startDate && dateRange.endDate && (
+              <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                📅 {new Date(dateRange.startDate).toLocaleDateString()} - {new Date(dateRange.endDate).toLocaleDateString()}
+              </div>
+            )}
+            <button
+              onClick={() => setDateRange({ startDate: '', endDate: '' })}
+              className="w-full text-xs text-gray-500 hover:text-red-600 transition-colors"
+            >
+              Clear Date Range
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -346,76 +421,14 @@ const SearchBar = ({ searchQuery, setSearchQuery, handleSearch }) => (
   </div>
 );
 
-const Pagination = ({ currentPage, totalPages, onPageChange }) => {
-  const getPageNumbers = () => {
-    const pages = [];
-    const showPages = 5;
-    let start = Math.max(1, currentPage - Math.floor(showPages / 2));
-    let end = Math.min(totalPages, start + showPages - 1);
 
-    if (end - start + 1 < showPages) {
-      start = Math.max(1, end - showPages + 1);
-    }
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
-  };
-
-  if (totalPages <= 1) return null;
-
-  return (
-    <div className="flex items-center justify-center space-x-2 mt-6 mb-4">
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-          currentPage === 1
-            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-            : "bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 border border-gray-300"
-        }`}
-      >
-        ← Previous
-      </button>
-
-      {getPageNumbers().map((page) => (
-        <button
-          key={page}
-          onClick={() => onPageChange(page)}
-          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-            currentPage === page
-              ? "bg-blue-600 text-white shadow-md"
-              : "bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 border border-gray-300"
-          }`}
-        >
-          {page}
-        </button>
-      ))}
-
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-          currentPage === totalPages
-            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-            : "bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 border border-gray-300"
-        }`}
-      >
-        Next →
-      </button>
-    </div>
-  );
-};
 
 const OrderDetails = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [ordersPerPage] = useState(5);
   const [orderStatusFilters, setOrderStatusFilters] = useState({
-    onTheWay: false,
+    pending: false,
+    processing: false,
+    shipped: false,
     delivered: false,
     cancelled: false,
     returned: false,
@@ -428,79 +441,115 @@ const OrderDetails = () => {
     year2021: false,
     older: false,
   });
+  const [dateRange, setDateRange] = useState({
+    startDate: '',
+    endDate: ''
+  });
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 
-  const fetchOrders = async () => {
-    try {
-      const userId = getUserIdFromToken();
-      if (userId) {
-        const response = await getApiById(orderRoute, userId);
-        if (response.success) {
-          setOrders(response.data);
+  // API call function for pagination
+  const fetchOrdersAPI = useCallback(async (page, limit, searchQuery = '', statusFilters = {}, timeFilters = {}, customDateRange = {}) => {
+    const userId = getUserIdFromToken();
+    if (!userId) return { success: false, data: [], pagination: {} };
+    
+    const params = buildQueryParams({
+      page,
+      limit,
+      search: searchQuery,
+      ...statusFilters,
+      ...timeFilters
+    });
+    
+    const response = await getApiById(orderRoute, userId);
+    
+    if (response.success) {
+      // Apply client-side filtering since backend might not support all filters
+      let filteredData = response.data.filter((order) => {
+        const statusMatch =
+          !Object.values(statusFilters).some(Boolean) ||
+          (statusFilters.pending && order.order_status === "pending") ||
+          (statusFilters.processing && order.order_status === "processing") ||
+          (statusFilters.shipped && order.order_status === "shipped") ||
+          (statusFilters.delivered && order.order_status === "delivered") ||
+          (statusFilters.cancelled && order.order_status === "cancelled") ||
+          (statusFilters.returned && order.order_status === "returned");
+
+        const orderDate = new Date(order.order_date);
+        const now = new Date();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(now.getDate() - 30);
+
+        // Custom date range filter
+        const dateRangeMatch = (() => {
+          if (customDateRange.startDate && customDateRange.endDate) {
+            const startDate = new Date(customDateRange.startDate);
+            const endDate = new Date(customDateRange.endDate);
+            endDate.setHours(23, 59, 59, 999);
+            return orderDate >= startDate && orderDate <= endDate;
+          }
+          return true;
+        })();
+
+        const timeMatch =
+          !Object.values(timeFilters).some(Boolean) ||
+          (timeFilters.last30Days && orderDate >= thirtyDaysAgo) ||
+          (timeFilters.year2024 && orderDate.getFullYear() === 2024) ||
+          (timeFilters.year2023 && orderDate.getFullYear() === 2023) ||
+          (timeFilters.year2022 && orderDate.getFullYear() === 2022) ||
+          (timeFilters.year2021 && orderDate.getFullYear() === 2021) ||
+          (timeFilters.older && orderDate.getFullYear() < 2021);
+
+        const searchMatch = searchQuery
+          ? order.order_number.toLowerCase().includes(searchQuery.toLowerCase())
+          : true;
+
+        return statusMatch && timeMatch && searchMatch && dateRangeMatch;
+      });
+      
+      // Manual pagination
+      const totalItems = filteredData.length;
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedData = filteredData.slice(startIndex, endIndex);
+      
+      return {
+        success: true,
+        data: paginatedData,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(totalItems / limit),
+          totalItems,
+          itemsPerPage: limit
         }
-      }
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-    } finally {
-      setLoading(false);
+      };
     }
-  };
+    
+    return response;
+  }, []);
+  
+  // Use pagination hook
+  const {
+    data: orders,
+    loading,
+    loadingMore,
+    pagination,
+    fetchData: fetchOrders,
+    loadMore: loadMoreOrders,
+    hasMore,
+    remainingItems
+  } = usePagination(fetchOrdersAPI, { limit: 5 });
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    fetchOrders(1, false, searchQuery, orderStatusFilters, orderTimeFilters, dateRange);
+  }, [searchQuery, orderStatusFilters, orderTimeFilters, dateRange]);
 
   const handleSearch = () => {
     console.log("Search query:", searchQuery);
   };
 
-  const filteredOrders = orders.filter((order) => {
-    const statusMatch =
-      !Object.values(orderStatusFilters).some(Boolean) ||
-      (orderStatusFilters.delivered && order.order_status === "delivered") ||
-      (orderStatusFilters.cancelled && order.order_status === "cancelled") ||
-      (orderStatusFilters.onTheWay && order.order_status === "pending") ||
-      (orderStatusFilters.returned && order.order_status === "returned");
-
-    const orderDate = new Date(order.order_date);
-    const now = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(now.getDate() - 30);
-
-    const timeMatch =
-      !Object.values(orderTimeFilters).some(Boolean) ||
-      (orderTimeFilters.last30Days && orderDate >= thirtyDaysAgo) ||
-      (orderTimeFilters.year2024 && orderDate.getFullYear() === 2024) ||
-      (orderTimeFilters.year2023 && orderDate.getFullYear() === 2023) ||
-      (orderTimeFilters.year2022 && orderDate.getFullYear() === 2022) ||
-      (orderTimeFilters.year2021 && orderDate.getFullYear() === 2021) ||
-      (orderTimeFilters.older && orderDate.getFullYear() < 2021);
-
-    const searchMatch = searchQuery
-      ? order.order_number.toLowerCase().includes(searchQuery.toLowerCase())
-      : true;
-
-    return statusMatch && timeMatch && searchMatch;
-  });
-
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
-  const indexOfLastOrder = currentPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = filteredOrders.slice(
-    indexOfFirstOrder,
-    indexOfLastOrder
-  );
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    setExpandedOrderId(null); // Close any expanded order when changing pages
+  const handleOrderUpdate = () => {
+    fetchOrders(1, false, searchQuery, orderStatusFilters, orderTimeFilters, dateRange);
   };
-
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [orderStatusFilters, orderTimeFilters, searchQuery]);
 
   return (
     <div className="min-h-screen bg-gray-100 font-sans">
@@ -512,6 +561,8 @@ const OrderDetails = () => {
             setOrderStatusFilters={setOrderStatusFilters}
             orderTimeFilters={orderTimeFilters}
             setOrderTimeFilters={setOrderTimeFilters}
+            dateRange={dateRange}
+            setDateRange={setDateRange}
           />
         </div>
         <div className="w-full flex-1 p-4 pt-0">
@@ -521,17 +572,15 @@ const OrderDetails = () => {
             handleSearch={handleSearch}
           />
           {loading ? (
-            <p className="text-sm text-gray-600">Loading orders...</p>
-          ) : filteredOrders.length > 0 ? (
+            <LoadingSpinner text="Loading orders..." />
+          ) : orders.length > 0 ? (
             <>
               <div className="mb-4">
                 <p className="text-sm text-gray-600">
-                  Showing {indexOfFirstOrder + 1}-
-                  {Math.min(indexOfLastOrder, filteredOrders.length)} of{" "}
-                  {filteredOrders.length} orders
+                  Showing {orders.length} of {pagination?.totalItems || 0} orders
                 </p>
               </div>
-              {currentOrders.map((order) => (
+              {orders.map((order) => (
                 <OrderCard
                   key={order.order_id}
                   order={order}
@@ -541,13 +590,16 @@ const OrderDetails = () => {
                       expandedOrderId === order.order_id ? null : order.order_id
                     )
                   }
-                  onOrderUpdate={fetchOrders}
+                  onOrderUpdate={handleOrderUpdate}
                 />
               ))}
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
+              <LoadMoreButton
+                onClick={loadMoreOrders}
+                loading={loadingMore}
+                hasMore={hasMore}
+                remainingItems={remainingItems}
+                buttonText="Load More Orders"
+                loadingText="Loading more orders..."
               />
             </>
           ) : (
