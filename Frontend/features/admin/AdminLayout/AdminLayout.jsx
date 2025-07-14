@@ -184,13 +184,24 @@ const AdminLayout = () => {
         dismissNotification={dismissNotification}
       />
 
-      {/* Button to toggle sidebar (mobile only) */}
-      <button
-        className="md:hidden fixed top-[72px] left-4 z-50 bg-gray-800 text-white p-2 rounded"
-        onClick={toggleSidebar}
-      >
-        ☰
-      </button>
+      {/* Mobile Navigation Controls */}
+      <div className="md:hidden fixed top-[72px] left-4 z-50 flex gap-2">
+        <button
+          className="bg-gray-800 text-white p-2 rounded"
+          onClick={toggleSidebar}
+        >
+          ☰
+        </button>
+        {activeSection !== "dashboard" && (
+          <button
+            className="bg-blue-600 text-white p-2 rounded flex items-center gap-1"
+            onClick={() => setActiveSection("dashboard")}
+          >
+            <span>←</span>
+            <span className="text-xs">Home</span>
+          </button>
+        )}
+      </div>
 
       {/* Logout Modal */}
       {showLogoutModal && (
@@ -272,7 +283,7 @@ const AdminLayout = () => {
         </aside>
 
         {/* Main Content Area - padded below fixed header */}
-        <main className="flex-1 pt-[130px] md:ml-64 px-4 pb-6">
+        <main className="flex-1 pt-[130px] md:ml-64 px-2 sm:px-4 pb-6 overflow-x-auto">
           {activeSection === "dashboard" && <Dashboard />}
           {activeSection === "banners" && <BannerManagement />}
           {activeSection === "products" && <ProductManagement />}
