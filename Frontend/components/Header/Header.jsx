@@ -268,6 +268,8 @@ const Header = () => {
     setSelectedCategoryId(category.category_id);
     dispatch(setCategoryFilter(category.category_id));
     navigate(`/mainzone?category_id=${category.category_id}`);
+    setIsMenuOpen(false); // Close mobile menu
+    setIsHoveringCategory(false); // Close category dropdown
   };
 
   // Clear category selection
