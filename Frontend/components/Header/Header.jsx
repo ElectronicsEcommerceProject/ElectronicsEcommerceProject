@@ -230,8 +230,8 @@ const Header = () => {
     if (searchInput.trim()) {
       // Update Redux search term
       dispatch(setSearchTerm(searchInput.trim()));
-      // Navigate to MainZone with search
-      navigate("/mainzone");
+      // Navigate to home route with search
+      navigate("/");
       console.log("Searching for:", searchInput.trim());
     }
   };
