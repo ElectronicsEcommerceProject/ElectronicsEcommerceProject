@@ -63,6 +63,7 @@ import {
   getApi,
   userBannerRoute,
 } from "../../../src/index.js";
+import { usePagination, buildQueryParams, LoadMoreButton, LoadingSpinner } from "../../../src/utils/index.js";
 import logo from "../../../../Frontend/assets/logo.jpg";
 
 const MainDashboard = () => {
@@ -72,55 +73,38 @@ const MainDashboard = () => {
   const [activeBanner, setActiveBanner] = useState(0);
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState(null);
-  const [products, setProducts] = useState([]);
   const [banners, setBanners] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 10,
-  });
+  
+  // API call function for pagination
+  const fetchProductsAPI = useCallback(async (page, limit, searchQuery = '', brandFilter = null) => {
+    if (!isAuthenticated()) return { success: false, data: [], pagination: {} };
+    
+    const params = buildQueryParams({
+      page,
+      limit,
+      search: searchQuery,
+      brand: brandFilter
+    });
+    
+    const response = await getApi(`${userDashboardDataRoute}?${params}`);
+    return response;
+  }, []);
+  
+  // Use pagination hook
+  const {
+    data: products,
+    loading,
+    loadingMore,
+    pagination,
+    fetchData: fetchProducts,
+    loadMore: loadMoreProducts,
+    hasMore,
+    remainingItems
+  } = usePagination(fetchProductsAPI);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
 
-  // Fetch products function
-  const fetchProducts = useCallback(
-    async (page = 1, append = false, searchQuery = "", brandFilter = null) => {
-      if (isAuthenticated()) {
-        try {
-          if (!append) setLoading(true);
-          else setLoadingMore(true);
 
-          // Build query parameters
-          const params = new URLSearchParams({
-            page: page.toString(),
-            limit: "9",
-          });
-
-          if (searchQuery) params.append("search", searchQuery);
-          if (brandFilter) params.append("brand", brandFilter);
-
-          const response = await getApi(`${userDashboardDataRoute}?${params}`);
-          if (response.success) {
-            if (append) {
-              setProducts((prev) => [...prev, ...response.data]);
-            } else {
-              setProducts(response.data);
-            }
-            setPagination(response.pagination);
-          }
-        } catch (error) {
-          console.error("Error fetching products:", error);
-        } finally {
-          setLoading(false);
-          setLoadingMore(false);
-        }
-      }
-    },
-    []
-  );
 
   // Check authentication status and fetch data
   useEffect(() => {
@@ -211,16 +195,7 @@ const MainDashboard = () => {
 
   const uniqueBrands = [...new Set(products.map((product) => product.brand))];
 
-  const loadMoreProducts = () => {
-    if (pagination.currentPage < pagination.totalPages) {
-      fetchProducts(
-        pagination.currentPage + 1,
-        true,
-        searchTerm,
-        selectedBrand
-      );
-    }
-  };
+
 
   const handleProductClick = (productId) => {
     navigate(`/product/${productId}`);
@@ -445,7 +420,6 @@ const MainDashboard = () => {
               }`}
               onClick={() => {
                 setSelectedBrand(null);
-                setProducts([]);
                 fetchProducts(1, false, searchTerm, null);
               }}
             >
@@ -461,7 +435,6 @@ const MainDashboard = () => {
                 }`}
                 onClick={() => {
                   setSelectedBrand(brand);
-                  setProducts([]);
                   fetchProducts(1, false, searchTerm, brand);
                 }}
               >
@@ -470,10 +443,7 @@ const MainDashboard = () => {
             ))}
           </div>
           {loading ? (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="mt-2 text-gray-600">Loading products...</p>
-            </div>
+            <LoadingSpinner text="Loading products..." />
           ) : products.length === 0 ? (
             <div className="text-center py-16">
               <div className="max-w-md mx-auto">
@@ -633,26 +603,12 @@ const MainDashboard = () => {
               ))}
             </div>
           )}
-          {!loading && pagination.currentPage < pagination.totalPages && (
-            <div className="text-center mt-8">
-              <button
-                onClick={loadMoreProducts}
-                disabled={loadingMore}
-                className="bg-blue-600 text-white hover:bg-blue-700 px-8 py-3 rounded-full transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loadingMore ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Loading...</span>
-                  </div>
-                ) : (
-                  `Load More (${
-                    pagination.totalItems - products.length
-                  } remaining)`
-                )}
-              </button>
-            </div>
-          )}
+          <LoadMoreButton
+            onClick={loadMoreProducts}
+            loading={loadingMore}
+            hasMore={hasMore}
+            remainingItems={remainingItems}
+          />
         </div>
       </div>
 

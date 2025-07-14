@@ -55,6 +55,7 @@ import {
   getProductsByBrandRoute,
   getBrandsByCategoryRoute,
 } from "../../../src/index.js";
+import { LoadingSpinner } from "../../../src/utils/index.js";
 
 const MainZone = () => {
   const [searchParams] = useSearchParams();
@@ -846,10 +847,7 @@ const MainZone = () => {
             </h2>
           )}
           {loading ? (
-            <div className="text-center py-10">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-              <p className="text-gray-600 text-lg">Loading products...</p>
-            </div>
+            <LoadingSpinner text="Loading products..." size="h-12 w-12" className="py-10" />
           ) : error ? (
             <div className="text-center py-10">
               <div className="text-red-500 mb-4">
