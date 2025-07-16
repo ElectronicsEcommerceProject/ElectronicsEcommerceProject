@@ -2,6 +2,7 @@ import db from "../../../../models/index.js";
 import { StatusCodes } from "http-status-codes";
 import MESSAGE from "../../../../constants/message.js";
 import { deleteImages } from "../../../../utils/imageUtils.js";
+import { cacheUtils } from "../../../../utils/cacheUtils.js";
 
 const { Brand, User, Category, Product, ProductVariant, ProductMedia, ProductMediaUrl } = db;
 
@@ -26,6 +27,9 @@ const addBrand = async (req, res) => {
       created_by,
     });
 
+    // Clear cache after successful creation
+    await cacheUtils.clearPatterns("brands:*", "products:*", "dashboard:*");
+
     res
       .status(StatusCodes.CREATED)
       .json({ message: MESSAGE.post.succ, data: newBrand });
@@ -39,8 +43,25 @@ const addBrand = async (req, res) => {
 
 // Get all brands
 const getAllBrands = async (req, res) => {
+  const cacheKey = "brands:all";
+
   try {
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Cached brands",
+        data: cachedData
+      });
+    }
+
+    // If no cache, query database
     const brands = await Brand.findAll();
+    
+    // Cache results
+    await cacheUtils.set(cacheKey, brands);
+
     res
       .status(StatusCodes.OK)
       .json({ success: true, message: MESSAGE.get.succ, data: brands });
@@ -76,6 +97,9 @@ const updateBrand = async (req, res) => {
     }
 
     await brand.save();
+
+    // Clear cache after successful update
+    await cacheUtils.clearPatterns("brands:*", "products:*", "dashboard:*");
 
     res.status(StatusCodes.OK).json({ message: MESSAGE.put.succ, data: brand });
   } catch (error) {
@@ -152,6 +176,9 @@ const deleteBrand = async (req, res) => {
     // Then delete the brand (cascade will handle related records)
     await brand.destroy();
 
+    // Clear cache after successful deletion
+    await cacheUtils.clearPatterns("brands:*", "products:*", "categories:*", "variants:*", "attributes:*", "dashboard:*");
+
     res.status(StatusCodes.OK).json({ message: MESSAGE.delete.succ });
   } catch (error) {
     console.error("Error deleting brand:", error);
@@ -164,12 +191,23 @@ const deleteBrand = async (req, res) => {
 const getBrandsByCategoryId = async (req, res) => {
   try {
     const { category_id } = req.params;
+    const cacheKey = `brands:category:${category_id}`;
 
     // Validate category_id parameter
     if (!category_id) {
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: "Category ID is required" });
+    }
+
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Cached brands by category",
+        data: cachedData
+      });
     }
 
     // Check if category exists
@@ -202,6 +240,9 @@ const getBrandsByCategoryId = async (req, res) => {
       group: ["Brand.brand_id"], // Group by brand to get unique brands
       order: [["name", "ASC"]], // Order by brand name alphabetically
     });
+
+    // Cache results
+    await cacheUtils.set(cacheKey, brands);
 
     res.status(StatusCodes.OK).json({
       success: true,

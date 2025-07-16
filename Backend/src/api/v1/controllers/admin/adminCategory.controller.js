@@ -2,6 +2,7 @@ import db from "../../../../models/index.js"; // Import the database models
 import { StatusCodes } from "http-status-codes"; // Import HTTP status codes
 import MESSAGE from "../../../../constants/message.js"; // Import messages
 import { deleteImages } from "../../../../utils/imageUtils.js";
+import { cacheUtils } from "../../../../utils/cacheUtils.js";
 
 const { Category, User, Product, ProductVariant, ProductMedia, ProductMediaUrl, WishListItem } = db;
 
@@ -27,6 +28,10 @@ const addCategory = async (req, res) => {
         is_active: is_active !== undefined ? is_active : true,
         created_by,
       });
+
+      // Clear cache after successful creation
+      await cacheUtils.clearPatterns("categories:*", "products:*", "dashboard:*");
+
       res
         .status(StatusCodes.CREATED)
         .json({ message: MESSAGE.post.succ, data: newCategory });
@@ -48,48 +53,60 @@ const addCategory = async (req, res) => {
   }
 };
 
-// Get all categories based on user role
+// Get all categories - UPDATED WITH CACHE
 const getAllCategories = async (req, res) => {
-  const userRole = req.user.role; // 'customer', 'retailer', 'admin'
+  const userRole = req.user.role;
+  const cacheKey = `categories:${userRole}`;
 
   try {
-    let categories;
+    // 1. Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        status: true,
+        message: "Cached categories",
+        data: cachedData
+      });
+    }
 
+    // 2. If no cache, query database
+    let categories;
     if (userRole === "admin") {
-      // Admin can see all categories
       categories = await Category.findAll();
     } else if (userRole === "customer") {
       categories = await Category.findAll({
-        where: {
-          target_role: ["customer", "both"],
-        },
+        where: { target_role: ["customer", "both"] }
       });
     } else if (userRole === "retailer") {
       categories = await Category.findAll({
-        where: {
-          target_role: ["retailer", "both"],
-        },
+        where: { target_role: ["retailer", "both"] }
       });
     } else {
-      return res
-        .status(StatusCodes.FORBIDDEN)
-        .json({ message: MESSAGE.get.fail });
+      return res.status(StatusCodes.FORBIDDEN).json({ message: MESSAGE.get.fail });
     }
 
     if (!categories.length) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ status: false, message: MESSAGE.get.empty });
+      return res.status(StatusCodes.NOT_FOUND).json({ 
+        status: false, 
+        message: MESSAGE.get.empty 
+      });
     }
 
-    res
-      .status(StatusCodes.OK)
-      .json({ status: true, message: MESSAGE.get.succ, data: categories });
+    // 3. Cache results
+    await cacheUtils.set(cacheKey, categories);
+
+    res.status(StatusCodes.OK).json({
+      status: true,
+      message: MESSAGE.get.succ,
+      data: categories
+    });
+
   } catch (error) {
     console.error("Error fetching categories:", error);
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: MESSAGE.error, error: error.message });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: MESSAGE.error,
+      error: error.message
+    });
   }
 };
 
@@ -117,6 +134,9 @@ const updateCategoryById = async (req, res) => {
     }
 
     await category.save();
+
+    // Clear cache after successful update
+    await cacheUtils.clearPatterns("categories:*", "products:*", "dashboard:*");
 
     res
       .status(StatusCodes.OK)
@@ -193,6 +213,9 @@ const deleteCategory = async (req, res) => {
 
     // Then delete the category (cascade will handle related records)
     await category.destroy();
+
+    // Clear cache after successful deletion
+    await cacheUtils.clearPatterns("categories:*", "brands:*", "products:*", "variants:*", "attributes:*", "dashboard:*");
 
     res.status(StatusCodes.OK).json({ message: MESSAGE.delete.succ });
   } catch (error) {

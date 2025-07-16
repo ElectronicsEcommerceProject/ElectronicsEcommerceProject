@@ -4,6 +4,7 @@ import MESSAGE from "../../../../constants/message.js";
 import slugify from "slugify";
 import { Op } from "sequelize";
 import { deleteImages, getPaginationParams, createPaginationResponse } from "../../../../utils/index.js";
+import { cacheUtils } from "../../../../utils/cacheUtils.js";
 
 const {
   Product,
@@ -72,6 +73,9 @@ const createProduct = async (req, res) => {
       created_by: user.user_id,
     });
 
+    // Clear cache after successful creation
+    await cacheUtils.clearPatterns("products:*", "categories:*", "brands:*", "dashboard:*");
+
     res.status(StatusCodes.CREATED).json({
       message: MESSAGE.post.succ,
       data: product,
@@ -89,17 +93,32 @@ const createProduct = async (req, res) => {
 const getAllProducts = async (req, res) => {
   try {
     const { page, limit, offset } = getPaginationParams(req);
+    const cacheKey = `products:all:page:${page}:limit:${limit}`;
+
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        message: "Cached products",
+        ...cachedData
+      });
+    }
 
     const { count, rows: products } = await Product.findAndCountAll({
       limit,
       offset,
     });
 
-    res.status(StatusCodes.OK).json({
+    const response = {
       message: MESSAGE.get.succ,
       data: products,
       pagination: createPaginationResponse(count, page, limit)
-    });
+    };
+
+    // Cache results
+    await cacheUtils.set(cacheKey, response);
+
+    res.status(StatusCodes.OK).json(response);
   } catch (error) {
     console.error("Error fetching products:", error);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -113,6 +132,16 @@ const getAllProducts = async (req, res) => {
 const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
+    const cacheKey = `product:${id}`;
+
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        message: "Cached product",
+        data: cachedData
+      });
+    }
 
     const product = await Product.findByPk(id, {
       include: [
@@ -131,6 +160,9 @@ const getProductById = async (req, res) => {
         message: MESSAGE.get.none,
       });
     }
+
+    // Cache result
+    await cacheUtils.set(cacheKey, product);
 
     res.status(StatusCodes.OK).json({
       message: MESSAGE.get.succ,
@@ -408,6 +440,9 @@ const updateProduct = async (req, res) => {
       ...req.body,
     });
 
+    // Clear cache after successful update
+    await cacheUtils.clearPatterns(`product:${id}`, "products:*", "categories:*", "brands:*", "dashboard:*");
+
     res.status(StatusCodes.OK).json({
       message: MESSAGE.put.succ,
       data: product,
@@ -483,6 +518,9 @@ const deleteProduct = async (req, res) => {
 
     // Then delete the product (cascade will handle related records)
     await product.destroy();
+
+    // Clear cache after successful deletion
+    await cacheUtils.clearPatterns(`product:${id}`, "products:*", "categories:*", "brands:*", "variants:*", "attributes:*", "dashboard:*");
 
     res.status(StatusCodes.OK).json({
       message: MESSAGE.delete.succ,
