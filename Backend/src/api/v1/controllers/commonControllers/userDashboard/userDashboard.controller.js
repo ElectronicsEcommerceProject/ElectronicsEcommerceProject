@@ -3,6 +3,7 @@ import db from "../../../../../models/index.js";
 import MESSAGE from "../../../../../constants/message.js";
 import { Op } from "sequelize";
 import { getPaginationParams, createPaginationResponse } from "../../../../../utils/index.js";
+import { cacheUtils } from "../../../../../utils/cacheUtils.js";
 
 const {
   Product,
@@ -36,6 +37,19 @@ const getUserDashboardProducts = async (req, res) => {
     // Search parameters
     const search = req.query.search?.trim();
     const brand = req.query.brand?.trim();
+    
+    // Create cache key based on parameters
+    const cacheKey = `userDashboardData:${userRole}:page:${page}:limit:${limit}:search:${search || 'none'}:brand:${brand || 'none'}`;
+    
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Cached dashboard data",
+        ...cachedData
+      });
+    }
 
     // Build where conditions
     const whereConditions = { is_active: true };
@@ -200,11 +214,18 @@ const getUserDashboardProducts = async (req, res) => {
       };
     });
 
+    const response = {
+      data,
+      pagination: createPaginationResponse(count, page, limit)
+    };
+    
+    // Cache the response
+    await cacheUtils.set(cacheKey, response);
+    
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
-      data,
-      pagination: createPaginationResponse(count, page, limit)
+      ...response
     });
   } catch (error) {
     console.error("Error in getUserDashboardProducts:", error);
