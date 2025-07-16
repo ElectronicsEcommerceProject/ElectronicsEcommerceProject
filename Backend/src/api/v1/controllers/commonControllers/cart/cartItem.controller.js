@@ -2,6 +2,7 @@ import db from "../../../../../models/index.js";
 import { StatusCodes } from "http-status-codes";
 import MESSAGE from "../../../../../constants/message.js";
 import { Op } from "sequelize";
+import { cacheUtils } from "../../../../../utils/cacheUtils.js";
 
 // Convert relative path to full URL for response
 const convertToFullUrl = (imagePath, req) => {
@@ -211,6 +212,9 @@ const addItemToCart = async (req, res) => {
       existingItem.final_price = final_price;
       existingItem.coupon_id = coupon_id || null;
       await existingItem.save();
+      
+      // Clear cart cache
+      await cacheUtils.flushAll();
 
       return res.status(StatusCodes.OK).json({
         message: "Item quantity updated in cart",
@@ -231,6 +235,9 @@ const addItemToCart = async (req, res) => {
       discount_type,
       coupon_id: coupon_id || null,
     });
+    
+    // Clear cart cache
+    await cacheUtils.flushAll();
 
     res.status(StatusCodes.CREATED).json({
       message: MESSAGE.post.succ,
@@ -317,6 +324,9 @@ const updateCartItem = async (req, res) => {
     cartItem.discount_type = bestDiscount.discountType;
 
     await cartItem.save();
+    
+    // Clear cart cache
+    await cacheUtils.flushAll();
 
     res.status(StatusCodes.OK).json({
       success: true,
@@ -360,6 +370,9 @@ const removeCartItem = async (req, res) => {
 
     // Delete the cart item
     await cartItem.destroy();
+    
+    // Clear cart cache
+    await cacheUtils.flushAll();
 
     res.status(StatusCodes.OK).json({
       success: true,
@@ -379,6 +392,17 @@ const removeCartItem = async (req, res) => {
 const getCartItemsByUserId = async (req, res) => {
   try {
     const { user_id } = req.params;
+    const cacheKey = `cart:${user_id}`;
+    
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Cached cart items",
+        data: cachedData
+      });
+    }
 
     // Find user's cart with comprehensive includes
     const cart = await Cart.findOne({
@@ -706,30 +730,35 @@ const getCartItemsByUserId = async (req, res) => {
       cart.user.addresses?.[0] ||
       null;
 
+    const responseData = {
+      cartItems: transformedCartItems,
+      user: {
+        user_id: cart.user.user_id,
+        name: cart.user.name,
+        email: cart.user.email,
+        phone_number: cart.user.phone_number,
+        profileImage_url: cart.user.profileImage_url,
+        role: cart.user.role,
+        status: cart.user.status,
+      },
+      selectedAddress: defaultAddress,
+      availableAddresses: cart.user.addresses || [],
+      availableCoupons: availableCoupons,
+      cart: {
+        cart_id: cart.cart_id,
+        user_id: cart.user_id,
+        createdAt: cart.createdAt,
+        updatedAt: cart.updatedAt,
+      },
+    };
+    
+    // Cache the cart data
+    await cacheUtils.set(`cart:${user_id}`, responseData);
+    
     res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
-      data: {
-        cartItems: transformedCartItems,
-        user: {
-          user_id: cart.user.user_id,
-          name: cart.user.name,
-          email: cart.user.email,
-          phone_number: cart.user.phone_number,
-          profileImage_url: cart.user.profileImage_url,
-          role: cart.user.role,
-          status: cart.user.status,
-        },
-        selectedAddress: defaultAddress,
-        availableAddresses: cart.user.addresses || [],
-        availableCoupons: availableCoupons,
-        cart: {
-          cart_id: cart.cart_id,
-          user_id: cart.user_id,
-          createdAt: cart.createdAt,
-          updatedAt: cart.updatedAt,
-        },
-      },
+      data: responseData,
     });
   } catch (err) {
     console.error("❌ Error in getCartItems:", err);
@@ -818,6 +847,9 @@ const findOrCreateCartItem = async (req, res) => {
       });
     }
 
+    // Clear cart cache
+    await cacheUtils.flushAll();
+    
     // New item was created
     res.status(StatusCodes.CREATED).json({
       message: "Item added to cart successfully",
@@ -838,6 +870,17 @@ const findOrCreateCartItem = async (req, res) => {
 const getCartItemsByNumberByUserId = async (req, res) => {
   try {
     const { user_id } = req.user; // From JWT token
+    const cacheKey = `cartCount:${user_id}`;
+    
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Cached cart count",
+        data: cachedData
+      });
+    }
 
     // Find user's cart
     const cart = await Cart.findOne({
@@ -859,11 +902,15 @@ const getCartItemsByNumberByUserId = async (req, res) => {
 
     // Return the number of items in the cart
     const itemCount = cart.cartItems.length;
+    const responseData = { itemCount };
+    
+    // Cache the cart count
+    await cacheUtils.set(cacheKey, responseData);
 
     res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
-      data: { itemCount },
+      data: responseData,
     });
   } catch (err) {
     console.error("❌ Error in getCartItemsByNumberByUserId:", err);
