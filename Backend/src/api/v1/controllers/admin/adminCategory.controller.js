@@ -29,8 +29,8 @@ const addCategory = async (req, res) => {
         created_by,
       });
 
-      // Clear cache after successful creation
-      await cacheUtils.clearPatterns("categories:*", "products:*", "dashboard:*");
+      // Flush all cache after successful creation
+      await cacheUtils.flushAll();
       
       // Cache the new category with key
       await cacheUtils.set(`categories:${newCategory.category_id}`, newCategory);
@@ -138,8 +138,8 @@ const updateCategoryById = async (req, res) => {
 
     await category.save();
 
-    // Clear cache after successful update
-    await cacheUtils.clearPatterns("categories:*", "products:*", "dashboard:*");
+    // Flush all cache after successful update
+    await cacheUtils.flushAll();
 
     res
       .status(StatusCodes.OK)
@@ -217,8 +217,8 @@ const deleteCategory = async (req, res) => {
     // Then delete the category (cascade will handle related records)
     await category.destroy();
 
-    // Clear cache after successful deletion
-    await cacheUtils.clearPatterns("categories:*", "brands:*", "products:*", "variants:*", "attributes:*", "dashboard:*");
+    // Flush all cache after successful deletion
+    await cacheUtils.flushAll();
 
     res.status(StatusCodes.OK).json({ message: MESSAGE.delete.succ });
   } catch (error) {

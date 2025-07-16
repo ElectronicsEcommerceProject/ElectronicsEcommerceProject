@@ -692,8 +692,8 @@ const addProductManagmentData = async (req, res) => {
       )}/${result.variant.base_variant_image_url.replace(/\\/g, "/")}`;
     }
 
-    // Clear cache after successful creation
-    await cacheUtils.clearPatterns("products:*", "categories:*", "brands:*", "variants:*", "attributes:*", "dashboard:*");
+    // Flush all cache after successful creation
+    await cacheUtils.flushAll();
     
     return res.status(StatusCodes.CREATED).json({
       success: true,
@@ -778,8 +778,8 @@ const deleteProductManagementData = async (req, res) => {
         await attributeValue.destroy({ transaction: t });
       });
       
-      // Clear cache after successful deletion
-      await cacheUtils.clearPatterns("attributes:*", "products:*", "dashboard:*");
+      // Flush all cache after successful deletion
+      await cacheUtils.flushAll();
       
       return res.status(StatusCodes.OK).json({
         success: true,
@@ -935,8 +935,8 @@ const deleteProductManagementData = async (req, res) => {
         await productVariant.destroy({ transaction: t });
       });
 
-      // Clear cache after successful deletion
-      await cacheUtils.clearPatterns("variants:*", "products:*", "attributes:*", "dashboard:*");
+      // Flush all cache after successful deletion
+      await cacheUtils.flushAll();
 
       return res.status(StatusCodes.OK).json({
         success: true,
@@ -1176,8 +1176,8 @@ const deleteProductManagementData = async (req, res) => {
         }
       });
 
-      // Clear cache after successful deletion
-      await cacheUtils.clearPatterns(`product:${product_id}`, "products:*", "categories:*", "brands:*", "variants:*", "attributes:*", "dashboard:*");
+      // Flush all cache after successful deletion
+      await cacheUtils.flushAll();
       
       return res.status(StatusCodes.OK).json({
         success: true,
@@ -1596,8 +1596,8 @@ const deleteProductManagementData = async (req, res) => {
         }
       });
 
-      // Clear cache after successful deletion
-      await cacheUtils.clearPatterns("brands:*", "products:*", "categories:*", "variants:*", "attributes:*", "dashboard:*");
+      // Flush all cache after successful deletion
+      await cacheUtils.flushAll();
       
       return res.status(StatusCodes.OK).json({
         success: true,
@@ -2082,8 +2082,8 @@ const deleteProductManagementData = async (req, res) => {
         }
       });
 
-      // Clear cache after successful deletion
-      await cacheUtils.clearPatterns("categories:*", "products:*", "brands:*", "variants:*", "attributes:*", "dashboard:*");
+      // Flush all cache after successful deletion
+      await cacheUtils.flushAll();
       
       return res.status(StatusCodes.OK).json({
         success: true,
@@ -2134,8 +2134,8 @@ const updateProductManagementData = async (req, res) => {
       // Update the category
       await category.update({ name, description, slug, target_role });
 
-      // Clear cache after successful update
-      await cacheUtils.clearPatterns("categories:*", "products:*", "dashboard:*");
+      // Flush all cache after successful update
+      await cacheUtils.flushAll();
 
       return res.status(StatusCodes.OK).json({
         success: true,
@@ -2165,8 +2165,8 @@ const updateProductManagementData = async (req, res) => {
       // Update the brand (removed target_role which isn't in Brand model)
       await brand.update({ name, slug });
 
-      // Clear cache after successful update
-      await cacheUtils.clearPatterns("brands:*", "products:*", "dashboard:*");
+      // Flush all cache after successful update
+      await cacheUtils.flushAll();
 
       return res.status(StatusCodes.OK).json({
         success: true,
@@ -2261,8 +2261,8 @@ const updateProductManagementData = async (req, res) => {
         }
       }
 
-      // Clear cache after successful update
-      await cacheUtils.clearPatterns(`product:${product_id}`, "products:*", `categories:${category_id}`, "dashboard:*");
+      // Flush all cache after successful update
+      await cacheUtils.flushAll();
 
       return res.status(StatusCodes.OK).json({
         success: true,
@@ -2320,8 +2320,8 @@ const updateProductManagementData = async (req, res) => {
         bulk_discount_quantity,
       });
 
-      // Clear cache after successful update
-      await cacheUtils.clearPatterns("variants:*", "products:*", "dashboard:*");
+      // Flush all cache after successful update
+      await cacheUtils.flushAll();
 
       return res.status(StatusCodes.OK).json({
         success: true,
@@ -2375,8 +2375,8 @@ const updateProductManagementData = async (req, res) => {
         value: value.toLowerCase(),
       });
 
-      // Clear cache after successful update
-      await cacheUtils.clearPatterns("attributes:*", "products:*", "variants:*", "dashboard:*");
+      // Flush all cache after successful update
+      await cacheUtils.flushAll();
 
       return res.status(StatusCodes.OK).json({
         success: true,

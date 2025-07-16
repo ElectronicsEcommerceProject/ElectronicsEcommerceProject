@@ -27,8 +27,8 @@ const addBrand = async (req, res) => {
       created_by,
     });
 
-    // Clear cache after successful creation
-    await cacheUtils.clearPatterns("brands:*", "products:*", "dashboard:*");
+    // Flush all cache after successful creation
+    await cacheUtils.flushAll();
 
     res
       .status(StatusCodes.CREATED)
@@ -98,8 +98,8 @@ const updateBrand = async (req, res) => {
 
     await brand.save();
 
-    // Clear cache after successful update
-    await cacheUtils.clearPatterns("brands:*", "products:*", "dashboard:*");
+    // Flush all cache after successful update
+    await cacheUtils.flushAll();
 
     res.status(StatusCodes.OK).json({ message: MESSAGE.put.succ, data: brand });
   } catch (error) {
@@ -176,8 +176,8 @@ const deleteBrand = async (req, res) => {
     // Then delete the brand (cascade will handle related records)
     await brand.destroy();
 
-    // Clear cache after successful deletion
-    await cacheUtils.clearPatterns("brands:*", "products:*", "categories:*", "variants:*", "attributes:*", "dashboard:*");
+    // Flush all cache after successful deletion
+    await cacheUtils.flushAll();
 
     res.status(StatusCodes.OK).json({ message: MESSAGE.delete.succ });
   } catch (error) {

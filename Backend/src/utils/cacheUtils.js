@@ -38,6 +38,16 @@ export const cacheUtils = {
     } catch (error) {
       console.error(`Cache clear error for patterns ${patterns}:`, error);
     }
+  },
+  
+  // Flush all Redis data
+  async flushAll() {
+    try {
+      await redisClient.flushDb();
+      console.log("✅ All Redis data flushed successfully");
+    } catch (error) {
+      console.error("❌ Error flushing Redis data:", error);
+    }
   }
 };
 

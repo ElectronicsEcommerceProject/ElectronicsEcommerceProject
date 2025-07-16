@@ -73,8 +73,8 @@ const createProduct = async (req, res) => {
       created_by: user.user_id,
     });
 
-    // Clear cache after successful creation
-    await cacheUtils.clearPatterns("products:*", "categories:*", "brands:*", "dashboard:*");
+    // Flush all cache after successful creation
+    await cacheUtils.flushAll();
 
     res.status(StatusCodes.CREATED).json({
       message: MESSAGE.post.succ,
@@ -440,8 +440,8 @@ const updateProduct = async (req, res) => {
       ...req.body,
     });
 
-    // Clear cache after successful update
-    await cacheUtils.clearPatterns(`product:${id}`, "products:*", "categories:*", "brands:*", "dashboard:*");
+    // Flush all cache after successful update
+    await cacheUtils.flushAll();
 
     res.status(StatusCodes.OK).json({
       message: MESSAGE.put.succ,
@@ -519,8 +519,8 @@ const deleteProduct = async (req, res) => {
     // Then delete the product (cascade will handle related records)
     await product.destroy();
 
-    // Clear cache after successful deletion
-    await cacheUtils.clearPatterns(`product:${id}`, "products:*", "categories:*", "brands:*", "variants:*", "attributes:*", "dashboard:*");
+    // Flush all cache after successful deletion
+    await cacheUtils.flushAll();
 
     res.status(StatusCodes.OK).json({
       message: MESSAGE.delete.succ,
