@@ -31,6 +31,9 @@ const addCategory = async (req, res) => {
 
       // Clear cache after successful creation
       await cacheUtils.clearPatterns("categories:*", "products:*", "dashboard:*");
+      
+      // Cache the new category with key
+      await cacheUtils.set(`categories:${newCategory.category_id}`, newCategory);
 
       res
         .status(StatusCodes.CREATED)
