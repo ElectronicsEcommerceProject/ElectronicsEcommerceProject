@@ -42,6 +42,7 @@ const BuyNowPage = () => {
   const [showPersonalizedOffers, setShowPersonalizedOffers] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [minQuantity, setMinQuantity] = useState(1);
+  const [showQuantityInput, setShowQuantityInput] = useState(false);
 
   // State for tracking applied coupon discounts
   const [appliedCouponData, setAppliedCouponData] = useState(null);
@@ -1195,6 +1196,49 @@ const BuyNowPage = () => {
                 >
                   +
                 </button>
+              </div>
+              
+              {/* Direct quantity input for retailers */}
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setShowQuantityInput(!showQuantityInput)}
+                  className="text-blue-600 hover:text-blue-800 text-sm border border-blue-300 px-3 py-1 rounded-md hover:bg-blue-50 transition-colors"
+                >
+                  {showQuantityInput ? "Hide Custom Input" : "Set Custom Quantity"}
+                </button>
+                
+                {showQuantityInput && (
+                  <div className="flex items-center gap-2 border border-blue-300 rounded-md p-1 bg-blue-50">
+                    <input
+                      type="number"
+                      placeholder="Enter quantity"
+                      className="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      min={minQuantity}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (!isNaN(value) && value >= minQuantity) {
+                          setQuantity(value);
+                        }
+                      }}
+                    />
+                    <button
+                      onClick={(e) => {
+                        const input = e.target.previousSibling;
+                        const value = parseInt(input.value);
+                        if (!isNaN(value) && value >= minQuantity) {
+                          setQuantity(value);
+                          input.value = "";
+                          setShowQuantityInput(false);
+                        } else {
+                          alert(`Please enter a valid quantity (minimum ${minQuantity})`);
+                        }
+                      }}
+                      className="bg-blue-600 text-white px-2 py-1 text-sm rounded hover:bg-blue-700 transition-colors"
+                    >
+                      Set
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Show minimum quantity info */}
