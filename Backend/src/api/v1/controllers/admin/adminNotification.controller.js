@@ -151,6 +151,7 @@ export const getNotificationLogs = async (req, res) => {
       return res.status(StatusCodes.OK).json({
         success: true,
         message: "Cached notification logs",
+        fromCache: true,
         data: cachedData
       });
     }
@@ -257,6 +258,7 @@ export const getNotificationStats = async (req, res) => {
       return res.status(StatusCodes.OK).json({
         success: true,
         message: "Cached notification stats",
+        fromCache: true,
         data: cachedData
       });
     }
@@ -297,6 +299,7 @@ export const getNotificationStats = async (req, res) => {
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
+      fromCache: false,
       data: responseData,
     });
   } catch (error) {
@@ -364,6 +367,7 @@ export const getTemplates = async (req, res) => {
       return res.status(StatusCodes.OK).json({
         success: true,
         message: "Cached notification templates",
+        fromCache: true,
         data: cachedData
       });
     }
@@ -415,6 +419,7 @@ export const getTemplates = async (req, res) => {
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
+      fromCache: false,
       data: responseData,
     });
   } catch (error) {
