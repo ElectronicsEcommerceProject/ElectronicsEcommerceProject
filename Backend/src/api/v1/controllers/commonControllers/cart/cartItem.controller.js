@@ -399,7 +399,8 @@ const getCartItemsByUserId = async (req, res) => {
     if (cachedData) {
       return res.status(StatusCodes.OK).json({
         success: true,
-        message: "Cached cart items",
+        message: "Cached response",
+        fromCache: true,
         data: cachedData
       });
     }
@@ -758,6 +759,7 @@ const getCartItemsByUserId = async (req, res) => {
     res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
+      fromCache: false,
       data: responseData,
     });
   } catch (err) {
@@ -877,7 +879,8 @@ const getCartItemsByNumberByUserId = async (req, res) => {
     if (cachedData) {
       return res.status(StatusCodes.OK).json({
         success: true,
-        message: "Cached cart count",
+        message: "Cached response",
+        fromCache: true,
         data: cachedData
       });
     }
@@ -910,6 +913,7 @@ const getCartItemsByNumberByUserId = async (req, res) => {
     res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
+      fromCache: false,
       data: responseData,
     });
   } catch (err) {
