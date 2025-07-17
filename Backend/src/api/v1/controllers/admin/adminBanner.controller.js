@@ -2,6 +2,7 @@ import db from "../../../../models/index.js";
 import { StatusCodes } from "http-status-codes";
 import MESSAGE from "../../../../constants/message.js";
 import { deleteImage } from "../../../../utils/imageUtils.js";
+import { cacheUtils } from "../../../../utils/cacheUtils.js";
 
 const { Banner, User } = db;
 
@@ -59,6 +60,9 @@ const addBanner = async (req, res) => {
         "host"
       )}/${newBanner.image_url.replace(/\\/g, "/")}`;
     }
+    
+    // Clear banner cache after creation
+    await cacheUtils.flushAll();
 
     res
       .status(StatusCodes.CREATED)
@@ -113,6 +117,18 @@ const getAllBanners = async (req, res) => {
 // Get active banners for frontend
 const getActiveBanners = async (req, res) => {
   try {
+    const cacheKey = "activeBanners";
+    
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Cached active banners",
+        data: cachedData
+      });
+    }
+    
     const banners = await Banner.findAll({
       where: { is_active: true },
       order: [
@@ -130,6 +146,9 @@ const getActiveBanners = async (req, res) => {
       }
       return banner;
     });
+    
+    // Cache the banners
+    await cacheUtils.set(cacheKey, bannersWithFullUrls);
 
     res.status(StatusCodes.OK).json({
       success: true,
@@ -199,6 +218,9 @@ const updateBannerById = async (req, res) => {
         "host"
       )}/${banner.image_url.replace(/\\/g, "/")}`;
     }
+    
+    // Clear banner cache after update
+    await cacheUtils.flushAll();
 
     res
       .status(StatusCodes.OK)
@@ -229,6 +251,9 @@ const deleteBanner = async (req, res) => {
     }
 
     await banner.destroy();
+    
+    // Clear banner cache after deletion
+    await cacheUtils.flushAll();
 
     res
       .status(StatusCodes.OK)

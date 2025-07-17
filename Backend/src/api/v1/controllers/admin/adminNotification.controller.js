@@ -3,6 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
 import { getPaginationParams, createPaginationResponse } from "../../../../utils/index.js";
+import { cacheUtils } from "../../../../utils/cacheUtils.js";
 
 const { Notification, NotificationTemplate, User } = db;
 
@@ -115,6 +116,9 @@ export const addNotification = async (req, res) => {
     }));
 
     const createdNotifications = await Notification.bulkCreate(notifications);
+    
+    // Clear notification cache
+    await cacheUtils.flushAll();
 
     return res.status(StatusCodes.CREATED).json({
       success: true,
@@ -139,6 +143,18 @@ export const getNotificationLogs = async (req, res) => {
   try {
     const { channel, status, audience, startDate, endDate } = req.query;
     const { page, limit, offset } = getPaginationParams(req);
+    const cacheKey = `notificationLogs:${channel || 'all'}:${status || 'all'}:${audience || 'all'}:${startDate || 'none'}:${endDate || 'none'}:${page}:${limit}`;
+    
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Cached notification logs",
+        data: cachedData
+      });
+    }
+    
     const whereClause = {};
 
     // Apply filters
@@ -204,15 +220,20 @@ export const getNotificationLogs = async (req, res) => {
 
     // Calculate statistics
     const stats = await calculateNotificationStats(whereClause);
+    
+    const responseData = {
+      logs: formattedLogs,
+      pagination: createPaginationResponse(count, page, limit),
+      stats,
+    };
+    
+    // Cache the notification logs
+    await cacheUtils.set(cacheKey, responseData);
 
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
-      data: {
-        logs: formattedLogs,
-        pagination: createPaginationResponse(count, page, limit),
-        stats,
-      },
+      data: responseData,
     });
   } catch (error) {
     console.error("Get notification logs error:", error);
@@ -228,6 +249,18 @@ export const getNotificationLogs = async (req, res) => {
 export const getNotificationStats = async (req, res) => {
   try {
     const { channel, audience, startDate, endDate } = req.query;
+    const cacheKey = `notificationStats:${channel || 'all'}:${audience || 'all'}:${startDate || 'none'}:${endDate || 'none'}`;
+    
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Cached notification stats",
+        data: cachedData
+      });
+    }
+    
     const whereClause = {};
 
     // Apply filters for stats
@@ -256,11 +289,15 @@ export const getNotificationStats = async (req, res) => {
     }
 
     const stats = await calculateNotificationStats(whereClause);
+    const responseData = { stats };
+    
+    // Cache the notification stats
+    await cacheUtils.set(cacheKey, responseData);
 
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
-      data: { stats },
+      data: responseData,
     });
   } catch (error) {
     console.error("Get notification stats error:", error);
@@ -319,6 +356,18 @@ export const getTemplates = async (req, res) => {
   try {
     const { type } = req.query;
     const { page, limit, offset } = getPaginationParams(req);
+    const cacheKey = `notificationTemplates:${type || 'all'}:${page}:${limit}`;
+    
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Cached notification templates",
+        data: cachedData
+      });
+    }
+    
     const whereClause = {};
 
     if (type && type !== "All Types") {
@@ -355,13 +404,18 @@ export const getTemplates = async (req, res) => {
       createdBy: template.User?.name || "Unknown",
     }));
 
+    const responseData = {
+      templates: formattedTemplates,
+      pagination: createPaginationResponse(count, page, limit),
+    };
+    
+    // Cache the templates
+    await cacheUtils.set(cacheKey, responseData);
+    
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
-      data: {
-        templates: formattedTemplates,
-        pagination: createPaginationResponse(count, page, limit),
-      },
+      data: responseData,
     });
   } catch (error) {
     console.error("Get templates error:", error);
@@ -424,6 +478,9 @@ export const createTemplate = async (req, res) => {
       content,
       created_by: adminId,
     });
+    
+    // Clear template cache
+    await cacheUtils.flushAll();
 
     return res.status(StatusCodes.CREATED).json({
       success: true,
@@ -515,6 +572,9 @@ export const updateTemplate = async (req, res) => {
       content,
       updated_by: adminId,
     });
+    
+    // Clear template cache
+    await cacheUtils.flushAll();
 
     return res.status(StatusCodes.OK).json({
       success: true,
@@ -567,6 +627,9 @@ export const deleteTemplate = async (req, res) => {
     }
 
     await template.destroy();
+    
+    // Clear template cache
+    await cacheUtils.flushAll();
 
     return res.status(StatusCodes.OK).json({
       success: true,
@@ -591,6 +654,17 @@ export const deleteTemplate = async (req, res) => {
 export const getInAppNotificationByUserId = async (req, res) => {
   try {
     const { user_id } = req.params;
+    const cacheKey = `userNotifications:${user_id}`;
+    
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Cached user notifications",
+        data: cachedData
+      });
+    }
 
     // Get all unread notifications
     const notifications = await Notification.findAll({
@@ -605,18 +679,29 @@ export const getInAppNotificationByUserId = async (req, res) => {
 
     const unreadCount = notifications.length;
 
+    const responseData = { notifications, unreadCount };
+    
     if (unreadCount === 0) {
+      responseData.notifications = [];
+      responseData.unreadCount = 0;
+      
+      // Cache empty notifications
+      await cacheUtils.set(cacheKey, responseData);
+      
       return res.status(StatusCodes.OK).json({
         success: true,
         message: MESSAGE.get.empty,
-        data: { notifications: [], unreadCount: 0 },
+        data: responseData,
       });
     }
+    
+    // Cache the notifications
+    await cacheUtils.set(cacheKey, responseData);
 
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
-      data: { notifications, unreadCount },
+      data: responseData,
     });
   } catch (error) {
     console.error("Get user notifications error:", error);
@@ -638,6 +723,17 @@ export const getInAppTotalNumberOfUnReadNotificationByUserId = async (
 ) => {
   try {
     const { user_id } = req.params;
+    const cacheKey = `userNotificationCount:${user_id}`;
+    
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Cached notification count",
+        data: cachedData
+      });
+    }
 
     // Count unread in-app notifications
     const unreadCount = await Notification.count({
@@ -649,10 +745,15 @@ export const getInAppTotalNumberOfUnReadNotificationByUserId = async (
       },
     });
 
+    const responseData = { unreadCount };
+    
+    // Cache the notification count
+    await cacheUtils.set(cacheKey, responseData);
+    
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
-      data: { unreadCount },
+      data: responseData,
     });
   } catch (error) {
     console.error("Get notification count error:", error);
@@ -694,6 +795,9 @@ export const markAsRead = async (req, res) => {
 
     // Update the notification
     await notification.update({ is_read: true });
+    
+    // Clear only this user's cache
+    await cacheUtils.clearUserCache(notification.user_id);
 
     return res.status(StatusCodes.OK).json({
       success: true,
