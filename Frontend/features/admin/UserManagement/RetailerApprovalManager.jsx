@@ -1,0 +1,635 @@
+import React, { useState, useEffect } from "react";
+import { FiClock, FiCheckCircle, FiUser, FiMail, FiPhone, FiCalendar, FiMapPin, FiPackage } from "react-icons/fi";
+import { FaStore, FaIdCard } from "react-icons/fa";
+
+/**
+ * RetailerApprovalManager Component
+ * 
+ * This component manages the approval process for new retailer accounts.
+ * It displays a list of pending retailers and provides actions to approve, reject, or ban them.
+ */
+const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
+  const [selectedRetailer, setSelectedRetailer] = useState(null);
+  const [pendingRetailers, setPendingRetailers] = useState([]);
+  const [filterStatus, setFilterStatus] = useState('all');
+  
+  // Hardcoded retailer data based on user.model.js
+  const mockRetailers = [
+    {
+      id: "30e248a0-a0c7-3d11-b923-0031cc3b55a7",
+      name: "Kumar Electronics",
+      email: "kumar@electronics.com",
+      phone: "+91 9988776655",
+      profileImage_url: "https://randomuser.me/api/portraits/men/8.jpg",
+      status: "banned",
+      role: "retailer",
+      createdDate: "2023-07-10",
+      lastLogin: "2023-07-10",
+      address: "505 Tech Hub, Chennai, Tamil Nadu",
+      businessDetails: {
+        gstNumber: "33FFFFF0000F1Z5",
+        businessType: "Electronics Dealer",
+        yearEstablished: 2016,
+        productsOffered: 75
+      }
+    },
+    {
+      id: "29d137a0-b0c6-2c10-a812-0030bb2a44a6",
+      name: "Verma Gadgets",
+      email: "verma@gadgets.com",
+      phone: "+91 9876543211",
+      profileImage_url: "https://randomuser.me/api/portraits/men/9.jpg",
+      status: "active",
+      role: "retailer",
+      createdDate: "2023-07-08",
+      lastLogin: "2023-07-20",
+      address: "404 Market Complex, Jaipur, Rajasthan",
+      businessDetails: {
+        gstNumber: "08GGGGG0000G1Z5",
+        businessType: "Gadget Retailer",
+        yearEstablished: 2019,
+        productsOffered: 110
+      }
+    },
+    {
+      id: "41f359a0-b0d8-4e22-a034-0142dd4c66a8",
+      name: "Raj Electronics",
+      email: "raj@electronics.com",
+      phone: "+91 9876543210",
+      profileImage_url: "https://randomuser.me/api/portraits/men/1.jpg",
+      status: "inactive",
+      role: "retailer",
+      createdDate: "2023-07-15",
+      lastLogin: "2023-07-15",
+      address: "123 Main St, Mumbai, Maharashtra",
+      businessDetails: {
+        gstNumber: "22AAAAA0000A1Z5",
+        businessType: "Electronics Store",
+        yearEstablished: 2018,
+        productsOffered: 120
+      }
+    },
+    {
+      id: "52e469b1-c1d9-5f33-b145-1253ee5d77b9",
+      name: "Sharma Mobile Shop",
+      email: "sharma@mobileshop.com",
+      phone: "+91 8765432109",
+      profileImage_url: "https://randomuser.me/api/portraits/men/2.jpg",
+      status: "inactive",
+      role: "retailer",
+      createdDate: "2023-07-16",
+      lastLogin: "2023-07-16",
+      address: "456 Market Road, Delhi",
+      businessDetails: {
+        gstNumber: "07BBBBB0000B1Z5",
+        businessType: "Mobile Retailer",
+        yearEstablished: 2020,
+        productsOffered: 85
+      }
+    },
+    {
+      id: "63f579c2-d2e0-6f44-c256-2364ff6e88c0",
+      name: "Patel Gadgets",
+      email: "patel@gadgets.com",
+      phone: "+91 7654321098",
+      profileImage_url: "https://randomuser.me/api/portraits/men/3.jpg",
+      status: "inactive",
+      role: "retailer",
+      createdDate: "2023-07-17",
+      lastLogin: "2023-07-17",
+      address: "789 Tech Park, Bangalore, Karnataka",
+      businessDetails: {
+        gstNumber: "29CCCCC0000C1Z5",
+        businessType: "Gadget Store",
+        yearEstablished: 2019,
+        productsOffered: 150
+      }
+    },
+    {
+      id: "74g680d3-e3f1-7g55-d367-3475gg7f99d1",
+      name: "Singh Electronics",
+      email: "singh@electronics.com",
+      phone: "+91 6543210987",
+      profileImage_url: "https://randomuser.me/api/portraits/men/4.jpg",
+      status: "inactive",
+      role: "retailer",
+      createdDate: "2023-07-18",
+      lastLogin: "2023-07-18",
+      address: "101 Mall Road, Chandigarh",
+      businessDetails: {
+        gstNumber: "04DDDDD0000D1Z5",
+        businessType: "Electronics Retailer",
+        yearEstablished: 2017,
+        productsOffered: 200
+      }
+    },
+    {
+      id: "85h791e4-f4g2-8h66-e478-4586hh8g00e2",
+      name: "Gupta Digital",
+      email: "gupta@digital.com",
+      phone: "+91 5432109876",
+      profileImage_url: "https://randomuser.me/api/portraits/men/5.jpg",
+      status: "inactive",
+      role: "retailer",
+      createdDate: "2023-07-19",
+      lastLogin: "2023-07-19",
+      address: "202 Digital Zone, Hyderabad, Telangana",
+      businessDetails: {
+        gstNumber: "36EEEEE0000E1Z5",
+        businessType: "Digital Products Store",
+        yearEstablished: 2021,
+        productsOffered: 95
+      }
+    }
+  ];
+  
+  // Use either provided retailers or mock data
+  useEffect(() => {
+    if (propRetailers && propRetailers.length > 0) {
+      setPendingRetailers(propRetailers);
+    } else {
+      setPendingRetailers([...mockRetailers, {
+        id: "18c026a0-a0b5-1b09-a701-0029aa1a33a5",
+        name: "Mehta Mobiles",
+        email: "mehta@mobiles.com",
+        phone: "+91 9876543222",
+        profileImage_url: "https://randomuser.me/api/portraits/men/10.jpg",
+        status: "rejected",
+        role: "retailer",
+        createdDate: "2023-07-05",
+        lastLogin: "2023-07-05",
+        address: "303 Shopping Mall, Kolkata, West Bengal",
+        businessDetails: {
+          gstNumber: "19HHHHH0000H1Z5",
+          businessType: "Mobile Shop",
+          yearEstablished: 2020,
+          productsOffered: 65
+        }
+      }]);
+    }
+  }, [propRetailers]);
+  
+  // Filter retailers based on status
+  const filteredRetailers = filterStatus === 'all' 
+    ? pendingRetailers 
+    : pendingRetailers.filter(retailer => retailer.status === filterStatus);
+
+  const handleApprove = (retailerId) => {
+    // API call to approve retailer would go here
+    alert(`Retailer ${retailerId} approved successfully!`);
+  };
+
+  const handleReject = (retailerId) => {
+    // API call to reject retailer would go here
+    alert(`Retailer ${retailerId} rejected.`);
+  };
+
+  const handleBan = (retailerId) => {
+    // API call to ban retailer would go here
+    if (window.confirm('Are you sure you want to ban this retailer?')) {
+      alert(`Retailer ${retailerId} banned.`);
+    }
+  };
+  
+  const handleStatusChange = (retailerId, currentStatus, newStatus, notes = '') => {
+    // API call to change retailer status would go here
+    if (newStatus === 'banned' && !window.confirm('Are you sure you want to ban this retailer?')) {
+      return false;
+    }
+    
+    // Here you would make the actual API call
+    alert(`Retailer ${retailerId} status changed from ${currentStatus} to ${newStatus}${notes ? ' with notes' : ''}`);
+    
+    // Update local state (in a real app, you'd update after API success)
+    setPendingRetailers(prevRetailers => 
+      prevRetailers.map(retailer => 
+        retailer.id === retailerId ? {...retailer, status: newStatus} : retailer
+      )
+    );
+    
+    return true;
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+      {/* Header */}
+      <div className="mb-6 pb-4 border-b">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center">
+          <FiClock className="mr-2 text-yellow-500" /> Retailer Approval Dashboard
+        </h2>
+        <p className="text-sm text-gray-500 mt-1">Manage new retailer account requests</p>
+      </div>
+      
+      {/* Stats Cards - Clickable for filtering */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+        <button 
+          onClick={() => setFilterStatus('all')}
+          className={`p-3 rounded-lg text-left transition-all ${filterStatus === 'all' ? 'bg-blue-100 ring-2 ring-blue-400' : 'bg-blue-50 hover:bg-blue-100'}`}
+        >
+          <div className="text-blue-600 text-sm font-medium">Total Requests</div>
+          <div className="text-2xl font-bold">{pendingRetailers.length}</div>
+        </button>
+        
+        <button 
+          onClick={() => setFilterStatus('inactive')}
+          className={`p-3 rounded-lg text-left transition-all ${filterStatus === 'inactive' ? 'bg-yellow-100 ring-2 ring-yellow-400' : 'bg-yellow-50 hover:bg-yellow-100'}`}
+        >
+          <div className="text-yellow-600 text-sm font-medium">Pending</div>
+          <div className="text-2xl font-bold">{pendingRetailers.filter(r => r.status === 'inactive').length}</div>
+        </button>
+        
+        <button 
+          onClick={() => setFilterStatus('active')}
+          className={`p-3 rounded-lg text-left transition-all ${filterStatus === 'active' ? 'bg-green-100 ring-2 ring-green-400' : 'bg-green-50 hover:bg-green-100'}`}
+        >
+          <div className="text-green-600 text-sm font-medium">Approved</div>
+          <div className="text-2xl font-bold">{pendingRetailers.filter(r => r.status === 'active').length}</div>
+        </button>
+        
+        <button 
+          onClick={() => setFilterStatus('rejected')}
+          className={`p-3 rounded-lg text-left transition-all ${filterStatus === 'rejected' ? 'bg-orange-100 ring-2 ring-orange-400' : 'bg-orange-50 hover:bg-orange-100'}`}
+        >
+          <div className="text-orange-600 text-sm font-medium">Rejected</div>
+          <div className="text-2xl font-bold">{pendingRetailers.filter(r => r.status === 'rejected').length}</div>
+        </button>
+        
+        <button 
+          onClick={() => setFilterStatus('banned')}
+          className={`p-3 rounded-lg text-left transition-all ${filterStatus === 'banned' ? 'bg-red-100 ring-2 ring-red-400' : 'bg-red-50 hover:bg-red-100'}`}
+        >
+          <div className="text-red-600 text-sm font-medium">Banned</div>
+          <div className="text-2xl font-bold">{pendingRetailers.filter(r => r.status === 'banned').length}</div>
+        </button>
+      </div>
+      
+      {filteredRetailers.length === 0 ? (
+        <div className="text-center py-8 bg-gray-50 rounded-lg">
+          <div className="bg-yellow-50 inline-block p-4 rounded-full mb-4">
+            <FiCheckCircle className="text-yellow-500 w-12 h-12" />
+          </div>
+          <h3 className="text-xl font-medium text-gray-700">No pending approval requests</h3>
+          <p className="text-gray-500 mt-2">All retailer accounts have been processed.</p>
+        </div>
+      ) : (
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto rounded-lg border border-gray-200">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-gray-50 text-gray-700">
+                <tr>
+                  <th className="px-4 py-3">Retailer</th>
+                  <th className="px-4 py-3">Contact</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredRetailers.map((retailer) => (
+                  <tr key={retailer.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      <div 
+                        className="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded-md transition-colors"
+                        onClick={() => setSelectedRetailer(retailer)}
+                        title="Click to view details"
+                      >
+                        <div className="h-10 w-10 flex-shrink-0">
+                          <img 
+                            className="h-10 w-10 rounded-full object-cover" 
+                            src={retailer.profileImage_url || "https://via.placeholder.com/40"} 
+                            alt={retailer.name} 
+                          />
+                        </div>
+                        <div className="ml-3">
+                          <div className="font-medium text-gray-900">{retailer.name}</div>
+                          <div className="text-xs text-gray-500">Joined {retailer.createdDate}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div 
+                        className="text-sm cursor-pointer hover:bg-gray-100 p-1 rounded-md transition-colors"
+                        onClick={() => setSelectedRetailer(retailer)}
+                        title="Click to view details"
+                      >
+                        <div className="flex items-center text-gray-900">
+                          <FiMail className="mr-1 text-gray-400" /> {retailer.email}
+                        </div>
+                        <div className="flex items-center text-gray-500">
+                          <FiPhone className="mr-1 text-gray-400" /> {retailer.phone || 'N/A'}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span 
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer
+                          ${retailer.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 
+                            retailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' : 
+                            retailer.status === 'rejected' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' :
+                            'bg-red-100 text-red-800 hover:bg-red-200'}`}
+                        onClick={() => setSelectedRetailer(retailer)}
+                        title="Click to view details"
+                      >
+                        {retailer.status === 'active' ? 'Approved' : 
+                         retailer.status === 'inactive' ? 'Pending' : 
+                         retailer.status === 'rejected' ? 'Rejected' : 'Banned'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-2">
+                        {retailer.status === 'inactive' && (
+                          <>
+                            <button 
+                              onClick={() => handleApprove(retailer.id)}
+                              className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-xs"
+                            >
+                              Approve
+                            </button>
+                            <button 
+                              onClick={() => handleReject(retailer.id)}
+                              className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 text-xs"
+                            >
+                              Reject
+                            </button>
+                            <button 
+                              onClick={() => handleBan(retailer.id)}
+                              className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs"
+                            >
+                              Ban
+                            </button>
+                          </>
+                        )}
+                        <button 
+                          onClick={() => setSelectedRetailer(retailer)}
+                          className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-xs"
+                        >
+                          Details
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {filteredRetailers.map((retailer) => (
+              <div key={retailer.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div 
+                      className="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded-md transition-colors"
+                      onClick={() => setSelectedRetailer(retailer)}
+                      title="Click to view details"
+                    >
+                      <img 
+                        className="h-10 w-10 rounded-full object-cover" 
+                        src={retailer.profileImage_url || "https://via.placeholder.com/40"} 
+                        alt={retailer.name} 
+                      />
+                      <div className="ml-3">
+                        <div className="font-medium text-gray-900">{retailer.name}</div>
+                        <div className="text-xs text-gray-500">Joined {retailer.createdDate}</div>
+                      </div>
+                    </div>
+                    <span 
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer
+                        ${retailer.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 
+                          retailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' : 
+                          retailer.status === 'rejected' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' :
+                          'bg-red-100 text-red-800 hover:bg-red-200'}`}
+                      onClick={() => setSelectedRetailer(retailer)}
+                      title="Click to view details"
+                    >
+                      {retailer.status === 'active' ? 'Approved' : 
+                       retailer.status === 'inactive' ? 'Pending' : 
+                       retailer.status === 'rejected' ? 'Rejected' : 'Banned'}
+                    </span>
+                  </div>
+                  
+                  <div 
+                    className="grid grid-cols-1 gap-2 text-sm mb-4 cursor-pointer hover:bg-gray-100 p-2 rounded-md transition-colors"
+                    onClick={() => setSelectedRetailer(retailer)}
+                    title="Click to view details"
+                  >
+                    <div className="flex items-center">
+                      <FiMail className="mr-2 text-gray-400" />
+                      <span className="text-gray-700">{retailer.email}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <FiPhone className="mr-2 text-gray-400" />
+                      <span className="text-gray-700">{retailer.phone || 'N/A'}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <FaStore className="mr-2 text-gray-400" />
+                      <span className="text-gray-700">{retailer.businessDetails?.businessType || 'Retailer'}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    {retailer.status === 'inactive' && (
+                      <>
+                        <button 
+                          onClick={() => handleApprove(retailer.id)}
+                          className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-xs flex-1"
+                        >
+                          Approve
+                        </button>
+                        <button 
+                          onClick={() => handleReject(retailer.id)}
+                          className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 text-xs flex-1"
+                        >
+                          Reject
+                        </button>
+                        <button 
+                          onClick={() => handleBan(retailer.id)}
+                          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs flex-1"
+                        >
+                          Ban
+                        </button>
+                      </>
+                    )}
+                    <button 
+                      onClick={() => setSelectedRetailer(retailer)}
+                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-xs flex-1"
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+      
+      {/* Retailer Details Modal */}
+      {selectedRetailer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center p-6 border-b bg-gray-50">
+              <div className="flex items-center">
+                <div className="mr-3">
+                  <img 
+                    className="h-12 w-12 rounded-full object-cover border-2 border-white shadow" 
+                    src={selectedRetailer.profileImage_url || "https://via.placeholder.com/48"} 
+                    alt={selectedRetailer.name} 
+                  />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold">{selectedRetailer.name}</h2>
+                  <div className="flex items-center">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                      ${selectedRetailer.status === 'active' ? 'bg-green-100 text-green-800' : 
+                        selectedRetailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' : 
+                        selectedRetailer.status === 'rejected' ? 'bg-orange-100 text-orange-800' :
+                        'bg-red-100 text-red-800'}`}
+                    >
+                      {selectedRetailer.status === 'active' ? 'Approved' : 
+                       selectedRetailer.status === 'inactive' ? 'Pending Approval' : 
+                       selectedRetailer.status === 'rejected' ? 'Rejected' : 'Banned'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedRetailer(null)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
+                  <FiUser className="mr-2 text-blue-500" /> Retailer Information
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="text-xs font-medium text-gray-500 uppercase">Full Name</h4>
+                    <p className="text-sm font-medium">{selectedRetailer.name}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-xs font-medium text-gray-500 uppercase">Email Address</h4>
+                    <p className="text-sm font-medium flex items-center">
+                      <FiMail className="mr-1 text-gray-400" /> {selectedRetailer.email}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-xs font-medium text-gray-500 uppercase">Phone Number</h4>
+                    <p className="text-sm font-medium flex items-center">
+                      <FiPhone className="mr-1 text-gray-400" /> {selectedRetailer.phone || 'N/A'}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-xs font-medium text-gray-500 uppercase">Registration Date</h4>
+                    <p className="text-sm font-medium flex items-center">
+                      <FiCalendar className="mr-1 text-gray-400" /> {selectedRetailer.createdDate}
+                    </p>
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <h4 className="text-xs font-medium text-gray-500 uppercase">Address</h4>
+                    <p className="text-sm font-medium flex items-start">
+                      <FiMapPin className="mr-1 mt-0.5 text-gray-400" /> 
+                      <span>{selectedRetailer.address || 'No address provided'}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Status Change Section */}
+              <div className="mt-6 bg-blue-50 p-4 rounded-lg">
+                <h3 className="text-sm font-medium text-blue-700 mb-3">Change Retailer Status</h3>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Current Status</label>
+                    <div className={`inline-flex items-center px-3 py-2 rounded text-sm font-medium w-full
+                      ${selectedRetailer.status === 'active' ? 'bg-green-100 text-green-800' : 
+                        selectedRetailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' : 
+                        selectedRetailer.status === 'rejected' ? 'bg-orange-100 text-orange-800' :
+                        'bg-red-100 text-red-800'}`}
+                    >
+                      {selectedRetailer.status === 'active' ? 'Approved' : 
+                       selectedRetailer.status === 'inactive' ? 'Pending Approval' : 
+                       selectedRetailer.status === 'rejected' ? 'Rejected' : 'Banned'}
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Change Status To</label>
+                    <select 
+                      className="w-full p-2 border border-gray-300 rounded"
+                      defaultValue=""
+                    >
+                      <option value="" disabled>Select new status</option>
+                      {selectedRetailer.status !== 'active' && <option value="active">Approve</option>}
+                      {selectedRetailer.status !== 'inactive' && <option value="inactive">Set as Pending</option>}
+                      {selectedRetailer.status !== 'rejected' && <option value="rejected">Reject</option>}
+                      {selectedRetailer.status !== 'banned' && <option value="banned">Ban</option>}
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Notes Section */}
+              <div className="mt-4 bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Admin Notes</h3>
+                <textarea 
+                  className="w-full p-2 border border-gray-300 rounded text-sm" 
+                  rows="2"
+                  placeholder="Add notes about this status change..."
+                ></textarea>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="mt-6 flex flex-wrap justify-end gap-3 border-t pt-4">
+                <button 
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center"
+                  onClick={() => {
+                    const select = document.querySelector('select');
+                    const newStatus = select.value;
+                    const notes = document.querySelector('textarea').value;
+                    
+                    if (!newStatus) {
+                      alert('Please select a new status');
+                      return;
+                    }
+                    
+                    const success = handleStatusChange(
+                      selectedRetailer.id, 
+                      selectedRetailer.status, 
+                      newStatus,
+                      notes
+                    );
+                    
+                    if (success) {
+                      setSelectedRetailer(null);
+                    }
+                  }}
+                >
+                  Update Status
+                </button>
+                <button 
+                  onClick={() => setSelectedRetailer(null)}
+                  className="border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-100"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default RetailerApprovalManager;

@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { UserProfileView } from "../../../features/index.js";
+import { UserProfileView, RetailerApprovalManager } from "../../../features/index.js";
 import { jsPDF } from "jspdf";
 import {
   FiDownload,
-  FiFileText,
   FiUser,
   FiShoppingBag,
   FiCheckCircle,
   FiAlertCircle,
   FiClock,
   FiShoppingCart,
-  FiDollarSign,
   FiTrendingUp,
   FiActivity,
 } from "react-icons/fi";
@@ -24,6 +22,7 @@ import {
 
 const UserDashboard = () => {
   const [activePage, setActivePage] = useState("dashboard");
+  const [pendingRetailers, setPendingRetailers] = useState([]);
   const [userManagementDashboardData, setUserManagementDashboardData] =
     useState({
       totalUsers: 0,
@@ -197,8 +196,7 @@ const UserDashboard = () => {
     // Add filter information
     doc.setFontSize(11);
     doc.text(
-      `Applied Filters: Role: ${filters.role}, Status: ${filters.status}${
-        filters.search ? `, Search: "${filters.search}"` : ""
+      `Applied Filters: Role: ${filters.role}, Status: ${filters.status}${filters.search ? `, Search: "${filters.search}"` : ""
       }`,
       14,
       30
@@ -289,23 +287,35 @@ const UserDashboard = () => {
         <div className="flex gap-4 mb-3 sm:mb-0">
           <button
             onClick={() => setActivePage("dashboard")}
-            className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-              activePage === "dashboard"
-                ? "bg-blue-500 text-white border-b-2 border-blue-700"
-                : "text-gray-600 hover:bg-gray-200"
-            }`}
+            className={`px-4 py-2 rounded-lg font-semibold transition-all ${activePage === "dashboard"
+              ? "bg-blue-500 text-white border-b-2 border-blue-700"
+              : "text-gray-600 hover:bg-gray-200"
+              }`}
           >
             Dashboard
           </button>
           <button
             onClick={() => setActivePage("users")}
-            className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-              activePage === "users"
-                ? "bg-blue-500 text-white border-b-2 border-blue-700"
-                : "bg-blue-400 text-white hover:bg-blue-500"
-            }`}
+            className={`px-4 py-2 rounded-lg font-semibold transition-all ${activePage === "users"
+              ? "bg-blue-500 text-white border-b-2 border-blue-700"
+              : "text-gray-600 hover:bg-gray-200"
+              }`}
           >
             User Management
+          </button>
+          <button
+            onClick={() => setActivePage("retailerApprovals")}
+            className={`px-4 py-2 rounded-lg font-semibold transition-all ${activePage === "retailerApprovals"
+              ? "bg-yellow-500 text-white border-b-2 border-yellow-700"
+              : "text-gray-600 hover:bg-gray-200"
+              }`}
+          >
+            <FiClock className="inline mr-1" /> Retailers Approvals
+            {userManagementDashboardData.pendingRetailers > 0 && (
+              <span className="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                {userManagementDashboardData.pendingRetailers}
+              </span>
+            )}
           </button>
         </div>
         <div className="flex items-center gap-3">
@@ -314,12 +324,6 @@ const UserDashboard = () => {
             onClick={exportUsersToCsv}
           >
             <FiDownload className="mr-2" /> Export CSV
-          </button>
-          <button
-            className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-            onClick={exportUsersToPdf}
-          >
-            <FiFileText className="mr-2" /> Export PDF
           </button>
         </div>
       </nav>
@@ -345,6 +349,11 @@ const UserDashboard = () => {
           <UserProfileView
             onFilterChange={handleFilterChange}
             filters={filters}
+          />
+        )}
+        {activePage === "retailerApprovals" && (
+          <RetailerApprovalManager
+            pendingRetailers={users.filter(user => user.role === "retailer" && user.status === "inactive")}
           />
         )}
       </main>
