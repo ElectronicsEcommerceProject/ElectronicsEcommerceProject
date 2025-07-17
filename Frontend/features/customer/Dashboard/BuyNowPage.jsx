@@ -199,21 +199,9 @@ const BuyNowPage = () => {
     };
   }, [productData]);
 
-  const handleWindowScroll = () => {
-    if (isRightScrollAtEnd) {
-      const leftElement = leftScrollRef.current;
-      if (leftElement) {
-        const scrollAmount = window.scrollY;
-        leftElement.scrollLeft = scrollAmount;
-        rightScrollRef.current.scrollTop = rightScrollRef.current.scrollHeight;
-      }
-    }
-  };
+  // Removed handleWindowScroll function as we're using fixed height containers
 
-  useEffect(() => {
-    window.addEventListener("scroll", handleWindowScroll);
-    return () => window.removeEventListener("scroll", handleWindowScroll);
-  }, [isRightScrollAtEnd]);
+  // Removed window scroll event listener as we're using fixed height containers with their own scrollbars
 
   const handleMouseMove = (e) => {
     if (!imageContainerRef.current) return;
@@ -1017,15 +1005,21 @@ const BuyNowPage = () => {
         {/* Product Details Section */}
         <div
           ref={rightScrollRef}
-          className="w-full lg:w-3/5 xl:w-2/3 max-h-[60vh] lg:max-h-[80vh] overflow-y-auto px-4 lg:px-0 lg:pr-4 no-scrollbar"
+          className="w-full lg:w-3/5 xl:w-2/3 overflow-y-auto px-4 lg:px-0 lg:pr-4 custom-scrollbar"
           style={{
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
+            height: "calc(100vh - 120px)", /* Fixed height for consistent scrolling */
+            position: "sticky",
+            top: "80px", /* Adjust based on your header height */
           }}
         >
           <style
             dangerouslySetInnerHTML={{
-              __html: `.no-scrollbar::-webkit-scrollbar { display: none; }`,
+              __html: `
+                .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
+              `,
             }}
           />
 
@@ -2459,10 +2453,11 @@ const BuyNowPage = () => {
         </div>
       </div>
 
-      <RelatedProducts
-        isVisible={isRightScrollAtEnd}
-        categoryId={mainProduct?.category?.category_id}
-      />
+      <div className="container mx-auto px-4 py-4 max-w-none sm:max-w-full md:max-w-6xl lg:max-w-7xl">
+        <RelatedProducts
+          categoryId={mainProduct?.category?.category_id}
+        />
+      </div>
       <Footer />
 
       {/* Address Form Popup */}
