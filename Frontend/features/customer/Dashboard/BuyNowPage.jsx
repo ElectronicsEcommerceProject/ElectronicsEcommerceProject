@@ -35,6 +35,7 @@ const BuyNowPage = () => {
   const [showMagnifier, setShowMagnifier] = useState(false);
   const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   // New state for Personalized Coupons and Quantity
   const [appliedCoupons, setAppliedCoupons] = useState([]);
@@ -119,6 +120,22 @@ const BuyNowPage = () => {
       rightScrollRef.current.scrollTop = 0;
     }
   }, [productId]); // Re-run when productId changes
+  
+  // Handle window resize to detect desktop vs mobile
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    
+    // Set initial value
+    handleResize();
+    
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (productData && productData.mainProduct) {
@@ -538,11 +555,14 @@ const BuyNowPage = () => {
     };
   };
 
+  // Add viewport meta tag to index.html instead of using Helmet
+  // <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 w-full max-w-full overflow-x-hidden">
       <Header />
       {/* Product Section */}
-      <div className="container mx-auto px-4 py-4 max-w-none sm:max-w-full md:max-w-6xl lg:max-w-7xl flex flex-col lg:flex-row gap-4 lg:gap-8">
+      <div className="container mx-auto px-2 sm:px-4 py-4 w-full max-w-full overflow-hidden flex flex-col lg:flex-row gap-4 lg:gap-8">
         {/* Product Image Section */}
         <div className="w-full lg:w-2/5 xl:w-1/3 relative">
           {/* Wishlist button - top right corner */}
@@ -1005,20 +1025,26 @@ const BuyNowPage = () => {
         {/* Product Details Section */}
         <div
           ref={rightScrollRef}
-          className="w-full lg:w-3/5 xl:w-2/3 overflow-y-auto px-4 lg:px-0 lg:pr-4 custom-scrollbar"
+          className="w-full lg:w-3/5 xl:w-2/3 overflow-y-auto px-2 sm:px-4 lg:px-0 lg:pr-4 custom-scrollbar"
           style={{
-            height: "calc(100vh - 120px)", /* Fixed height for consistent scrolling */
-            position: "sticky",
-            top: "80px", /* Adjust based on your header height */
+            height: isDesktop ? "calc(100vh - 120px)" : "auto", /* Fixed height on desktop, auto on mobile */
+            position: isDesktop ? "sticky" : "relative", /* Sticky on desktop, relative on mobile */
+            top: isDesktop ? "80px" : "auto", /* Top position on desktop */
           }}
         >
           <style
             dangerouslySetInnerHTML={{
               __html: `
-                .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
+                @media (max-width: 640px) {
+                  .custom-scrollbar::-webkit-scrollbar { width: 0px; display: none; }
+                  .custom-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+                }
+                @media (min-width: 641px) {
+                  .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+                  .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+                  .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+                  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
+                }
               `,
             }}
           />
@@ -2453,7 +2479,7 @@ const BuyNowPage = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-4 max-w-none sm:max-w-full md:max-w-6xl lg:max-w-7xl">
+      <div className="container mx-auto px-2 sm:px-4 py-4 w-full max-w-full overflow-hidden">
         <RelatedProducts
           categoryId={mainProduct?.category?.category_id}
         />
