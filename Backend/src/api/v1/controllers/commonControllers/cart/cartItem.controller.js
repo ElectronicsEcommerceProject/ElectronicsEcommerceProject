@@ -213,8 +213,8 @@ const addItemToCart = async (req, res) => {
       existingItem.coupon_id = coupon_id || null;
       await existingItem.save();
       
-      // Clear cart cache
-      await cacheUtils.flushAll();
+      // Clear only this user's cache
+      await cacheUtils.clearUserCache(user_id);
 
       return res.status(StatusCodes.OK).json({
         message: "Item quantity updated in cart",
@@ -236,8 +236,8 @@ const addItemToCart = async (req, res) => {
       coupon_id: coupon_id || null,
     });
     
-    // Clear cart cache
-    await cacheUtils.flushAll();
+    // Clear only this user's cache
+    await cacheUtils.clearUserCache(user_id);
 
     res.status(StatusCodes.CREATED).json({
       message: MESSAGE.post.succ,
@@ -325,8 +325,8 @@ const updateCartItem = async (req, res) => {
 
     await cartItem.save();
     
-    // Clear cart cache
-    await cacheUtils.flushAll();
+    // Clear only this user's cache
+    await cacheUtils.clearUserCache(user_id);
 
     res.status(StatusCodes.OK).json({
       success: true,
@@ -371,8 +371,8 @@ const removeCartItem = async (req, res) => {
     // Delete the cart item
     await cartItem.destroy();
     
-    // Clear cart cache
-    await cacheUtils.flushAll();
+    // Clear only this user's cache
+    await cacheUtils.clearUserCache(user_id);
 
     res.status(StatusCodes.OK).json({
       success: true,
@@ -847,8 +847,8 @@ const findOrCreateCartItem = async (req, res) => {
       });
     }
 
-    // Clear cart cache
-    await cacheUtils.flushAll();
+    // Clear only this user's cache
+    await cacheUtils.clearUserCache(user_id);
     
     // New item was created
     res.status(StatusCodes.CREATED).json({

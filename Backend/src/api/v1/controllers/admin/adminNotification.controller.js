@@ -796,8 +796,8 @@ export const markAsRead = async (req, res) => {
     // Update the notification
     await notification.update({ is_read: true });
     
-    // Clear notification cache
-    await cacheUtils.flushAll();
+    // Clear only this user's cache
+    await cacheUtils.clearUserCache(notification.user_id);
 
     return res.status(StatusCodes.OK).json({
       success: true,

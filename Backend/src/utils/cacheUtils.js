@@ -40,6 +40,22 @@ export const cacheUtils = {
     }
   },
   
+  // Clear cache for specific user
+  async clearUserCache(userId) {
+    try {
+      await this.clearPatterns(
+        `cart:${userId}`,
+        `cartCount:${userId}`,
+        `userNotifications:${userId}`,
+        `userNotificationCount:${userId}`,
+        `userDashboardData:${userId}*`
+      );
+      console.log(`✅ Cache cleared for user ${userId}`);
+    } catch (error) {
+      console.error(`❌ Error clearing cache for user ${userId}:`, error);
+    }
+  },
+  
   // Flush all Redis data
   async flushAll() {
     try {
