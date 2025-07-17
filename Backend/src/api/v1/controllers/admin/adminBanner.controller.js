@@ -125,6 +125,7 @@ const getActiveBanners = async (req, res) => {
       return res.status(StatusCodes.OK).json({
         success: true,
         message: "Cached active banners",
+        fromCache: true,
         data: cachedData
       });
     }
@@ -153,6 +154,7 @@ const getActiveBanners = async (req, res) => {
     res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
+      fromCache: false,
       data: bannersWithFullUrls,
     });
   } catch (error) {
