@@ -100,6 +100,7 @@ const getAllProducts = async (req, res) => {
     if (cachedData) {
       return res.status(StatusCodes.OK).json({
         message: "Cached products",
+        fromCache: true,
         ...cachedData
       });
     }
@@ -111,6 +112,7 @@ const getAllProducts = async (req, res) => {
 
     const response = {
       message: MESSAGE.get.succ,
+      fromCache: false,
       data: products,
       pagination: createPaginationResponse(count, page, limit)
     };
@@ -139,6 +141,7 @@ const getProductById = async (req, res) => {
     if (cachedData) {
       return res.status(StatusCodes.OK).json({
         message: "Cached product",
+        fromCache: true,
         data: cachedData
       });
     }
@@ -166,6 +169,7 @@ const getProductById = async (req, res) => {
 
     res.status(StatusCodes.OK).json({
       message: MESSAGE.get.succ,
+      fromCache: false,
       data: product,
     });
   } catch (error) {
