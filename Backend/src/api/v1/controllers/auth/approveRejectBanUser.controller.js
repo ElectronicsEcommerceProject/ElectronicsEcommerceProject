@@ -69,7 +69,13 @@ const rejectUser = async (req, res) => {
       });
     }
     
-    await user.update({ status: 'inactive' });
+    // Update with notes if provided
+    const updateData = { status: 'inactive' };
+    if (notes) {
+      updateData.admin_notes = notes;
+    }
+    
+    await user.update(updateData);
     
     return res.status(StatusCodes.OK).json({
       success: true,
@@ -154,7 +160,7 @@ const getPendingRetailers = async (req, res) => {
         role: 'retailer',
         status: 'inactive'
       },
-      attributes: ['user_id', 'name', 'email', 'phone_number', 'profileImage_url', 'status', 'role', 'createdAt', 'updatedAt']
+      attributes: ['user_id', 'name', 'email', 'phone_number', 'profileImage_url', 'status', 'role', 'ban_reason', 'admin_notes', 'createdAt', 'updatedAt']
     });
     
     // Transform data for frontend
@@ -166,6 +172,8 @@ const getPendingRetailers = async (req, res) => {
       profileImage_url: retailer.profileImage_url,
       status: retailer.status,
       role: retailer.role,
+      ban_reason: retailer.ban_reason,
+      admin_notes: retailer.admin_notes,
       createdDate: new Date(retailer.createdAt).toISOString().split('T')[0],
       lastLogin: new Date(retailer.updatedAt).toISOString().split('T')[0]
     }));
@@ -220,8 +228,20 @@ const changeUserStatus = async (req, res) => {
       });
     }
     
-    // Update user status with the lowercase value
-    await user.update({ status: statusLowercase });
+    // Update user status with the lowercase value and save notes
+    const updateData = { status: statusLowercase };
+    
+    // Add notes if provided
+    if (notes) {
+      updateData.admin_notes = notes;
+    }
+    
+    // Add ban_reason if status is banned
+    if (statusLowercase === 'banned' && req.body.reason) {
+      updateData.ban_reason = req.body.reason;
+    }
+    
+    await user.update(updateData);
     
     return res.status(StatusCodes.OK).json({
       success: true,
@@ -251,7 +271,7 @@ const getBannedRetailers = async (req, res) => {
         role: 'retailer',
         status: 'banned'
       },
-      attributes: ['user_id', 'name', 'email', 'phone_number', 'profileImage_url', 'status', 'role', 'createdAt', 'updatedAt']
+      attributes: ['user_id', 'name', 'email', 'phone_number', 'profileImage_url', 'status', 'role', 'ban_reason', 'admin_notes', 'createdAt', 'updatedAt']
     });
     
     // Transform data for frontend
@@ -263,6 +283,8 @@ const getBannedRetailers = async (req, res) => {
       profileImage_url: retailer.profileImage_url,
       status: retailer.status,
       role: retailer.role,
+      ban_reason: retailer.ban_reason,
+      admin_notes: retailer.admin_notes,
       createdDate: new Date(retailer.createdAt).toISOString().split('T')[0],
       lastLogin: new Date(retailer.updatedAt).toISOString().split('T')[0]
     }));

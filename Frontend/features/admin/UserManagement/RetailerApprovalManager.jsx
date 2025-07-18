@@ -407,6 +407,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                   <th className="px-4 py-3">Retailer</th>
                   <th className="px-4 py-3">Contact</th>
                   <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Notes</th>
                   <th className="px-4 py-3">Actions</th>
                 </tr>
               </thead>
@@ -456,6 +457,19 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                       >
                         {retailer.status === 'inactive' ? 'Inactive' : retailer.status === 'active' ? 'Active' : 'Banned'}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {retailer.status === 'banned' && retailer.ban_reason ? (
+                        <div className="text-xs text-red-600 max-w-xs truncate" title={retailer.ban_reason}>
+                          <span className="font-semibold">Ban reason:</span> {retailer.ban_reason}
+                        </div>
+                      ) : retailer.admin_notes ? (
+                        <div className="text-xs text-gray-600 max-w-xs truncate" title={retailer.admin_notes}>
+                          {retailer.admin_notes}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">No notes</span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
@@ -541,6 +555,20 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                       <FaStore className="mr-2 text-gray-400" />
                       <span className="text-gray-700">{retailer.businessDetails?.businessType || 'Retailer'}</span>
                     </div>
+                    
+                    {retailer.status === 'banned' && retailer.ban_reason && (
+                      <div className="flex items-start mt-2 bg-red-50 p-2 rounded">
+                        <span className="text-xs text-red-600">
+                          <span className="font-semibold">Ban reason:</span> {retailer.ban_reason}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {retailer.admin_notes && (
+                      <div className="flex items-start mt-2 bg-blue-50 p-2 rounded">
+                        <span className="text-xs text-blue-600">{retailer.admin_notes}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap gap-2">
@@ -728,6 +756,20 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                       <span>{selectedRetailer.address || 'No address provided'}</span>
                     </p>
                   </div>
+                  
+                  {selectedRetailer.status === 'banned' && selectedRetailer.ban_reason && (
+                    <div className="md:col-span-2 bg-red-50 p-3 rounded-md">
+                      <h4 className="text-xs font-medium text-red-500 uppercase">Ban Reason</h4>
+                      <p className="text-sm font-medium text-red-700">{selectedRetailer.ban_reason}</p>
+                    </div>
+                  )}
+                  
+                  {selectedRetailer.admin_notes && (
+                    <div className="md:col-span-2 bg-blue-50 p-3 rounded-md">
+                      <h4 className="text-xs font-medium text-blue-500 uppercase">Admin Notes</h4>
+                      <p className="text-sm font-medium text-blue-700">{selectedRetailer.admin_notes}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -770,6 +812,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                   className="w-full p-2 border border-gray-300 rounded text-sm"
                   rows="2"
                   placeholder="Add notes about this status change..."
+                  defaultValue={selectedRetailer.admin_notes || ''}
                 ></textarea>
               </div>
 

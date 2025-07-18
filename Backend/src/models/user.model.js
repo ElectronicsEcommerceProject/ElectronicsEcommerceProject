@@ -56,6 +56,14 @@ export default (sequelize) => {
         type: DataTypes.DATE,
         allowNull: true,
       },
+      ban_reason: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      admin_notes: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
     },
     {
       paranoid: true, // enable soft delete
