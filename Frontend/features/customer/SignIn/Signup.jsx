@@ -127,8 +127,18 @@ const Signup = ({ setModalContent, setUser }) => {
           confirmPassword: '',
         });
         
-        // Redirect to login form after successful signup
-        setModalContent('login');
+        // Special handling for retailer accounts that require approval
+        if (response.requiresApproval) {
+          // Show approval pending message
+          setErrors({
+            approvalMessage: response.message,
+            adminEmail: response.adminContact?.email,
+            adminPhone: response.adminContact?.phone
+          });
+        } else {
+          // Redirect to login form after successful signup for customers
+          setModalContent('login');
+        }
       } else {
         setErrors({ general: response.message || 'Registration failed. Please try again.' });
       }
@@ -304,18 +314,59 @@ const Signup = ({ setModalContent, setUser }) => {
             {errors.general}
           </div>
         )}
-        <button
-          type="submit"
-          disabled={isLoading}
-          className={`w-full py-2 rounded-md transition-colors ${
-            isLoading
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700'
-          } text-white`}
-          aria-label="Submit signup"
-        >
-          {isLoading ? 'Signing Up...' : 'Sign Up'}
-        </button>
+        
+        {/* Retailer Approval Message */}
+        {errors.approvalMessage && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 text-sm">
+            <div className="flex items-center mb-2">
+              <svg className="h-5 w-5 text-yellow-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="font-medium text-yellow-800">Retailer Account Pending Approval</span>
+            </div>
+            <p className="text-yellow-700 mb-3">{errors.approvalMessage}</p>
+            
+            <div className="bg-white p-3 rounded border border-yellow-100">
+              <p className="text-gray-700 font-medium mb-2">For faster approval, contact our admin:</p>
+              <div className="space-y-1">
+                <div className="flex items-center">
+                  <svg className="h-4 w-4 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <a href={`mailto:${errors.adminEmail}`} className="text-blue-600 hover:underline">{errors.adminEmail}</a>
+                </div>
+                <div className="flex items-center">
+                  <svg className="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  <a href={`tel:${errors.adminPhone}`} className="text-green-600 hover:underline">{errors.adminPhone}</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {!errors.approvalMessage ? (
+          <button
+            type="submit"
+            disabled={isLoading}
+            className={`w-full py-2 rounded-md transition-colors ${
+              isLoading
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700'
+            } text-white`}
+            aria-label="Submit signup"
+          >
+            {isLoading ? 'Signing Up...' : 'Sign Up'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setModalContent('login')}
+            className="w-full py-2 rounded-md transition-colors bg-green-600 hover:bg-green-700 text-white"
+          >
+            Go to Login
+          </button>
+        )}
       </form>
       <div className="text-center">
         <button

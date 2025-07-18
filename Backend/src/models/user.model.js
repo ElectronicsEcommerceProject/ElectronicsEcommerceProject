@@ -42,6 +42,7 @@ export default (sequelize) => {
       status: {
         type: DataTypes.ENUM("active", "inactive", "banned"),
         defaultValue: "active",
+        // Will be overridden in beforeCreate hook for retailers
       },
       role: {
         type: DataTypes.ENUM("retailer", "customer", "admin"),
@@ -84,6 +85,13 @@ export default (sequelize) => {
     User.hasMany(models.NotificationTemplate, { foreignKey: "updated_by" });
   };
 
+  // Add hook to set retailer status to inactive by default
+  User.addHook('beforeCreate', async (user, options) => {
+    if (user.role === 'retailer') {
+      user.status = 'inactive';
+    }
+  });
+  
   // Add hooks for automatic profile image cleanup
   User.addHook('beforeUpdate', async (user, options) => {
     try {

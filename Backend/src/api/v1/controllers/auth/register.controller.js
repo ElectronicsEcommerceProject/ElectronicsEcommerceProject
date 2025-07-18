@@ -44,11 +44,25 @@ const register = async (req, res) => {
     const userResponse = { ...newUser.toJSON() };
     delete userResponse.password;
 
-    res.status(StatusCodes.CREATED).json({
-      success: true,
-      message: MESSAGE.post.succ,
-      user: userResponse,
-    });
+    // Special message for retailers about approval process
+    if (role === 'retailer') {
+      res.status(StatusCodes.CREATED).json({
+        success: true,
+        message: MESSAGE.custom("Your retailer account has been created successfully. Please wait for admin approval before you can access your account."),
+        user: userResponse,
+        adminContact: {
+          email: "maalaxmistore99@gmail.com",
+          phone: "+919973061020"
+        },
+        requiresApproval: true
+      });
+    } else {
+      res.status(StatusCodes.CREATED).json({
+        success: true,
+        message: MESSAGE.post.succ,
+        user: userResponse,
+      });
+    }
   } catch (error) {
     console.error("Error during registration:", error);
     // Check for specific Sequelize validation errors (optional but good)

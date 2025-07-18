@@ -28,6 +28,38 @@ const login = async (req, res) => {
         message: MESSAGE.custom("Invalid password."),
       });
     }
+    
+    // Check if retailer account is inactive (pending approval)
+    if (user.role === 'retailer' && user.status === 'inactive') {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        success: false,
+        message: MESSAGE.custom("Your retailer account is pending approval. Please contact admin for activation."),
+        requiresApproval: true,
+        adminContact: {
+          email: "maalaxmistore99@gmail.com",
+          phone: "+919973061020"
+        },
+        user: {
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          status: user.status
+        }
+      });
+    }
+    
+    // Check if account is banned
+    if (user.status === 'banned') {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        success: false,
+        message: MESSAGE.custom("Your account has been banned. Please contact admin for assistance."),
+        isBanned: true,
+        adminContact: {
+          email: "maalaxmistore99@gmail.com",
+          phone: "+919973061020"
+        }
+      });
+    }
 
     // Generate JWT token
     const token = encodeJwtToken(email, user.user_id, user.role);
