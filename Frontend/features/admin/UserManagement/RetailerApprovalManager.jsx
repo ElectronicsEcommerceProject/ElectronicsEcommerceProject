@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { FiClock, FiCheckCircle, FiUser, FiMail, FiPhone, FiCalendar, FiMapPin, FiPackage, FiSearch, FiChevronLeft, FiChevronRight, FiLoader } from "react-icons/fi";
 import { FaStore, FaIdCard } from "react-icons/fa";
-import { getApi, updateApi, pendingRetailersRoute, userApproveRoute, userRejectRoute, userBanRoute, userStatusChangeRoute } from "../../../src/index.js";
+import { getApi, updateApi, pendingRetailersRoute, bannedRetailersRoute, userApproveRoute, userBanRoute, userStatusChangeRoute } from "../../../src/index.js";
 
 /**
  * RetailerApprovalManager Component
@@ -14,6 +14,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
 
   const [selectedRetailer, setSelectedRetailer] = useState(null);
   const [pendingRetailers, setPendingRetailers] = useState([]);
+  const [bannedRetailers, setBannedRetailers] = useState([]);
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,13 +31,15 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await getApi(pendingRetailersRoute);
+      const pendingResponse = await getApi(pendingRetailersRoute);
+      const bannedResponse = await getApi(bannedRetailersRoute);
 
-      if (response.success) {
-        setPendingRetailers(response.data || []);
+      if (pendingResponse.success && bannedResponse.success) {
+        setPendingRetailers(pendingResponse.data || []);
+        setBannedRetailers(bannedResponse.data || []);
       } else {
-        setError(response.message || 'Failed to fetch retailers');
-        console.error('Error fetching retailers:', response);
+        setError(pendingResponse.message || bannedResponse.message || 'Failed to fetch retailers');
+        console.error('Error fetching retailers:', pendingResponse, bannedResponse);
       }
     } catch (err) {
       setError('An error occurred while fetching retailers');
@@ -57,22 +60,27 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
 
   // Search and filter retailers
   const searchedAndFilteredRetailers = useMemo(() => {
-    // First filter by status
-    const statusFiltered = filterStatus === 'all'
-      ? pendingRetailers
-      : pendingRetailers.filter(retailer => retailer.status === filterStatus);
+    // Combine retailers based on filter status
+    let allRetailers = [];
+    if (filterStatus === 'all') {
+      allRetailers = [...pendingRetailers, ...bannedRetailers];
+    } else if (filterStatus === 'inactive') {
+      allRetailers = pendingRetailers;
+    } else if (filterStatus === 'banned') {
+      allRetailers = bannedRetailers;
+    }
 
     // Then filter by search query
-    if (!searchQuery) return statusFiltered;
+    if (!searchQuery) return allRetailers;
 
     const query = searchQuery.toLowerCase();
-    return statusFiltered.filter(retailer =>
+    return allRetailers.filter(retailer =>
       retailer.name.toLowerCase().includes(query) ||
       retailer.email.toLowerCase().includes(query) ||
       retailer.phone.toLowerCase().includes(query) ||
       (retailer.address && retailer.address.toLowerCase().includes(query))
     );
-  }, [pendingRetailers, filterStatus, searchQuery]);
+  }, [pendingRetailers, bannedRetailers, filterStatus, searchQuery]);
 
   // Calculate pagination
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -127,32 +135,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
     }
   };
 
-  const handleReject = async (retailerId) => {
-    try {
-      setActionLoading(true);
-      const notes = prompt('Enter reason for rejection (optional):');
-      // Replace :user_id in the route with the actual ID
-      const rejectEndpoint = userRejectRoute.replace(':user_id', retailerId);
-      const response = await updateApi(rejectEndpoint, { notes });
-
-      if (response.success) {
-        // Update local state
-        setPendingRetailers(prevRetailers =>
-          prevRetailers.map(retailer =>
-            retailer.id === retailerId ? { ...retailer, status: 'rejected' } : retailer
-          )
-        );
-        alert('Retailer rejected successfully!');
-      } else {
-        alert(`Error: ${response.message || 'Failed to reject retailer'}`);
-      }
-    } catch (err) {
-      console.error('Error rejecting retailer:', err);
-      alert(`Error: ${err.message || 'Failed to reject retailer'}`);
-    } finally {
-      setActionLoading(false);
-    }
-  };
+  // Reject functionality removed
 
   const handleBan = async (retailerId) => {
     if (window.confirm('Are you sure you want to ban this retailer?')) {
@@ -297,16 +280,16 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
       </div>
 
       {/* Stats Cards - Clickable for filtering */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
-        <button
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+        <button 
           onClick={() => setFilterStatus('all')}
           className={`p-3 rounded-lg text-left transition-all ${filterStatus === 'all' ? 'bg-blue-100 ring-2 ring-blue-400' : 'bg-blue-50 hover:bg-blue-100'}`}
         >
           <div className="text-blue-600 text-sm font-medium">Total Requests</div>
-          <div className="text-2xl font-bold">{pendingRetailers.length}</div>
+          <div className="text-2xl font-bold">{pendingRetailers.length + bannedRetailers.length}</div>
         </button>
 
-        <button
+        <button 
           onClick={() => setFilterStatus('inactive')}
           className={`p-3 rounded-lg text-left transition-all ${filterStatus === 'inactive' ? 'bg-yellow-100 ring-2 ring-yellow-400' : 'bg-yellow-50 hover:bg-yellow-100'}`}
         >
@@ -314,28 +297,12 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
           <div className="text-2xl font-bold">{pendingRetailers.filter(r => r.status === 'inactive').length}</div>
         </button>
 
-        <button
-          onClick={() => setFilterStatus('active')}
-          className={`p-3 rounded-lg text-left transition-all ${filterStatus === 'active' ? 'bg-green-100 ring-2 ring-green-400' : 'bg-green-50 hover:bg-green-100'}`}
-        >
-          <div className="text-green-600 text-sm font-medium">Approved</div>
-          <div className="text-2xl font-bold">{pendingRetailers.filter(r => r.status === 'active').length}</div>
-        </button>
-
-        <button
-          onClick={() => setFilterStatus('rejected')}
-          className={`p-3 rounded-lg text-left transition-all ${filterStatus === 'rejected' ? 'bg-orange-100 ring-2 ring-orange-400' : 'bg-orange-50 hover:bg-orange-100'}`}
-        >
-          <div className="text-orange-600 text-sm font-medium">Rejected</div>
-          <div className="text-2xl font-bold">{pendingRetailers.filter(r => r.status === 'rejected').length}</div>
-        </button>
-
-        <button
+        <button 
           onClick={() => setFilterStatus('banned')}
           className={`p-3 rounded-lg text-left transition-all ${filterStatus === 'banned' ? 'bg-red-100 ring-2 ring-red-400' : 'bg-red-50 hover:bg-red-100'}`}
         >
           <div className="text-red-600 text-sm font-medium">Banned</div>
-          <div className="text-2xl font-bold">{pendingRetailers.filter(r => r.status === 'banned').length}</div>
+          <div className="text-2xl font-bold">{bannedRetailers.length}</div>
         </button>
       </div>
 
@@ -433,16 +400,12 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer
-                          ${retailer.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
-                            retailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' :
-                              retailer.status === 'rejected' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' :
-                                'bg-red-100 text-red-800 hover:bg-red-200'}`}
+                          ${retailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' :
+                              'bg-red-100 text-red-800 hover:bg-red-200'}`}
                         onClick={() => setSelectedRetailer(retailer)}
                         title="Click to view details"
                       >
-                        {retailer.status === 'active' ? 'Approved' :
-                          retailer.status === 'inactive' ? 'Pending' :
-                            retailer.status === 'rejected' ? 'Rejected' : 'Banned'}
+                        {retailer.status === 'inactive' ? 'Pending' : 'Banned'}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -456,13 +419,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                             >
                               {actionLoading ? 'Processing...' : 'Approve'}
                             </button>
-                            <button
-                              onClick={() => handleReject(retailer.id)}
-                              disabled={actionLoading}
-                              className={`bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 text-xs ${actionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            >
-                              {actionLoading ? 'Processing...' : 'Reject'}
-                            </button>
+                            {/* Reject button removed */}
                             <button
                               onClick={() => handleBan(retailer.id)}
                               disabled={actionLoading}
@@ -509,16 +466,12 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                     </div>
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer
-                        ${retailer.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
-                          retailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' :
-                            retailer.status === 'rejected' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' :
-                              'bg-red-100 text-red-800 hover:bg-red-200'}`}
+                        ${retailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' :
+                            'bg-red-100 text-red-800 hover:bg-red-200'}`}
                       onClick={() => setSelectedRetailer(retailer)}
                       title="Click to view details"
                     >
-                      {retailer.status === 'active' ? 'Approved' :
-                        retailer.status === 'inactive' ? 'Pending' :
-                          retailer.status === 'rejected' ? 'Rejected' : 'Banned'}
+                      {retailer.status === 'inactive' ? 'Pending' : 'Banned'}
                     </span>
                   </div>
 
@@ -550,12 +503,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                         >
                           Approve
                         </button>
-                        <button
-                          onClick={() => handleReject(retailer.id)}
-                          className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 text-xs flex-1"
-                        >
-                          Reject
-                        </button>
+                        {/* Reject button removed */}
                         <button
                           onClick={() => handleBan(retailer.id)}
                           className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs flex-1"
@@ -673,14 +621,10 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                   <h2 className="text-xl font-semibold">{selectedRetailer.name}</h2>
                   <div className="flex items-center">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
-                      ${selectedRetailer.status === 'active' ? 'bg-green-100 text-green-800' :
-                        selectedRetailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' :
-                          selectedRetailer.status === 'rejected' ? 'bg-orange-100 text-orange-800' :
-                            'bg-red-100 text-red-800'}`}
+                      ${selectedRetailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'}`}
                     >
-                      {selectedRetailer.status === 'active' ? 'Approved' :
-                        selectedRetailer.status === 'inactive' ? 'Pending Approval' :
-                          selectedRetailer.status === 'rejected' ? 'Rejected' : 'Banned'}
+                      {selectedRetailer.status === 'inactive' ? 'Pending Approval' : 'Banned'}
                     </span>
                   </div>
                 </div>
@@ -743,14 +687,10 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                   <div className="flex-1">
                     <label className="block text-xs font-medium text-gray-700 mb-1">Current Status</label>
                     <div className={`inline-flex items-center px-3 py-2 rounded text-sm font-medium w-full
-                      ${selectedRetailer.status === 'active' ? 'bg-green-100 text-green-800' :
-                        selectedRetailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' :
-                          selectedRetailer.status === 'rejected' ? 'bg-orange-100 text-orange-800' :
-                            'bg-red-100 text-red-800'}`}
+                      ${selectedRetailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'}`}
                     >
-                      {selectedRetailer.status === 'active' ? 'Approved' :
-                        selectedRetailer.status === 'inactive' ? 'Pending Approval' :
-                          selectedRetailer.status === 'rejected' ? 'Rejected' : 'Banned'}
+                      {selectedRetailer.status === 'inactive' ? 'Pending Approval' : 'Banned'}
                     </div>
                   </div>
 
@@ -761,9 +701,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                       defaultValue=""
                     >
                       <option value="" disabled>Select new status</option>
-                      {selectedRetailer.status !== 'active' && <option value="active">Approve</option>}
                       {selectedRetailer.status !== 'inactive' && <option value="inactive">Set as Pending</option>}
-                      {selectedRetailer.status !== 'rejected' && <option value="rejected">Reject</option>}
                       {selectedRetailer.status !== 'banned' && <option value="banned">Ban</option>}
                     </select>
                   </div>

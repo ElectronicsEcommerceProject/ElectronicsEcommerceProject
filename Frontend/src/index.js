@@ -181,6 +181,7 @@ const userProductReviewRoute = import.meta.env.VITE_PRODUCT_REVIEW_ENDPOINT;
 
 // User status management routes
 const pendingRetailersRoute = import.meta.env.VITE_PENDING_RETAILERS_ENDPOINT || "/auth/pending-retailers";
+const bannedRetailersRoute = import.meta.env.VITE_BANNED_RETAILERS_ENDPOINT || "/auth/banned-retailers";
 const userApproveRoute = import.meta.env.VITE_USER_APPROVE_ENDPOINT || "/auth/user/:user_id/approve";
 const userRejectRoute = import.meta.env.VITE_USER_REJECT_ENDPOINT || "/auth/user/:user_id/reject";
 const userBanRoute = import.meta.env.VITE_USER_BAN_ENDPOINT || "/auth/user/:user_id/ban";
@@ -301,6 +302,7 @@ export {
   
   // User status management routes
   pendingRetailersRoute,
+  bannedRetailersRoute,
   userApproveRoute,
   userRejectRoute,
   userBanRoute,

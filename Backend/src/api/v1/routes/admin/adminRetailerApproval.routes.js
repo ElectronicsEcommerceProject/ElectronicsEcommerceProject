@@ -11,6 +11,12 @@ router.get(
   adminRoleCheck,
   approveRejectBanUserController.getPendingRetailers
 );
+router.get(
+  "/banned-Retailers",
+  verifyJwtToken,
+  adminRoleCheck,
+  approveRejectBanUserController.getBannedRetailers
+);
 
 // User status management routes
 router.put(
