@@ -6,6 +6,7 @@ import {
   loginController,
   registerController,
   resetPasswordController,
+  approveRejectBanUserController,
 } from "../../../controllers/index.js";
 
 const router = express.Router();
@@ -27,6 +28,31 @@ router.post(
   "/reset-Password",
   validator(validators.auth.resetPasswordValidator, null),
   resetPasswordController.resetPassword
+);
+
+// User status management routes
+router.put(
+  "/user/:user_id/approve",
+  // Add middleware for admin authentication here
+  approveRejectBanUserController.approveUser
+);
+
+router.put(
+  "/user/:user_id/reject",
+  // Add middleware for admin authentication here
+  approveRejectBanUserController.rejectUser
+);
+
+router.put(
+  "/user/:user_id/ban",
+  // Add middleware for admin authentication here
+  approveRejectBanUserController.banUser
+);
+
+router.put(
+  "/user/:user_id/status",
+  // Add middleware for admin authentication here
+  approveRejectBanUserController.changeUserStatus
 );
 
 export default router;

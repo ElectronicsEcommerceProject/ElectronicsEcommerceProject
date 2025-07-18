@@ -1,6 +1,7 @@
 //     auth controller
 export { default as loginController } from "./auth/login.controller.js";
 export { default as registerController } from "./auth/register.controller.js";
+export { default as approveRejectBanUserController } from "./auth/approveRejectBanUser.controller.js";
 
 // common controller
 export { default as profileController } from "./commonControllers/profile/profile.controller.js";
