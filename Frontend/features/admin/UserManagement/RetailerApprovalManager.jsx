@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { FiClock, FiCheckCircle, FiUser, FiMail, FiPhone, FiCalendar, FiMapPin, FiPackage } from "react-icons/fi";
+import React, { useState, useEffect, useMemo } from "react";
+import { FiClock, FiCheckCircle, FiUser, FiMail, FiPhone, FiCalendar, FiMapPin, FiPackage, FiSearch, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { FaStore, FaIdCard } from "react-icons/fa";
 
 /**
@@ -12,6 +12,12 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
   const [selectedRetailer, setSelectedRetailer] = useState(null);
   const [pendingRetailers, setPendingRetailers] = useState([]);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [totalPages, setTotalPages] = useState(1);
   
   // Hardcoded retailer data based on user.model.js
   const mockRetailers = [
@@ -169,10 +175,51 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
     }
   }, [propRetailers]);
   
-  // Filter retailers based on status
-  const filteredRetailers = filterStatus === 'all' 
-    ? pendingRetailers 
-    : pendingRetailers.filter(retailer => retailer.status === filterStatus);
+  // Search and filter retailers
+  const searchedAndFilteredRetailers = useMemo(() => {
+    // First filter by status
+    const statusFiltered = filterStatus === 'all' 
+      ? pendingRetailers 
+      : pendingRetailers.filter(retailer => retailer.status === filterStatus);
+    
+    // Then filter by search query
+    if (!searchQuery) return statusFiltered;
+    
+    const query = searchQuery.toLowerCase();
+    return statusFiltered.filter(retailer => 
+      retailer.name.toLowerCase().includes(query) ||
+      retailer.email.toLowerCase().includes(query) ||
+      retailer.phone.toLowerCase().includes(query) ||
+      (retailer.address && retailer.address.toLowerCase().includes(query))
+    );
+  }, [pendingRetailers, filterStatus, searchQuery]);
+  
+  // Calculate pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  
+  // Update total pages when filtered results change
+  useEffect(() => {
+    setTotalPages(Math.max(1, Math.ceil(searchedAndFilteredRetailers.length / itemsPerPage)));
+    // Reset to first page when filters or search changes
+    if (currentPage > 1 && indexOfFirstItem >= searchedAndFilteredRetailers.length) {
+      setCurrentPage(1);
+    }
+  }, [searchedAndFilteredRetailers.length, itemsPerPage, currentPage, indexOfFirstItem]);
+  
+  // Get current items for the page
+  const currentRetailers = searchedAndFilteredRetailers.slice(indexOfFirstItem, indexOfLastItem);
+  
+  // Handle page changes
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+  
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to first page on new search
+  };
 
   const handleApprove = (retailerId) => {
     // API call to approve retailer would go here
@@ -220,6 +267,40 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
         <p className="text-sm text-gray-500 mt-1">Manage new retailer account requests</p>
       </div>
       
+      {/* Search Box and Items Per Page */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <FiSearch className="w-5 h-5 text-gray-500" />
+          </div>
+          <input
+            type="text"
+            className="block w-full p-2.5 pl-10 text-sm border border-gray-300 rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Search retailers by name, email, or phone..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <label htmlFor="itemsPerPage" className="text-sm text-gray-600 whitespace-nowrap">Show:</label>
+          <select
+            id="itemsPerPage"
+            className="p-2 text-sm border border-gray-300 rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500"
+            value={itemsPerPage}
+            onChange={(e) => {
+              setItemsPerPage(Number(e.target.value));
+              setCurrentPage(1); // Reset to first page when changing items per page
+            }}
+          >
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+      </div>
+      
       {/* Stats Cards - Clickable for filtering */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
         <button 
@@ -263,13 +344,28 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
         </button>
       </div>
       
-      {filteredRetailers.length === 0 ? (
+      {/* Results count and current filter */}
+      <div className="flex justify-between items-center mb-4 text-sm text-gray-600">
+        <div>
+          Showing {currentRetailers.length} of {searchedAndFilteredRetailers.length} retailers
+          {filterStatus !== 'all' && ` (filtered by ${filterStatus})`}
+          {searchQuery && ` matching "${searchQuery}"`}
+        </div>
+      </div>
+      
+      {currentRetailers.length === 0 ? (
         <div className="text-center py-8 bg-gray-50 rounded-lg">
           <div className="bg-yellow-50 inline-block p-4 rounded-full mb-4">
             <FiCheckCircle className="text-yellow-500 w-12 h-12" />
           </div>
-          <h3 className="text-xl font-medium text-gray-700">No pending approval requests</h3>
-          <p className="text-gray-500 mt-2">All retailer accounts have been processed.</p>
+          <h3 className="text-xl font-medium text-gray-700">No retailers found</h3>
+          <p className="text-gray-500 mt-2">
+            {searchQuery 
+              ? "Try adjusting your search query or filters" 
+              : filterStatus !== 'all' 
+                ? `No retailers with status "${filterStatus}" found` 
+                : "All retailer accounts have been processed."}
+          </p>
         </div>
       ) : (
         <>
@@ -285,7 +381,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredRetailers.map((retailer) => (
+                {currentRetailers.map((retailer) => (
                   <tr key={retailer.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <div 
@@ -375,7 +471,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
           
           {/* Mobile Card View */}
           <div className="md:hidden space-y-4">
-            {filteredRetailers.map((retailer) => (
+            {currentRetailers.map((retailer) => (
               <div key={retailer.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-3">
@@ -462,6 +558,84 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
               </div>
             ))}
           </div>
+          
+          {/* Pagination - Mobile & Desktop */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center space-x-2 mt-6 pb-2">
+              <button
+                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className={`p-2 rounded-md ${currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:bg-blue-50'}`}
+                aria-label="Previous page"
+              >
+                <FiChevronLeft className="w-5 h-5" />
+              </button>
+              
+              <div className="flex items-center space-x-1">
+                {/* Show first page */}
+                {currentPage > 2 && (
+                  <button
+                    onClick={() => handlePageChange(1)}
+                    className={`w-8 h-8 rounded-md flex items-center justify-center ${currentPage === 1 ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}
+                  >
+                    1
+                  </button>
+                )}
+                
+                {/* Ellipsis if needed */}
+                {currentPage > 3 && <span className="text-gray-500">...</span>}
+                
+                {/* Page before current if it exists */}
+                {currentPage > 1 && (
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    className="w-8 h-8 rounded-md flex items-center justify-center hover:bg-gray-100"
+                  >
+                    {currentPage - 1}
+                  </button>
+                )}
+                
+                {/* Current page */}
+                <button
+                  className="w-8 h-8 rounded-md flex items-center justify-center bg-blue-100 text-blue-600 font-medium"
+                >
+                  {currentPage}
+                </button>
+                
+                {/* Page after current if it exists */}
+                {currentPage < totalPages && (
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    className="w-8 h-8 rounded-md flex items-center justify-center hover:bg-gray-100"
+                  >
+                    {currentPage + 1}
+                  </button>
+                )}
+                
+                {/* Ellipsis if needed */}
+                {currentPage < totalPages - 2 && <span className="text-gray-500">...</span>}
+                
+                {/* Last page if not current */}
+                {currentPage < totalPages - 1 && (
+                  <button
+                    onClick={() => handlePageChange(totalPages)}
+                    className="w-8 h-8 rounded-md flex items-center justify-center hover:bg-gray-100"
+                  >
+                    {totalPages}
+                  </button>
+                )}
+              </div>
+              
+              <button
+                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-md ${currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:bg-blue-50'}`}
+                aria-label="Next page"
+              >
+                <FiChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
         </>
       )}
       
