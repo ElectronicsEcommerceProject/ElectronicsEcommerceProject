@@ -36,8 +36,8 @@ const login = async (req, res) => {
         message: MESSAGE.custom("Your retailer account is pending approval. Please contact admin for activation."),
         requiresApproval: true,
         adminContact: {
-          email: "maalaxmistore99@gmail.com",
-          phone: "+919973061020"
+          email: process.env.ADMIN_EMAIL || "maalaxmistore99@gmail.com",
+          phone: process.env.ADMIN_PHONE || "+919973061020"
         },
         user: {
           email: user.email,
@@ -55,8 +55,8 @@ const login = async (req, res) => {
         message: MESSAGE.custom("Your account has been banned. Please contact admin for assistance."),
         isBanned: true,
         adminContact: {
-          email: "maalaxmistore99@gmail.com",
-          phone: "+919973061020"
+          email: process.env.ADMIN_EMAIL || "maalaxmistore99@gmail.com",
+          phone: process.env.ADMIN_PHONE || "+919973061020"
         }
       });
     }

@@ -51,8 +51,8 @@ const register = async (req, res) => {
         message: MESSAGE.custom("Your retailer account has been created successfully. Please wait for admin approval before you can access your account."),
         user: userResponse,
         adminContact: {
-          email: "maalaxmistore99@gmail.com",
-          phone: "+919973061020"
+          email: process.env.ADMIN_EMAIL || "maalaxmistore99@gmail.com",
+          phone: process.env.ADMIN_PHONE || "+919973061020"
         },
         requiresApproval: true
       });
