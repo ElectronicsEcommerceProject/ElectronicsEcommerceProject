@@ -125,7 +125,7 @@ const getApiById = async (routeEndpoint, id) => {
 };
 
 // 🔄 Update API
-const updateApi = async (routeEndpoint, id, data) => {
+const updateApi = async (routeEndpoint, data = {}) => {
   try {
     const token = getToken();
     const ROUTE_ENDPOINT = getRouteEndpoint();
@@ -138,7 +138,8 @@ const updateApi = async (routeEndpoint, id, data) => {
       BASE_URL,
       `${ROUTE_ENDPOINT}${routeEndpoint}`
     ); // Construct the API URL
-    const response = await axios.put(`${API_ENDPOINT}/${id}`, data, {
+    console.log('Making PUT request to:', API_ENDPOINT);
+    const response = await axios.put(`${API_ENDPOINT}`, data, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;

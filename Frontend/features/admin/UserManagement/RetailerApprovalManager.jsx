@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { FiClock, FiCheckCircle, FiUser, FiMail, FiPhone, FiCalendar, FiMapPin, FiPackage, FiSearch, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiClock, FiCheckCircle, FiUser, FiMail, FiPhone, FiCalendar, FiMapPin, FiPackage, FiSearch, FiChevronLeft, FiChevronRight, FiLoader } from "react-icons/fi";
 import { FaStore, FaIdCard } from "react-icons/fa";
+import { getApi, updateApi, pendingRetailersRoute, userApproveRoute, userRejectRoute, userBanRoute, userStatusChangeRoute } from "../../../src/index.js";
 
 /**
  * RetailerApprovalManager Component
@@ -9,48 +10,74 @@ import { FaStore, FaIdCard } from "react-icons/fa";
  * It displays a list of pending retailers and provides actions to approve, reject, or ban them.
  */
 const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
+  // Use the routes directly from environment variables without any manipulation
+
   const [selectedRetailer, setSelectedRetailer] = useState(null);
   const [pendingRetailers, setPendingRetailers] = useState([]);
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
-  
-  // Will use data from API instead of hardcoded data
-  
-  // Initialize with provided retailers from props
+
+  // Fetch retailers from API
+  const fetchRetailers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await getApi(pendingRetailersRoute);
+
+      if (response.success) {
+        setPendingRetailers(response.data || []);
+      } else {
+        setError(response.message || 'Failed to fetch retailers');
+        console.error('Error fetching retailers:', response);
+      }
+    } catch (err) {
+      setError('An error occurred while fetching retailers');
+      console.error('Error fetching retailers:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initialize with API data or provided retailers from props
   useEffect(() => {
     if (propRetailers && propRetailers.length > 0) {
       setPendingRetailers(propRetailers);
+    } else {
+      fetchRetailers();
     }
   }, [propRetailers]);
-  
+
   // Search and filter retailers
   const searchedAndFilteredRetailers = useMemo(() => {
     // First filter by status
-    const statusFiltered = filterStatus === 'all' 
-      ? pendingRetailers 
+    const statusFiltered = filterStatus === 'all'
+      ? pendingRetailers
       : pendingRetailers.filter(retailer => retailer.status === filterStatus);
-    
+
     // Then filter by search query
     if (!searchQuery) return statusFiltered;
-    
+
     const query = searchQuery.toLowerCase();
-    return statusFiltered.filter(retailer => 
+    return statusFiltered.filter(retailer =>
       retailer.name.toLowerCase().includes(query) ||
       retailer.email.toLowerCase().includes(query) ||
       retailer.phone.toLowerCase().includes(query) ||
       (retailer.address && retailer.address.toLowerCase().includes(query))
     );
   }, [pendingRetailers, filterStatus, searchQuery]);
-  
+
   // Calculate pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  
+
   // Update total pages when filtered results change
   useEffect(() => {
     setTotalPages(Math.max(1, Math.ceil(searchedAndFilteredRetailers.length / itemsPerPage)));
@@ -59,67 +86,182 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
       setCurrentPage(1);
     }
   }, [searchedAndFilteredRetailers.length, itemsPerPage, currentPage, indexOfFirstItem]);
-  
+
   // Get current items for the page
   const currentRetailers = searchedAndFilteredRetailers.slice(indexOfFirstItem, indexOfLastItem);
-  
+
   // Handle page changes
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
-  
+
   // Handle search input change
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
     setCurrentPage(1); // Reset to first page on new search
   };
 
-  const handleApprove = (retailerId) => {
-    // API call to approve retailer would go here
-    alert(`Retailer ${retailerId} approved successfully!`);
-  };
+  const handleApprove = async (retailerId) => {
+    try {
+      setActionLoading(true);
+      // Replace :user_id in the route with the actual ID
+      const approveEndpoint = userApproveRoute.replace(':user_id', retailerId);
+      const response = await updateApi(approveEndpoint);
 
-  const handleReject = (retailerId) => {
-    // API call to reject retailer would go here
-    alert(`Retailer ${retailerId} rejected.`);
-  };
-
-  const handleBan = (retailerId) => {
-    // API call to ban retailer would go here
-    if (window.confirm('Are you sure you want to ban this retailer?')) {
-      alert(`Retailer ${retailerId} banned.`);
+      if (response.success) {
+        // Update local state
+        setPendingRetailers(prevRetailers =>
+          prevRetailers.map(retailer =>
+            retailer.id === retailerId ? { ...retailer, status: 'active' } : retailer
+          )
+        );
+        alert('Retailer approved successfully!');
+      } else {
+        alert(`Error: ${response.message || 'Failed to approve retailer'}`);
+      }
+    } catch (err) {
+      console.error('Error approving retailer:', err);
+      alert(`Error: ${err.message || 'Failed to approve retailer'}`);
+    } finally {
+      setActionLoading(false);
     }
   };
-  
-  const handleStatusChange = (retailerId, currentStatus, newStatus, notes = '') => {
-    // API call to change retailer status would go here
+
+  const handleReject = async (retailerId) => {
+    try {
+      setActionLoading(true);
+      const notes = prompt('Enter reason for rejection (optional):');
+      // Replace :user_id in the route with the actual ID
+      const rejectEndpoint = userRejectRoute.replace(':user_id', retailerId);
+      const response = await updateApi(rejectEndpoint, { notes });
+
+      if (response.success) {
+        // Update local state
+        setPendingRetailers(prevRetailers =>
+          prevRetailers.map(retailer =>
+            retailer.id === retailerId ? { ...retailer, status: 'rejected' } : retailer
+          )
+        );
+        alert('Retailer rejected successfully!');
+      } else {
+        alert(`Error: ${response.message || 'Failed to reject retailer'}`);
+      }
+    } catch (err) {
+      console.error('Error rejecting retailer:', err);
+      alert(`Error: ${err.message || 'Failed to reject retailer'}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleBan = async (retailerId) => {
+    if (window.confirm('Are you sure you want to ban this retailer?')) {
+      try {
+        setActionLoading(true);
+        const reason = prompt('Enter reason for banning (required):');
+
+        if (!reason) {
+          alert('Ban reason is required');
+          setActionLoading(false);
+          return;
+        }
+
+        // Replace :user_id in the route with the actual ID
+        const banEndpoint = userBanRoute.replace(':user_id', retailerId);
+        const response = await updateApi(banEndpoint, { reason });
+
+        if (response.success) {
+          // Update local state
+          setPendingRetailers(prevRetailers =>
+            prevRetailers.map(retailer =>
+              retailer.id === retailerId ? { ...retailer, status: 'banned' } : retailer
+            )
+          );
+          alert('Retailer banned successfully!');
+        } else {
+          alert(`Error: ${response.message || 'Failed to ban retailer'}`);
+        }
+      } catch (err) {
+        console.error('Error banning retailer:', err);
+        alert(`Error: ${err.message || 'Failed to ban retailer'}`);
+      } finally {
+        setActionLoading(false);
+      }
+    }
+  };
+
+  const handleStatusChange = async (retailerId, currentStatus, newStatus, notes = '') => {
+    // Confirm if banning
     if (newStatus === 'banned' && !window.confirm('Are you sure you want to ban this retailer?')) {
       return false;
     }
-    
-    // Here you would make the actual API call
-    alert(`Retailer ${retailerId} status changed from ${currentStatus} to ${newStatus}${notes ? ' with notes' : ''}`);
-    
-    // Update local state (in a real app, you'd update after API success)
-    setPendingRetailers(prevRetailers => 
-      prevRetailers.map(retailer => 
-        retailer.id === retailerId ? {...retailer, status: newStatus} : retailer
-      )
-    );
-    
-    return true;
+
+    try {
+      setActionLoading(true);
+
+      // Special handling for ban which requires reason
+      if (newStatus === 'banned' && !notes) {
+        const reason = prompt('Enter reason for banning (required):');
+        if (!reason) {
+          alert('Ban reason is required');
+          setActionLoading(false);
+          return false;
+        }
+        notes = reason;
+      }
+
+      // Replace :user_id in the route with the actual ID
+      const statusEndpoint = userStatusChangeRoute.replace(':user_id', retailerId);
+      const response = await updateApi(statusEndpoint, {
+        status: newStatus,
+        notes: notes,
+        reason: newStatus === 'banned' ? notes : undefined // Include reason if banning
+      });
+
+      if (response.success) {
+        // Update local state
+        setPendingRetailers(prevRetailers =>
+          prevRetailers.map(retailer =>
+            retailer.id === retailerId ? { ...retailer, status: newStatus } : retailer
+          )
+        );
+        alert(`Retailer status changed from ${currentStatus} to ${newStatus} successfully!`);
+        return true;
+      } else {
+        alert(`Error: ${response.message || 'Failed to change retailer status'}`);
+        return false;
+      }
+    } catch (err) {
+      console.error('Error changing retailer status:', err);
+      alert(`Error: ${err.message || 'Failed to change retailer status'}`);
+      return false;
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
       {/* Header */}
-      <div className="mb-6 pb-4 border-b">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center">
-          <FiClock className="mr-2 text-yellow-500" /> Retailer Approval Dashboard
-        </h2>
-        <p className="text-sm text-gray-500 mt-1">Manage new retailer account requests</p>
+      <div className="mb-6 pb-4 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center">
+            <FiClock className="mr-2 text-yellow-500" /> Retailer Approval Dashboard
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">Manage new retailer account requests</p>
+        </div>
+        <button
+          onClick={fetchRetailers}
+          disabled={loading}
+          className={`mt-2 sm:mt-0 bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 text-sm flex items-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          <svg className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          {loading ? 'Refreshing...' : 'Refresh'}
+        </button>
       </div>
-      
+
       {/* Search Box and Items Per Page */}
       <div className="mb-6 flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
@@ -134,7 +276,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
             onChange={handleSearchChange}
           />
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <label htmlFor="itemsPerPage" className="text-sm text-gray-600 whitespace-nowrap">Show:</label>
           <select
@@ -153,42 +295,42 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
           </select>
         </div>
       </div>
-      
+
       {/* Stats Cards - Clickable for filtering */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
-        <button 
+        <button
           onClick={() => setFilterStatus('all')}
           className={`p-3 rounded-lg text-left transition-all ${filterStatus === 'all' ? 'bg-blue-100 ring-2 ring-blue-400' : 'bg-blue-50 hover:bg-blue-100'}`}
         >
           <div className="text-blue-600 text-sm font-medium">Total Requests</div>
           <div className="text-2xl font-bold">{pendingRetailers.length}</div>
         </button>
-        
-        <button 
+
+        <button
           onClick={() => setFilterStatus('inactive')}
           className={`p-3 rounded-lg text-left transition-all ${filterStatus === 'inactive' ? 'bg-yellow-100 ring-2 ring-yellow-400' : 'bg-yellow-50 hover:bg-yellow-100'}`}
         >
           <div className="text-yellow-600 text-sm font-medium">Pending</div>
           <div className="text-2xl font-bold">{pendingRetailers.filter(r => r.status === 'inactive').length}</div>
         </button>
-        
-        <button 
+
+        <button
           onClick={() => setFilterStatus('active')}
           className={`p-3 rounded-lg text-left transition-all ${filterStatus === 'active' ? 'bg-green-100 ring-2 ring-green-400' : 'bg-green-50 hover:bg-green-100'}`}
         >
           <div className="text-green-600 text-sm font-medium">Approved</div>
           <div className="text-2xl font-bold">{pendingRetailers.filter(r => r.status === 'active').length}</div>
         </button>
-        
-        <button 
+
+        <button
           onClick={() => setFilterStatus('rejected')}
           className={`p-3 rounded-lg text-left transition-all ${filterStatus === 'rejected' ? 'bg-orange-100 ring-2 ring-orange-400' : 'bg-orange-50 hover:bg-orange-100'}`}
         >
           <div className="text-orange-600 text-sm font-medium">Rejected</div>
           <div className="text-2xl font-bold">{pendingRetailers.filter(r => r.status === 'rejected').length}</div>
         </button>
-        
-        <button 
+
+        <button
           onClick={() => setFilterStatus('banned')}
           className={`p-3 rounded-lg text-left transition-all ${filterStatus === 'banned' ? 'bg-red-100 ring-2 ring-red-400' : 'bg-red-50 hover:bg-red-100'}`}
         >
@@ -196,7 +338,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
           <div className="text-2xl font-bold">{pendingRetailers.filter(r => r.status === 'banned').length}</div>
         </button>
       </div>
-      
+
       {/* Results count and current filter */}
       <div className="flex justify-between items-center mb-4 text-sm text-gray-600">
         <div>
@@ -205,18 +347,37 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
           {searchQuery && ` matching "${searchQuery}"`}
         </div>
       </div>
-      
-      {currentRetailers.length === 0 ? (
+
+      {loading ? (
+        <div className="text-center py-8">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+          <p className="text-gray-500">Loading retailers...</p>
+        </div>
+      ) : error ? (
+        <div className="text-center py-8 bg-red-50 rounded-lg">
+          <div className="bg-red-100 inline-block p-4 rounded-full mb-4">
+            <FiCheckCircle className="text-red-500 w-12 h-12" />
+          </div>
+          <h3 className="text-xl font-medium text-red-700">Error</h3>
+          <p className="text-red-500 mt-2">{error}</p>
+          <button
+            onClick={fetchRetailers}
+            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Try Again
+          </button>
+        </div>
+      ) : currentRetailers.length === 0 ? (
         <div className="text-center py-8 bg-gray-50 rounded-lg">
           <div className="bg-yellow-50 inline-block p-4 rounded-full mb-4">
             <FiCheckCircle className="text-yellow-500 w-12 h-12" />
           </div>
           <h3 className="text-xl font-medium text-gray-700">No retailers found</h3>
           <p className="text-gray-500 mt-2">
-            {searchQuery 
-              ? "Try adjusting your search query or filters" 
-              : filterStatus !== 'all' 
-                ? `No retailers with status "${filterStatus}" found` 
+            {searchQuery
+              ? "Try adjusting your search query or filters"
+              : filterStatus !== 'all'
+                ? `No retailers with status "${filterStatus}" found`
                 : "All retailer accounts have been processed."}
           </p>
         </div>
@@ -237,16 +398,16 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                 {currentRetailers.map((retailer) => (
                   <tr key={retailer.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
-                      <div 
+                      <div
                         className="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded-md transition-colors"
                         onClick={() => setSelectedRetailer(retailer)}
                         title="Click to view details"
                       >
                         <div className="h-10 w-10 flex-shrink-0">
-                          <img 
-                            className="h-10 w-10 rounded-full object-cover" 
-                            src={retailer.profileImage_url || "https://via.placeholder.com/40"} 
-                            alt={retailer.name} 
+                          <img
+                            className="h-10 w-10 rounded-full object-cover"
+                            src={retailer.profileImage_url || "https://via.placeholder.com/40"}
+                            alt={retailer.name}
                           />
                         </div>
                         <div className="ml-3">
@@ -256,7 +417,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div 
+                      <div
                         className="text-sm cursor-pointer hover:bg-gray-100 p-1 rounded-md transition-colors"
                         onClick={() => setSelectedRetailer(retailer)}
                         title="Click to view details"
@@ -270,45 +431,48 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span 
+                      <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer
-                          ${retailer.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 
-                            retailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' : 
-                            retailer.status === 'rejected' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' :
-                            'bg-red-100 text-red-800 hover:bg-red-200'}`}
+                          ${retailer.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
+                            retailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' :
+                              retailer.status === 'rejected' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' :
+                                'bg-red-100 text-red-800 hover:bg-red-200'}`}
                         onClick={() => setSelectedRetailer(retailer)}
                         title="Click to view details"
                       >
-                        {retailer.status === 'active' ? 'Approved' : 
-                         retailer.status === 'inactive' ? 'Pending' : 
-                         retailer.status === 'rejected' ? 'Rejected' : 'Banned'}
+                        {retailer.status === 'active' ? 'Approved' :
+                          retailer.status === 'inactive' ? 'Pending' :
+                            retailer.status === 'rejected' ? 'Rejected' : 'Banned'}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
                         {retailer.status === 'inactive' && (
                           <>
-                            <button 
+                            <button
                               onClick={() => handleApprove(retailer.id)}
-                              className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-xs"
+                              disabled={actionLoading}
+                              className={`bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-xs ${actionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                              Approve
+                              {actionLoading ? 'Processing...' : 'Approve'}
                             </button>
-                            <button 
+                            <button
                               onClick={() => handleReject(retailer.id)}
-                              className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 text-xs"
+                              disabled={actionLoading}
+                              className={`bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 text-xs ${actionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                              Reject
+                              {actionLoading ? 'Processing...' : 'Reject'}
                             </button>
-                            <button 
+                            <button
                               onClick={() => handleBan(retailer.id)}
-                              className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs"
+                              disabled={actionLoading}
+                              className={`bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs ${actionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                              Ban
+                              {actionLoading ? 'Processing...' : 'Ban'}
                             </button>
                           </>
                         )}
-                        <button 
+                        <button
                           onClick={() => setSelectedRetailer(retailer)}
                           className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-xs"
                         >
@@ -321,44 +485,44 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
               </tbody>
             </table>
           </div>
-          
+
           {/* Mobile Card View */}
           <div className="md:hidden space-y-4">
             {currentRetailers.map((retailer) => (
               <div key={retailer.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <div 
+                    <div
                       className="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded-md transition-colors"
                       onClick={() => setSelectedRetailer(retailer)}
                       title="Click to view details"
                     >
-                      <img 
-                        className="h-10 w-10 rounded-full object-cover" 
-                        src={retailer.profileImage_url || "https://via.placeholder.com/40"} 
-                        alt={retailer.name} 
+                      <img
+                        className="h-10 w-10 rounded-full object-cover"
+                        src={retailer.profileImage_url || "https://via.placeholder.com/40"}
+                        alt={retailer.name}
                       />
                       <div className="ml-3">
                         <div className="font-medium text-gray-900">{retailer.name}</div>
                         <div className="text-xs text-gray-500">Joined {retailer.createdDate}</div>
                       </div>
                     </div>
-                    <span 
+                    <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer
-                        ${retailer.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 
-                          retailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' : 
-                          retailer.status === 'rejected' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' :
-                          'bg-red-100 text-red-800 hover:bg-red-200'}`}
+                        ${retailer.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
+                          retailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' :
+                            retailer.status === 'rejected' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' :
+                              'bg-red-100 text-red-800 hover:bg-red-200'}`}
                       onClick={() => setSelectedRetailer(retailer)}
                       title="Click to view details"
                     >
-                      {retailer.status === 'active' ? 'Approved' : 
-                       retailer.status === 'inactive' ? 'Pending' : 
-                       retailer.status === 'rejected' ? 'Rejected' : 'Banned'}
+                      {retailer.status === 'active' ? 'Approved' :
+                        retailer.status === 'inactive' ? 'Pending' :
+                          retailer.status === 'rejected' ? 'Rejected' : 'Banned'}
                     </span>
                   </div>
-                  
-                  <div 
+
+                  <div
                     className="grid grid-cols-1 gap-2 text-sm mb-4 cursor-pointer hover:bg-gray-100 p-2 rounded-md transition-colors"
                     onClick={() => setSelectedRetailer(retailer)}
                     title="Click to view details"
@@ -376,23 +540,23 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                       <span className="text-gray-700">{retailer.businessDetails?.businessType || 'Retailer'}</span>
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-wrap gap-2">
                     {retailer.status === 'inactive' && (
                       <>
-                        <button 
+                        <button
                           onClick={() => handleApprove(retailer.id)}
                           className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-xs flex-1"
                         >
                           Approve
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleReject(retailer.id)}
                           className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 text-xs flex-1"
                         >
                           Reject
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleBan(retailer.id)}
                           className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs flex-1"
                         >
@@ -400,7 +564,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                         </button>
                       </>
                     )}
-                    <button 
+                    <button
                       onClick={() => setSelectedRetailer(retailer)}
                       className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-xs flex-1"
                     >
@@ -411,7 +575,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
               </div>
             ))}
           </div>
-          
+
           {/* Pagination - Mobile & Desktop */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center space-x-2 mt-6 pb-2">
@@ -423,7 +587,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
               >
                 <FiChevronLeft className="w-5 h-5" />
               </button>
-              
+
               <div className="flex items-center space-x-1">
                 {/* Show first page */}
                 {currentPage > 2 && (
@@ -434,10 +598,10 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                     1
                   </button>
                 )}
-                
+
                 {/* Ellipsis if needed */}
                 {currentPage > 3 && <span className="text-gray-500">...</span>}
-                
+
                 {/* Page before current if it exists */}
                 {currentPage > 1 && (
                   <button
@@ -447,14 +611,14 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                     {currentPage - 1}
                   </button>
                 )}
-                
+
                 {/* Current page */}
                 <button
                   className="w-8 h-8 rounded-md flex items-center justify-center bg-blue-100 text-blue-600 font-medium"
                 >
                   {currentPage}
                 </button>
-                
+
                 {/* Page after current if it exists */}
                 {currentPage < totalPages && (
                   <button
@@ -464,10 +628,10 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                     {currentPage + 1}
                   </button>
                 )}
-                
+
                 {/* Ellipsis if needed */}
                 {currentPage < totalPages - 2 && <span className="text-gray-500">...</span>}
-                
+
                 {/* Last page if not current */}
                 {currentPage < totalPages - 1 && (
                   <button
@@ -478,7 +642,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                   </button>
                 )}
               </div>
-              
+
               <button
                 onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
@@ -491,7 +655,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
           )}
         </>
       )}
-      
+
       {/* Retailer Details Modal */}
       {selectedRetailer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -499,24 +663,24 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
             <div className="flex justify-between items-center p-6 border-b bg-gray-50">
               <div className="flex items-center">
                 <div className="mr-3">
-                  <img 
-                    className="h-12 w-12 rounded-full object-cover border-2 border-white shadow" 
-                    src={selectedRetailer.profileImage_url || "https://via.placeholder.com/48"} 
-                    alt={selectedRetailer.name} 
+                  <img
+                    className="h-12 w-12 rounded-full object-cover border-2 border-white shadow"
+                    src={selectedRetailer.profileImage_url || "https://via.placeholder.com/48"}
+                    alt={selectedRetailer.name}
                   />
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold">{selectedRetailer.name}</h2>
                   <div className="flex items-center">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
-                      ${selectedRetailer.status === 'active' ? 'bg-green-100 text-green-800' : 
-                        selectedRetailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' : 
-                        selectedRetailer.status === 'rejected' ? 'bg-orange-100 text-orange-800' :
-                        'bg-red-100 text-red-800'}`}
+                      ${selectedRetailer.status === 'active' ? 'bg-green-100 text-green-800' :
+                        selectedRetailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' :
+                          selectedRetailer.status === 'rejected' ? 'bg-orange-100 text-orange-800' :
+                            'bg-red-100 text-red-800'}`}
                     >
-                      {selectedRetailer.status === 'active' ? 'Approved' : 
-                       selectedRetailer.status === 'inactive' ? 'Pending Approval' : 
-                       selectedRetailer.status === 'rejected' ? 'Rejected' : 'Banned'}
+                      {selectedRetailer.status === 'active' ? 'Approved' :
+                        selectedRetailer.status === 'inactive' ? 'Pending Approval' :
+                          selectedRetailer.status === 'rejected' ? 'Rejected' : 'Banned'}
                     </span>
                   </div>
                 </div>
@@ -528,50 +692,50 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                 ×
               </button>
             </div>
-            
+
             <div className="p-6">
               <div className="bg-white rounded-lg border border-gray-200 p-4">
                 <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
                   <FiUser className="mr-2 text-blue-500" /> Retailer Information
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="text-xs font-medium text-gray-500 uppercase">Full Name</h4>
                     <p className="text-sm font-medium">{selectedRetailer.name}</p>
                   </div>
-                  
+
                   <div>
                     <h4 className="text-xs font-medium text-gray-500 uppercase">Email Address</h4>
                     <p className="text-sm font-medium flex items-center">
                       <FiMail className="mr-1 text-gray-400" /> {selectedRetailer.email}
                     </p>
                   </div>
-                  
+
                   <div>
                     <h4 className="text-xs font-medium text-gray-500 uppercase">Phone Number</h4>
                     <p className="text-sm font-medium flex items-center">
                       <FiPhone className="mr-1 text-gray-400" /> {selectedRetailer.phone || 'N/A'}
                     </p>
                   </div>
-                  
+
                   <div>
                     <h4 className="text-xs font-medium text-gray-500 uppercase">Registration Date</h4>
                     <p className="text-sm font-medium flex items-center">
                       <FiCalendar className="mr-1 text-gray-400" /> {selectedRetailer.createdDate}
                     </p>
                   </div>
-                  
+
                   <div className="md:col-span-2">
                     <h4 className="text-xs font-medium text-gray-500 uppercase">Address</h4>
                     <p className="text-sm font-medium flex items-start">
-                      <FiMapPin className="mr-1 mt-0.5 text-gray-400" /> 
+                      <FiMapPin className="mr-1 mt-0.5 text-gray-400" />
                       <span>{selectedRetailer.address || 'No address provided'}</span>
                     </p>
                   </div>
                 </div>
               </div>
-              
+
               {/* Status Change Section */}
               <div className="mt-6 bg-blue-50 p-4 rounded-lg">
                 <h3 className="text-sm font-medium text-blue-700 mb-3">Change Retailer Status</h3>
@@ -579,20 +743,20 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                   <div className="flex-1">
                     <label className="block text-xs font-medium text-gray-700 mb-1">Current Status</label>
                     <div className={`inline-flex items-center px-3 py-2 rounded text-sm font-medium w-full
-                      ${selectedRetailer.status === 'active' ? 'bg-green-100 text-green-800' : 
-                        selectedRetailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' : 
-                        selectedRetailer.status === 'rejected' ? 'bg-orange-100 text-orange-800' :
-                        'bg-red-100 text-red-800'}`}
+                      ${selectedRetailer.status === 'active' ? 'bg-green-100 text-green-800' :
+                        selectedRetailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' :
+                          selectedRetailer.status === 'rejected' ? 'bg-orange-100 text-orange-800' :
+                            'bg-red-100 text-red-800'}`}
                     >
-                      {selectedRetailer.status === 'active' ? 'Approved' : 
-                       selectedRetailer.status === 'inactive' ? 'Pending Approval' : 
-                       selectedRetailer.status === 'rejected' ? 'Rejected' : 'Banned'}
+                      {selectedRetailer.status === 'active' ? 'Approved' :
+                        selectedRetailer.status === 'inactive' ? 'Pending Approval' :
+                          selectedRetailer.status === 'rejected' ? 'Rejected' : 'Banned'}
                     </div>
                   </div>
-                  
+
                   <div className="flex-1">
                     <label className="block text-xs font-medium text-gray-700 mb-1">Change Status To</label>
-                    <select 
+                    <select
                       className="w-full p-2 border border-gray-300 rounded"
                       defaultValue=""
                     >
@@ -605,46 +769,47 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Notes Section */}
               <div className="mt-4 bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-sm font-medium text-gray-700 mb-2">Admin Notes</h3>
-                <textarea 
-                  className="w-full p-2 border border-gray-300 rounded text-sm" 
+                <textarea
+                  className="w-full p-2 border border-gray-300 rounded text-sm"
                   rows="2"
                   placeholder="Add notes about this status change..."
                 ></textarea>
               </div>
-              
+
               {/* Action Buttons */}
               <div className="mt-6 flex flex-wrap justify-end gap-3 border-t pt-4">
-                <button 
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center"
-                  onClick={() => {
+                <button
+                  className={`bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center ${actionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={actionLoading}
+                  onClick={async () => {
                     const select = document.querySelector('select');
                     const newStatus = select.value;
                     const notes = document.querySelector('textarea').value;
-                    
+
                     if (!newStatus) {
                       alert('Please select a new status');
                       return;
                     }
-                    
-                    const success = handleStatusChange(
-                      selectedRetailer.id, 
-                      selectedRetailer.status, 
+
+                    const success = await handleStatusChange(
+                      selectedRetailer.id,
+                      selectedRetailer.status,
                       newStatus,
                       notes
                     );
-                    
+
                     if (success) {
                       setSelectedRetailer(null);
                     }
                   }}
                 >
-                  Update Status
+                  {actionLoading ? 'Processing...' : 'Update Status'}
                 </button>
-                <button 
+                <button
                   onClick={() => setSelectedRetailer(null)}
                   className="border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-100"
                 >
