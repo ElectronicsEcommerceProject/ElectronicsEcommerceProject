@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { FiClock, FiCheckCircle, FiUser, FiMail, FiPhone, FiCalendar, FiMapPin, FiPackage, FiSearch, FiChevronLeft, FiChevronRight, FiLoader } from "react-icons/fi";
 import { FaStore, FaIdCard } from "react-icons/fa";
+import axios from "axios";
 import { getApi, updateApi, pendingRetailersRoute, bannedRetailersRoute, userApproveRoute, userBanRoute, userStatusChangeRoute } from "../../../src/index.js";
 
 /**
@@ -195,19 +196,66 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
 
       // Replace :user_id in the route with the actual ID
       const statusEndpoint = userStatusChangeRoute.replace(':user_id', retailerId);
-      const response = await updateApi(statusEndpoint, {
-        status: newStatus,
+      
+      // Ensure status is one of the valid values
+      let statusValue;
+      if (newStatus === 'active' || newStatus === 'inactive' || newStatus === 'banned') {
+        statusValue = newStatus.toLowerCase();
+      } else {
+        alert('Invalid status value. Please select Active, Inactive, or Banned.');
+        setActionLoading(false);
+        return false;
+      }
+      
+      console.log('Status change request:', {
+        endpoint: statusEndpoint,
+        status: statusValue,
         notes: notes,
-        reason: newStatus === 'banned' ? notes : undefined // Include reason if banning
+        reason: statusValue === 'banned' ? notes : undefined
       });
+      
+      // Make direct API call to debug
+      const token = localStorage.getItem("token");
+      const BASE_URL = import.meta.env.VITE_BASE_URL;
+      const role = "admin"; // Since this is admin functionality
+      
+      const API_ENDPOINT = `${BASE_URL}${role}${statusEndpoint}`;
+      console.log('Making direct API call to:', API_ENDPOINT);
+      
+      const axiosResponse = await axios.put(API_ENDPOINT, {
+        status: statusValue,
+        notes: notes,
+        reason: statusValue === 'banned' ? notes : undefined
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      const response = axiosResponse.data;
+      console.log('API response:', response);
 
       if (response.success) {
         // Update local state
         setPendingRetailers(prevRetailers =>
           prevRetailers.map(retailer =>
-            retailer.id === retailerId ? { ...retailer, status: newStatus } : retailer
+            retailer.id === retailerId ? { ...retailer, status: statusValue } : retailer
           )
         );
+        
+        // Also update bannedRetailers if needed
+        if (statusValue === 'banned') {
+          // Add to banned retailers
+          const retailerToUpdate = pendingRetailers.find(r => r.id === retailerId);
+          if (retailerToUpdate) {
+            setBannedRetailers(prev => [...prev, {...retailerToUpdate, status: 'banned'}]);
+          }
+        } else if (currentStatus === 'banned') {
+          // Remove from banned retailers
+          setBannedRetailers(prev => prev.filter(r => r.id !== retailerId));
+        }
+        
+        // Refresh data to ensure consistency
+        fetchRetailers();
+        
         alert(`Retailer status changed from ${currentStatus} to ${newStatus} successfully!`);
         return true;
       } else {
@@ -216,7 +264,8 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
       }
     } catch (err) {
       console.error('Error changing retailer status:', err);
-      alert(`Error: ${err.message || 'Failed to change retailer status'}`);
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to change retailer status';
+      alert(`Error: ${errorMessage}`);
       return false;
     } finally {
       setActionLoading(false);
@@ -293,7 +342,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
           onClick={() => setFilterStatus('inactive')}
           className={`p-3 rounded-lg text-left transition-all ${filterStatus === 'inactive' ? 'bg-yellow-100 ring-2 ring-yellow-400' : 'bg-yellow-50 hover:bg-yellow-100'}`}
         >
-          <div className="text-yellow-600 text-sm font-medium">Pending</div>
+          <div className="text-yellow-600 text-sm font-medium">Inactive</div>
           <div className="text-2xl font-bold">{pendingRetailers.filter(r => r.status === 'inactive').length}</div>
         </button>
 
@@ -405,7 +454,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                         onClick={() => setSelectedRetailer(retailer)}
                         title="Click to view details"
                       >
-                        {retailer.status === 'inactive' ? 'Pending' : 'Banned'}
+                        {retailer.status === 'inactive' ? 'Inactive' : retailer.status === 'active' ? 'Active' : 'Banned'}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -417,7 +466,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                               disabled={actionLoading}
                               className={`bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-xs ${actionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                              {actionLoading ? 'Processing...' : 'Approve'}
+                              {actionLoading ? 'Processing...' : 'Set Active'}
                             </button>
                             {/* Reject button removed */}
                             <button
@@ -425,7 +474,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                               disabled={actionLoading}
                               className={`bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs ${actionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                              {actionLoading ? 'Processing...' : 'Ban'}
+                              {actionLoading ? 'Processing...' : 'Set Banned'}
                             </button>
                           </>
                         )}
@@ -471,7 +520,7 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                       onClick={() => setSelectedRetailer(retailer)}
                       title="Click to view details"
                     >
-                      {retailer.status === 'inactive' ? 'Pending' : 'Banned'}
+                      {retailer.status === 'inactive' ? 'Inactive' : retailer.status === 'active' ? 'Active' : 'Banned'}
                     </span>
                   </div>
 
@@ -501,14 +550,14 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                           onClick={() => handleApprove(retailer.id)}
                           className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-xs flex-1"
                         >
-                          Approve
+                          Set Active
                         </button>
                         {/* Reject button removed */}
                         <button
                           onClick={() => handleBan(retailer.id)}
                           className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs flex-1"
                         >
-                          Ban
+                          Set Banned
                         </button>
                       </>
                     )}
@@ -622,9 +671,11 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                   <div className="flex items-center">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
                       ${selectedRetailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' :
+                       selectedRetailer.status === 'active' ? 'bg-green-100 text-green-800' :
                           'bg-red-100 text-red-800'}`}
                     >
-                      {selectedRetailer.status === 'inactive' ? 'Pending Approval' : 'Banned'}
+                      {selectedRetailer.status === 'inactive' ? 'Inactive' : 
+                       selectedRetailer.status === 'active' ? 'Active' : 'Banned'}
                     </span>
                   </div>
                 </div>
@@ -688,9 +739,11 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                     <label className="block text-xs font-medium text-gray-700 mb-1">Current Status</label>
                     <div className={`inline-flex items-center px-3 py-2 rounded text-sm font-medium w-full
                       ${selectedRetailer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' :
+                       selectedRetailer.status === 'active' ? 'bg-green-100 text-green-800' :
                           'bg-red-100 text-red-800'}`}
                     >
-                      {selectedRetailer.status === 'inactive' ? 'Pending Approval' : 'Banned'}
+                      {selectedRetailer.status === 'inactive' ? 'Inactive' : 
+                       selectedRetailer.status === 'active' ? 'Active' : 'Banned'}
                     </div>
                   </div>
 
@@ -699,10 +752,12 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                     <select
                       className="w-full p-2 border border-gray-300 rounded"
                       defaultValue=""
+                      id="statusSelect"
                     >
                       <option value="" disabled>Select new status</option>
-                      {selectedRetailer.status !== 'inactive' && <option value="inactive">Set as Pending</option>}
-                      {selectedRetailer.status !== 'banned' && <option value="banned">Ban</option>}
+                      {selectedRetailer.status !== 'active' && <option value="active">Active</option>}
+                      {selectedRetailer.status !== 'inactive' && <option value="inactive">Inactive</option>}
+                      {selectedRetailer.status !== 'banned' && <option value="banned">Banned</option>}
                     </select>
                   </div>
                 </div>
@@ -724,9 +779,11 @@ const RetailerApprovalManager = ({ pendingRetailers: propRetailers }) => {
                   className={`bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center ${actionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   disabled={actionLoading}
                   onClick={async () => {
-                    const select = document.querySelector('select');
+                    const select = document.getElementById('statusSelect');
                     const newStatus = select.value;
                     const notes = document.querySelector('textarea').value;
+                    
+                    console.log('Selected status:', newStatus);
 
                     if (!newStatus) {
                       alert('Please select a new status');

@@ -191,8 +191,11 @@ const changeUserStatus = async (req, res) => {
     const { user_id } = req.params;
     const { status, notes } = req.body;
     
+    // Convert status to lowercase for case-insensitive comparison
+    const statusLowercase = status?.toLowerCase();
+    
     // Validate status
-    if (!['active', 'inactive', 'banned'].includes(status)) {
+    if (!statusLowercase || !['active', 'inactive', 'banned'].includes(statusLowercase)) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
         message: MESSAGE.custom("Invalid status value"),
@@ -210,20 +213,20 @@ const changeUserStatus = async (req, res) => {
     }
     
     // Check if status is already the same
-    if (user.status === status) {
+    if (user.status === statusLowercase) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
         message: MESSAGE.post.sameEntry,
       });
     }
     
-    // Update user status
-    await user.update({ status });
+    // Update user status with the lowercase value
+    await user.update({ status: statusLowercase });
     
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.put.succ,
-      data: { user_id, status },
+      data: { user_id, status: statusLowercase },
     });
   } catch (error) {
     console.error('Error changing user status:', error);
