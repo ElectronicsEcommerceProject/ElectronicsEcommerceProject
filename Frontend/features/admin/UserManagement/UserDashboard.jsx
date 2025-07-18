@@ -17,6 +17,7 @@ import {
   getApi,
   userManagmentDashboardDataRoute,
   userManagmentDashboardUsersOrdersDataRoute,
+  pendingRetailersRoute,
   MESSAGE,
 } from "../../../src/index.js";
 
@@ -70,6 +71,26 @@ const UserDashboard = () => {
 
     fetchUserManagementDashboardData();
   }, []);
+  
+  // Fetch pending retailers when needed
+  useEffect(() => {
+    const fetchPendingRetailers = async () => {
+      if (activePage === "retailerApprovals") {
+        try {
+          const response = await getApi(pendingRetailersRoute);
+          if (response.success === true) {
+            setPendingRetailers(response.data);
+          } else {
+            console.error("Error fetching pending retailers:", response);
+          }
+        } catch (error) {
+          console.error("Error fetching pending retailers:", error);
+        }
+      }
+    };
+    
+    fetchPendingRetailers();
+  }, [activePage]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -378,7 +399,9 @@ const UserDashboard = () => {
         )}
         {activePage === "retailerApprovals" && (
           <RetailerApprovalManager
-            pendingRetailers={users.filter(user => user.role === "retailer" && user.status === "inactive")}
+            pendingRetailers={pendingRetailers.length > 0 
+              ? pendingRetailers 
+              : users.filter(user => user.role === "Retailer" && user.status === "Inactive")}
           />
         )}
       </main>

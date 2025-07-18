@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+// Controller for retailer approval management
 import { StatusCodes } from "http-status-codes";
 import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
@@ -141,6 +141,51 @@ const banUser = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
+/**
+ * Get all retailers with inactive status
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const getPendingRetailers = async (req, res) => {
+  try {
+    // Find all users with role 'retailer' and status 'inactive'
+    const pendingRetailers = await User.findAll({
+      where: {
+        role: 'retailer',
+        status: 'inactive'
+      },
+      attributes: ['user_id', 'name', 'email', 'phone_number', 'profileImage_url', 'status', 'role', 'createdAt', 'updatedAt']
+    });
+    
+    // Transform data for frontend
+    const formattedRetailers = pendingRetailers.map(retailer => ({
+      id: retailer.user_id,
+      name: retailer.name,
+      email: retailer.email,
+      phone: retailer.phone_number,
+      profileImage_url: retailer.profileImage_url,
+      status: retailer.status,
+      role: retailer.role,
+      createdDate: new Date(retailer.createdAt).toISOString().split('T')[0],
+      lastLogin: new Date(retailer.updatedAt).toISOString().split('T')[0]
+    }));
+    
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: MESSAGE.get.succ,
+      data: formattedRetailers,
+      count: formattedRetailers.length
+    });
+  } catch (error) {
+    console.error('Error fetching pending retailers:', error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: MESSAGE.error,
+      error: error.message,
+    });
+  }
+};
+
 const changeUserStatus = async (req, res) => {
   try {
     const { user_id } = req.params;
@@ -194,7 +239,8 @@ const approveRejectBanUserController = {
   approveUser,
   rejectUser,
   banUser,
-  changeUserStatus
+  changeUserStatus,
+  getPendingRetailers
 };
 
 export default approveRejectBanUserController;

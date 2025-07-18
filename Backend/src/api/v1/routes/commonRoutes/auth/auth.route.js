@@ -1,7 +1,13 @@
 import express from "express";
 
-import { validator } from "../../../../../middleware/index.js";
 import { validators } from "../../../validators/index.js";
+
+import {
+  verifyJwtToken,
+  adminRoleCheck,
+  validator,
+} from "../../../../../middleware/index.js";
+
 import {
   loginController,
   registerController,
@@ -30,29 +36,6 @@ router.post(
   resetPasswordController.resetPassword
 );
 
-// User status management routes
-router.put(
-  "/:user_id/approve",
-  // Add middleware for admin authentication here
-  approveRejectBanUserController.approveUser
-);
-
-router.put(
-  "/:user_id/reject",
-  // Add middleware for admin authentication here
-  approveRejectBanUserController.rejectUser
-);
-
-router.put(
-  "/:user_id/ban",
-  // Add middleware for admin authentication here
-  approveRejectBanUserController.banUser
-);
-
-router.put(
-  "/:user_id/status",
-  // Add middleware for admin authentication here
-  approveRejectBanUserController.changeUserStatus
-);
+// Note: Retailer approval routes have been moved to admin/adminRetailerApproval.routes.js
 
 export default router;
