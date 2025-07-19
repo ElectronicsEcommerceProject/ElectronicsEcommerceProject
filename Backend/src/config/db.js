@@ -56,8 +56,8 @@ const dbConfigFile = {
     dialectOptions: {
       ssl: {
         require: true,
-        minVersion: "TLSv1.2",
-        rejectUnauthorized: true,
+        // minVersion: "TLSv1.2",
+        // rejectUnauthorized: true,
       },
     },
   },
