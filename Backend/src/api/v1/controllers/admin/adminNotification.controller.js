@@ -151,6 +151,7 @@ export const getNotificationLogs = async (req, res) => {
       return res.status(StatusCodes.OK).json({
         success: true,
         message: "Cached notification logs",
+        fromCache: true,
         data: cachedData
       });
     }
@@ -233,6 +234,7 @@ export const getNotificationLogs = async (req, res) => {
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
+      fromCache: false,
       data: responseData,
     });
   } catch (error) {
@@ -257,6 +259,7 @@ export const getNotificationStats = async (req, res) => {
       return res.status(StatusCodes.OK).json({
         success: true,
         message: "Cached notification stats",
+        fromCache: true,
         data: cachedData
       });
     }
@@ -297,6 +300,7 @@ export const getNotificationStats = async (req, res) => {
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
+      fromCache: false,
       data: responseData,
     });
   } catch (error) {
@@ -364,6 +368,7 @@ export const getTemplates = async (req, res) => {
       return res.status(StatusCodes.OK).json({
         success: true,
         message: "Cached notification templates",
+        fromCache: true,
         data: cachedData
       });
     }
@@ -415,6 +420,7 @@ export const getTemplates = async (req, res) => {
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
+      fromCache: false,
       data: responseData,
     });
   } catch (error) {
@@ -662,6 +668,7 @@ export const getInAppNotificationByUserId = async (req, res) => {
       return res.status(StatusCodes.OK).json({
         success: true,
         message: "Cached user notifications",
+        fromCache: true,
         data: cachedData
       });
     }
@@ -691,6 +698,7 @@ export const getInAppNotificationByUserId = async (req, res) => {
       return res.status(StatusCodes.OK).json({
         success: true,
         message: MESSAGE.get.empty,
+        fromCache: false,
         data: responseData,
       });
     }
@@ -701,6 +709,7 @@ export const getInAppNotificationByUserId = async (req, res) => {
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
+      fromCache: false,
       data: responseData,
     });
   } catch (error) {
@@ -731,6 +740,7 @@ export const getInAppTotalNumberOfUnReadNotificationByUserId = async (
       return res.status(StatusCodes.OK).json({
         success: true,
         message: "Cached notification count",
+        fromCache: true,
         data: cachedData
       });
     }
@@ -753,6 +763,7 @@ export const getInAppTotalNumberOfUnReadNotificationByUserId = async (
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
+      fromCache: false,
       data: responseData,
     });
   } catch (error) {

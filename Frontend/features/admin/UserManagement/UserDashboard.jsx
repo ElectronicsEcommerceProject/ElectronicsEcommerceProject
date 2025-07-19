@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { UserProfileView } from "../../../features/index.js";
+import { UserProfileView, RetailerApprovalManager } from "../../../features/index.js";
 import { jsPDF } from "jspdf";
 import {
   FiDownload,
-  FiFileText,
   FiUser,
   FiShoppingBag,
   FiCheckCircle,
   FiAlertCircle,
   FiClock,
   FiShoppingCart,
-  FiDollarSign,
   FiTrendingUp,
   FiActivity,
 } from "react-icons/fi";
@@ -19,11 +17,13 @@ import {
   getApi,
   userManagmentDashboardDataRoute,
   userManagmentDashboardUsersOrdersDataRoute,
+  pendingRetailersRoute,
   MESSAGE,
 } from "../../../src/index.js";
 
 const UserDashboard = () => {
   const [activePage, setActivePage] = useState("dashboard");
+  const [pendingRetailers, setPendingRetailers] = useState([]);
   const [userManagementDashboardData, setUserManagementDashboardData] =
     useState({
       totalUsers: 0,
@@ -71,6 +71,26 @@ const UserDashboard = () => {
 
     fetchUserManagementDashboardData();
   }, []);
+  
+  // Fetch pending retailers when needed
+  useEffect(() => {
+    const fetchPendingRetailers = async () => {
+      if (activePage === "retailerApprovals") {
+        try {
+          const response = await getApi(pendingRetailersRoute);
+          if (response.success === true) {
+            setPendingRetailers(response.data);
+          } else {
+            console.error("Error fetching pending retailers:", response);
+          }
+        } catch (error) {
+          console.error("Error fetching pending retailers:", error);
+        }
+      }
+    };
+    
+    fetchPendingRetailers();
+  }, [activePage]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -197,8 +217,7 @@ const UserDashboard = () => {
     // Add filter information
     doc.setFontSize(11);
     doc.text(
-      `Applied Filters: Role: ${filters.role}, Status: ${filters.status}${
-        filters.search ? `, Search: "${filters.search}"` : ""
+      `Applied Filters: Role: ${filters.role}, Status: ${filters.status}${filters.search ? `, Search: "${filters.search}"` : ""
       }`,
       14,
       30
@@ -285,42 +304,73 @@ const UserDashboard = () => {
           z-index: 0;
         }
       `}</style>
-      <nav className="bg-white shadow-md p-4 flex flex-col sm:flex-row justify-between items-center">
-        <div className="flex gap-4 mb-3 sm:mb-0">
-          <button
-            onClick={() => setActivePage("dashboard")}
-            className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-              activePage === "dashboard"
-                ? "bg-blue-500 text-white border-b-2 border-blue-700"
-                : "text-gray-600 hover:bg-gray-200"
-            }`}
+      <nav className="bg-white shadow-md p-4">
+        {/* Mobile Navigation - Dropdown for small screens */}
+        <div className="md:hidden mb-4">
+          <select 
+            value={activePage}
+            onChange={(e) => setActivePage(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500"
           >
-            Dashboard
-          </button>
+            <option value="dashboard">Dashboard</option>
+            <option value="users">User Management</option>
+            <option value="retailerApprovals">
+              Retailers Approvals {userManagementDashboardData.pendingRetailers > 0 && `(${userManagementDashboardData.pendingRetailers})`}
+            </option>
+          </select>
+          
           <button
-            onClick={() => setActivePage("users")}
-            className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-              activePage === "users"
-                ? "bg-blue-500 text-white border-b-2 border-blue-700"
-                : "bg-blue-400 text-white hover:bg-blue-500"
-            }`}
-          >
-            User Management
-          </button>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+            className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 w-full mt-2 justify-center"
             onClick={exportUsersToCsv}
           >
             <FiDownload className="mr-2" /> Export CSV
           </button>
-          <button
-            className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-            onClick={exportUsersToPdf}
-          >
-            <FiFileText className="mr-2" /> Export PDF
-          </button>
+        </div>
+        
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex flex-row justify-between items-center">
+          <div className="flex gap-4">
+            <button
+              onClick={() => setActivePage("dashboard")}
+              className={`px-4 py-2 rounded-lg font-semibold transition-all ${activePage === "dashboard"
+                ? "bg-blue-500 text-white border-b-2 border-blue-700"
+                : "text-gray-600 hover:bg-gray-200"
+                }`}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => setActivePage("users")}
+              className={`px-4 py-2 rounded-lg font-semibold transition-all ${activePage === "users"
+                ? "bg-blue-500 text-white border-b-2 border-blue-700"
+                : "text-gray-600 hover:bg-gray-200"
+                }`}
+            >
+              User Management
+            </button>
+            <button
+              onClick={() => setActivePage("retailerApprovals")}
+              className={`px-4 py-2 rounded-lg font-semibold transition-all ${activePage === "retailerApprovals"
+                ? "bg-yellow-500 text-white border-b-2 border-yellow-700"
+                : "text-gray-600 hover:bg-gray-200"
+                }`}
+            >
+              <FiClock className="inline mr-1" /> Retailers Approvals
+              {userManagementDashboardData.pendingRetailers > 0 && (
+                <span className="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                  {userManagementDashboardData.pendingRetailers}
+                </span>
+              )}
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+              onClick={exportUsersToCsv}
+            >
+              <FiDownload className="mr-2" /> Export CSV
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -345,6 +395,13 @@ const UserDashboard = () => {
           <UserProfileView
             onFilterChange={handleFilterChange}
             filters={filters}
+          />
+        )}
+        {activePage === "retailerApprovals" && (
+          <RetailerApprovalManager
+            pendingRetailers={pendingRetailers.length > 0 
+              ? pendingRetailers 
+              : users.filter(user => user.role === "Retailer" && user.status === "Inactive")}
           />
         )}
       </main>

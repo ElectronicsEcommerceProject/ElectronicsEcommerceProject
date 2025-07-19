@@ -179,6 +179,14 @@ const userCouponUserRoute = import.meta.env.VITE_USER_COUPON_ENDPOINT;
 // user review related routes
 const userProductReviewRoute = import.meta.env.VITE_PRODUCT_REVIEW_ENDPOINT;
 
+// User status management routes
+const pendingRetailersRoute = import.meta.env.VITE_PENDING_RETAILERS_ENDPOINT
+const bannedRetailersRoute = import.meta.env.VITE_BANNED_RETAILERS_ENDPOINT
+const userApproveRoute = import.meta.env.VITE_USER_APPROVE_ENDPOINT
+const userRejectRoute = import.meta.env.VITE_USER_REJECT_ENDPOINT
+const userBanRoute = import.meta.env.VITE_USER_BAN_ENDPOINT
+const userStatusChangeRoute = import.meta.env.VITE_USER_STATUS_CHANGE_ENDPOINT
+
 export {
   FaEye,
   FaEyeSlash,
@@ -291,4 +299,12 @@ export {
   //Banner routes
   adminBannerRoute,
   userBannerRoute,
+
+  // User status management routes
+  pendingRetailersRoute,
+  bannedRetailersRoute,
+  userApproveRoute,
+  userRejectRoute,
+  userBanRoute,
+  userStatusChangeRoute,
 };

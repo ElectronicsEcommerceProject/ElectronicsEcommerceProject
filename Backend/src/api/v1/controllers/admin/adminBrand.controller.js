@@ -52,6 +52,7 @@ const getAllBrands = async (req, res) => {
       return res.status(StatusCodes.OK).json({
         success: true,
         message: "Cached brands",
+        fromCache: true,
         data: cachedData
       });
     }
@@ -64,7 +65,7 @@ const getAllBrands = async (req, res) => {
 
     res
       .status(StatusCodes.OK)
-      .json({ success: true, message: MESSAGE.get.succ, data: brands });
+      .json({ success: true, message: MESSAGE.get.succ, fromCache: false, data: brands });
   } catch (error) {
     console.error("Error fetching brands:", error);
     res
@@ -206,6 +207,7 @@ const getBrandsByCategoryId = async (req, res) => {
       return res.status(StatusCodes.OK).json({
         success: true,
         message: "Cached brands by category",
+        fromCache: true,
         data: cachedData
       });
     }
@@ -247,6 +249,7 @@ const getBrandsByCategoryId = async (req, res) => {
     res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
+      fromCache: false,
       data: brands,
     });
   } catch (error) {

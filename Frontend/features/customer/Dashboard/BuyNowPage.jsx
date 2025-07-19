@@ -35,6 +35,7 @@ const BuyNowPage = () => {
   const [showMagnifier, setShowMagnifier] = useState(false);
   const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   // New state for Personalized Coupons and Quantity
   const [appliedCoupons, setAppliedCoupons] = useState([]);
@@ -42,6 +43,7 @@ const BuyNowPage = () => {
   const [showPersonalizedOffers, setShowPersonalizedOffers] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [minQuantity, setMinQuantity] = useState(1);
+  const [showQuantityInput, setShowQuantityInput] = useState(false);
 
   // State for tracking applied coupon discounts
   const [appliedCouponData, setAppliedCouponData] = useState(null);
@@ -118,6 +120,22 @@ const BuyNowPage = () => {
       rightScrollRef.current.scrollTop = 0;
     }
   }, [productId]); // Re-run when productId changes
+  
+  // Handle window resize to detect desktop vs mobile
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    
+    // Set initial value
+    handleResize();
+    
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (productData && productData.mainProduct) {
@@ -198,21 +216,9 @@ const BuyNowPage = () => {
     };
   }, [productData]);
 
-  const handleWindowScroll = () => {
-    if (isRightScrollAtEnd) {
-      const leftElement = leftScrollRef.current;
-      if (leftElement) {
-        const scrollAmount = window.scrollY;
-        leftElement.scrollLeft = scrollAmount;
-        rightScrollRef.current.scrollTop = rightScrollRef.current.scrollHeight;
-      }
-    }
-  };
+  // Removed handleWindowScroll function as we're using fixed height containers
 
-  useEffect(() => {
-    window.addEventListener("scroll", handleWindowScroll);
-    return () => window.removeEventListener("scroll", handleWindowScroll);
-  }, [isRightScrollAtEnd]);
+  // Removed window scroll event listener as we're using fixed height containers with their own scrollbars
 
   const handleMouseMove = (e) => {
     if (!imageContainerRef.current) return;
@@ -549,11 +555,14 @@ const BuyNowPage = () => {
     };
   };
 
+  // Add viewport meta tag to index.html instead of using Helmet
+  // <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 w-full max-w-full overflow-x-hidden">
       <Header />
       {/* Product Section */}
-      <div className="container mx-auto px-4 py-4 max-w-none sm:max-w-full md:max-w-6xl lg:max-w-7xl flex flex-col lg:flex-row gap-4 lg:gap-8">
+      <div className="container mx-auto px-2 sm:px-4 py-4 w-full max-w-full overflow-hidden flex flex-col lg:flex-row gap-4 lg:gap-8">
         {/* Product Image Section */}
         <div className="w-full lg:w-2/5 xl:w-1/3 relative">
           {/* Wishlist button - top right corner */}
@@ -1016,15 +1025,27 @@ const BuyNowPage = () => {
         {/* Product Details Section */}
         <div
           ref={rightScrollRef}
-          className="w-full lg:w-3/5 xl:w-2/3 max-h-[60vh] lg:max-h-[80vh] overflow-y-auto px-4 lg:px-0 lg:pr-4 no-scrollbar"
+          className="w-full lg:w-3/5 xl:w-2/3 overflow-y-auto px-2 sm:px-4 lg:px-0 lg:pr-4 custom-scrollbar"
           style={{
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
+            height: isDesktop ? "calc(100vh - 120px)" : "auto", /* Fixed height on desktop, auto on mobile */
+            position: isDesktop ? "sticky" : "relative", /* Sticky on desktop, relative on mobile */
+            top: isDesktop ? "80px" : "auto", /* Top position on desktop */
           }}
         >
           <style
             dangerouslySetInnerHTML={{
-              __html: `.no-scrollbar::-webkit-scrollbar { display: none; }`,
+              __html: `
+                @media (max-width: 640px) {
+                  .custom-scrollbar::-webkit-scrollbar { width: 0px; display: none; }
+                  .custom-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+                }
+                @media (min-width: 641px) {
+                  .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+                  .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+                  .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+                  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
+                }
+              `,
             }}
           />
 
@@ -1195,6 +1216,49 @@ const BuyNowPage = () => {
                 >
                   +
                 </button>
+              </div>
+              
+              {/* Direct quantity input for retailers */}
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setShowQuantityInput(!showQuantityInput)}
+                  className="text-blue-600 hover:text-blue-800 text-sm border border-blue-300 px-3 py-1 rounded-md hover:bg-blue-50 transition-colors"
+                >
+                  {showQuantityInput ? "Hide Custom Input" : "Set Custom Quantity"}
+                </button>
+                
+                {showQuantityInput && (
+                  <div className="flex items-center gap-2 border border-blue-300 rounded-md p-1 bg-blue-50">
+                    <input
+                      type="number"
+                      placeholder="Enter quantity"
+                      className="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      min={minQuantity}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (!isNaN(value) && value >= minQuantity) {
+                          setQuantity(value);
+                        }
+                      }}
+                    />
+                    <button
+                      onClick={(e) => {
+                        const input = e.target.previousSibling;
+                        const value = parseInt(input.value);
+                        if (!isNaN(value) && value >= minQuantity) {
+                          setQuantity(value);
+                          input.value = "";
+                          setShowQuantityInput(false);
+                        } else {
+                          alert(`Please enter a valid quantity (minimum ${minQuantity})`);
+                        }
+                      }}
+                      className="bg-blue-600 text-white px-2 py-1 text-sm rounded hover:bg-blue-700 transition-colors"
+                    >
+                      Set
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Show minimum quantity info */}
@@ -2415,10 +2479,11 @@ const BuyNowPage = () => {
         </div>
       </div>
 
-      <RelatedProducts
-        isVisible={isRightScrollAtEnd}
-        categoryId={mainProduct?.category?.category_id}
-      />
+      <div className="container mx-auto px-2 sm:px-4 py-4 w-full max-w-full overflow-hidden">
+        <RelatedProducts
+          categoryId={mainProduct?.category?.category_id}
+        />
+      </div>
       <Footer />
 
       {/* Address Form Popup */}

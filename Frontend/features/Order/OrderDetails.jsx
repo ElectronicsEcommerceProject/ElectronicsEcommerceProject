@@ -220,7 +220,7 @@ const OrderCard = ({ order, expanded, onExpand, onOrderUpdate }) => {
             </span>
           </div>
           <p className="text-xs text-gray-500">
-            Order Date: {new Date(order.order_date).toLocaleDateString()}
+            Order Date: {new Date(order.order_date).toLocaleDateString()} at {new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true})}
           </p>
           <p className="text-sm text-gray-700 font-semibold">
             Total: ₹{order.total_amount}

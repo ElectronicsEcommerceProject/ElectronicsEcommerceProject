@@ -3,6 +3,7 @@ import db from "../../../../../../models/index.js";
 import MESSAGE from "../../../../../../constants/message.js";
 import slugify from "slugify";
 import { Op } from "sequelize";
+import { cacheUtils, CACHE_TTL } from "../../../../../../utils/cacheUtils.js";
 
 const {
   Product,
@@ -34,9 +35,31 @@ const {
  */
 const userProductByIdDetails = async (req, res, next) => {
   try {
+    console.log("testing the userProductByIdDetails controller")
     const { product_id } = req.params;
+    const userId = req.user?.user_id || 'guest';
 
-    // Fetch product with all related data
+    // Create a cache key that includes product ID and user ID (for personalized content)
+    const cacheKey = `product:${product_id}:user:${userId}`;
+
+    // Try to get data from cache first
+    const cachedProduct = await cacheUtils.get(cacheKey);
+    if (cachedProduct) {
+      console.log(`✅ Product ${product_id} served from cache for user ${userId}`);
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Cached response",
+        fromCache: true,
+        data: {
+          mainProduct: {
+            ...cachedProduct,
+            _cachedData: true
+          }
+        },
+      });
+    }
+
+    // Cache miss - fetch product with all related data
     const product = await Product.findByPk(product_id, {
       include: [
         {
@@ -244,11 +267,16 @@ const userProductByIdDetails = async (req, res, next) => {
       req
     );
 
+    // Cache the formatted product data
+    await cacheUtils.set(cacheKey, formattedProduct, CACHE_TTL.SHORT_TTL);
+    console.log(`✅ Product ${product_id} cached for user ${userId} (15 min TTL)`);
+
     return res.status(StatusCodes.OK).json({
       success: true,
-      message: MESSAGE.get.succ,
+      message: "Fresh data",
+      fromCache: false,
       data: {
-        mainProduct: formattedProduct,
+        mainProduct: formattedProduct
       },
     });
   } catch (error) {
@@ -275,6 +303,19 @@ const getRelatedProducts = async (
   currentProductId,
   req
 ) => {
+  // Create a cache key for related products
+  const cacheKey = `relatedProducts:${currentProductId}:${categoryId}:${brandId}`;
+
+  // Try to get related products from cache
+  const cachedRelatedProducts = await cacheUtils.get(cacheKey);
+  if (cachedRelatedProducts) {
+    console.log(`✅ Related products for ${currentProductId} served from cache`);
+    // Add a property to indicate this came from cache
+    return cachedRelatedProducts.map(product => ({
+      ...product,
+      _cachedData: true
+    }));
+  }
   try {
     const relatedProducts = [];
     const maxProducts = 8; // Total number of related products to return
@@ -428,7 +469,7 @@ const getRelatedProducts = async (
     }
 
     // Format the response
-    return relatedProducts.map((product) => {
+    const formattedRelatedProducts = relatedProducts.map((product) => {
       const plainProduct = product.get({ plain: true });
       const variantPrice = plainProduct.variants?.[0]?.price;
       const basePrice = plainProduct.base_price;
@@ -459,6 +500,12 @@ const getRelatedProducts = async (
         isFeatured: plainProduct.is_featured || false,
       };
     });
+
+    // Cache the related products
+    await cacheUtils.set(cacheKey, formattedRelatedProducts, CACHE_TTL.DEFAULT_TTL);
+    console.log(`✅ Related products for ${currentProductId} cached (1 hour TTL)`);
+
+    return formattedRelatedProducts;
   } catch (error) {
     return [];
   }
@@ -470,6 +517,20 @@ const getRelatedProducts = async (
  * @returns {Array} Applied coupons with coupon details
  */
 const getAppliedCouponsForUser = async (userId) => {
+  // Create a cache key for applied coupons
+  const cacheKey = `appliedCoupons:${userId}`;
+
+  // Try to get applied coupons from cache
+  const cachedCoupons = await cacheUtils.get(cacheKey);
+  if (cachedCoupons) {
+    console.log(`✅ Applied coupons for user ${userId} served from cache`);
+    // Add a property to indicate this came from cache
+    return cachedCoupons.map(coupon => ({
+      ...coupon,
+      _cachedData: true
+    }));
+  }
+
   try {
     const appliedCoupons = await CouponUser.findAll({
       where: { user_id: userId },
@@ -497,13 +558,19 @@ const getAppliedCouponsForUser = async (userId) => {
       attributes: ["coupon_user_id", "createdAt"],
     });
 
-    return appliedCoupons.map((couponUser) => {
+    const formattedCoupons = appliedCoupons.map((couponUser) => {
       const couponData = couponUser.get({ plain: true });
       return {
         ...couponData.Coupon,
         applied_at: couponData.createdAt,
       };
     });
+
+    // Cache the applied coupons
+    await cacheUtils.set(cacheKey, formattedCoupons, CACHE_TTL.SHORT_TTL);
+    console.log(`✅ Applied coupons for user ${userId} cached (15 min TTL)`);
+
+    return formattedCoupons;
   } catch (error) {
     console.error("Error fetching applied coupons:", error);
     return [];
@@ -519,6 +586,19 @@ const getAppliedCouponsForUser = async (userId) => {
  * @returns {Array} Relevant coupons
  */
 const getRelevantCoupons = async (productId, brandId, categoryId) => {
+  // Create a cache key for relevant coupons
+  const cacheKey = `relevantCoupons:${productId}:${brandId}:${categoryId}`;
+
+  // Try to get relevant coupons from cache
+  const cachedCoupons = await cacheUtils.get(cacheKey);
+  if (cachedCoupons) {
+    console.log(`✅ Relevant coupons for product ${productId} served from cache`);
+    // Add a property to indicate this came from cache
+    return cachedCoupons.map(coupon => ({
+      ...coupon,
+      _cachedData: true
+    }));
+  }
   try {
     const relevantCoupons = await Coupon.findAll({
       where: {
@@ -560,7 +640,13 @@ const getRelevantCoupons = async (productId, brandId, categoryId) => {
       order: [["createdAt", "DESC"]], // Show newest coupons first
     });
 
-    return relevantCoupons.map((coupon) => coupon.get({ plain: true }));
+    const formattedCoupons = relevantCoupons.map((coupon) => coupon.get({ plain: true }));
+
+    // Cache the relevant coupons
+    await cacheUtils.set(cacheKey, formattedCoupons, CACHE_TTL.SHORT_TTL);
+    console.log(`✅ Relevant coupons for product ${productId} cached (15 min TTL)`);
+
+    return formattedCoupons;
   } catch (error) {
     return [];
   }
@@ -662,34 +748,34 @@ const formatProductResponse = (
   const averageRating =
     totalReviewCount > 0
       ? (
-          approvedReviews.reduce((sum, review) => sum + review.rating, 0) /
-          totalReviewCount
-        ).toFixed(1)
+        approvedReviews.reduce((sum, review) => sum + review.rating, 0) /
+        totalReviewCount
+      ).toFixed(1)
       : "0.0";
 
   // Process reviews with proper user information and variant details
   const processedReviews = Array.isArray(productData.reviews)
     ? productData.reviews.map((review) => {
-        // Find the variant for this review
-        const reviewVariant = productData.variants?.find(
-          (v) => v.product_variant_id === review.product_variant_id
-        );
+      // Find the variant for this review
+      const reviewVariant = productData.variants?.find(
+        (v) => v.product_variant_id === review.product_variant_id
+      );
 
-        return {
-          ...review,
-          user: {
-            user_id: review.reviewer?.user_id || null,
-            name: review.reviewer?.name || "Anonymous User",
-            profileImage_url: review.reviewer?.profileImage_url || null,
-            verified_buyer: review.is_verified_purchase || false,
-            totalReviews: 0, // Could be enhanced with actual count
-            helpfulVotes: 0, // Could be enhanced with actual count
-          },
-          variant: reviewVariant?.description || "Standard",
-          helpfulCount: 0, // Could be enhanced with actual helpful votes
-          reportCount: 0, // Could be enhanced with actual reports
-        };
-      })
+      return {
+        ...review,
+        user: {
+          user_id: review.reviewer?.user_id || null,
+          name: review.reviewer?.name || "Anonymous User",
+          profileImage_url: review.reviewer?.profileImage_url || null,
+          verified_buyer: review.is_verified_purchase || false,
+          totalReviews: 0, // Could be enhanced with actual count
+          helpfulVotes: 0, // Could be enhanced with actual count
+        },
+        variant: reviewVariant?.description || "Standard",
+        helpfulCount: 0, // Could be enhanced with actual helpful votes
+        reportCount: 0, // Could be enhanced with actual reports
+      };
+    })
     : [];
 
   // Format the final response
@@ -742,36 +828,36 @@ const formatProductResponse = (
     wishlistInfo:
       productData.wishlistItems && productData.wishlistItems.length > 0
         ? {
-            wishlist_id:
-              productData.wishlistItems[0]?.wishlist?.wishlist_id || null,
-            user_id: productData.wishlistItems[0]?.wishlist?.user_id || null,
-            items: productData.wishlistItems.map((item) => ({
-              wish_list_item_id: item.wish_list_item_id,
-              product_id: item.product_id,
-              product_variant_id: item.product_variant_id,
-              createdAt: item.createdAt,
-            })),
-          }
+          wishlist_id:
+            productData.wishlistItems[0]?.wishlist?.wishlist_id || null,
+          user_id: productData.wishlistItems[0]?.wishlist?.user_id || null,
+          items: productData.wishlistItems.map((item) => ({
+            wish_list_item_id: item.wish_list_item_id,
+            product_id: item.product_id,
+            product_variant_id: item.product_variant_id,
+            createdAt: item.createdAt,
+          })),
+        }
         : null,
 
     // Cart information
     cartInfo:
       productData.cartItems && productData.cartItems.length > 0
         ? {
-            cart_id: productData.cartItems[0]?.cart?.cart_id || null,
-            user_id: productData.cartItems[0]?.cart?.user_id || null,
-            items: productData.cartItems.map((item) => ({
-              cart_item_id: item.cart_item_id,
-              product_id: item.product_id,
-              product_variant_id: item.product_variant_id,
-              total_quantity: item.total_quantity,
-              discount_quantity: item.discount_quantity,
-              price_at_time: item.price_at_time,
-              discount_applied: item.discount_applied,
-              final_price: item.final_price,
-              createdAt: item.createdAt,
-            })),
-          }
+          cart_id: productData.cartItems[0]?.cart?.cart_id || null,
+          user_id: productData.cartItems[0]?.cart?.user_id || null,
+          items: productData.cartItems.map((item) => ({
+            cart_item_id: item.cart_item_id,
+            product_id: item.product_id,
+            product_variant_id: item.product_variant_id,
+            total_quantity: item.total_quantity,
+            discount_quantity: item.discount_quantity,
+            price_at_time: item.price_at_time,
+            discount_applied: item.discount_applied,
+            final_price: item.final_price,
+            createdAt: item.createdAt,
+          })),
+        }
         : null,
 
     // Relevant coupons for this product (excluding cart-level coupons)

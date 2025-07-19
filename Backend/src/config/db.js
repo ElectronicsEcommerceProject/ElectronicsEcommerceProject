@@ -2,11 +2,11 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// ✅ Fix for __dirname in ES modules
+// __dirname fix
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// We don't need to load dotenv here as it's already loaded in jest.setup.js or via DOTENV_CONFIG_PATH
+// Load .env file from root
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 // Debugging: Log environment variables to verify they are loaded
@@ -18,28 +18,21 @@ console.log("DB_DATABASE:", process.env.DB_DATABASE);
 
 const dbConfigFile = {
   development: {
-    username: process.env.DB_USERNAME || "root",
-    password: process.env.DB_PASSWORD || "root",
-    database: process.env.DB_DATABASE || "electronicsecommerceproject",
-    host: process.env.DB_HOST || "127.0.0.1",
-    dialect: process.env.DB_DIALECT || "mysql",
-    port: process.env.DB_PORT || 3306,
-  },
-  test: {
-    username: process.env.DB_USERNAME || "root",
-    password: process.env.DB_PASSWORD || "root",
-    database: process.env.DB_DATABASE || "electronics_ecommerce_test",
-    host: process.env.DB_HOST || "127.0.0.1",
-    dialect: process.env.DB_DIALECT || "mysql",
-    port: process.env.DB_PORT || 3306,
-  },
-  production: {
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
-    dialect: process.env.DB_DIALECT || "mysql",
-    port: process.env.DB_PORT || 3306,
+    dialect: "mysql",
+    port: Number(process.env.DB_PORT),
+  },
+
+  production: {
+    username: process.env.DB_USERNAME_PROD,
+    password: process.env.DB_PASSWORD_PROD,
+    database: process.env.DB_DATABASE_PROD,
+    host: process.env.DB_HOST_PROD,
+    dialect: "mysql",
+    port: Number(process.env.DB_PORT_PROD),
     dialectOptions: {
       ssl: {
         require: true,
@@ -51,6 +44,21 @@ const dbConfigFile = {
       min: 0,
       acquire: 30000,
       idle: 10000,
+    },
+  },
+  tidb: {
+    username: process.env.DB_USERNAME_TIDB,
+    password: process.env.DB_PASSWORD_TIDB,
+    database: process.env.DB_DATABASE_TIDB,
+    host: process.env.DB_HOST_TIDB,
+    dialect: "mysql",
+    port: Number(process.env.DB_PORT_TIDB),
+    dialectOptions: {
+      ssl: {
+        require: true,
+        minVersion: "TLSv1.2",
+        rejectUnauthorized: true,
+      },
     },
   },
 };
