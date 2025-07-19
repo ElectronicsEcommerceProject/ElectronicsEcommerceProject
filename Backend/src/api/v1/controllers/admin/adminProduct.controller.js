@@ -100,6 +100,7 @@ const getAllProducts = async (req, res) => {
     if (cachedData) {
       return res.status(StatusCodes.OK).json({
         message: "Cached products",
+        fromCache: true,
         ...cachedData
       });
     }
@@ -111,6 +112,7 @@ const getAllProducts = async (req, res) => {
 
     const response = {
       message: MESSAGE.get.succ,
+      fromCache: false,
       data: products,
       pagination: createPaginationResponse(count, page, limit)
     };
@@ -139,6 +141,7 @@ const getProductById = async (req, res) => {
     if (cachedData) {
       return res.status(StatusCodes.OK).json({
         message: "Cached product",
+        fromCache: true,
         data: cachedData
       });
     }
@@ -166,6 +169,7 @@ const getProductById = async (req, res) => {
 
     res.status(StatusCodes.OK).json({
       message: MESSAGE.get.succ,
+      fromCache: false,
       data: product,
     });
   } catch (error) {
@@ -182,6 +186,18 @@ const getProductsByCategoryId = async (req, res) => {
   try {
     const { category_id } = req.params;
     const { page, limit, offset } = getPaginationParams(req);
+    const cacheKey = `products:category:${category_id}:page:${page}:limit:${limit}`;
+    
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Cached products by category",
+        fromCache: true,
+        ...cachedData
+      });
+    }
 
     // Check if category exists
     const category = await Category.findByPk(category_id);
@@ -315,11 +331,19 @@ const getProductsByCategoryId = async (req, res) => {
       };
     });
 
+    const responseData = {
+      data,
+      pagination: createPaginationResponse(count, page, limit)
+    };
+    
+    // Cache the results
+    await cacheUtils.set(cacheKey, responseData);
+    
     res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
-      data,
-      pagination: createPaginationResponse(count, page, limit)
+      fromCache: false,
+      ...responseData
     });
   } catch (error) {
     console.error("Error fetching products by category:", error);
@@ -335,6 +359,17 @@ const getProductsByCategoryAndBrand = async (req, res) => {
   try {
     const { category_id, brand_id } = req.params;
     const { page, limit, offset } = getPaginationParams(req);
+    const cacheKey = `products:category:${category_id || 'all'}:brand:${brand_id || 'all'}:page:${page}:limit:${limit}`;
+    
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        message: "Cached products by category and brand",
+        fromCache: true,
+        ...cachedData
+      });
+    }
 
     // Build the filter dynamically
     const filter = {};
@@ -360,10 +395,18 @@ const getProductsByCategoryAndBrand = async (req, res) => {
       ],
     });
 
-    res.status(StatusCodes.OK).json({
-      message: MESSAGE.get.succ,
+    const responseData = {
       data: products,
       pagination: createPaginationResponse(count, page, limit)
+    };
+    
+    // Cache the results
+    await cacheUtils.set(cacheKey, responseData);
+    
+    res.status(StatusCodes.OK).json({
+      message: MESSAGE.get.succ,
+      fromCache: false,
+      ...responseData
     });
   } catch (error) {
     console.error("Error fetching products by category and brand:", error);
@@ -541,6 +584,18 @@ const getProductsByBrandId = async (req, res) => {
     const { brand_id } = req.params;
     const { page, limit, offset } = getPaginationParams(req);
     const { search } = req.query;
+    const cacheKey = `products:brand:${brand_id}:search:${search || 'none'}:page:${page}:limit:${limit}`;
+    
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Cached products by brand",
+        fromCache: true,
+        ...cachedData
+      });
+    }
 
     // 1. Validate brand exists
     const brand = await Brand.findByPk(brand_id);
@@ -776,11 +831,19 @@ const getProductsByBrandId = async (req, res) => {
       };
     });
 
+    const responseData = {
+      data,
+      pagination: createPaginationResponse(count, page, limit)
+    };
+    
+    // Cache the results
+    await cacheUtils.set(cacheKey, responseData);
+    
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
-      data,
-      pagination: createPaginationResponse(count, page, limit)
+      fromCache: false,
+      ...responseData
     });
   } catch (err) {
     console.error("getProductsByBrand error:", err);

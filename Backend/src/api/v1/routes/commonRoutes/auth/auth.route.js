@@ -1,11 +1,18 @@
 import express from "express";
 
-import { validator } from "../../../../../middleware/index.js";
 import { validators } from "../../../validators/index.js";
+
+import {
+  verifyJwtToken,
+  adminRoleCheck,
+  validator,
+} from "../../../../../middleware/index.js";
+
 import {
   loginController,
   registerController,
   resetPasswordController,
+  approveRejectBanUserController,
 } from "../../../controllers/index.js";
 
 const router = express.Router();
@@ -28,5 +35,7 @@ router.post(
   validator(validators.auth.resetPasswordValidator, null),
   resetPasswordController.resetPassword
 );
+
+// Note: Retailer approval routes have been moved to admin/adminRetailerApproval.routes.js
 
 export default router;

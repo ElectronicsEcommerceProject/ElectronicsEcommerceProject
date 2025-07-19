@@ -23,6 +23,7 @@ import {
   adminStockManagementDataRoutes,
   adminNotificationRoutes,
   adminBannerRoutes,
+  adminRetailerApprovalRoutes,
 } from "./adminRoutes.index.js";
 
 const app = express();
@@ -78,5 +79,7 @@ app.use("/stock-management", adminStockManagementDataRoutes);
 app.use("/product-Reviews", adminProductReviewRoutes);
 
 app.use("/banners", adminBannerRoutes);
+
+app.use("/retailer-Approval", adminRetailerApprovalRoutes);
 
 export default app;

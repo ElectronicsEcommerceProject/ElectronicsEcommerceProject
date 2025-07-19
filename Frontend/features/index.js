@@ -24,6 +24,7 @@ export { default as ProductManagement } from "./admin/ProductManagement/ProductD
 export { default as OrderManagement } from "./admin/OrderDashboard/OrderDashboard.jsx";
 export { default as UserManagement } from "./admin/UserManagement/UserDashboard.jsx";
 export { default as UserProfileView } from "./admin/UserManagement/UserProfileView.jsx";
+export { default as RetailerApprovalManager } from "./admin/UserManagement/RetailerApprovalManager.jsx";
 export { default as ReviewManagement } from "./admin/ReviewManagement/ReviewDashboard.jsx";
 export { default as CouponsOffers } from "./admin/CouponManagement/CouponDashboard.jsx";
 export { default as NotificationPage } from "./admin/NotificationManagement/NotificationPage.jsx";

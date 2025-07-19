@@ -31,7 +31,7 @@ const addCategory = async (req, res) => {
 
       // Flush all cache after successful creation
       await cacheUtils.flushAll();
-      
+
       // Cache the new category with key
       await cacheUtils.set(`categories:${newCategory.category_id}`, newCategory);
 
@@ -68,6 +68,7 @@ const getAllCategories = async (req, res) => {
       return res.status(StatusCodes.OK).json({
         status: true,
         message: "Cached categories",
+        fromCache: true,
         data: cachedData
       });
     }
@@ -89,9 +90,9 @@ const getAllCategories = async (req, res) => {
     }
 
     if (!categories.length) {
-      return res.status(StatusCodes.NOT_FOUND).json({ 
-        status: false, 
-        message: MESSAGE.get.empty 
+      return res.status(StatusCodes.NOT_FOUND).json({
+        status: false,
+        message: MESSAGE.get.empty
       });
     }
 
@@ -101,6 +102,7 @@ const getAllCategories = async (req, res) => {
     res.status(StatusCodes.OK).json({
       status: true,
       message: MESSAGE.get.succ,
+      fromCache: false,
       data: categories
     });
 
@@ -194,7 +196,7 @@ const deleteCategory = async (req, res) => {
           }
         });
       }
-      
+
       // Add product media images
       if (product.media) {
         product.media.forEach(media => {

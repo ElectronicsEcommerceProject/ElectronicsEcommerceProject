@@ -46,7 +46,8 @@ const getUserDashboardProducts = async (req, res) => {
     if (cachedData) {
       return res.status(StatusCodes.OK).json({
         success: true,
-        message: "Cached dashboard data",
+        message: "Cached response",
+        fromCache: true,
         ...cachedData
       });
     }
@@ -225,6 +226,7 @@ const getUserDashboardProducts = async (req, res) => {
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
+      fromCache: false,
       ...response
     });
   } catch (error) {
