@@ -49,19 +49,16 @@ console.log("Database config:", {
 
 //for TidB cloud database connection
 const sequelize = new Sequelize(
-  process.env.DB_DATABASE,
-  process.env.DB_USERNAME,
-  process.env.DB_PASSWORD,
+  dbConfig.database,
+  dbConfig.username,
+  dbConfig.password,
   {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    dialect: "mysql",
-    logging: false, // Disable logging for production
-    dialectOptions: {
-      ssl: {
-        rejectUnauthorized: false, // Accept self-signed/unknown CA certs for dev
-      },
-    },
+    host: dbConfig.host,
+    port: dbConfig.port,
+    dialect: dbConfig.dialect,
+    logging: false,
+    dialectOptions: dbConfig.dialectOptions || {},
+    pool: dbConfig.pool || {},
   }
 );
 
