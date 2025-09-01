@@ -89,12 +89,12 @@ const serveCompressedStatic = (staticPath, options = {}) => {
 
 // ✅ Serve static files from src/uploads with caching
 app.use("/uploads", express.static(path.join(__dirname, "src/uploads"), {
-  maxAge: '1y',
+  maxAge: '1d',
   etag: true,
   lastModified: true,
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.jpg') || filePath.endsWith('.png') || filePath.endsWith('.jpeg')) {
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
     }
   }
 }));
