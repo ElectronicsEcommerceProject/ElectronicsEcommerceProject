@@ -179,7 +179,7 @@ const getProductManagementData = async (req, res) => {
         include: [
           {
             model: ProductMediaUrl,
-            as: "productMediaUrls",
+            as: "productMediaUrl",
             attributes: ["product_media_url", "media_type"],
           },
         ],
@@ -230,7 +230,7 @@ const getProductManagementData = async (req, res) => {
           (m) => m.product_id === product.product_id
         );
         const mediaUrl =
-          media?.productMediaUrls?.[0]?.product_media_url || null;
+          media?.productMediaUrl?.[0]?.product_media_url || null;
 
         return {
           id: product.product_id,
@@ -311,7 +311,7 @@ const getProductManagementData = async (req, res) => {
         product_variant_id: media.product_variant_id,
         media_type: media.media_type,
         urls:
-          media.productMediaUrls?.map((url) => ({
+          media.productMediaUrl?.map((url) => ({
             product_media_url: url.product_media_url,
             media_type: url.media_type,
           })) || [],
@@ -830,7 +830,7 @@ const deleteProductManagementData = async (req, res) => {
           (media) => media.product_media_id
         );
 
-        // Step 5: Delete related productMediaUrls
+        // Step 5: Delete related productMediaUrl
         if (productMediaIds.length > 0) {
           await ProductMediaUrl.destroy({
             where: {
@@ -952,7 +952,7 @@ const deleteProductManagementData = async (req, res) => {
             as: "media",
             include: [{
               model: ProductMediaUrl,
-              as: "productMediaUrls",
+              as: "productMediaUrl",
               attributes: ["product_media_url"]
             }]
           }
@@ -974,8 +974,8 @@ const deleteProductManagementData = async (req, res) => {
       // Add product media images
       if (productWithImages.media) {
         productWithImages.media.forEach(media => {
-          if (media.productMediaUrls) {
-            media.productMediaUrls.forEach(mediaUrl => {
+          if (media.productMediaUrl) {
+            media.productMediaUrl.forEach(mediaUrl => {
               if (mediaUrl.product_media_url) {
                 imagesToDelete.push(mediaUrl.product_media_url);
               }
@@ -1057,7 +1057,7 @@ const deleteProductManagementData = async (req, res) => {
             (media) => media.product_media_id
           );
 
-          // Step 2.5: Delete related productMediaUrls
+          // Step 2.5: Delete related productMediaUrl
           if (productMediaIds.length > 0) {
             await ProductMediaUrl.destroy({
               where: {
@@ -1193,7 +1193,7 @@ const deleteProductManagementData = async (req, res) => {
             include: [
               {
                 model: ProductMediaUrl,
-                as: "productMediaUrls",
+                as: "productMediaUrl",
                 attributes: ["product_media_url"],
               },
             ],
@@ -1216,8 +1216,8 @@ const deleteProductManagementData = async (req, res) => {
         // Add product media images
         if (product.media) {
           product.media.forEach((media) => {
-            if (media.productMediaUrls) {
-              media.productMediaUrls.forEach((mediaUrl) => {
+            if (media.productMediaUrl) {
+              media.productMediaUrl.forEach((mediaUrl) => {
                 if (mediaUrl.product_media_url) {
                   imagesToDelete.push(mediaUrl.product_media_url);
                 }
@@ -1318,7 +1318,7 @@ const deleteProductManagementData = async (req, res) => {
               (media) => media.product_media_id
             );
 
-            // Step 2.2.5: Delete related productMediaUrls
+            // Step 2.2.5: Delete related productMediaUrl
             if (productMediaIds.length > 0) {
               await ProductMediaUrl.destroy({
                 where: {
@@ -1615,7 +1615,7 @@ const deleteProductManagementData = async (req, res) => {
             include: [
               {
                 model: ProductMediaUrl,
-                as: "productMediaUrls",
+                as: "productMediaUrl",
                 attributes: ["product_media_url"],
               },
             ],
@@ -1648,8 +1648,8 @@ const deleteProductManagementData = async (req, res) => {
           console.log(`🔍 Found ${product.media.length} media items`);
           product.media.forEach((media) => {
             console.log('🔍 Media object:', media);
-            if (media.productMediaUrls) {
-              media.productMediaUrls.forEach((mediaUrl) => {
+            if (media.productMediaUrl) {
+              media.productMediaUrl.forEach((mediaUrl) => {
                 if (mediaUrl.product_media_url) {
                   console.log(
                     `🔍 Adding media image: ${mediaUrl.product_media_url}`
@@ -1658,7 +1658,7 @@ const deleteProductManagementData = async (req, res) => {
                 }
               });
             } else {
-              console.log('🔍 No productMediaUrls found for this media');
+              console.log('🔍 No productMediaUrl found for this media');
             }
           });
         }
@@ -1767,7 +1767,7 @@ const deleteProductManagementData = async (req, res) => {
               (media) => media.product_media_id
             );
 
-            // Step 2.2.5: Delete related productMediaUrls
+            // Step 2.2.5: Delete related productMediaUrl
             if (productMediaIds.length > 0) {
               await ProductMediaUrl.destroy({
                 where: {

@@ -150,7 +150,7 @@ export default (sequelize) => {
             as: "media",
             include: [{
               model: sequelize.models.ProductMediaUrl,
-              as: "productMediaUrls",
+              as: "productMediaUrl",
               attributes: ["product_media_url"]
             }]
           }
@@ -172,8 +172,8 @@ export default (sequelize) => {
         // Collect product media images
         if (productWithImages.media) {
           productWithImages.media.forEach(media => {
-            if (media.productMediaUrls) {
-              media.productMediaUrls.forEach(mediaUrl => {
+            if (media.productMediaUrl) {
+              media.productMediaUrl.forEach(mediaUrl => {
                 if (mediaUrl.product_media_url) {
                   imagesToDelete.push(mediaUrl.product_media_url);
                 }

@@ -21,7 +21,7 @@ router.post(
 router.get(
   "/",
   verifyJwtToken,
-  adminProductMediaURLController.getAllproductMediaUrls
+  adminProductMediaURLController.getAllproductMediaUrl
 );
 
 // Get product media URL by ID
@@ -36,7 +36,7 @@ router.get(
 router.get(
   "/media/:mediaId",
   verifyJwtToken,
-  adminProductMediaURLController.getproductMediaUrlsByMediaId
+  adminProductMediaURLController.getproductMediaUrlByMediaId
 );
 
 // Update a product media URL

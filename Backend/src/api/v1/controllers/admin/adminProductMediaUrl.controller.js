@@ -47,9 +47,9 @@ const addProductMediaURL = async (req, res) => {
 };
 
 // Get all product media URLs
-const getAllproductMediaUrls = async (req, res) => {
+const getAllproductMediaUrl = async (req, res) => {
   try {
-    const productMediaUrls = await ProductMediaUrl.findAll({
+    const productMediaUrl = await ProductMediaUrl.findAll({
       include: [
         { model: ProductMedia },
         { model: User, as: "creator" },
@@ -59,7 +59,7 @@ const getAllproductMediaUrls = async (req, res) => {
 
     res
       .status(StatusCodes.OK)
-      .json({ message: MESSAGE.get.succ, data: productMediaUrls });
+      .json({ message: MESSAGE.get.succ, data: productMediaUrl });
   } catch (error) {
     console.error("Error fetching product media URLs:", error);
     res
@@ -98,7 +98,7 @@ const getProductMediaURLById = async (req, res) => {
 };
 
 // Get product media URLs by media ID
-const getproductMediaUrlsByMediaId = async (req, res) => {
+const getproductMediaUrlByMediaId = async (req, res) => {
   try {
     const { mediaId } = req.params;
 
@@ -110,7 +110,7 @@ const getproductMediaUrlsByMediaId = async (req, res) => {
         .json({ message: "Product media not found" });
     }
 
-    const productMediaUrls = await ProductMediaUrl.findAll({
+    const productMediaUrl = await ProductMediaUrl.findAll({
       where: { product_media_id: mediaId },
       include: [
         { model: User, as: "creator" },
@@ -120,7 +120,7 @@ const getproductMediaUrlsByMediaId = async (req, res) => {
 
     res
       .status(StatusCodes.OK)
-      .json({ message: MESSAGE.get.succ, data: productMediaUrls });
+      .json({ message: MESSAGE.get.succ, data: productMediaUrl });
   } catch (error) {
     console.error("Error fetching product media URLs by media ID:", error);
     res
@@ -219,9 +219,9 @@ const deleteProductMediaURL = async (req, res) => {
 
 export default {
   addProductMediaURL,
-  getAllproductMediaUrls,
+  getAllproductMediaUrl,
   getProductMediaURLById,
-  getproductMediaUrlsByMediaId,
+  getproductMediaUrlByMediaId,
   updateProductMediaURL,
   deleteProductMediaURL,
 };

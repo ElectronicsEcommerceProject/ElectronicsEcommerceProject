@@ -55,7 +55,7 @@ const userProductByIdDetails = async (req, res, next) => {
           include: [
             {
               model: ProductMediaUrl,
-              as: "productMediaUrls",
+              as: "productMediaUrl",
               attributes: [
                 "product_media_url_id",
                 "product_media_url",
@@ -292,7 +292,7 @@ const getRelatedProducts = async (
         include: [
           {
             model: ProductMediaUrl,
-            as: "productMediaUrls",
+            as: "productMediaUrl",
             attributes: ["product_media_url"],
           },
         ],
@@ -452,7 +452,7 @@ const getRelatedProducts = async (
           : "0.0",
         ratingCount: plainProduct.rating_count || 0,
         image: convertToFullUrl(
-          plainProduct.media?.[0]?.productMediaUrls?.[0]?.product_media_url,
+          plainProduct.media?.[0]?.productMediaUrl?.[0]?.product_media_url,
           req
         ),
         brand: plainProduct.brand,
@@ -603,7 +603,7 @@ const formatProductResponse = (
     productData.media?.map((media) => ({
       ...media,
       urls:
-        media.productMediaUrls?.map((url) => ({
+        media.productMediaUrl?.map((url) => ({
           ...url,
           product_media_url: convertToFullUrl(url.product_media_url, req),
         })) || [],

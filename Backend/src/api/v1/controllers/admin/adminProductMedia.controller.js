@@ -246,7 +246,7 @@ const deleteProductMedia = async (req, res) => {
     const productMedia = await ProductMedia.findByPk(id, {
       include: [{
         model: ProductMediaUrl,
-        as: "productMediaUrls",
+        as: "productMediaUrl",
         attributes: ["product_media_url"]
       }]
     });
@@ -259,8 +259,8 @@ const deleteProductMedia = async (req, res) => {
 
     // Collect image URLs to delete
     const imagesToDelete = [];
-    if (productMedia.productMediaUrls) {
-      productMedia.productMediaUrls.forEach(mediaUrl => {
+    if (productMedia.productMediaUrl) {
+      productMedia.productMediaUrl.forEach(mediaUrl => {
         if (mediaUrl.product_media_url) {
           imagesToDelete.push(mediaUrl.product_media_url);
         }
