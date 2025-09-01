@@ -104,7 +104,7 @@ export const getAllOrders = async (req, res) => {
         },
         {
           model: OrderItem,
-          as: "orderItems",
+          as: "orderItem",
           include: [
             {
               model: Product,
@@ -156,7 +156,7 @@ export const getOrderById = async (req, res) => {
         },
         {
           model: OrderItem,
-          as: "orderItems",
+          as: "orderItem",
           include: [
             {
               model: Product,

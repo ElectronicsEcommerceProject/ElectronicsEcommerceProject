@@ -47,9 +47,9 @@ const addProductMediaURL = async (req, res) => {
 };
 
 // Get all product media URLs
-const getAllProductMediaURLs = async (req, res) => {
+const getAllproductMediaUrl = async (req, res) => {
   try {
-    const productMediaURLs = await ProductMediaUrl.findAll({
+    const productMediaUrl = await ProductMediaUrl.findAll({
       include: [
         { model: ProductMedia },
         { model: User, as: "creator" },
@@ -59,7 +59,7 @@ const getAllProductMediaURLs = async (req, res) => {
 
     res
       .status(StatusCodes.OK)
-      .json({ message: MESSAGE.get.succ, data: productMediaURLs });
+      .json({ message: MESSAGE.get.succ, data: productMediaUrl });
   } catch (error) {
     console.error("Error fetching product media URLs:", error);
     res
@@ -98,7 +98,7 @@ const getProductMediaURLById = async (req, res) => {
 };
 
 // Get product media URLs by media ID
-const getProductMediaURLsByMediaId = async (req, res) => {
+const getproductMediaUrlByMediaId = async (req, res) => {
   try {
     const { mediaId } = req.params;
 
@@ -110,7 +110,7 @@ const getProductMediaURLsByMediaId = async (req, res) => {
         .json({ message: "Product media not found" });
     }
 
-    const productMediaURLs = await ProductMediaUrl.findAll({
+    const productMediaUrl = await ProductMediaUrl.findAll({
       where: { product_media_id: mediaId },
       include: [
         { model: User, as: "creator" },
@@ -120,7 +120,7 @@ const getProductMediaURLsByMediaId = async (req, res) => {
 
     res
       .status(StatusCodes.OK)
-      .json({ message: MESSAGE.get.succ, data: productMediaURLs });
+      .json({ message: MESSAGE.get.succ, data: productMediaUrl });
   } catch (error) {
     console.error("Error fetching product media URLs by media ID:", error);
     res
@@ -161,8 +161,8 @@ const updateProductMediaURL = async (req, res) => {
     }
 
     // Handle image replacement - delete old image if new one is provided
-    if (product_media_url && productMediaURL.product_media_url && 
-        product_media_url !== productMediaURL.product_media_url) {
+    if (product_media_url && productMediaURL.product_media_url &&
+      product_media_url !== productMediaURL.product_media_url) {
       deleteImage(productMediaURL.product_media_url);
     }
 
@@ -202,12 +202,12 @@ const deleteProductMediaURL = async (req, res) => {
     const imagePath = productMediaURL.product_media_url;
 
     await productMediaURL.destroy();
-    
+
     // Delete associated image from filesystem
     if (imagePath) {
       deleteImage(imagePath);
     }
-    
+
     res.status(StatusCodes.OK).json({ message: MESSAGE.delete.succ });
   } catch (error) {
     console.error("Error deleting product media URL:", error);
@@ -219,9 +219,9 @@ const deleteProductMediaURL = async (req, res) => {
 
 export default {
   addProductMediaURL,
-  getAllProductMediaURLs,
+  getAllproductMediaUrl,
   getProductMediaURLById,
-  getProductMediaURLsByMediaId,
+  getproductMediaUrlByMediaId,
   updateProductMediaURL,
   deleteProductMediaURL,
 };

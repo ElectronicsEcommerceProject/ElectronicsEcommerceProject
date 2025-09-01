@@ -26,7 +26,7 @@ export default (sequelize) => {
     Cart.hasMany(models.CartItem, {
       foreignKey: "cart_id",
       onDelete: "CASCADE",
-      as: "cartItems",
+      as: "cartItem",
     }); // Cart has many items
   };
 

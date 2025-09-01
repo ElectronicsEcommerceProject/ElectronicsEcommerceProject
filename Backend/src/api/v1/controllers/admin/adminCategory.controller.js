@@ -146,14 +146,15 @@ const deleteCategory = async (req, res) => {
       include: [
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           attributes: ["base_variant_image_url"]
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           include: [{
             model: ProductMediaUrl,
+            as: "productMediaUrl",
             attributes: ["product_media_url"]
           }]
         }
@@ -171,12 +172,12 @@ const deleteCategory = async (req, res) => {
           }
         });
       }
-      
+
       // Add product media images
       if (product.media) {
         product.media.forEach(media => {
-          if (media.ProductMediaURLs) {
-            media.ProductMediaURLs.forEach(mediaUrl => {
+          if (media.productMediaUrl) {
+            media.productMediaUrl.forEach(mediaUrl => {
               if (mediaUrl.product_media_url) {
                 imagesToDelete.push(mediaUrl.product_media_url);
               }

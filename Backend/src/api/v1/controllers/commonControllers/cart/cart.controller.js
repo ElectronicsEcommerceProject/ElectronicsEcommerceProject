@@ -87,7 +87,7 @@ const getCartByUserId = async (req, res) => {
       include: [
         {
           model: CartItem,
-          as: "cartItems",
+          as: "cartItem",
           include: [{ model: Product, as: "product" }],
         },
       ],

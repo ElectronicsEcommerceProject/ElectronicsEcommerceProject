@@ -140,7 +140,7 @@ const getAdminDashboardData = async (req, res) => {
         include: [
           {
             model: OrderItem,
-            as: "orderItems",
+            as: "orderItem",
             attributes: [],
           },
         ],
@@ -209,18 +209,18 @@ const getAdminDashboardData = async (req, res) => {
     // Format Latest Orders
     const formattedCustomerOrders = latestCustomerOrders.length
       ? latestCustomerOrders.map((order) => ({
-          orderId: order.order_number,
-          status: order.order_status,
-          total: order.total_amount,
-        }))
+        orderId: order.order_number,
+        status: order.order_status,
+        total: order.total_amount,
+      }))
       : "No customer orders found.";
 
     const formattedRetailerOrders = latestRetailerOrders.length
       ? latestRetailerOrders.map((order) => ({
-          orderId: order.order_number,
-          status: order.order_status,
-          total: order.total_amount,
-        }))
+        orderId: order.order_number,
+        status: order.order_status,
+        total: order.total_amount,
+      }))
       : "No retailer orders found.";
 
     // Format the response

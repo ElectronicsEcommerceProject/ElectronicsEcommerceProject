@@ -25,7 +25,7 @@ export default (sequelize) => {
     Wishlist.hasMany(models.WishListItem, {
       foreignKey: "wishlist_id",
       onDelete: "CASCADE",
-      as: "wishlistItems",
+      as: "wishListItem",
     }); // Wishlist has many items
   };
 

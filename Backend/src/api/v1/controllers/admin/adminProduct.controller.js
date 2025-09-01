@@ -157,7 +157,7 @@ const getProductsByCategoryId = async (req, res) => {
         { model: Brand, as: "brand", attributes: ["brand_id", "name"] },
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           attributes: [
             "product_variant_id",
             "price",
@@ -167,11 +167,11 @@ const getProductsByCategoryId = async (req, res) => {
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           include: [
             {
               model: ProductMediaUrl,
-              as: "ProductMediaURLs",
+              as: "productMediaUrl",
               attributes: ["product_media_url", "media_type"],
               where: { media_type: "image" },
               required: false,
@@ -181,7 +181,7 @@ const getProductsByCategoryId = async (req, res) => {
         },
         {
           model: Coupon,
-          as: "coupons",
+          as: "coupon",
           where: {
             is_active: true,
             valid_from: { [Op.lte]: new Date() },
@@ -206,7 +206,7 @@ const getProductsByCategoryId = async (req, res) => {
         if (
           !leastDiscountCoupon ||
           parseFloat(c.discount_value) <
-            parseFloat(leastDiscountCoupon.discount_value)
+          parseFloat(leastDiscountCoupon.discount_value)
         ) {
           leastDiscountCoupon = c;
         }
@@ -231,10 +231,10 @@ const getProductsByCategoryId = async (req, res) => {
       let productImage = null;
       if (media && media.length > 0) {
         const mediaWithUrl = media.find(
-          (m) => m.ProductMediaURLs && m.ProductMediaURLs.length > 0
+          (m) => m.productMediaUrl && m.productMediaUrl.length > 0
         );
         if (mediaWithUrl) {
-          productImage = mediaWithUrl.ProductMediaURLs[0].product_media_url;
+          productImage = mediaWithUrl.productMediaUrl[0].product_media_url;
         }
       }
       if (!productImage && variants && variants.length > 0) {
@@ -416,20 +416,21 @@ const deleteProduct = async (req, res) => {
       include: [
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           attributes: ["base_variant_image_url"]
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           include: [{
             model: ProductMediaUrl,
+            as: "productMediaUrl",
             attributes: ["product_media_url"]
           }]
         }
       ]
     });
-    
+
     if (!product) {
       return res.status(StatusCodes.NOT_FOUND).json({
         message: MESSAGE.get.none,
@@ -438,7 +439,7 @@ const deleteProduct = async (req, res) => {
 
     // Collect all image paths to delete
     const imagesToDelete = [];
-    
+
     // Add variant images
     if (product.variants) {
       product.variants.forEach(variant => {
@@ -447,12 +448,12 @@ const deleteProduct = async (req, res) => {
         }
       });
     }
-    
+
     // Add product media images
     if (product.media) {
       product.media.forEach(media => {
-        if (media.ProductMediaURLs) {
-          media.ProductMediaURLs.forEach(mediaUrl => {
+        if (media.productMediaUrl) {
+          media.productMediaUrl.forEach(mediaUrl => {
             if (mediaUrl.product_media_url) {
               imagesToDelete.push(mediaUrl.product_media_url);
             }
@@ -504,7 +505,7 @@ const getProductsByBrandId = async (req, res) => {
         { model: Category, as: "category", attributes: ["name"] },
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           attributes: [
             "product_variant_id",
             "price",
@@ -526,11 +527,12 @@ const getProductsByBrandId = async (req, res) => {
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           attributes: ["product_media_id", "media_type"],
           include: [
             {
               model: ProductMediaUrl,
+              as: "productMediaUrl",
               attributes: ["product_media_url", "media_type"],
               where: { media_type: "image" }, // Only get images
               required: false,
@@ -540,7 +542,7 @@ const getProductsByBrandId = async (req, res) => {
         },
         {
           model: Coupon,
-          as: "coupons",
+          as: "coupon",
           where: {
             is_active: true,
             valid_from: { [Op.lte]: new Date() },
@@ -550,14 +552,14 @@ const getProductsByBrandId = async (req, res) => {
         },
         {
           model: DiscountRule,
-          as: "discountRules",
+          as: "discountRule",
           where: {
             is_active: true,
           },
           required: false,
         },
         { model: ProductReview, as: "reviews", attributes: ["rating"] },
-        { model: OrderItem, as: "orderItems", attributes: ["order_item_id"] },
+        { model: OrderItem, as: "orderItem", attributes: ["order_item_id"] },
       ],
     });
 
@@ -585,7 +587,7 @@ const getProductsByBrandId = async (req, res) => {
         if (
           !leastDiscountCoupon ||
           parseFloat(c.discount_value) <
-            parseFloat(leastDiscountCoupon.discount_value)
+          parseFloat(leastDiscountCoupon.discount_value)
         ) {
           leastDiscountCoupon = c;
         }
@@ -606,9 +608,8 @@ const getProductsByBrandId = async (req, res) => {
       }
 
       const couponDesc = leastDiscountCoupon
-        ? `${leastDiscountCoupon.discount_value}${
-            leastDiscountCoupon.type === "percentage" ? "%" : ""
-          } off with ${leastDiscountCoupon.code}`
+        ? `${leastDiscountCoupon.discount_value}${leastDiscountCoupon.type === "percentage" ? "%" : ""
+        } off with ${leastDiscountCoupon.code}`
         : null;
 
       // Retailer/bulk rule
@@ -616,9 +617,9 @@ const getProductsByBrandId = async (req, res) => {
       const bulkRule = rules.find((r) => r.rule_type === "bulk");
       const stockLevelDetailed = retailerRule
         ? {
-            minRetailerQty: retailerRule.min_retailer_quantity,
-            bulkDiscountQty: bulkRule?.bulk_discount_quantity || null,
-          }
+          minRetailerQty: retailerRule.min_retailer_quantity,
+          bulkDiscountQty: bulkRule?.bulk_discount_quantity || null,
+        }
         : null;
 
       // Stock & variant summary
@@ -662,12 +663,12 @@ const getProductsByBrandId = async (req, res) => {
       let productImage = null;
 
       if (media && media.length > 0) {
-        // Find the first media item that has ProductMediaURLs (note the capital U)
+        // Find the first media item that has productMediaUrl (note the capital U)
         const mediaWithUrl = media.find(
-          (m) => m.ProductMediaURLs && m.ProductMediaURLs.length > 0
+          (m) => m.productMediaUrl && m.productMediaUrl.length > 0
         );
         if (mediaWithUrl) {
-          productImage = mediaWithUrl.ProductMediaURLs[0].product_media_url;
+          productImage = mediaWithUrl.productMediaUrl[0].product_media_url;
         }
       }
 

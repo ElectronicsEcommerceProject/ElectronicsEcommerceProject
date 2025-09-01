@@ -93,17 +93,17 @@ export default (sequelize) => {
     // Relationship with OrderItem for stock analytics
     ProductVariant.hasMany(models.OrderItem, {
       foreignKey: "product_variant_id",
-      as: "orderItems",
+      as: "orderItem",
     });
 
     // Relationship with DiscountRule
     ProductVariant.hasMany(models.DiscountRule, {
       foreignKey: "product_variant_id",
-      as: "discountRules",
+      as: "discountRule",
     });
     ProductVariant.hasMany(models.StockAlert, {
       foreignKey: "product_variant_id",
-      as: "stockAlerts",
+      as: "stockAlert",
     });
   };
 

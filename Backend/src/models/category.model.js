@@ -50,7 +50,7 @@ export default (sequelize) => {
     Category.hasMany(models.Coupon, { foreignKey: "category_id" });
     Category.hasMany(models.DiscountRule, {
       foreignKey: "category_id",
-      as: "discountRules",
+      as: "discountRule",
     });
   };
 

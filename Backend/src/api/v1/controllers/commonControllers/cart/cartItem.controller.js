@@ -419,7 +419,7 @@ const getCartItemsByUserId = async (req, res) => {
         },
         {
           model: CartItem,
-          as: "cartItems",
+          as: "cartItem",
           include: [
             {
               model: Product,
@@ -437,11 +437,12 @@ const getCartItemsByUserId = async (req, res) => {
                 },
                 {
                   model: ProductMedia,
-                  as: "media",
+                  as: "productMedia",
                   attributes: ["product_media_id", "media_type"],
                   include: [
                     {
                       model: ProductMediaUrl,
+                      as: "productMediaUrl",
                       attributes: ["product_media_url"],
                     },
                   ],
@@ -486,6 +487,7 @@ const getCartItemsByUserId = async (req, res) => {
                   include: [
                     {
                       model: ProductMediaUrl,
+                      as: "productMediaUrl",
                       attributes: ["product_media_url"],
                     },
                   ],
@@ -577,7 +579,7 @@ const getCartItemsByUserId = async (req, res) => {
     });
 
     // Transform the data to match frontend expectations
-    const transformedCartItems = cart.cartItems.map((item) => {
+    const transformedCartItems = cart.cartItem.map((item) => {
       const product = item.product;
       const variant = item.variant;
 
@@ -588,19 +590,19 @@ const getCartItemsByUserId = async (req, res) => {
         // First priority: variant's base_variant_image_url field
         mainImage = convertToFullUrl(variant.base_variant_image_url, req);
       } else if (
-        variant?.ProductMedia?.[0]?.ProductMediaURLs?.[0]?.product_media_url
+        variant?.ProductMedia?.[0]?.productMediaUrl?.[0]?.product_media_url
       ) {
         // Second priority: variant's ProductMedia URL
         mainImage = convertToFullUrl(
-          variant.ProductMedia[0].ProductMediaURLs[0].product_media_url,
+          variant.ProductMedia[0].productMediaUrl[0].product_media_url,
           req
         );
       } else if (
-        product?.media?.[0]?.ProductMediaURLs?.[0]?.product_media_url
+        product?.media?.[0]?.productMediaUrl?.[0]?.product_media_url
       ) {
         // Third priority: product's ProductMedia URL
         mainImage = convertToFullUrl(
-          product.media[0].ProductMediaURLs[0].product_media_url,
+          product.media[0].productMediaUrl[0].product_media_url,
           req
         );
       }
@@ -622,19 +624,19 @@ const getCartItemsByUserId = async (req, res) => {
       const quantityDiscount =
         variant?.discount_quantity && variant?.discount_percentage
           ? {
-              threshold: variant.discount_quantity,
-              type: "percentage",
-              value: parseFloat(variant.discount_percentage),
-            }
+            threshold: variant.discount_quantity,
+            type: "percentage",
+            value: parseFloat(variant.discount_percentage),
+          }
           : null;
 
       const bulkDiscount =
         variant?.bulk_discount_quantity && variant?.bulk_discount_percentage
           ? {
-              threshold: variant.bulk_discount_quantity,
-              type: "percentage",
-              value: parseFloat(variant.bulk_discount_percentage),
-            }
+            threshold: variant.bulk_discount_quantity,
+            type: "percentage",
+            value: parseFloat(variant.bulk_discount_percentage),
+          }
           : null;
 
       // Calculate combined review count (product + variant reviews)
@@ -652,9 +654,9 @@ const getCartItemsByUserId = async (req, res) => {
           : 0;
         const variantRatingSum = variant?.ProductReviews
           ? variant.ProductReviews.reduce(
-              (sum, review) => sum + review.rating,
-              0
-            )
+            (sum, review) => sum + review.rating,
+            0
+          )
           : 0;
         combinedRating =
           (productRatingSum + variantRatingSum) / totalReviewCount;
@@ -676,25 +678,25 @@ const getCartItemsByUserId = async (req, res) => {
           rating_average: combinedRating.toFixed(1),
           variant: variant
             ? {
-                ...variant.toJSON(),
-                base_variant_image_url: (() => {
-                  // Use same priority logic for variant image
-                  if (variant.base_variant_image_url) {
-                    return convertToFullUrl(variant.base_variant_image_url, req);
-                  } else if (
-                    variant?.ProductMedia?.[0]?.ProductMediaURLs?.[0]
-                      ?.product_media_url
-                  ) {
-                    return convertToFullUrl(
-                      variant.ProductMedia[0].ProductMediaURLs[0].product_media_url,
-                      req
-                    );
-                  } else {
-                    return mainImage;
-                  }
-                })(),
-                attributes: variantAttributes,
-              }
+              ...variant.toJSON(),
+              base_variant_image_url: (() => {
+                // Use same priority logic for variant image
+                if (variant.base_variant_image_url) {
+                  return convertToFullUrl(variant.base_variant_image_url, req);
+                } else if (
+                  variant?.ProductMedia?.[0]?.productMediaUrl?.[0]
+                    ?.product_media_url
+                ) {
+                  return convertToFullUrl(
+                    variant.ProductMedia[0].productMediaUrl[0].product_media_url,
+                    req
+                  );
+                } else {
+                  return mainImage;
+                }
+              })(),
+              attributes: variantAttributes,
+            }
             : null,
         },
       };
@@ -845,7 +847,7 @@ const getCartItemsByNumberByUserId = async (req, res) => {
       include: [
         {
           model: CartItem,
-          as: "cartItems",
+          as: "cartItem",
         },
       ],
     });
@@ -858,7 +860,7 @@ const getCartItemsByNumberByUserId = async (req, res) => {
     }
 
     // Return the number of items in the cart
-    const itemCount = cart.cartItems.length;
+    const itemCount = cart.cartItem.length;
 
     res.status(StatusCodes.OK).json({
       success: true,
