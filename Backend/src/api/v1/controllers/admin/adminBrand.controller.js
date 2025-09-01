@@ -112,6 +112,7 @@ const deleteBrand = async (req, res) => {
           as: "media",
           include: [{
             model: ProductMediaUrl,
+            as: "productMediaUrls",
             attributes: ["product_media_url"]
           }]
         }

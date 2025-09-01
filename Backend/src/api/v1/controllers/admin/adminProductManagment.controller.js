@@ -179,6 +179,7 @@ const getProductManagementData = async (req, res) => {
         include: [
           {
             model: ProductMediaUrl,
+            as: "productMediaUrls",
             attributes: ["product_media_url", "media_type"],
           },
         ],
@@ -951,6 +952,7 @@ const deleteProductManagementData = async (req, res) => {
             as: "media",
             include: [{
               model: ProductMediaUrl,
+              as: "productMediaUrls",
               attributes: ["product_media_url"]
             }]
           }
@@ -1191,6 +1193,7 @@ const deleteProductManagementData = async (req, res) => {
             include: [
               {
                 model: ProductMediaUrl,
+                as: "productMediaUrls",
                 attributes: ["product_media_url"],
               },
             ],
@@ -1612,6 +1615,7 @@ const deleteProductManagementData = async (req, res) => {
             include: [
               {
                 model: ProductMediaUrl,
+                as: "productMediaUrls",
                 attributes: ["product_media_url"],
               },
             ],
