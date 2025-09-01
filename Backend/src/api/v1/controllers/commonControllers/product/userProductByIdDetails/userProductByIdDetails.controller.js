@@ -51,7 +51,7 @@ const userProductByIdDetails = async (req, res, next) => {
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           include: [
             {
               model: ProductMediaUrl,
@@ -67,7 +67,7 @@ const userProductByIdDetails = async (req, res, next) => {
         },
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           include: [
             {
               model: VariantAttributeValue,
@@ -146,7 +146,7 @@ const userProductByIdDetails = async (req, res, next) => {
 
         {
           model: DiscountRule,
-          as: "discountRules",
+          as: "discountRule",
           attributes: [
             "discount_rule_id",
             "rule_type",
@@ -162,7 +162,7 @@ const userProductByIdDetails = async (req, res, next) => {
         },
         {
           model: WishListItem,
-          as: "wishlistItems",
+          as: "wishListItem",
           include: [
             {
               model: Wishlist,
@@ -179,7 +179,7 @@ const userProductByIdDetails = async (req, res, next) => {
         },
         {
           model: CartItem,
-          as: "cartItems",
+          as: "cartItem",
           include: [
             {
               model: Cart,
@@ -288,7 +288,7 @@ const getRelatedProducts = async (
       },
       {
         model: ProductMedia,
-        as: "media",
+        as: "productMedia",
         include: [
           {
             model: ProductMediaUrl,
@@ -300,7 +300,7 @@ const getRelatedProducts = async (
       },
       {
         model: ProductVariant,
-        as: "variants",
+        as: "productVariant",
         attributes: ["price", "discount_percentage"],
         limit: 1,
       },

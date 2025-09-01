@@ -96,12 +96,12 @@ export default (sequelize) => {
     Product.belongsTo(models.User, { foreignKey: "created_by", as: "creator" });
     Product.hasMany(models.ProductVariant, {
       foreignKey: "product_id",
-      as: "variants",
+      as: "productVariant",
       onDelete: "CASCADE"
     });
     Product.hasMany(models.ProductMedia, {
       foreignKey: "product_id",
-      as: "media",
+      as: "productMedia",
       onDelete: "CASCADE"
     });
     Product.hasMany(models.ProductReview, {
@@ -110,27 +110,27 @@ export default (sequelize) => {
     });
     Product.hasMany(models.OrderItem, {
       foreignKey: "product_id",
-      as: "orderItems",
+      as: "orderItem",
     });
     Product.hasMany(models.CartItem, {
       foreignKey: "product_id",
-      as: "cartItems",
+      as: "cartItem",
     });
     Product.hasMany(models.WishListItem, {
       foreignKey: "product_id",
-      as: "wishlistItems",
+      as: "wishListItem",
     });
     Product.hasMany(models.Coupon, {
       foreignKey: "product_id",
-      as: "coupons",
+      as: "coupon",
     });
     Product.hasMany(models.DiscountRule, {
       foreignKey: "product_id",
-      as: "discountRules",
+      as: "discountRule",
     });
     Product.hasMany(models.StockAlert, {
       foreignKey: "product_id",
-      as: "stockAlerts",
+      as: "stockAlert",
     });
   };
 
@@ -142,12 +142,12 @@ export default (sequelize) => {
         include: [
           {
             model: sequelize.models.ProductVariant,
-            as: "variants",
+            as: "productVariant",
             attributes: ["base_variant_image_url"]
           },
           {
             model: sequelize.models.ProductMedia,
-            as: "media",
+            as: "productMedia",
             include: [{
               model: sequelize.models.ProductMediaUrl,
               as: "productMediaUrl",

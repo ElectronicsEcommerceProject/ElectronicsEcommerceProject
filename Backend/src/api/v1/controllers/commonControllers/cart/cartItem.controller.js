@@ -419,7 +419,7 @@ const getCartItemsByUserId = async (req, res) => {
         },
         {
           model: CartItem,
-          as: "cartItems",
+          as: "cartItem",
           include: [
             {
               model: Product,
@@ -437,7 +437,7 @@ const getCartItemsByUserId = async (req, res) => {
                 },
                 {
                   model: ProductMedia,
-                  as: "media",
+                  as: "productMedia",
                   attributes: ["product_media_id", "media_type"],
                   include: [
                     {
@@ -847,7 +847,7 @@ const getCartItemsByNumberByUserId = async (req, res) => {
       include: [
         {
           model: CartItem,
-          as: "cartItems",
+          as: "cartItem",
         },
       ],
     });

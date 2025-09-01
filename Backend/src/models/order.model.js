@@ -110,7 +110,7 @@ export default (sequelize) => {
     });
     Order.hasMany(models.OrderItem, {
       foreignKey: "order_id",
-      as: "orderItems",
+      as: "orderItem",
     });
     Order.hasMany(models.CouponRedemption, {
       foreignKey: "order_id",

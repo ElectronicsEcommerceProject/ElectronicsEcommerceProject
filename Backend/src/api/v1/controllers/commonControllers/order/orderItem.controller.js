@@ -129,7 +129,7 @@ export const getOrderItemsByOrderId = async (req, res) => {
           include: [
             {
               model: ProductMedia,
-              as: "media",
+              as: "productMedia",
               attributes: ["product_media_id", "media_type"],
               include: [
                 {
@@ -234,7 +234,7 @@ export const getOrderItemById = async (req, res) => {
           include: [
             {
               model: ProductMedia,
-              as: "media",
+              as: "productMedia",
               attributes: ["product_media_id", "media_type"],
               include: [
                 {

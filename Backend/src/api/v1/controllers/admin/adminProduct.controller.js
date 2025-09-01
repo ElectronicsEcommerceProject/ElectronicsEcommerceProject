@@ -157,7 +157,7 @@ const getProductsByCategoryId = async (req, res) => {
         { model: Brand, as: "brand", attributes: ["brand_id", "name"] },
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           attributes: [
             "product_variant_id",
             "price",
@@ -167,7 +167,7 @@ const getProductsByCategoryId = async (req, res) => {
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           include: [
             {
               model: ProductMediaUrl,
@@ -181,7 +181,7 @@ const getProductsByCategoryId = async (req, res) => {
         },
         {
           model: Coupon,
-          as: "coupons",
+          as: "coupon",
           where: {
             is_active: true,
             valid_from: { [Op.lte]: new Date() },
@@ -416,12 +416,12 @@ const deleteProduct = async (req, res) => {
       include: [
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           attributes: ["base_variant_image_url"]
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           include: [{
             model: ProductMediaUrl,
             as: "productMediaUrl",
@@ -505,7 +505,7 @@ const getProductsByBrandId = async (req, res) => {
         { model: Category, as: "category", attributes: ["name"] },
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           attributes: [
             "product_variant_id",
             "price",
@@ -527,7 +527,7 @@ const getProductsByBrandId = async (req, res) => {
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           attributes: ["product_media_id", "media_type"],
           include: [
             {
@@ -542,7 +542,7 @@ const getProductsByBrandId = async (req, res) => {
         },
         {
           model: Coupon,
-          as: "coupons",
+          as: "coupon",
           where: {
             is_active: true,
             valid_from: { [Op.lte]: new Date() },
@@ -552,14 +552,14 @@ const getProductsByBrandId = async (req, res) => {
         },
         {
           model: DiscountRule,
-          as: "discountRules",
+          as: "discountRule",
           where: {
             is_active: true,
           },
           required: false,
         },
         { model: ProductReview, as: "reviews", attributes: ["rating"] },
-        { model: OrderItem, as: "orderItems", attributes: ["order_item_id"] },
+        { model: OrderItem, as: "orderItem", attributes: ["order_item_id"] },
       ],
     });
 

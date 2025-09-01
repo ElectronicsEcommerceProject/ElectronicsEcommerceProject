@@ -35,7 +35,7 @@ export default (sequelize) => {
     Brand.hasMany(models.Coupon, { foreignKey: "brand_id" });
     Brand.hasMany(models.DiscountRule, {
       foreignKey: "brand_id",
-      as: "discountRules",
+      as: "discountRule",
     });
   };
 

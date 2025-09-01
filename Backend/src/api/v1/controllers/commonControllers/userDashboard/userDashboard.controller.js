@@ -46,7 +46,7 @@ const getUserDashboardProducts = async (req, res) => {
         },
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           attributes: ["product_variant_id", "stock_quantity"],
           include: [
             {
@@ -63,7 +63,7 @@ const getUserDashboardProducts = async (req, res) => {
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           include: [
             {
               model: ProductMediaUrl,
@@ -86,7 +86,7 @@ const getUserDashboardProducts = async (req, res) => {
         },
         {
           model: Coupon,
-          as: "coupons",
+          as: "coupon",
           where: {
             is_active: true,
             valid_from: { [Op.lte]: new Date() },
