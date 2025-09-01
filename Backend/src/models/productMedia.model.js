@@ -34,6 +34,7 @@ export default (sequelize) => {
   ProductMedia.associate = (models) => {
     ProductMedia.hasMany(models.ProductMediaUrl, {
       foreignKey: "product_media_id",
+      as: "productMediaUrls",
       onDelete: "CASCADE"
     });
 

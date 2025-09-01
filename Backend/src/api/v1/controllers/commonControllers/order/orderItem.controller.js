@@ -134,6 +134,7 @@ export const getOrderItemsByOrderId = async (req, res) => {
               include: [
                 {
                   model: ProductMediaUrl,
+                  as: "productMediaUrls",
                   attributes: ["product_media_url"],
                 },
               ],
@@ -152,6 +153,7 @@ export const getOrderItemsByOrderId = async (req, res) => {
               include: [
                 {
                   model: ProductMediaUrl,
+                  as: "productMediaUrls",
                   attributes: ["product_media_url"],
                 },
               ],
@@ -237,6 +239,7 @@ export const getOrderItemById = async (req, res) => {
               include: [
                 {
                   model: ProductMediaUrl,
+                  as: "productMediaUrls",
                   attributes: ["product_media_url"],
                 },
               ],
@@ -255,6 +258,7 @@ export const getOrderItemById = async (req, res) => {
               include: [
                 {
                   model: ProductMediaUrl,
+                  as: "productMediaUrls",
                   attributes: ["product_media_url"],
                 },
               ],

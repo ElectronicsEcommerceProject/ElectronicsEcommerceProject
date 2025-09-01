@@ -442,6 +442,7 @@ const getCartItemsByUserId = async (req, res) => {
                   include: [
                     {
                       model: ProductMediaUrl,
+                      as: "productMediaUrls",
                       attributes: ["product_media_url"],
                     },
                   ],
@@ -486,6 +487,7 @@ const getCartItemsByUserId = async (req, res) => {
                   include: [
                     {
                       model: ProductMediaUrl,
+                      as: "productMediaUrls",
                       attributes: ["product_media_url"],
                     },
                   ],
