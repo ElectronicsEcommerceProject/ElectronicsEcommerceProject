@@ -174,17 +174,17 @@ export const getOrderItemsByOrderId = async (req, res) => {
       if (variant?.base_variant_image_url) {
         mainImage = convertToFullUrl(variant.base_variant_image_url, req);
       } else if (
-        variant?.ProductMedia?.[0]?.ProductMediaURLs?.[0]?.product_media_url
+        variant?.ProductMedia?.[0]?.productMediaUrls?.[0]?.product_media_url
       ) {
         mainImage = convertToFullUrl(
-          variant.ProductMedia[0].ProductMediaURLs[0].product_media_url,
+          variant.ProductMedia[0].productMediaUrls[0].product_media_url,
           req
         );
       } else if (
-        product?.media?.[0]?.ProductMediaURLs?.[0]?.product_media_url
+        product?.media?.[0]?.productMediaUrls?.[0]?.product_media_url
       ) {
         mainImage = convertToFullUrl(
-          product.media[0].ProductMediaURLs[0].product_media_url,
+          product.media[0].productMediaUrls[0].product_media_url,
           req
         );
       }
@@ -197,11 +197,11 @@ export const getOrderItemsByOrderId = async (req, res) => {
         },
         productVariant: variant
           ? {
-              ...variant.toJSON(),
-              base_variant_image_url: variant.base_variant_image_url
-                ? convertToFullUrl(variant.base_variant_image_url, req)
-                : mainImage,
-            }
+            ...variant.toJSON(),
+            base_variant_image_url: variant.base_variant_image_url
+              ? convertToFullUrl(variant.base_variant_image_url, req)
+              : mainImage,
+          }
           : null,
       };
     });
@@ -282,15 +282,15 @@ export const getOrderItemById = async (req, res) => {
     if (variant?.base_variant_image_url) {
       mainImage = convertToFullUrl(variant.base_variant_image_url, req);
     } else if (
-      variant?.ProductMedia?.[0]?.ProductMediaURLs?.[0]?.product_media_url
+      variant?.ProductMedia?.[0]?.productMediaUrls?.[0]?.product_media_url
     ) {
       mainImage = convertToFullUrl(
-        variant.ProductMedia[0].ProductMediaURLs[0].product_media_url,
+        variant.ProductMedia[0].productMediaUrls[0].product_media_url,
         req
       );
-    } else if (product?.media?.[0]?.ProductMediaURLs?.[0]?.product_media_url) {
+    } else if (product?.media?.[0]?.productMediaUrls?.[0]?.product_media_url) {
       mainImage = convertToFullUrl(
-        product.media[0].ProductMediaURLs[0].product_media_url,
+        product.media[0].productMediaUrls[0].product_media_url,
         req
       );
     }
@@ -303,11 +303,11 @@ export const getOrderItemById = async (req, res) => {
       },
       productVariant: variant
         ? {
-            ...variant.toJSON(),
-            base_variant_image_url: variant.base_variant_image_url
-              ? convertToFullUrl(variant.base_variant_image_url, req)
-              : mainImage,
-          }
+          ...variant.toJSON(),
+          base_variant_image_url: variant.base_variant_image_url
+            ? convertToFullUrl(variant.base_variant_image_url, req)
+            : mainImage,
+        }
         : null,
     };
 
@@ -381,7 +381,7 @@ export const deleteOrderItem = async (req, res) => {
 
     // Check if this was the last item in the order
     const remainingItems = await OrderItem.count({ where: { order_id } });
-    
+
     if (remainingItems === 0) {
       // Delete the entire order if no items remain
       await Order.destroy({ where: { order_id } });
@@ -391,7 +391,7 @@ export const deleteOrderItem = async (req, res) => {
       if (order) {
         const newTotalAmount = parseFloat(order.total_amount) - itemFinalPrice;
         const newSubtotal = parseFloat(order.subtotal) - itemFinalPrice;
-        
+
         await order.update({
           total_amount: Math.max(0, newTotalAmount),
           subtotal: Math.max(0, newSubtotal)

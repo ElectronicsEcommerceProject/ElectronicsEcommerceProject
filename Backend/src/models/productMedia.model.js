@@ -59,16 +59,16 @@ export default (sequelize) => {
       const mediaWithUrls = await ProductMedia.findByPk(media.product_media_id, {
         include: [{
           model: sequelize.models.ProductMediaUrl,
-          as: "ProductMediaURLs",
+          as: "productMediaUrls",
           attributes: ["product_media_url"]
         }]
       });
-      
-      if (mediaWithUrls && mediaWithUrls.ProductMediaURLs) {
-        const imagesToDelete = mediaWithUrls.ProductMediaURLs
+
+      if (mediaWithUrls && mediaWithUrls.productMediaUrls) {
+        const imagesToDelete = mediaWithUrls.productMediaUrls
           .map(url => url.product_media_url)
           .filter(url => url);
-        
+
         deleteImages(imagesToDelete);
       }
     } catch (error) {

@@ -150,16 +150,16 @@ export default (sequelize) => {
             as: "media",
             include: [{
               model: sequelize.models.ProductMediaUrl,
-              as: "ProductMediaURLs",
+              as: "productMediaUrls",
               attributes: ["product_media_url"]
             }]
           }
         ]
       });
-      
+
       if (productWithImages) {
         const imagesToDelete = [];
-        
+
         // Collect variant images
         if (productWithImages.variants) {
           productWithImages.variants.forEach(variant => {
@@ -168,12 +168,12 @@ export default (sequelize) => {
             }
           });
         }
-        
+
         // Collect product media images
         if (productWithImages.media) {
           productWithImages.media.forEach(media => {
-            if (media.ProductMediaURLs) {
-              media.ProductMediaURLs.forEach(mediaUrl => {
+            if (media.productMediaUrls) {
+              media.productMediaUrls.forEach(mediaUrl => {
                 if (mediaUrl.product_media_url) {
                   imagesToDelete.push(mediaUrl.product_media_url);
                 }
@@ -181,7 +181,7 @@ export default (sequelize) => {
             }
           });
         }
-        
+
         // Delete images from filesystem
         deleteImages(imagesToDelete);
       }

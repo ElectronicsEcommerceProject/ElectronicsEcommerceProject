@@ -129,12 +129,12 @@ const deleteBrand = async (req, res) => {
           }
         });
       }
-      
+
       // Add product media images
       if (product.media) {
         product.media.forEach(media => {
-          if (media.ProductMediaURLs) {
-            media.ProductMediaURLs.forEach(mediaUrl => {
+          if (media.productMediaUrls) {
+            media.productMediaUrls.forEach(mediaUrl => {
               if (mediaUrl.product_media_url) {
                 imagesToDelete.push(mediaUrl.product_media_url);
               }
