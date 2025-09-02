@@ -424,6 +424,7 @@ const deleteProduct = async (req, res) => {
           as: "media",
           include: [{
             model: productMediaUrl,
+            as: "productMediaUrl",
             attributes: ["product_media_url"]
           }]
         }
@@ -531,6 +532,7 @@ const getProductsByBrandId = async (req, res) => {
           include: [
             {
               model: productMediaUrl,
+              as: "productMediaUrl",
               attributes: ["product_media_url", "media_type"],
               where: { media_type: "image" }, // Only get images
               required: false,
