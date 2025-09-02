@@ -171,7 +171,7 @@ const getProductsByCategoryId = async (req, res) => {
           include: [
             {
               model: productMediaUrl,
-              as: "productMediaUrls",
+              as: "productMediaUrl",
               attributes: ["product_media_url", "media_type"],
               where: { media_type: "image" },
               required: false,
@@ -231,10 +231,10 @@ const getProductsByCategoryId = async (req, res) => {
       let productImage = null;
       if (media && media.length > 0) {
         const mediaWithUrl = media.find(
-          (m) => m.productMediaUrls && m.productMediaUrls.length > 0
+          (m) => m.productMediaUrl && m.productMediaUrl.length > 0
         );
         if (mediaWithUrl) {
-          productImage = mediaWithUrl.productMediaUrls[0].product_media_url;
+          productImage = mediaWithUrl.productMediaUrl[0].product_media_url;
         }
       }
       if (!productImage && variants && variants.length > 0) {
@@ -451,8 +451,8 @@ const deleteProduct = async (req, res) => {
     // Add product media images
     if (product.media) {
       product.media.forEach(media => {
-        if (media.productMediaUrls) {
-          media.productMediaUrls.forEach(mediaUrl => {
+        if (media.productMediaUrl) {
+          media.productMediaUrl.forEach(mediaUrl => {
             if (mediaUrl.product_media_url) {
               imagesToDelete.push(mediaUrl.product_media_url);
             }
@@ -661,12 +661,12 @@ const getProductsByBrandId = async (req, res) => {
       let productImage = null;
 
       if (media && media.length > 0) {
-        // Find the first media item that has productMediaUrls (note the capital U)
+        // Find the first media item that has productMediaUrl (note the capital U)
         const mediaWithUrl = media.find(
-          (m) => m.productMediaUrls && m.productMediaUrls.length > 0
+          (m) => m.productMediaUrl && m.productMediaUrl.length > 0
         );
         if (mediaWithUrl) {
-          productImage = mediaWithUrl.productMediaUrls[0].product_media_url;
+          productImage = mediaWithUrl.productMediaUrl[0].product_media_url;
         }
       }
 

@@ -134,6 +134,7 @@ export const getOrderItemsByOrderId = async (req, res) => {
               include: [
                 {
                   model: productMediaUrl,
+                  as: "productMediaUrl",
                   attributes: ["product_media_url"],
                 },
               ],
@@ -152,6 +153,7 @@ export const getOrderItemsByOrderId = async (req, res) => {
               include: [
                 {
                   model: productMediaUrl,
+                  as: "productMediaUrl",
                   attributes: ["product_media_url"],
                 },
               ],
@@ -174,17 +176,17 @@ export const getOrderItemsByOrderId = async (req, res) => {
       if (variant?.base_variant_image_url) {
         mainImage = convertToFullUrl(variant.base_variant_image_url, req);
       } else if (
-        variant?.ProductMedia?.[0]?.productMediaUrls?.[0]?.product_media_url
+        variant?.ProductMedia?.[0]?.productMediaUrl?.[0]?.product_media_url
       ) {
         mainImage = convertToFullUrl(
-          variant.ProductMedia[0].productMediaUrls[0].product_media_url,
+          variant.ProductMedia[0].productMediaUrl[0].product_media_url,
           req
         );
       } else if (
-        product?.media?.[0]?.productMediaUrls?.[0]?.product_media_url
+        product?.media?.[0]?.productMediaUrl?.[0]?.product_media_url
       ) {
         mainImage = convertToFullUrl(
-          product.media[0].productMediaUrls[0].product_media_url,
+          product.media[0].productMediaUrl[0].product_media_url,
           req
         );
       }
@@ -237,6 +239,7 @@ export const getOrderItemById = async (req, res) => {
               include: [
                 {
                   model: productMediaUrl,
+                  as: "productMediaUrl",
                   attributes: ["product_media_url"],
                 },
               ],
@@ -255,6 +258,7 @@ export const getOrderItemById = async (req, res) => {
               include: [
                 {
                   model: productMediaUrl,
+                  as: "productMediaUrl",
                   attributes: ["product_media_url"],
                 },
               ],
@@ -282,15 +286,15 @@ export const getOrderItemById = async (req, res) => {
     if (variant?.base_variant_image_url) {
       mainImage = convertToFullUrl(variant.base_variant_image_url, req);
     } else if (
-      variant?.ProductMedia?.[0]?.productMediaUrls?.[0]?.product_media_url
+      variant?.ProductMedia?.[0]?.productMediaUrl?.[0]?.product_media_url
     ) {
       mainImage = convertToFullUrl(
-        variant.ProductMedia[0].productMediaUrls[0].product_media_url,
+        variant.ProductMedia[0].productMediaUrl[0].product_media_url,
         req
       );
-    } else if (product?.media?.[0]?.productMediaUrls?.[0]?.product_media_url) {
+    } else if (product?.media?.[0]?.productMediaUrl?.[0]?.product_media_url) {
       mainImage = convertToFullUrl(
-        product.media[0].productMediaUrls[0].product_media_url,
+        product.media[0].productMediaUrl[0].product_media_url,
         req
       );
     }

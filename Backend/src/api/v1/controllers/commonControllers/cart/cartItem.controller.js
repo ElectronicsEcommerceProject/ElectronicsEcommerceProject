@@ -442,6 +442,7 @@ const getCartItemsByUserId = async (req, res) => {
                   include: [
                     {
                       model: productMediaUrl,
+                      as: "productMediaUrl",
                       attributes: ["product_media_url"],
                     },
                   ],
@@ -486,6 +487,7 @@ const getCartItemsByUserId = async (req, res) => {
                   include: [
                     {
                       model: productMediaUrl,
+                      as: "productMediaUrl",
                       attributes: ["product_media_url"],
                     },
                   ],
@@ -588,19 +590,19 @@ const getCartItemsByUserId = async (req, res) => {
         // First priority: variant's base_variant_image_url field
         mainImage = convertToFullUrl(variant.base_variant_image_url, req);
       } else if (
-        variant?.ProductMedia?.[0]?.productMediaUrls?.[0]?.product_media_url
+        variant?.ProductMedia?.[0]?.productMediaUrl?.[0]?.product_media_url
       ) {
         // Second priority: variant's ProductMedia URL
         mainImage = convertToFullUrl(
-          variant.ProductMedia[0].productMediaUrls[0].product_media_url,
+          variant.ProductMedia[0].productMediaUrl[0].product_media_url,
           req
         );
       } else if (
-        product?.media?.[0]?.productMediaUrls?.[0]?.product_media_url
+        product?.media?.[0]?.productMediaUrl?.[0]?.product_media_url
       ) {
         // Third priority: product's ProductMedia URL
         mainImage = convertToFullUrl(
-          product.media[0].productMediaUrls[0].product_media_url,
+          product.media[0].productMediaUrl[0].product_media_url,
           req
         );
       }
@@ -677,7 +679,7 @@ const getCartItemsByUserId = async (req, res) => {
           // Transform media URLs to full URLs
           media: product.media?.map(mediaItem => ({
             ...mediaItem.toJSON(),
-            productMediaUrls: mediaItem.productMediaUrls?.map(urlItem => ({
+            productMediaUrl: mediaItem.productMediaUrl?.map(urlItem => ({
               ...urlItem.toJSON(),
               product_media_url: convertToFullUrl(urlItem.product_media_url, req)
             })) || []
@@ -689,7 +691,7 @@ const getCartItemsByUserId = async (req, res) => {
               // Transform ProductMedia URLs
               ProductMedia: variant.ProductMedia?.map(mediaItem => ({
                 ...mediaItem.toJSON(),
-                productMediaUrls: mediaItem.productMediaUrls?.map(urlItem => ({
+                productMediaUrl: mediaItem.productMediaUrl?.map(urlItem => ({
                   ...urlItem.toJSON(),
                   product_media_url: convertToFullUrl(urlItem.product_media_url, req)
                 })) || []
@@ -704,7 +706,7 @@ const getCartItemsByUserId = async (req, res) => {
           base_variant_image_url: convertToFullUrl(variant.base_variant_image_url, req),
           ProductMedia: variant.ProductMedia?.map(mediaItem => ({
             ...mediaItem.toJSON(),
-            productMediaUrls: mediaItem.productMediaUrls?.map(urlItem => ({
+            productMediaUrl: mediaItem.productMediaUrl?.map(urlItem => ({
               ...urlItem.toJSON(),
               product_media_url: convertToFullUrl(urlItem.product_media_url, req)
             })) || []
