@@ -179,6 +179,7 @@ const getProductManagementData = async (req, res) => {
         include: [
           {
             model: productMediaUrl,
+            as: "productMediaUrl",
             attributes: ["product_media_url", "media_type"],
           },
         ],
