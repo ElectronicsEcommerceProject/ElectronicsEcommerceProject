@@ -602,6 +602,11 @@ const formatProductResponse = (
   const mediaWithUrls =
     productData.productMedia?.map((productMedia) => ({
       ...productMedia,
+      productMediaUrl:
+        productMedia.productMediaUrl?.map((url) => ({
+          ...url,
+          product_media_url: convertToFullUrl(url.product_media_url, req),
+        })) || [],
       urls:
         productMedia.productMediaUrl?.map((url) => ({
           ...url,
@@ -677,10 +682,14 @@ const formatProductResponse = (
 
       return {
         ...review,
+        reviewer: {
+          ...review.reviewer,
+          profileImage_url: convertToFullUrl(review.reviewer?.profileImage_url, req),
+        },
         user: {
           user_id: review.reviewer?.user_id || null,
           name: review.reviewer?.name || "Anonymous User",
-          profileImage_url: review.reviewer?.profileImage_url || null,
+          profileImage_url: convertToFullUrl(review.reviewer?.profileImage_url, req),
           verified_buyer: review.is_verified_purchase || false,
           totalReviews: 0, // Could be enhanced with actual count
           helpfulVotes: 0, // Could be enhanced with actual count
