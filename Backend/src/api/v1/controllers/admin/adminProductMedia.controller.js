@@ -3,7 +3,7 @@ import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
 import { deleteImages } from "../../../../utils/imageUtils.js";
 
-const { ProductMedia, Product, ProductVariant, User, ProductMediaUrl } = db;
+const { ProductMedia, Product, ProductVariant, User, productMediaUrl } = db;
 
 // Add a new product media
 const addProductMedia = async (req, res) => {
@@ -245,12 +245,12 @@ const deleteProductMedia = async (req, res) => {
 
     const productMedia = await ProductMedia.findByPk(id, {
       include: [{
-        model: ProductMediaUrl,
-        as: "ProductMediaURLs",
+        model: productMediaUrl,
+        as: "productMediaUrls",
         attributes: ["product_media_url"]
       }]
     });
-    
+
     if (!productMedia) {
       return res
         .status(StatusCodes.NOT_FOUND)
@@ -259,8 +259,8 @@ const deleteProductMedia = async (req, res) => {
 
     // Collect image URLs to delete
     const imagesToDelete = [];
-    if (productMedia.ProductMediaURLs) {
-      productMedia.ProductMediaURLs.forEach(mediaUrl => {
+    if (productMedia.productMediaUrls) {
+      productMedia.productMediaUrls.forEach(mediaUrl => {
         if (mediaUrl.product_media_url) {
           imagesToDelete.push(mediaUrl.product_media_url);
         }
@@ -268,7 +268,7 @@ const deleteProductMedia = async (req, res) => {
     }
 
     await productMedia.destroy();
-    
+
     // Delete associated images from filesystem
     deleteImages(imagesToDelete);
 

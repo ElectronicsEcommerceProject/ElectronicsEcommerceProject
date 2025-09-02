@@ -11,7 +11,7 @@ const {
   Product,
   ProductVariant,
   ProductMedia,
-  ProductMediaUrl,
+  productMediaUrl,
   ProductReview,
   Order,
   OrderItem,
@@ -88,7 +88,7 @@ const getMultipleProductImages = async (productIds, req) => {
     });
 
     const mediaIds = productMediaList.map((media) => media.product_media_id);
-    const mediaUrls = await ProductMediaUrl.findAll({
+    const mediaUrls = await productMediaUrl.findAll({
       where: { product_media_id: { [Op.in]: mediaIds } },
       attributes: ["product_media_id", "product_media_url"],
     });
@@ -633,7 +633,7 @@ const getProductsAnalyticsData = async (req, res) => {
       ],
       group: [
         "product.product_id",
-        "product.category.category_id", 
+        "product.category.category_id",
         "product.category.name"
       ],
       raw: true,
@@ -924,10 +924,10 @@ const getCouponsAnalyticsData = async (req, res) => {
       usageRate:
         entry.usage_limit > 0
           ? (
-              ((parseInt(entry["CouponRedemptions.redemptionCount"]) || 0) /
-                entry.usage_limit) *
-              100
-            ).toFixed(2)
+            ((parseInt(entry["CouponRedemptions.redemptionCount"]) || 0) /
+              entry.usage_limit) *
+            100
+          ).toFixed(2)
           : "N/A",
     }));
 
@@ -1048,13 +1048,12 @@ const getCouponsAnalyticsData = async (req, res) => {
         discountValue: parseFloat(entry.discount_value) || 0,
         usageLimit: parseInt(entry.usage_limit) || 0,
         expiryDate: formatDateToString(entry.valid_to),
-        details: `${
-          entry.type === "percentage"
+        details: `${entry.type === "percentage"
             ? `${entry.discount_value}% off`
             : entry.type === "fixed"
-            ? `$${entry.discount_value} off`
-            : "Unknown discount type"
-        }`,
+              ? `$${entry.discount_value} off`
+              : "Unknown discount type"
+          }`,
       }));
 
     // Redemption Trends Over Time

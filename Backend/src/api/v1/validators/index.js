@@ -48,8 +48,8 @@ import {
   variantAttributeValueUpdateValidator,
 } from "./product/productVariantAttributeValues/productVariantAttributeValues.validators.js";
 import {
-  productMediaURLValidator,
-  productMediaURLUpdateValidator,
+  productMediaUrlValidator,
+  productMediaUrlUpdateValidator,
 } from "./product/productMediaUrl/productMediaUrl.validators.js";
 
 import {
@@ -198,8 +198,8 @@ export const validators = {
     id: address_id,
   },
   productMediaUrl: {
-    productMediaUrlValidator: productMediaURLValidator,
-    productMediaUrlUpdateValidator: productMediaURLUpdateValidator,
+    productMediaUrlValidator: productMediaUrlValidator,
+    productMediaUrlUpdateValidator: productMediaUrlUpdateValidator,
     id: address_id,
   },
   stockAlert: {

@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for models/productMediaURL.model.js</title>
+    <title>Code coverage report for models/productMediaUrl.model.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../prettify.css" />
     <link rel="stylesheet" href="../base.css" />
@@ -19,7 +19,7 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../index.html">All files</a> / <a href="index.html">models</a> productMediaURL.model.js</h1>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">models</a> productMediaUrl.model.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
@@ -162,8 +162,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { DataTypes } from "sequelize";
 &nbsp;
 export default (sequelize) =&gt; {
-  const ProductMediaURL = sequelize.define(
-    "ProductMediaURL",
+  const productMediaUrl = sequelize.define(
+    "productMediaUrl",
     {
       product_media_url_id: {
         type: DataTypes.UUID,
@@ -180,7 +180,7 @@ export default (sequelize) =&gt; {
       updated_by: { type: DataTypes.UUID, allowNull: true }, // Changed to UUID
     },
     {
-      tableName: "ProductMediaURL",
+      tableName: "productMediaUrl",
       timestamps: true,
       indexes: [
         { fields: ["product_media_url_id"] },
@@ -191,21 +191,21 @@ export default (sequelize) =&gt; {
     }
   );
 &nbsp;
-  ProductMediaURL.associate = (models) =&gt; {
-    ProductMediaURL.belongsTo(models.ProductMedia, {
+  productMediaUrl.associate = (models) =&gt; {
+    productMediaUrl.belongsTo(models.ProductMedia, {
       foreignKey: "product_media_id",
     });
-    ProductMediaURL.belongsTo(models.User, {
+    productMediaUrl.belongsTo(models.User, {
       foreignKey: "created_by",
       as: "creator",
     });
-    ProductMediaURL.belongsTo(models.User, {
+    productMediaUrl.belongsTo(models.User, {
       foreignKey: "updated_by",
       as: "updater",
     });
   };
 &nbsp;
-  return ProductMediaURL;
+  return productMediaUrl;
 };
 &nbsp;</pre></td></tr></table></pre>
 

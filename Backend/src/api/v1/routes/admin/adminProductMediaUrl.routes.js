@@ -5,7 +5,7 @@ import {
   validator,
 } from "../../../../middleware/index.js";
 import { validators } from "../../validators/index.js";
-import { adminProductMediaURLController } from "../../controllers/index.js";
+import { adminproductMediaUrlController } from "../../controllers/index.js";
 const router = express.Router();
 
 // Add a new product media URL
@@ -14,14 +14,14 @@ router.post(
   verifyJwtToken,
   adminRoleCheck,
   validator(validators.productMediaUrl.productMediaUrlValidator, null),
-  adminProductMediaURLController.addProductMediaURL
+  adminproductMediaUrlController.addproductMediaUrl
 );
 
 // Get all product media URLs
 router.get(
   "/",
   verifyJwtToken,
-  adminProductMediaURLController.getAllProductMediaURLs
+  adminproductMediaUrlController.getAllproductMediaUrls
 );
 
 // Get product media URL by ID
@@ -29,14 +29,14 @@ router.get(
   "/:id",
   verifyJwtToken,
   validator(validators.productMediaUrl.id, "params"),
-  adminProductMediaURLController.getProductMediaURLById
+  adminproductMediaUrlController.getproductMediaUrlById
 );
 
 // Get product media URLs by media ID
 router.get(
   "/media/:mediaId",
   verifyJwtToken,
-  adminProductMediaURLController.getProductMediaURLsByMediaId
+  adminproductMediaUrlController.getproductMediaUrlsByMediaId
 );
 
 // Update a product media URL
@@ -46,7 +46,7 @@ router.put(
   adminRoleCheck,
   validator(validators.productMediaUrl.id, "params"),
   validator(validators.productMediaUrl.productMediaUrlUpdateValidator, null),
-  adminProductMediaURLController.updateProductMediaURL
+  adminproductMediaUrlController.updateproductMediaUrl
 );
 
 // Delete a product media URL
@@ -55,7 +55,7 @@ router.delete(
   verifyJwtToken,
   adminRoleCheck,
   validator(validators.productMediaUrl.id, "params"),
-  adminProductMediaURLController.deleteProductMediaURL
+  adminproductMediaUrlController.deleteproductMediaUrl
 );
 
 export default router;

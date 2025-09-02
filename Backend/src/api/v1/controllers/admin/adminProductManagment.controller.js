@@ -20,7 +20,7 @@ const {
   AttributeValue,
   VariantAttributeValue,
   ProductMedia,
-  ProductMediaUrl,
+  productMediaUrl,
   User,
   CartItem,
   WishlistItem,
@@ -178,7 +178,7 @@ const getProductManagementData = async (req, res) => {
         ],
         include: [
           {
-            model: ProductMediaUrl,
+            model: productMediaUrl,
             attributes: ["product_media_url", "media_type"],
           },
         ],
@@ -229,7 +229,7 @@ const getProductManagementData = async (req, res) => {
           (m) => m.product_id === product.product_id
         );
         const mediaUrl =
-          media?.ProductMediaURLs?.[0]?.product_media_url || null;
+          media?.productMediaUrls?.[0]?.product_media_url || null;
 
         return {
           id: product.product_id,
@@ -310,7 +310,7 @@ const getProductManagementData = async (req, res) => {
         product_variant_id: media.product_variant_id,
         media_type: media.media_type,
         urls:
-          media.ProductMediaURLs?.map((url) => ({
+          media.productMediaUrls?.map((url) => ({
             product_media_url: url.product_media_url,
             media_type: url.media_type,
           })) || [],
@@ -621,25 +621,25 @@ const addProductManagmentData = async (req, res) => {
           productImageUrl ||
           `uploads/product_images/${media.media_file.fileName}`;
 
-        // Check if ProductMediaUrl already exists for this ProductMedia
-        const existingProductMediaUrl = await ProductMediaUrl.findOne({
+        // Check if productMediaUrl already exists for this ProductMedia
+        const existingproductMediaUrl = await productMediaUrl.findOne({
           where: { product_media_id: productMediaRecord.product_media_id },
           transaction: t,
         });
 
-        if (existingProductMediaUrl) {
-          // Update existing ProductMediaUrl
-          await existingProductMediaUrl.update(
+        if (existingproductMediaUrl) {
+          // Update existing productMediaUrl
+          await existingproductMediaUrl.update(
             {
               product_media_url: mediaUrl,
               media_type: product?.media_type || media?.media_type || "image",
             },
             { transaction: t }
           );
-          productMediaUrlRecord = existingProductMediaUrl;
+          productMediaUrlRecord = existingproductMediaUrl;
         } else {
-          // Create new ProductMediaUrl
-          productMediaUrlRecord = await ProductMediaUrl.create(
+          // Create new productMediaUrl
+          productMediaUrlRecord = await productMediaUrl.create(
             {
               product_media_id: productMediaRecord.product_media_id,
               product_media_url: mediaUrl,
@@ -829,9 +829,9 @@ const deleteProductManagementData = async (req, res) => {
           (media) => media.product_media_id
         );
 
-        // Step 5: Delete related ProductMediaUrls
+        // Step 5: Delete related productMediaUrls
         if (productMediaIds.length > 0) {
-          await ProductMediaUrl.destroy({
+          await productMediaUrl.destroy({
             where: {
               product_media_id: {
                 [Sequelize.Op.in]: productMediaIds,
@@ -950,7 +950,7 @@ const deleteProductManagementData = async (req, res) => {
             model: ProductMedia,
             as: "media",
             include: [{
-              model: ProductMediaUrl,
+              model: productMediaUrl,
               attributes: ["product_media_url"]
             }]
           }
@@ -959,7 +959,7 @@ const deleteProductManagementData = async (req, res) => {
 
       // Collect all image paths
       const imagesToDelete = [];
-      
+
       // Add variant images
       if (productWithImages.variants) {
         productWithImages.variants.forEach(variant => {
@@ -968,12 +968,12 @@ const deleteProductManagementData = async (req, res) => {
           }
         });
       }
-      
+
       // Add product media images
       if (productWithImages.media) {
         productWithImages.media.forEach(media => {
-          if (media.ProductMediaURLs) {
-            media.ProductMediaURLs.forEach(mediaUrl => {
+          if (media.productMediaUrls) {
+            media.productMediaUrls.forEach(mediaUrl => {
               if (mediaUrl.product_media_url) {
                 imagesToDelete.push(mediaUrl.product_media_url);
               }
@@ -1055,9 +1055,9 @@ const deleteProductManagementData = async (req, res) => {
             (media) => media.product_media_id
           );
 
-          // Step 2.5: Delete related ProductMediaUrls
+          // Step 2.5: Delete related productMediaUrls
           if (productMediaIds.length > 0) {
-            await ProductMediaUrl.destroy({
+            await productMediaUrl.destroy({
               where: {
                 product_media_id: {
                   [Sequelize.Op.in]: productMediaIds,
@@ -1190,7 +1190,7 @@ const deleteProductManagementData = async (req, res) => {
             as: "media",
             include: [
               {
-                model: ProductMediaUrl,
+                model: productMediaUrl,
                 attributes: ["product_media_url"],
               },
             ],
@@ -1213,8 +1213,8 @@ const deleteProductManagementData = async (req, res) => {
         // Add product media images
         if (product.media) {
           product.media.forEach((media) => {
-            if (media.ProductMediaURLs) {
-              media.ProductMediaURLs.forEach((mediaUrl) => {
+            if (media.productMediaUrls) {
+              media.productMediaUrls.forEach((mediaUrl) => {
                 if (mediaUrl.product_media_url) {
                   imagesToDelete.push(mediaUrl.product_media_url);
                 }
@@ -1315,9 +1315,9 @@ const deleteProductManagementData = async (req, res) => {
               (media) => media.product_media_id
             );
 
-            // Step 2.2.5: Delete related ProductMediaUrls
+            // Step 2.2.5: Delete related productMediaUrls
             if (productMediaIds.length > 0) {
-              await ProductMediaUrl.destroy({
+              await productMediaUrl.destroy({
                 where: {
                   product_media_id: {
                     [Sequelize.Op.in]: productMediaIds,
@@ -1611,7 +1611,7 @@ const deleteProductManagementData = async (req, res) => {
             as: "media",
             include: [
               {
-                model: ProductMediaUrl,
+                model: productMediaUrl,
                 attributes: ["product_media_url"],
               },
             ],
@@ -1644,8 +1644,8 @@ const deleteProductManagementData = async (req, res) => {
           console.log(`🔍 Found ${product.media.length} media items`);
           product.media.forEach((media) => {
             console.log('🔍 Media object:', media);
-            if (media.ProductMediaURLs) {
-              media.ProductMediaURLs.forEach((mediaUrl) => {
+            if (media.productMediaUrls) {
+              media.productMediaUrls.forEach((mediaUrl) => {
                 if (mediaUrl.product_media_url) {
                   console.log(
                     `🔍 Adding media image: ${mediaUrl.product_media_url}`
@@ -1654,7 +1654,7 @@ const deleteProductManagementData = async (req, res) => {
                 }
               });
             } else {
-              console.log('🔍 No ProductMediaURLs found for this media');
+              console.log('🔍 No productMediaUrls found for this media');
             }
           });
         }
@@ -1763,9 +1763,9 @@ const deleteProductManagementData = async (req, res) => {
               (media) => media.product_media_id
             );
 
-            // Step 2.2.5: Delete related ProductMediaUrls
+            // Step 2.2.5: Delete related productMediaUrls
             if (productMediaIds.length > 0) {
-              await ProductMediaUrl.destroy({
+              await productMediaUrl.destroy({
                 where: {
                   product_media_id: {
                     [Sequelize.Op.in]: productMediaIds,

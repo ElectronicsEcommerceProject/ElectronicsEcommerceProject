@@ -19,7 +19,7 @@ const {
   Brand,
   Category,
   ProductMedia,
-  ProductMediaUrl,
+  productMediaUrl,
   VariantAttributeValue,
   AttributeValue,
   Attribute,
@@ -441,7 +441,7 @@ const getCartItemsByUserId = async (req, res) => {
                   attributes: ["product_media_id", "media_type"],
                   include: [
                     {
-                      model: ProductMediaUrl,
+                      model: productMediaUrl,
                       attributes: ["product_media_url"],
                     },
                   ],
@@ -485,7 +485,7 @@ const getCartItemsByUserId = async (req, res) => {
                   attributes: ["product_media_id", "media_type"],
                   include: [
                     {
-                      model: ProductMediaUrl,
+                      model: productMediaUrl,
                       attributes: ["product_media_url"],
                     },
                   ],
@@ -588,19 +588,19 @@ const getCartItemsByUserId = async (req, res) => {
         // First priority: variant's base_variant_image_url field
         mainImage = convertToFullUrl(variant.base_variant_image_url, req);
       } else if (
-        variant?.ProductMedia?.[0]?.ProductMediaURLs?.[0]?.product_media_url
+        variant?.ProductMedia?.[0]?.productMediaUrls?.[0]?.product_media_url
       ) {
         // Second priority: variant's ProductMedia URL
         mainImage = convertToFullUrl(
-          variant.ProductMedia[0].ProductMediaURLs[0].product_media_url,
+          variant.ProductMedia[0].productMediaUrls[0].product_media_url,
           req
         );
       } else if (
-        product?.media?.[0]?.ProductMediaURLs?.[0]?.product_media_url
+        product?.media?.[0]?.productMediaUrls?.[0]?.product_media_url
       ) {
         // Third priority: product's ProductMedia URL
         mainImage = convertToFullUrl(
-          product.media[0].ProductMediaURLs[0].product_media_url,
+          product.media[0].productMediaUrls[0].product_media_url,
           req
         );
       }
@@ -622,19 +622,19 @@ const getCartItemsByUserId = async (req, res) => {
       const quantityDiscount =
         variant?.discount_quantity && variant?.discount_percentage
           ? {
-              threshold: variant.discount_quantity,
-              type: "percentage",
-              value: parseFloat(variant.discount_percentage),
-            }
+            threshold: variant.discount_quantity,
+            type: "percentage",
+            value: parseFloat(variant.discount_percentage),
+          }
           : null;
 
       const bulkDiscount =
         variant?.bulk_discount_quantity && variant?.bulk_discount_percentage
           ? {
-              threshold: variant.bulk_discount_quantity,
-              type: "percentage",
-              value: parseFloat(variant.bulk_discount_percentage),
-            }
+            threshold: variant.bulk_discount_quantity,
+            type: "percentage",
+            value: parseFloat(variant.bulk_discount_percentage),
+          }
           : null;
 
       // Calculate combined review count (product + variant reviews)
@@ -652,9 +652,9 @@ const getCartItemsByUserId = async (req, res) => {
           : 0;
         const variantRatingSum = variant?.ProductReviews
           ? variant.ProductReviews.reduce(
-              (sum, review) => sum + review.rating,
-              0
-            )
+            (sum, review) => sum + review.rating,
+            0
+          )
           : 0;
         combinedRating =
           (productRatingSum + variantRatingSum) / totalReviewCount;
@@ -674,29 +674,42 @@ const getCartItemsByUserId = async (req, res) => {
           rating_count: totalReviewCount,
           // Override rating_average with combined average
           rating_average: combinedRating.toFixed(1),
+          // Transform media URLs to full URLs
+          media: product.media?.map(mediaItem => ({
+            ...mediaItem.toJSON(),
+            productMediaUrls: mediaItem.productMediaUrls?.map(urlItem => ({
+              ...urlItem.toJSON(),
+              product_media_url: convertToFullUrl(urlItem.product_media_url, req)
+            })) || []
+          })) || [],
           variant: variant
             ? {
-                ...variant.toJSON(),
-                base_variant_image_url: (() => {
-                  // Use same priority logic for variant image
-                  if (variant.base_variant_image_url) {
-                    return convertToFullUrl(variant.base_variant_image_url, req);
-                  } else if (
-                    variant?.ProductMedia?.[0]?.ProductMediaURLs?.[0]
-                      ?.product_media_url
-                  ) {
-                    return convertToFullUrl(
-                      variant.ProductMedia[0].ProductMediaURLs[0].product_media_url,
-                      req
-                    );
-                  } else {
-                    return mainImage;
-                  }
-                })(),
-                attributes: variantAttributes,
-              }
+              ...variant.toJSON(),
+              base_variant_image_url: convertToFullUrl(variant.base_variant_image_url, req),
+              // Transform ProductMedia URLs
+              ProductMedia: variant.ProductMedia?.map(mediaItem => ({
+                ...mediaItem.toJSON(),
+                productMediaUrls: mediaItem.productMediaUrls?.map(urlItem => ({
+                  ...urlItem.toJSON(),
+                  product_media_url: convertToFullUrl(urlItem.product_media_url, req)
+                })) || []
+              })) || [],
+              attributes: variantAttributes,
+            }
             : null,
         },
+        // Transform variant URLs at root level
+        variant: variant ? {
+          ...variant.toJSON(),
+          base_variant_image_url: convertToFullUrl(variant.base_variant_image_url, req),
+          ProductMedia: variant.ProductMedia?.map(mediaItem => ({
+            ...mediaItem.toJSON(),
+            productMediaUrls: mediaItem.productMediaUrls?.map(urlItem => ({
+              ...urlItem.toJSON(),
+              product_media_url: convertToFullUrl(urlItem.product_media_url, req)
+            })) || []
+          })) || []
+        } : null,
       };
     });
 

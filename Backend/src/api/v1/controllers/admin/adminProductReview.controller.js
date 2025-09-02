@@ -8,7 +8,7 @@ const {
   ProductVariant,
   User,
   ProductMedia,
-  ProductMediaUrl,
+  productMediaUrl,
 } = db;
 
 /**
@@ -77,7 +77,7 @@ export const getAllProductReviews = async (req, res) => {
               mediaId = productMedia.product_media_id;
 
               // Then, find the media URL
-              const mediaUrl = await ProductMediaUrl.findOne({
+              const mediaUrl = await productMediaUrl.findOne({
                 where: { product_media_id: productMedia.product_media_id },
               });
 
@@ -277,7 +277,7 @@ export const getReviewById = async (req, res) => {
           mediaId = productMedia.product_media_id;
 
           // Then, find the media URL
-          const mediaUrl = await ProductMediaUrl.findOne({
+          const mediaUrl = await productMediaUrl.findOne({
             where: { product_media_id: productMedia.product_media_id },
           });
 

@@ -16,7 +16,7 @@ const {
   ProductReview,
   OrderItem,
   ProductMedia,
-  ProductMediaUrl,
+  productMediaUrl,
   AttributeValue,
   Attribute,
   VariantAttributeValue,
@@ -54,8 +54,8 @@ const userProductByIdDetails = async (req, res, next) => {
           as: "media",
           include: [
             {
-              model: ProductMediaUrl,
-              as: "ProductMediaURLs",
+              model: productMediaUrl,
+              as: "productMediaUrls",
               attributes: [
                 "product_media_url_id",
                 "product_media_url",
@@ -291,8 +291,8 @@ const getRelatedProducts = async (
         as: "media",
         include: [
           {
-            model: ProductMediaUrl,
-            as: "ProductMediaURLs",
+            model: productMediaUrl,
+            as: "productMediaUrls",
             attributes: ["product_media_url"],
           },
         ],
@@ -452,7 +452,7 @@ const getRelatedProducts = async (
           : "0.0",
         ratingCount: plainProduct.rating_count || 0,
         image: convertToFullUrl(
-          plainProduct.media?.[0]?.ProductMediaURLs?.[0]?.product_media_url,
+          plainProduct.media?.[0]?.productMediaUrls?.[0]?.product_media_url,
           req
         ),
         brand: plainProduct.brand,
@@ -603,7 +603,7 @@ const formatProductResponse = (
     productData.media?.map((media) => ({
       ...media,
       urls:
-        media.ProductMediaURLs?.map((url) => ({
+        media.productMediaUrls?.map((url) => ({
           ...url,
           product_media_url: convertToFullUrl(url.product_media_url, req),
         })) || [],
@@ -662,34 +662,34 @@ const formatProductResponse = (
   const averageRating =
     totalReviewCount > 0
       ? (
-          approvedReviews.reduce((sum, review) => sum + review.rating, 0) /
-          totalReviewCount
-        ).toFixed(1)
+        approvedReviews.reduce((sum, review) => sum + review.rating, 0) /
+        totalReviewCount
+      ).toFixed(1)
       : "0.0";
 
   // Process reviews with proper user information and variant details
   const processedReviews = Array.isArray(productData.reviews)
     ? productData.reviews.map((review) => {
-        // Find the variant for this review
-        const reviewVariant = productData.variants?.find(
-          (v) => v.product_variant_id === review.product_variant_id
-        );
+      // Find the variant for this review
+      const reviewVariant = productData.variants?.find(
+        (v) => v.product_variant_id === review.product_variant_id
+      );
 
-        return {
-          ...review,
-          user: {
-            user_id: review.reviewer?.user_id || null,
-            name: review.reviewer?.name || "Anonymous User",
-            profileImage_url: review.reviewer?.profileImage_url || null,
-            verified_buyer: review.is_verified_purchase || false,
-            totalReviews: 0, // Could be enhanced with actual count
-            helpfulVotes: 0, // Could be enhanced with actual count
-          },
-          variant: reviewVariant?.description || "Standard",
-          helpfulCount: 0, // Could be enhanced with actual helpful votes
-          reportCount: 0, // Could be enhanced with actual reports
-        };
-      })
+      return {
+        ...review,
+        user: {
+          user_id: review.reviewer?.user_id || null,
+          name: review.reviewer?.name || "Anonymous User",
+          profileImage_url: review.reviewer?.profileImage_url || null,
+          verified_buyer: review.is_verified_purchase || false,
+          totalReviews: 0, // Could be enhanced with actual count
+          helpfulVotes: 0, // Could be enhanced with actual count
+        },
+        variant: reviewVariant?.description || "Standard",
+        helpfulCount: 0, // Could be enhanced with actual helpful votes
+        reportCount: 0, // Could be enhanced with actual reports
+      };
+    })
     : [];
 
   // Format the final response
@@ -742,36 +742,36 @@ const formatProductResponse = (
     wishlistInfo:
       productData.wishlistItems && productData.wishlistItems.length > 0
         ? {
-            wishlist_id:
-              productData.wishlistItems[0]?.wishlist?.wishlist_id || null,
-            user_id: productData.wishlistItems[0]?.wishlist?.user_id || null,
-            items: productData.wishlistItems.map((item) => ({
-              wish_list_item_id: item.wish_list_item_id,
-              product_id: item.product_id,
-              product_variant_id: item.product_variant_id,
-              createdAt: item.createdAt,
-            })),
-          }
+          wishlist_id:
+            productData.wishlistItems[0]?.wishlist?.wishlist_id || null,
+          user_id: productData.wishlistItems[0]?.wishlist?.user_id || null,
+          items: productData.wishlistItems.map((item) => ({
+            wish_list_item_id: item.wish_list_item_id,
+            product_id: item.product_id,
+            product_variant_id: item.product_variant_id,
+            createdAt: item.createdAt,
+          })),
+        }
         : null,
 
     // Cart information
     cartInfo:
       productData.cartItems && productData.cartItems.length > 0
         ? {
-            cart_id: productData.cartItems[0]?.cart?.cart_id || null,
-            user_id: productData.cartItems[0]?.cart?.user_id || null,
-            items: productData.cartItems.map((item) => ({
-              cart_item_id: item.cart_item_id,
-              product_id: item.product_id,
-              product_variant_id: item.product_variant_id,
-              total_quantity: item.total_quantity,
-              discount_quantity: item.discount_quantity,
-              price_at_time: item.price_at_time,
-              discount_applied: item.discount_applied,
-              final_price: item.final_price,
-              createdAt: item.createdAt,
-            })),
-          }
+          cart_id: productData.cartItems[0]?.cart?.cart_id || null,
+          user_id: productData.cartItems[0]?.cart?.user_id || null,
+          items: productData.cartItems.map((item) => ({
+            cart_item_id: item.cart_item_id,
+            product_id: item.product_id,
+            product_variant_id: item.product_variant_id,
+            total_quantity: item.total_quantity,
+            discount_quantity: item.discount_quantity,
+            price_at_time: item.price_at_time,
+            discount_applied: item.discount_applied,
+            final_price: item.final_price,
+            createdAt: item.createdAt,
+          })),
+        }
         : null,
 
     // Relevant coupons for this product (excluding cart-level coupons)

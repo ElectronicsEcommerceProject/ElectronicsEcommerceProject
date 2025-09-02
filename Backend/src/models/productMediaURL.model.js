@@ -2,8 +2,8 @@ import { DataTypes } from "sequelize";
 import { deleteImage } from "../utils/imageUtils.js";
 
 export default (sequelize) => {
-  const ProductMediaURL = sequelize.define(
-    "ProductMediaURL",
+  const productMediaUrl = sequelize.define(
+    "productMediaUrl",
     {
       product_media_url_id: {
         type: DataTypes.UUID,
@@ -20,7 +20,7 @@ export default (sequelize) => {
       updated_by: { type: DataTypes.UUID, allowNull: true }, // Changed to UUID
     },
     {
-      tableName: "ProductMediaURL",
+      tableName: "productMediaUrl",
       timestamps: true,
       indexes: [
         { fields: ["product_media_url_id"] },
@@ -31,22 +31,22 @@ export default (sequelize) => {
     }
   );
 
-  ProductMediaURL.associate = (models) => {
-    ProductMediaURL.belongsTo(models.ProductMedia, {
+  productMediaUrl.associate = (models) => {
+    productMediaUrl.belongsTo(models.ProductMedia, {
       foreignKey: "product_media_id",
     });
-    ProductMediaURL.belongsTo(models.User, {
+    productMediaUrl.belongsTo(models.User, {
       foreignKey: "created_by",
       as: "creator",
     });
-    ProductMediaURL.belongsTo(models.User, {
+    productMediaUrl.belongsTo(models.User, {
       foreignKey: "updated_by",
       as: "updater",
     });
   };
 
   // Add hooks for automatic image cleanup
-  ProductMediaURL.addHook('beforeDestroy', async (mediaUrl, options) => {
+  productMediaUrl.addHook('beforeDestroy', async (mediaUrl, options) => {
     try {
       if (mediaUrl.product_media_url) {
         deleteImage(mediaUrl.product_media_url);
@@ -56,5 +56,5 @@ export default (sequelize) => {
     }
   });
 
-  return ProductMediaURL;
+  return productMediaUrl;
 };
