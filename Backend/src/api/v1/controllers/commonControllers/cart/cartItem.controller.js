@@ -579,7 +579,7 @@ const getCartItemsByUserId = async (req, res) => {
     });
 
     // Transform the data to match frontend expectations
-    const transformedCartItems = cart.cartItems.map((item) => {
+    const transformedCartItems = cart.cartItem.map((item) => {
       const product = item.product;
       const variant = item.variant;
 
@@ -860,7 +860,7 @@ const getCartItemsByNumberByUserId = async (req, res) => {
     }
 
     // Return the number of items in the cart
-    const itemCount = cart.cartItems.length;
+    const itemCount = cart.cartItem.length;
 
     res.status(StatusCodes.OK).json({
       success: true,
