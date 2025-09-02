@@ -71,7 +71,7 @@ export default (sequelize) => {
     User.hasMany(models.Address, { foreignKey: "user_id", as: "addresses" });
     User.hasMany(models.ProductReview, {
       foreignKey: "user_id",
-      as: "reviews",
+      as: "productReviews",
     });
     User.hasMany(models.CouponRedemption, {
       foreignKey: "user_id",
@@ -91,7 +91,7 @@ export default (sequelize) => {
       if (user.changed('profileImage_url') && user._previousDataValues.profileImage_url) {
         const oldImageUrl = user._previousDataValues.profileImage_url;
         const newImageUrl = user.profileImage_url;
-        
+
         // Only delete if the URL actually changed and old URL exists
         if (oldImageUrl !== newImageUrl && oldImageUrl) {
           deleteImage(oldImageUrl);

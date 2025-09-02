@@ -81,7 +81,7 @@ const getUserDashboardProducts = async (req, res) => {
         },
         {
           model: ProductReview,
-          as: "reviews",
+          as: "productReviews",
           attributes: ["rating"],
         },
         {

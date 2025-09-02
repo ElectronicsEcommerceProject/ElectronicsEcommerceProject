@@ -110,7 +110,7 @@ const userProductByIdDetails = async (req, res, next) => {
         },
         {
           model: ProductReview,
-          as: "reviews",
+          as: "productReviews",
           where: {
             review_action: "approve",
           },
