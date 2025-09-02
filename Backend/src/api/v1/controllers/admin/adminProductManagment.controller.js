@@ -960,7 +960,7 @@ const deleteProductManagementData = async (req, res) => {
         include: [
           {
             model: ProductVariant,
-            as: "variants",
+            as: "productVariant",
             attributes: ["base_variant_image_url"]
           },
           {
@@ -1202,7 +1202,7 @@ const deleteProductManagementData = async (req, res) => {
         include: [
           {
             model: ProductVariant,
-            as: "variants",
+            as: "productVariant",
             attributes: ["base_variant_image_url"],
           },
           {
@@ -1626,7 +1626,7 @@ const deleteProductManagementData = async (req, res) => {
         include: [
           {
             model: ProductVariant,
-            as: "variants",
+            as: "productVariant",
             attributes: ["base_variant_image_url"],
           },
           {

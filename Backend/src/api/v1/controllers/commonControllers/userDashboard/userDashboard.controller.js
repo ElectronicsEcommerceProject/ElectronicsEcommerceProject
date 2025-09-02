@@ -84,7 +84,7 @@ const getUserDashboardProducts = async (req, res) => {
         },
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           attributes: ["product_variant_id", "stock_quantity"],
           include: [
             {
@@ -142,7 +142,7 @@ const getUserDashboardProducts = async (req, res) => {
 
     // Transform data into desired format
     const data = products.map((prod) => {
-      const variant = prod.variants[0];
+      const variant = prod.productVariant[0];
       const basePrice = parseFloat(prod.base_price);
       const sellingPrice = basePrice;
 
@@ -182,7 +182,7 @@ const getUserDashboardProducts = async (req, res) => {
       const features = [];
       const attributeMap = new Map();
 
-      prod.variants.forEach((variant) => {
+      prod.productVariant.forEach((variant) => {
         if (variant.AttributeValues?.length) {
           variant.AttributeValues.forEach((attrValue) => {
             if (attrValue.Attribute) {

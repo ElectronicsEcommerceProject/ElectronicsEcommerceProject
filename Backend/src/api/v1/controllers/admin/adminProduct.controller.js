@@ -215,7 +215,7 @@ const getProductsByCategoryId = async (req, res) => {
         { model: Brand, as: "brand", attributes: ["brand_id", "name"] },
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           attributes: [
             "product_variant_id",
             "price",
@@ -254,8 +254,8 @@ const getProductsByCategoryId = async (req, res) => {
     const data = products.map((prod) => {
       const basePrice = parseFloat(prod.base_price);
       const coupons = prod.coupons || [];
-      const variants = prod.variants || [];
-      const reviews = prod.reviews || [];
+      const variants = prod.productVariant || [];
+      const reviews = prod.productReviews || [];
       const productMedia = prod.productMedia || [];
 
       // Calculate discount from coupons
@@ -509,7 +509,7 @@ const deleteProduct = async (req, res) => {
       include: [
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           attributes: ["base_variant_image_url"]
         },
         {
@@ -534,8 +534,8 @@ const deleteProduct = async (req, res) => {
     const imagesToDelete = [];
 
     // Add variant images
-    if (product.variants) {
-      product.variants.forEach(variant => {
+    if (product.productVariant) {
+      product.productVariant.forEach(variant => {
         if (variant.base_variant_image_url) {
           imagesToDelete.push(variant.base_variant_image_url);
         }
@@ -625,7 +625,7 @@ const getProductsByBrandId = async (req, res) => {
         { model: Category, as: "category", attributes: ["name"] },
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           attributes: [
             "product_variant_id",
             "price",
@@ -688,8 +688,8 @@ const getProductsByBrandId = async (req, res) => {
       const basePrice = parseFloat(prod.base_price);
       const coupons = prod.coupons || []; // Fixed: use correct alias
       const rules = prod.discountRules || []; // Fixed: use correct alias
-      const variants = prod.variants || []; // Fixed: use correct alias
-      const reviews = prod.reviews || []; // Fixed: use correct alias
+      const variants = prod.productVariant || []; // Fixed: use correct alias
+      const reviews = prod.productReviews || []; // Fixed: use correct alias
       const orders = prod.orderItems || []; // Fixed: use correct alias
       const productMedia = prod.productMedia || []; // Product productMedia
 
