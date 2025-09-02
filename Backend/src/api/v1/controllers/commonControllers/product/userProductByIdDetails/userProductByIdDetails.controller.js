@@ -133,7 +133,7 @@ const userProductByIdDetails = async (req, res, next) => {
         },
         {
           model: ProductReview,
-          as: "reviews",
+          as: "productReviews",
           where: {
             review_action: "approve",
           },
@@ -745,8 +745,8 @@ const formatProductResponse = (
     originalPrice > 0 ? (discountAmount / originalPrice) * 100 : 0;
 
   // Calculate review statistics
-  const approvedReviews = Array.isArray(productData.reviews)
-    ? productData.reviews.filter((review) => review.review_action === "approve")
+  const approvedReviews = Array.isArray(productData.productReviews)
+    ? productData.productReviews.filter((review) => review.review_action === "approve")
     : [];
 
   const totalReviewCount = approvedReviews.length;
@@ -759,8 +759,8 @@ const formatProductResponse = (
       : "0.0";
 
   // Process reviews with proper user information and variant details
-  const processedReviews = Array.isArray(productData.reviews)
-    ? productData.reviews.map((review) => {
+  const processedReviews = Array.isArray(productData.productReviews)
+    ? productData.productReviews.map((review) => {
       // Find the variant for this review
       const reviewVariant = productData.variants?.find(
         (v) => v.product_variant_id === review.product_variant_id
@@ -795,6 +795,7 @@ const formatProductResponse = (
     rating_count: totalReviewCount,
     productMedia: mediaWithUrls,
     variants: variantsWithAttributes,
+    productReviews: processedReviews,
     reviews: processedReviews,
 
     // Legacy format for UI compatibility - Frontend expects these fields

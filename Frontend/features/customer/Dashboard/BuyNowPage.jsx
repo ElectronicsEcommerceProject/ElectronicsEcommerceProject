@@ -401,10 +401,10 @@ const BuyNowPage = () => {
 
   // Get filtered and sorted reviews
   const getFilteredAndSortedReviews = () => {
-    if (!mainProduct.reviews) return [];
+    if (!mainProduct.productReviews) return [];
 
     const filteredReviews = filterReviewsByRating(
-      mainProduct.reviews,
+      mainProduct.productReviews,
       selectedRatingFilter
     );
     const sortedReviews = sortReviews(filteredReviews, selectedSortFilter);
@@ -495,14 +495,14 @@ const BuyNowPage = () => {
       // Tiered pricing: discount applies only to qualifying units
       const discountAmount = (basePrice * regularDiscountPercent) / 100;
       const discountedPrice = basePrice - discountAmount;
-      
+
       // Calculate price for discounted units and remaining units at base price
       const discountedUnits = regularDiscountQty;
       const baseUnits = quantity - regularDiscountQty;
-      
+
       totalQuantityPrice = (discountedPrice * discountedUnits) + (basePrice * baseUnits);
       averagePricePerUnit = totalQuantityPrice / quantity;
-      
+
       quantityDiscount = {
         type: "quantity_discount",
         percentage: regularDiscountPercent,
@@ -609,11 +609,10 @@ const BuyNowPage = () => {
                     <div
                       className={`
                 absolute inset-0 border-2 pointer-events-none
-                ${
-                  hoveredThumbnail === index
-                    ? "border-blue-500"
-                    : "border-transparent"
-                }
+                ${hoveredThumbnail === index
+                          ? "border-blue-500"
+                          : "border-transparent"
+                        }
               `}
                     ></div>
 
@@ -677,9 +676,8 @@ const BuyNowPage = () => {
             <div
               className="hidden xl:block absolute left-full top-0 ml-4 w-[900px] h-[700px] border-2 border-gray-200 bg-white shadow-xl z-50 overflow-hidden"
               style={{
-                backgroundImage: `url(${
-                  currentImage || mainProduct.mainImage || ""
-                })`,
+                backgroundImage: `url(${currentImage || mainProduct.mainImage || ""
+                  })`,
                 backgroundRepeat: "no-repeat",
                 backgroundSize: `${zoomLevel * 100}% ${zoomLevel * 100}%`,
                 backgroundPosition: `${bgPosXPercent}% ${bgPosYPercent}%`,
@@ -853,11 +851,10 @@ const BuyNowPage = () => {
                 }
               }}
               disabled={addingToCart}
-              className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors text-base ${
-                addingToCart
+              className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors text-base ${addingToCart
                   ? "bg-gray-400 text-gray-600 cursor-not-allowed"
                   : "bg-orange-600 text-white hover:bg-orange-700"
-              }`}
+                }`}
             >
               {addingToCart ? "ADDING..." : `ADD TO CART (${quantity})`}
             </button>
@@ -961,7 +958,7 @@ const BuyNowPage = () => {
                     } else {
                       throw new Error(
                         orderItemResponse?.message ||
-                          "Failed to create order item"
+                        "Failed to create order item"
                       );
                     }
                   } else {
@@ -977,11 +974,10 @@ const BuyNowPage = () => {
                 }
               }}
               disabled={buyingNow}
-              className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors text-base ${
-                buyingNow
+              className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors text-base ${buyingNow
                   ? "bg-gray-400 text-gray-600 cursor-not-allowed"
                   : "bg-green-600 text-white hover:bg-green-700"
-              }`}
+                }`}
             >
               {(() => {
                 if (buyingNow) return "ORDERING...";
@@ -1054,10 +1050,10 @@ const BuyNowPage = () => {
           </h1>
           <div className="flex items-center gap-3 mb-4">
             <span className="bg-green-600 text-white text-xs sm:text-sm px-2 py-1 rounded">
-              {mainProduct.rating} ★
+              {mainProduct.rating_average || "0.0"} ★
             </span>
             <span className="text-gray-600 text-xs sm:text-sm">
-              {mainProduct.rating_count} reviews
+              {mainProduct.rating_count || 0} reviews
             </span>
           </div>
           <div className="mt-4">
@@ -1080,8 +1076,8 @@ const BuyNowPage = () => {
             <h3 className="font-semibold text-sm sm:text-base">Variant</h3>
             <div className="flex flex-wrap gap-2 mt-2">
               {mainProduct.variants &&
-              Array.isArray(mainProduct.variants) &&
-              mainProduct.variants.length > 0 ? (
+                Array.isArray(mainProduct.variants) &&
+                mainProduct.variants.length > 0 ? (
                 mainProduct.variants.map((variantData, index) => {
                   const displayName =
                     variantData.sku ||
@@ -1093,11 +1089,10 @@ const BuyNowPage = () => {
                   return (
                     <button
                       key={variantData.product_variant_id}
-                      className={`px-4 py-2 border rounded-lg text-sm font-medium ${
-                        selectedVariant === variantName
+                      className={`px-4 py-2 border rounded-lg text-sm font-medium ${selectedVariant === variantName
                           ? "bg-blue-500 text-white border-blue-500"
                           : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                      } transition-colors`}
+                        } transition-colors`}
                       onClick={() => setSelectedVariant(variantName)}
                     >
                       <div className="text-center">
@@ -1394,10 +1389,9 @@ const BuyNowPage = () => {
 
                   if (discountResult.couponDiscount) {
                     discountParts.push(
-                      `Coupon ${discountResult.couponDiscount.code} (${
-                        discountResult.couponDiscount.type === "percentage"
-                          ? discountResult.couponDiscount.value + "%"
-                          : "₹" + discountResult.couponDiscount.value
+                      `Coupon ${discountResult.couponDiscount.code} (${discountResult.couponDiscount.type === "percentage"
+                        ? discountResult.couponDiscount.value + "%"
+                        : "₹" + discountResult.couponDiscount.value
                       })`
                     );
                   }
@@ -1482,8 +1476,8 @@ const BuyNowPage = () => {
             </h3>
             <div className="mt-3 space-y-3">
               {mainProduct.coupons &&
-              Array.isArray(mainProduct.coupons) &&
-              mainProduct.coupons.length > 0 ? (
+                Array.isArray(mainProduct.coupons) &&
+                mainProduct.coupons.length > 0 ? (
                 mainProduct.coupons.map((coupon) => (
                   <div
                     key={coupon.coupon_id}
@@ -1579,33 +1573,30 @@ const BuyNowPage = () => {
                               );
                             } else {
                               alert(
-                                `Failed to apply coupon: ${
-                                  response.message || "Unknown error"
+                                `Failed to apply coupon: ${response.message || "Unknown error"
                                 }`
                               );
                             }
                           } catch (error) {
                             console.error("Error applying coupon:", error);
                             alert(
-                              `An error occurred while applying the coupon: ${
-                                error.message || "Unknown error"
+                              `An error occurred while applying the coupon: ${error.message || "Unknown error"
                               }`
                             );
                           }
                         }}
-                        className={`px-3 py-1 rounded text-sm transition-colors ${
-                          appliedCouponData &&
-                          appliedCouponData.coupon_id === coupon.coupon_id
+                        className={`px-3 py-1 rounded text-sm transition-colors ${appliedCouponData &&
+                            appliedCouponData.coupon_id === coupon.coupon_id
                             ? "bg-gray-400 text-gray-600 cursor-not-allowed"
                             : "bg-green-600 text-white hover:bg-green-700"
-                        }`}
+                          }`}
                         disabled={
                           appliedCouponData &&
                           appliedCouponData.coupon_id === coupon.coupon_id
                         }
                       >
                         {appliedCouponData &&
-                        appliedCouponData.coupon_id === coupon.coupon_id
+                          appliedCouponData.coupon_id === coupon.coupon_id
                           ? "Applied"
                           : "Apply"}
                       </button>
@@ -1687,35 +1678,32 @@ const BuyNowPage = () => {
 
                 {/* Personalized Coupons List */}
                 {mainProduct.personalizedCoupons &&
-                Array.isArray(mainProduct.personalizedCoupons) &&
-                mainProduct.personalizedCoupons.length > 0 ? (
+                  Array.isArray(mainProduct.personalizedCoupons) &&
+                  mainProduct.personalizedCoupons.length > 0 ? (
                   mainProduct.personalizedCoupons.map((coupon) => (
                     <div
                       key={coupon.coupon_id}
-                      className={`border rounded-lg p-4 ${
-                        coupon.applicable
+                      className={`border rounded-lg p-4 ${coupon.applicable
                           ? "border-green-300 bg-green-50"
                           : "border-gray-300 bg-gray-50"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <span
-                              className={`px-3 py-1 rounded-full text-sm font-mono ${
-                                coupon.applicable
+                              className={`px-3 py-1 rounded-full text-sm font-mono ${coupon.applicable
                                   ? "bg-green-600 text-white"
                                   : "bg-gray-400 text-white"
-                              }`}
+                                }`}
                             >
                               {coupon.code}
                             </span>
                             <span
-                              className={`px-2 py-1 rounded text-xs ${
-                                coupon.type === "percentage"
+                              className={`px-2 py-1 rounded text-xs ${coupon.type === "percentage"
                                   ? "bg-blue-100 text-blue-800"
                                   : "bg-orange-100 text-orange-800"
-                              }`}
+                                }`}
                             >
                               {coupon.type === "percentage"
                                 ? `${coupon.discount_value}% OFF`
@@ -1863,11 +1851,10 @@ const BuyNowPage = () => {
                       {[...Array(5)].map((_, i) => (
                         <span
                           key={i}
-                          className={`text-lg ${
-                            i < Math.round(mainProduct.rating_average)
+                          className={`text-lg ${i < Math.round(mainProduct.rating_average)
                               ? "text-yellow-400"
                               : "text-gray-300"
-                          }`}
+                            }`}
                         >
                           ★
                         </span>
@@ -1881,10 +1868,10 @@ const BuyNowPage = () => {
                     </span>
                   </div>
                   <div className="text-sm text-gray-500">
-                    {mainProduct.reviews && Array.isArray(mainProduct.reviews)
-                      ? mainProduct.reviews.filter(
-                          (r) => r.is_verified_purchase
-                        ).length
+                    {mainProduct.productReviews && Array.isArray(mainProduct.productReviews)
+                      ? mainProduct.productReviews.filter(
+                        (r) => r.is_verified_purchase
+                      ).length
                       : 0}{" "}
                     verified purchases
                   </div>
@@ -1892,7 +1879,7 @@ const BuyNowPage = () => {
                   {selectedRatingFilter !== "all" && (
                     <div className="text-sm text-blue-600 font-medium">
                       Showing {filteredAndSortedReviews.length} of{" "}
-                      {mainProduct.reviews?.length || 0} reviews (
+                      {mainProduct.productReviews?.length || 0} reviews (
                       {selectedRatingFilter} star
                       {selectedRatingFilter !== "1" ? "s" : ""})
                     </div>
@@ -1927,16 +1914,16 @@ const BuyNowPage = () => {
                 </select>
                 {(selectedRatingFilter !== "all" ||
                   selectedSortFilter !== "newest") && (
-                  <button
-                    onClick={() => {
-                      setSelectedRatingFilter("all");
-                      setSelectedSortFilter("newest");
-                    }}
-                    className="px-3 py-1 text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 border border-blue-300 rounded-md transition-colors"
-                  >
-                    Clear Filters
-                  </button>
-                )}
+                    <button
+                      onClick={() => {
+                        setSelectedRatingFilter("all");
+                        setSelectedSortFilter("newest");
+                      }}
+                      className="px-3 py-1 text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 border border-blue-300 rounded-md transition-colors"
+                    >
+                      Clear Filters
+                    </button>
+                  )}
               </div>
             </div>
 
@@ -1965,16 +1952,17 @@ const BuyNowPage = () => {
                         <div className="flex items-start gap-3 mb-4">
                           <img
                             src={
-                              review.user?.profileImage_url ||
-                              "https://via.placeholder.com/48x48/4F46E5/FFFFFF?text=U"
+                              review.reviewer?.profileImage_url
+                                ? review.reviewer.profileImage_url
+                                : "https://via.placeholder.com/48x48/4F46E5/FFFFFF?text=U"
                             }
-                            alt={review.user?.name || "User"}
+                            alt={review.reviewer?.name || "User"}
                             className="w-12 h-12 rounded-full object-cover"
                           />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <h4 className="font-semibold text-gray-900 truncate">
-                                {review.user?.name || "Anonymous User"}
+                                {review.reviewer?.name || "Anonymous User"}
                               </h4>
                               {review.is_verified_purchase && (
                                 <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
@@ -1983,12 +1971,12 @@ const BuyNowPage = () => {
                               )}
                             </div>
                             <div className="flex items-center gap-2 text-sm text-gray-500">
-                              <span>
-                                {review.user?.totalReviews || 0} reviews
+                              <span className="capitalize">
+                                {review.reviewer?.role || "Customer"}
                               </span>
                               <span>•</span>
                               <span>
-                                {review.user?.helpfulVotes || 0} helpful votes
+                                {review.reviewer?.email || ""}
                               </span>
                             </div>
                           </div>
@@ -2001,11 +1989,10 @@ const BuyNowPage = () => {
                               {[...Array(5)].map((_, i) => (
                                 <span
                                   key={i}
-                                  className={`text-sm ${
-                                    i < review.rating
+                                  className={`text-sm ${i < review.rating
                                       ? "text-yellow-400"
                                       : "text-gray-300"
-                                  }`}
+                                    }`}
                                 >
                                   ★
                                 </span>
@@ -2075,17 +2062,17 @@ const BuyNowPage = () => {
                 ) : (
                   <div className="w-full text-center py-12 text-gray-500">
                     <div className="text-6xl mb-4">
-                      {mainProduct.reviews && mainProduct.reviews.length > 0
+                      {mainProduct.productReviews && mainProduct.productReviews.length > 0
                         ? "🔍"
                         : "📝"}
                     </div>
                     <h4 className="text-lg font-medium mb-2">
-                      {mainProduct.reviews && mainProduct.reviews.length > 0
+                      {mainProduct.productReviews && mainProduct.productReviews.length > 0
                         ? "No reviews match your filter"
                         : "No reviews yet"}
                     </h4>
                     <p className="text-sm">
-                      {mainProduct.reviews && mainProduct.reviews.length > 0
+                      {mainProduct.productReviews && mainProduct.productReviews.length > 0
                         ? "Try adjusting your filter criteria to see more reviews."
                         : "Be the first to review this product!"}
                     </p>
@@ -2124,25 +2111,24 @@ const BuyNowPage = () => {
                   <div className="space-y-2">
                     {[5, 4, 3, 2, 1].map((rating) => {
                       const count =
-                        mainProduct.reviews &&
-                        Array.isArray(mainProduct.reviews)
-                          ? mainProduct.reviews.filter(
-                              (r) => r.rating === rating
-                            ).length
+                        mainProduct.productReviews &&
+                          Array.isArray(mainProduct.productReviews)
+                          ? mainProduct.productReviews.filter(
+                            (r) => r.rating === rating
+                          ).length
                           : 0;
                       const percentage =
-                        mainProduct.reviews &&
-                        Array.isArray(mainProduct.reviews)
-                          ? (count / mainProduct.reviews.length) * 100
+                        mainProduct.productReviews &&
+                          Array.isArray(mainProduct.productReviews)
+                          ? (count / mainProduct.productReviews.length) * 100
                           : 0;
                       return (
                         <div
                           key={rating}
-                          className={`flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-100 p-1 rounded transition-colors ${
-                            selectedRatingFilter === rating.toString()
+                          className={`flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-100 p-1 rounded transition-colors ${selectedRatingFilter === rating.toString()
                               ? "bg-blue-50 border border-blue-200"
                               : ""
-                          }`}
+                            }`}
                           onClick={() => {
                             if (selectedRatingFilter === rating.toString()) {
                               setSelectedRatingFilter("all");
@@ -2155,11 +2141,10 @@ const BuyNowPage = () => {
                           <span className="w-8">{rating}★</span>
                           <div className="flex-1 bg-gray-200 rounded-full h-2">
                             <div
-                              className={`h-2 rounded-full ${
-                                selectedRatingFilter === rating.toString()
+                              className={`h-2 rounded-full ${selectedRatingFilter === rating.toString()
                                   ? "bg-blue-500"
                                   : "bg-yellow-400"
-                              }`}
+                                }`}
                               style={{ width: `${percentage}%` }}
                             ></div>
                           </div>
@@ -2184,21 +2169,21 @@ const BuyNowPage = () => {
                       ]
                     ).map((variant) => {
                       const count =
-                        mainProduct.reviews &&
-                        Array.isArray(mainProduct.reviews)
-                          ? mainProduct.reviews.filter(
-                              (r) => r.variant === variant
-                            ).length
+                        mainProduct.productReviews &&
+                          Array.isArray(mainProduct.productReviews)
+                          ? mainProduct.productReviews.filter(
+                            (r) => r.variant === variant
+                          ).length
                           : 0;
                       const avgRating =
-                        mainProduct.reviews &&
-                        Array.isArray(mainProduct.reviews) &&
-                        count > 0
+                        mainProduct.productReviews &&
+                          Array.isArray(mainProduct.productReviews) &&
+                          count > 0
                           ? (
-                              mainProduct.reviews
-                                .filter((r) => r.variant === variant)
-                                .reduce((sum, r) => sum + r.rating, 0) / count
-                            ).toFixed(1)
+                            mainProduct.productReviews
+                              .filter((r) => r.variant === variant)
+                              .reduce((sum, r) => sum + r.rating, 0) / count
+                          ).toFixed(1)
                           : 0;
                       return (
                         <div
@@ -2461,11 +2446,10 @@ const BuyNowPage = () => {
                         <button
                           type="submit"
                           disabled={submittingReview}
-                          className={`px-4 py-2 bg-blue-600 text-white rounded ${
-                            submittingReview
+                          className={`px-4 py-2 bg-blue-600 text-white rounded ${submittingReview
                               ? "opacity-70 cursor-not-allowed"
                               : "hover:bg-blue-700"
-                          }`}
+                            }`}
                         >
                           {submittingReview ? "Submitting..." : "Submit Review"}
                         </button>
@@ -2493,20 +2477,20 @@ const BuyNowPage = () => {
         onAddressSelect={async (address) => {
           setSelectedAddress(address);
           setShowAddressForm(false);
-          
+
           // Auto-trigger buy now after address selection
           if (buyingNow) return; // Prevent double execution
-          
+
           const variantData = mainProduct.variants?.find(
             (v) => v.description === selectedVariant
           );
-          
+
           const token = localStorage.getItem("token");
           if (!token) {
             alert("Please login to place order");
             return;
           }
-          
+
           let user_id;
           try {
             const decodedToken = jwtDecode(token);
@@ -2516,9 +2500,9 @@ const BuyNowPage = () => {
             alert("Authentication error. Please login again.");
             return;
           }
-          
+
           setBuyingNow(true);
-          
+
           try {
             const basePrice = parseFloat(variantData?.price || 0);
             const discountResult = calculateStackedDiscounts(
@@ -2526,10 +2510,10 @@ const BuyNowPage = () => {
               quantity,
               appliedCouponData
             );
-            
+
             const finalPrice = discountResult.finalPrice;
             const actualDiscountAmount = discountResult.totalDiscountAmount;
-            
+
             const originalSubtotal = basePrice * quantity;
             const orderData = {
               user_id: user_id,
@@ -2542,16 +2526,16 @@ const BuyNowPage = () => {
               total_amount: finalPrice,
               notes: appliedCouponData ? `Coupon applied: ${appliedCouponData.code}` : "",
             };
-            
+
             if (appliedCouponData && appliedCouponData.coupon_id) {
               orderData.coupon_id = appliedCouponData.coupon_id;
             }
-            
+
             const orderResponse = await createApi(orderRoute, orderData);
-            
+
             if (orderResponse && orderResponse.success) {
               const orderId = orderResponse.data.order.order_id;
-              
+
               const orderItemData = {
                 order_id: orderId,
                 product_id: productId,
@@ -2562,9 +2546,9 @@ const BuyNowPage = () => {
                 discount_applied: actualDiscountAmount || 0,
                 final_price: basePrice * quantity,
               };
-              
+
               const orderItemResponse = await createApi(orderItemRoute, orderItemData);
-              
+
               if (orderItemResponse && orderItemResponse.success) {
                 alert(`Order placed successfully! Total: ₹${finalPrice}`);
                 navigate("/profile/orders");

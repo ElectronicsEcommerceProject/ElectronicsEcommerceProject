@@ -247,7 +247,7 @@ const getProductsByCategoryId = async (req, res) => {
           },
           required: false,
         },
-        { model: ProductReview, as: "reviews", attributes: ["rating"] },
+        { model: ProductReview, as: "productReviews", attributes: ["rating"] },
       ],
     });
 
@@ -678,7 +678,7 @@ const getProductsByBrandId = async (req, res) => {
           },
           required: false,
         },
-        { model: ProductReview, as: "reviews", attributes: ["rating"] },
+        { model: ProductReview, as: "productReviews", attributes: ["rating"] },
         { model: OrderItem, as: "orderItems", attributes: ["order_item_id"] },
       ],
     });

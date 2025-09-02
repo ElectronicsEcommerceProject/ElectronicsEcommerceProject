@@ -121,7 +121,7 @@ const getUserDashboardProducts = async (req, res) => {
         },
         {
           model: ProductReview,
-          as: "reviews",
+          as: "productReviews",
           attributes: ["rating"],
         },
         {
@@ -173,9 +173,9 @@ const getUserDashboardProducts = async (req, res) => {
       }
 
       // Calculate average rating
-      const ratingCount = prod.reviews.length;
+      const ratingCount = prod.productReviews.length;
       const avgRating = ratingCount
-        ? prod.reviews.reduce((sum, r) => sum + r.rating, 0) / ratingCount
+        ? prod.productReviews.reduce((sum, r) => sum + r.rating, 0) / ratingCount
         : 0;
 
       // Extract features from all variants' attribute values

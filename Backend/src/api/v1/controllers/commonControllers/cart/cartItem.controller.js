@@ -476,7 +476,7 @@ const getCartItemsByUserId = async (req, res) => {
                 },
                 {
                   model: ProductReview,
-                  as: "reviews",
+                  as: "productReviews",
                   attributes: [
                     "product_review_id",
                     "user_id",

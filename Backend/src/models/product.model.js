@@ -106,7 +106,7 @@ export default (sequelize) => {
     });
     Product.hasMany(models.ProductReview, {
       foreignKey: "product_id",
-      as: "reviews",
+      as: "productReviews",
     });
     Product.hasMany(models.OrderItem, {
       foreignKey: "product_id",
