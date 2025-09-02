@@ -51,7 +51,7 @@ const userProductByIdDetails = async (req, res, next) => {
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           include: [
             {
               model: productMediaUrl,
@@ -288,7 +288,7 @@ const getRelatedProducts = async (
       },
       {
         model: ProductMedia,
-        as: "media",
+        as: "productMedia",
         include: [
           {
             model: productMediaUrl,
@@ -452,7 +452,7 @@ const getRelatedProducts = async (
           : "0.0",
         ratingCount: plainProduct.rating_count || 0,
         image: convertToFullUrl(
-          plainProduct.media?.[0]?.productMediaUrl?.[0]?.product_media_url,
+          plainProduct.productMedia?.[0]?.productMediaUrl?.[0]?.product_media_url,
           req
         ),
         brand: plainProduct.brand,
@@ -598,12 +598,12 @@ const formatProductResponse = (
   appliedCoupons = [],
   req
 ) => {
-  // Process media to match the URL structure
+  // Process productMedia to match the URL structure
   const mediaWithUrls =
-    productData.media?.map((media) => ({
-      ...media,
+    productData.productMedia?.map((productMedia) => ({
+      ...productMedia,
       urls:
-        media.productMediaUrl?.map((url) => ({
+        productMedia.productMediaUrl?.map((url) => ({
           ...url,
           product_media_url: convertToFullUrl(url.product_media_url, req),
         })) || [],
@@ -698,7 +698,7 @@ const formatProductResponse = (
     // Override rating fields with calculated values
     rating_average: averageRating,
     rating_count: totalReviewCount,
-    media: mediaWithUrls,
+    productMedia: mediaWithUrls,
     variants: variantsWithAttributes,
     reviews: processedReviews,
 
@@ -720,8 +720,8 @@ const formatProductResponse = (
     ),
     thumbnails:
       mediaWithUrls
-        ?.flatMap((media) =>
-          media.urls?.map((url) => convertToFullUrl(url.product_media_url, req))
+        ?.flatMap((productMedia) =>
+          productMedia.urls?.map((url) => convertToFullUrl(url.product_media_url, req))
         )
         .filter(Boolean) || [],
 

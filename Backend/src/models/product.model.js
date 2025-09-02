@@ -101,7 +101,7 @@ export default (sequelize) => {
     });
     Product.hasMany(models.ProductMedia, {
       foreignKey: "product_id",
-      as: "media",
+      as: "productMedia",
       onDelete: "CASCADE"
     });
     Product.hasMany(models.ProductReview, {
@@ -147,7 +147,7 @@ export default (sequelize) => {
           },
           {
             model: sequelize.models.ProductMedia,
-            as: "media",
+            as: "productMedia",
             include: [{
               model: sequelize.models.productMediaUrl,
               as: "productMediaUrl",
@@ -169,11 +169,11 @@ export default (sequelize) => {
           });
         }
 
-        // Collect product media images
-        if (productWithImages.media) {
-          productWithImages.media.forEach(media => {
-            if (media.productMediaUrl) {
-              media.productMediaUrl.forEach(mediaUrl => {
+        // Collect product productMedia images
+        if (productWithImages.productMedia) {
+          productWithImages.productMedia.forEach(productMedia => {
+            if (productMedia.productMediaUrl) {
+              productMedia.productMediaUrl.forEach(mediaUrl => {
                 if (mediaUrl.product_media_url) {
                   imagesToDelete.push(mediaUrl.product_media_url);
                 }

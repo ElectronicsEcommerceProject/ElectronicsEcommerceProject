@@ -51,8 +51,8 @@ app.use(
   adminProductVariantAttributeValuesRoutes
 );
 
-app.use("/product-Media", adminProductMediaRoutes);
-app.use("/product-Media-Url", adminproductMediaUrlRoutes);
+app.use("/product-productMedia", adminProductMediaRoutes);
+app.use("/product-productMedia-Url", adminproductMediaUrlRoutes);
 
 app.use("/productById-Details-Page", userProductByIdDetailsPageRoutes);
 

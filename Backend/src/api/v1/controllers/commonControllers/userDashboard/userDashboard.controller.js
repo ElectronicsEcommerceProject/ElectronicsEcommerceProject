@@ -63,7 +63,7 @@ const getUserDashboardProducts = async (req, res) => {
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           include: [
             {
               model: productMediaUrl,
@@ -119,10 +119,10 @@ const getUserDashboardProducts = async (req, res) => {
         }
       }
 
-      // Determine image URL from product media
+      // Determine image URL from product productMedia
       let image = null;
-      if (prod.media && prod.media.length > 0 && prod.media[0].productMediaUrl && prod.media[0].productMediaUrl.length > 0) {
-        image = prod.media[0].productMediaUrl[0].product_media_url;
+      if (prod.productMedia && prod.productMedia.length > 0 && prod.productMedia[0].productMediaUrl && prod.productMedia[0].productMediaUrl.length > 0) {
+        image = prod.productMedia[0].productMediaUrl[0].product_media_url;
         image = image.replace(/\\/g, "/");
         if (!image.startsWith("http")) {
           image = `${req.protocol}://${req.get("host")}/${image}`;
