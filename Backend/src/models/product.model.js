@@ -96,7 +96,7 @@ export default (sequelize) => {
     Product.belongsTo(models.User, { foreignKey: "created_by", as: "creator" });
     Product.hasMany(models.ProductVariant, {
       foreignKey: "product_id",
-      as: "variants",
+      as: "productVariant",
       onDelete: "CASCADE"
     });
     Product.hasMany(models.ProductMedia, {
@@ -142,7 +142,7 @@ export default (sequelize) => {
         include: [
           {
             model: sequelize.models.ProductVariant,
-            as: "variants",
+            as: "productVariant",
             attributes: ["base_variant_image_url"]
           },
           {

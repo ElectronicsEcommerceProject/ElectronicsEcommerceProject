@@ -67,7 +67,7 @@ const userProductByIdDetails = async (req, res, next) => {
         },
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           include: [
             {
               model: VariantAttributeValue,
@@ -300,7 +300,7 @@ const getRelatedProducts = async (
       },
       {
         model: ProductVariant,
-        as: "variants",
+        as: "productVariant",
         attributes: ["price", "discount_percentage"],
         limit: 1,
       },
@@ -616,7 +616,7 @@ const formatProductResponse = (
 
   // Process variants with their attributes
   const variantsWithAttributes =
-    productData.variants?.map((variant) => ({
+    productData.productVariant?.map((variant) => ({
       ...variant,
       base_variant_image_url: convertToFullUrl(
         variant.base_variant_image_url,
@@ -644,7 +644,7 @@ const formatProductResponse = (
     })) || [];
 
   // Calculate pricing information
-  const firstVariant = productData.variants?.[0];
+  const firstVariant = productData.productVariant?.[0];
   const basePrice = parseFloat(productData.base_price) || 0;
   const variantPrice = firstVariant
     ? parseFloat(firstVariant.price) || 0
@@ -676,7 +676,7 @@ const formatProductResponse = (
   const processedReviews = Array.isArray(productData.productReviews)
     ? productData.productReviews.map((review) => {
       // Find the variant for this review
-      const reviewVariant = productData.variants?.find(
+      const reviewVariant = productData.productVariant?.find(
         (v) => v.product_variant_id === review.product_variant_id
       );
 
@@ -708,6 +708,7 @@ const formatProductResponse = (
     rating_average: averageRating,
     rating_count: totalReviewCount,
     productMedia: mediaWithUrls,
+    productVariant: variantsWithAttributes,
     variants: variantsWithAttributes,
     productReviews: processedReviews,
     reviews: processedReviews,

@@ -376,7 +376,7 @@ export default (sequelize) =&gt; {
     Product.belongsTo(models.User, { foreignKey: "created_by", as: "creator" });
     Product.hasMany(models.ProductVariant, {
       foreignKey: "product_id",
-      as: "variants",
+      as: "productVariant",
     });
     Product.hasMany(models.ProductMedia, {
       foreignKey: "product_id",
