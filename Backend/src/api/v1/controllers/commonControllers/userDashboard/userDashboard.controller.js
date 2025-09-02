@@ -105,6 +105,7 @@ const getUserDashboardProducts = async (req, res) => {
           include: [
             {
               model: productMediaUrl,
+              as: "productMediaUrl",
               attributes: ["product_media_url"],
               where: { media_type: "image" },
               required: false,
