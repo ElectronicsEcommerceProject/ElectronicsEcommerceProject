@@ -17,7 +17,7 @@ const {
   ProductReview,
   OrderItem,
   ProductMedia,
-  ProductMediaUrl,
+  productMediaUrl,
   AttributeValue,
   Attribute,
   VariantAttributeValue,
@@ -77,8 +77,8 @@ const userProductByIdDetails = async (req, res, next) => {
           as: "media",
           include: [
             {
-              model: ProductMediaUrl,
-              as: "ProductMediaURLs",
+              model: productMediaUrl,
+              as: "productMediaUrl",
               attributes: [
                 "product_media_url_id",
                 "product_media_url",
@@ -332,8 +332,8 @@ const getRelatedProducts = async (
         as: "media",
         include: [
           {
-            model: ProductMediaUrl,
-            as: "ProductMediaURLs",
+            model: productMediaUrl,
+            as: "productMediaUrl",
             attributes: ["product_media_url"],
           },
         ],
@@ -493,7 +493,7 @@ const getRelatedProducts = async (
           : "0.0",
         ratingCount: plainProduct.rating_count || 0,
         image: convertToFullUrl(
-          plainProduct.media?.[0]?.ProductMediaURLs?.[0]?.product_media_url,
+          plainProduct.media?.[0]?.productMediaUrl?.[0]?.product_media_url,
           req
         ),
         brand: plainProduct.brand,
@@ -689,7 +689,7 @@ const formatProductResponse = (
     productData.media?.map((media) => ({
       ...media,
       urls:
-        media.ProductMediaURLs?.map((url) => ({
+        media.productMediaUrl?.map((url) => ({
           ...url,
           product_media_url: convertToFullUrl(url.product_media_url, req),
         })) || [],

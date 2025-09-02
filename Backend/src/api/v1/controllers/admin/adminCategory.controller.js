@@ -4,7 +4,7 @@ import MESSAGE from "../../../../constants/message.js"; // Import messages
 import { deleteImages } from "../../../../utils/imageUtils.js";
 import { cacheUtils } from "../../../../utils/cacheUtils.js";
 
-const { Category, User, Product, ProductVariant, ProductMedia, ProductMediaUrl, WishListItem } = db;
+const { Category, User, Product, ProductVariant, ProductMedia, productMediaUrl, WishListItem } = db;
 
 // Add a new category
 const addCategory = async (req, res) => {
@@ -178,7 +178,7 @@ const deleteCategory = async (req, res) => {
           model: ProductMedia,
           as: "media",
           include: [{
-            model: ProductMediaUrl,
+            model: productMediaUrl,
             attributes: ["product_media_url"]
           }]
         }
@@ -200,8 +200,8 @@ const deleteCategory = async (req, res) => {
       // Add product media images
       if (product.media) {
         product.media.forEach(media => {
-          if (media.ProductMediaURLs) {
-            media.ProductMediaURLs.forEach(mediaUrl => {
+          if (media.productMediaUrl) {
+            media.productMediaUrl.forEach(mediaUrl => {
               if (mediaUrl.product_media_url) {
                 imagesToDelete.push(mediaUrl.product_media_url);
               }

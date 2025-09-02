@@ -1,8 +1,8 @@
 import Joi from "joi";
 import MESSAGE from "../../../../../constants/message.js";
 
-// For ProductMediaURL model
-export const productMediaURLValidator = Joi.object({
+// For productMediaUrl model
+export const productMediaUrlValidator = Joi.object({
   product_media_id: Joi.string()
     .uuid()
     .required()
@@ -26,7 +26,7 @@ export const productMediaURLValidator = Joi.object({
     }),
 });
 
-export const productMediaURLUpdateValidator = Joi.object({
+export const productMediaUrlUpdateValidator = Joi.object({
   product_media_id: Joi.string()
     .uuid()
     .optional()

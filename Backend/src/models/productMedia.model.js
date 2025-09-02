@@ -32,8 +32,9 @@ export default (sequelize) => {
   );
 
   ProductMedia.associate = (models) => {
-    ProductMedia.hasMany(models.ProductMediaUrl, {
+    ProductMedia.hasMany(models.productMediaUrl, {
       foreignKey: "product_media_id",
+      as: "productMediaUrl",
       onDelete: "CASCADE"
     });
 
@@ -58,17 +59,17 @@ export default (sequelize) => {
       // Get all related media URLs before deletion
       const mediaWithUrls = await ProductMedia.findByPk(media.product_media_id, {
         include: [{
-          model: sequelize.models.ProductMediaUrl,
-          as: "ProductMediaURLs",
+          model: sequelize.models.productMediaUrl,
+          as: "productMediaUrl",
           attributes: ["product_media_url"]
         }]
       });
-      
-      if (mediaWithUrls && mediaWithUrls.ProductMediaURLs) {
-        const imagesToDelete = mediaWithUrls.ProductMediaURLs
+
+      if (mediaWithUrls && mediaWithUrls.productMediaUrl) {
+        const imagesToDelete = mediaWithUrls.productMediaUrl
           .map(url => url.product_media_url)
           .filter(url => url);
-        
+
         deleteImages(imagesToDelete);
       }
     } catch (error) {

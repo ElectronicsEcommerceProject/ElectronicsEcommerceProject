@@ -11,7 +11,7 @@ import adminProductAttributesValuesRoutes from "./adminProductAttributesValues.r
 import adminProductVariantRoutes from "./adminProductVariant.routes.js";
 import adminProductVariantAttributeValuesRoutes from "./adminProductVariantAttributeValues.routes.js";
 import adminProductMediaRoutes from "./adminProductMedia.routes.js";
-import adminProductMediaUrlRoutes from "./adminProductMediaUrl.routes.js";
+import adminproductMediaUrlRoutes from "./adminproductMediaUrl.routes.js";
 import adminDiscountRuleRoutes from "./adminDiscountRule.routes.js";
 import adminOrderRoutes from "./adminOrder.routes.js";
 import adminUsersManagmentDashboardDataRoutes from "./adminUserManagmentDashboardData.routes.js";
@@ -38,7 +38,7 @@ export {
   adminProductVariantRoutes,
   adminProductVariantAttributeValuesRoutes,
   adminProductMediaRoutes,
-  adminProductMediaUrlRoutes,
+  adminproductMediaUrlRoutes,
   adminDiscountRuleRoutes,
   adminOrderRoutes,
   adminUsersManagmentDashboardDataRoutes,

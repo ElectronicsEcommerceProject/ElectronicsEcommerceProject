@@ -9,7 +9,7 @@ const {
   Product,
   ProductVariant,
   ProductMedia,
-  ProductMediaUrl,
+  productMediaUrl,
   Brand,
   ProductReview,
   Coupon,
@@ -23,7 +23,7 @@ const getUserDashboardProducts = async (req, res) => {
   try {
     // Get user role from JWT token
     const userRole = req.user?.role;
-    
+
     if (!userRole) {
       return res.status(StatusCodes.UNAUTHORIZED).json({
         success: false,
@@ -104,7 +104,7 @@ const getUserDashboardProducts = async (req, res) => {
           as: "media",
           include: [
             {
-              model: ProductMediaUrl,
+              model: productMediaUrl,
               attributes: ["product_media_url"],
               where: { media_type: "image" },
               required: false,
@@ -161,8 +161,8 @@ const getUserDashboardProducts = async (req, res) => {
 
       // Determine image URL from product media
       let image = null;
-      if (prod.media && prod.media.length > 0 && prod.media[0].ProductMediaURLs && prod.media[0].ProductMediaURLs.length > 0) {
-        image = prod.media[0].ProductMediaURLs[0].product_media_url;
+      if (prod.media && prod.media.length > 0 && prod.media[0].productMediaUrl && prod.media[0].productMediaUrl.length > 0) {
+        image = prod.media[0].productMediaUrl[0].product_media_url;
         image = image.replace(/\\/g, "/");
         if (!image.startsWith("http")) {
           image = `${req.protocol}://${req.get("host")}/${image}`;

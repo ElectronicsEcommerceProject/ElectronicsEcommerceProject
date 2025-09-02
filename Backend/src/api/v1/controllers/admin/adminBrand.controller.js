@@ -4,7 +4,7 @@ import MESSAGE from "../../../../constants/message.js";
 import { deleteImages } from "../../../../utils/imageUtils.js";
 import { cacheUtils } from "../../../../utils/cacheUtils.js";
 
-const { Brand, User, Category, Product, ProductVariant, ProductMedia, ProductMediaUrl } = db;
+const { Brand, User, Category, Product, ProductVariant, ProductMedia, productMediaUrl } = db;
 
 // Add a new brand
 const addBrand = async (req, res) => {
@@ -136,7 +136,7 @@ const deleteBrand = async (req, res) => {
           model: ProductMedia,
           as: "media",
           include: [{
-            model: ProductMediaUrl,
+            model: productMediaUrl,
             attributes: ["product_media_url"]
           }]
         }
@@ -154,12 +154,12 @@ const deleteBrand = async (req, res) => {
           }
         });
       }
-      
+
       // Add product media images
       if (product.media) {
         product.media.forEach(media => {
-          if (media.ProductMediaURLs) {
-            media.ProductMediaURLs.forEach(mediaUrl => {
+          if (media.productMediaUrl) {
+            media.productMediaUrl.forEach(mediaUrl => {
               if (mediaUrl.product_media_url) {
                 imagesToDelete.push(mediaUrl.product_media_url);
               }

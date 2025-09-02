@@ -25,7 +25,7 @@ import {
   adminProductVariantRoutes,
   adminProductVariantAttributeValuesRoutes,
   adminProductMediaRoutes,
-  adminProductMediaUrlRoutes,
+  adminproductMediaUrlRoutes,
   adminOrderRoutes,
   adminNotificationRoutes,
 } from "../admin/adminRoutes.index.js";
@@ -52,7 +52,7 @@ app.use(
 );
 
 app.use("/product-Media", adminProductMediaRoutes);
-app.use("/product-Media-Url", adminProductMediaUrlRoutes);
+app.use("/product-Media-Url", adminproductMediaUrlRoutes);
 
 app.use("/productById-Details-Page", userProductByIdDetailsPageRoutes);
 
