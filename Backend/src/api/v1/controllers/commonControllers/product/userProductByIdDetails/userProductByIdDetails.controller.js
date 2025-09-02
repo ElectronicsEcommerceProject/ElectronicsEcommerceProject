@@ -17,7 +17,7 @@ const {
   ProductReview,
   OrderItem,
   ProductMedia,
-  ProductMediaUrl,
+  productMediaUrl,
   AttributeValue,
   Attribute,
   VariantAttributeValue,
@@ -74,11 +74,11 @@ const userProductByIdDetails = async (req, res, next) => {
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           include: [
             {
-              model: ProductMediaUrl,
-              as: "ProductMediaURLs",
+              model: productMediaUrl,
+              as: "productMediaUrl",
               attributes: [
                 "product_media_url_id",
                 "product_media_url",
@@ -90,7 +90,7 @@ const userProductByIdDetails = async (req, res, next) => {
         },
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           include: [
             {
               model: VariantAttributeValue,
@@ -133,7 +133,7 @@ const userProductByIdDetails = async (req, res, next) => {
         },
         {
           model: ProductReview,
-          as: "reviews",
+          as: "productReviews",
           where: {
             review_action: "approve",
           },
@@ -329,11 +329,11 @@ const getRelatedProducts = async (
       },
       {
         model: ProductMedia,
-        as: "media",
+        as: "productMedia",
         include: [
           {
-            model: ProductMediaUrl,
-            as: "ProductMediaURLs",
+            model: productMediaUrl,
+            as: "productMediaUrl",
             attributes: ["product_media_url"],
           },
         ],
@@ -341,7 +341,7 @@ const getRelatedProducts = async (
       },
       {
         model: ProductVariant,
-        as: "variants",
+        as: "productVariant",
         attributes: ["price", "discount_percentage"],
         limit: 1,
       },
@@ -493,7 +493,7 @@ const getRelatedProducts = async (
           : "0.0",
         ratingCount: plainProduct.rating_count || 0,
         image: convertToFullUrl(
-          plainProduct.media?.[0]?.ProductMediaURLs?.[0]?.product_media_url,
+          plainProduct.productMedia?.[0]?.productMediaUrl?.[0]?.product_media_url,
           req
         ),
         brand: plainProduct.brand,
@@ -684,12 +684,17 @@ const formatProductResponse = (
   appliedCoupons = [],
   req
 ) => {
-  // Process media to match the URL structure
+  // Process productMedia to match the URL structure
   const mediaWithUrls =
-    productData.media?.map((media) => ({
-      ...media,
+    productData.productMedia?.map((productMedia) => ({
+      ...productMedia,
+      productMediaUrl:
+        productMedia.productMediaUrl?.map((url) => ({
+          ...url,
+          product_media_url: convertToFullUrl(url.product_media_url, req),
+        })) || [],
       urls:
-        media.ProductMediaURLs?.map((url) => ({
+        productMedia.productMediaUrl?.map((url) => ({
           ...url,
           product_media_url: convertToFullUrl(url.product_media_url, req),
         })) || [],
@@ -697,7 +702,7 @@ const formatProductResponse = (
 
   // Process variants with their attributes
   const variantsWithAttributes =
-    productData.variants?.map((variant) => ({
+    productData.productVariant?.map((variant) => ({
       ...variant,
       base_variant_image_url: convertToFullUrl(
         variant.base_variant_image_url,
@@ -725,7 +730,7 @@ const formatProductResponse = (
     })) || [];
 
   // Calculate pricing information
-  const firstVariant = productData.variants?.[0];
+  const firstVariant = productData.productVariant?.[0];
   const basePrice = parseFloat(productData.base_price) || 0;
   const variantPrice = firstVariant
     ? parseFloat(firstVariant.price) || 0
@@ -740,8 +745,8 @@ const formatProductResponse = (
     originalPrice > 0 ? (discountAmount / originalPrice) * 100 : 0;
 
   // Calculate review statistics
-  const approvedReviews = Array.isArray(productData.reviews)
-    ? productData.reviews.filter((review) => review.review_action === "approve")
+  const approvedReviews = Array.isArray(productData.productReviews)
+    ? productData.productReviews.filter((review) => review.review_action === "approve")
     : [];
 
   const totalReviewCount = approvedReviews.length;
@@ -754,19 +759,23 @@ const formatProductResponse = (
       : "0.0";
 
   // Process reviews with proper user information and variant details
-  const processedReviews = Array.isArray(productData.reviews)
-    ? productData.reviews.map((review) => {
+  const processedReviews = Array.isArray(productData.productReviews)
+    ? productData.productReviews.map((review) => {
       // Find the variant for this review
-      const reviewVariant = productData.variants?.find(
+      const reviewVariant = productData.productVariant?.find(
         (v) => v.product_variant_id === review.product_variant_id
       );
 
       return {
         ...review,
+        reviewer: {
+          ...review.reviewer,
+          profileImage_url: convertToFullUrl(review.reviewer?.profileImage_url, req),
+        },
         user: {
           user_id: review.reviewer?.user_id || null,
           name: review.reviewer?.name || "Anonymous User",
-          profileImage_url: review.reviewer?.profileImage_url || null,
+          profileImage_url: convertToFullUrl(review.reviewer?.profileImage_url, req),
           verified_buyer: review.is_verified_purchase || false,
           totalReviews: 0, // Could be enhanced with actual count
           helpfulVotes: 0, // Could be enhanced with actual count
@@ -784,8 +793,10 @@ const formatProductResponse = (
     // Override rating fields with calculated values
     rating_average: averageRating,
     rating_count: totalReviewCount,
-    media: mediaWithUrls,
+    productMedia: mediaWithUrls,
+    productVariant: variantsWithAttributes,
     variants: variantsWithAttributes,
+    productReviews: processedReviews,
     reviews: processedReviews,
 
     // Legacy format for UI compatibility - Frontend expects these fields
@@ -806,8 +817,8 @@ const formatProductResponse = (
     ),
     thumbnails:
       mediaWithUrls
-        ?.flatMap((media) =>
-          media.urls?.map((url) => convertToFullUrl(url.product_media_url, req))
+        ?.flatMap((productMedia) =>
+          productMedia.urls?.map((url) => convertToFullUrl(url.product_media_url, req))
         )
         .filter(Boolean) || [],
 

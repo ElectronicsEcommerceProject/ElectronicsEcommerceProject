@@ -20,7 +20,7 @@ router.post(
   "/",
   verifyJwtToken,
   isAdmin,
-  // Handle multiple file uploads for product and variant media
+  // Handle multiple file uploads for product and variant productMedia
   upload.fields([
     { name: "media_file", maxCount: 1 },
     { name: "variant_media_file", maxCount: 1 }

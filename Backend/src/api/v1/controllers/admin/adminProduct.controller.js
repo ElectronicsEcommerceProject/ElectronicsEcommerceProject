@@ -17,7 +17,7 @@ const {
   ProductReview,
   OrderItem,
   ProductMedia,
-  ProductMediaUrl,
+  productMediaUrl,
   AttributeValue,
   Attribute,
 } = db;
@@ -215,7 +215,7 @@ const getProductsByCategoryId = async (req, res) => {
         { model: Brand, as: "brand", attributes: ["brand_id", "name"] },
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           attributes: [
             "product_variant_id",
             "price",
@@ -225,11 +225,11 @@ const getProductsByCategoryId = async (req, res) => {
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           include: [
             {
-              model: ProductMediaUrl,
-              as: "ProductMediaURLs",
+              model: productMediaUrl,
+              as: "productMediaUrl",
               attributes: ["product_media_url", "media_type"],
               where: { media_type: "image" },
               required: false,
@@ -247,16 +247,16 @@ const getProductsByCategoryId = async (req, res) => {
           },
           required: false,
         },
-        { model: ProductReview, as: "reviews", attributes: ["rating"] },
+        { model: ProductReview, as: "productReviews", attributes: ["rating"] },
       ],
     });
 
     const data = products.map((prod) => {
       const basePrice = parseFloat(prod.base_price);
       const coupons = prod.coupons || [];
-      const variants = prod.variants || [];
-      const reviews = prod.reviews || [];
-      const media = prod.media || [];
+      const variants = prod.productVariant || [];
+      const reviews = prod.productReviews || [];
+      const productMedia = prod.productMedia || [];
 
       // Calculate discount from coupons
       let leastDiscountCoupon = null;
@@ -264,7 +264,7 @@ const getProductsByCategoryId = async (req, res) => {
         if (
           !leastDiscountCoupon ||
           parseFloat(c.discount_value) <
-            parseFloat(leastDiscountCoupon.discount_value)
+          parseFloat(leastDiscountCoupon.discount_value)
         ) {
           leastDiscountCoupon = c;
         }
@@ -287,12 +287,12 @@ const getProductsByCategoryId = async (req, res) => {
 
       // Get product image
       let productImage = null;
-      if (media && media.length > 0) {
-        const mediaWithUrl = media.find(
-          (m) => m.ProductMediaURLs && m.ProductMediaURLs.length > 0
+      if (productMedia && productMedia.length > 0) {
+        const mediaWithUrl = productMedia.find(
+          (m) => m.productMediaUrl && m.productMediaUrl.length > 0
         );
         if (mediaWithUrl) {
-          productImage = mediaWithUrl.ProductMediaURLs[0].product_media_url;
+          productImage = mediaWithUrl.productMediaUrl[0].product_media_url;
         }
       }
       if (!productImage && variants && variants.length > 0) {
@@ -509,20 +509,21 @@ const deleteProduct = async (req, res) => {
       include: [
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           attributes: ["base_variant_image_url"]
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           include: [{
-            model: ProductMediaUrl,
+            model: productMediaUrl,
+            as: "productMediaUrl",
             attributes: ["product_media_url"]
           }]
         }
       ]
     });
-    
+
     if (!product) {
       return res.status(StatusCodes.NOT_FOUND).json({
         message: MESSAGE.get.none,
@@ -531,21 +532,21 @@ const deleteProduct = async (req, res) => {
 
     // Collect all image paths to delete
     const imagesToDelete = [];
-    
+
     // Add variant images
-    if (product.variants) {
-      product.variants.forEach(variant => {
+    if (product.productVariant) {
+      product.productVariant.forEach(variant => {
         if (variant.base_variant_image_url) {
           imagesToDelete.push(variant.base_variant_image_url);
         }
       });
     }
-    
-    // Add product media images
-    if (product.media) {
-      product.media.forEach(media => {
-        if (media.ProductMediaURLs) {
-          media.ProductMediaURLs.forEach(mediaUrl => {
+
+    // Add product productMedia images
+    if (product.productMedia) {
+      product.productMedia.forEach(productMedia => {
+        if (productMedia.productMediaUrl) {
+          productMedia.productMediaUrl.forEach(mediaUrl => {
             if (mediaUrl.product_media_url) {
               imagesToDelete.push(mediaUrl.product_media_url);
             }
@@ -624,7 +625,7 @@ const getProductsByBrandId = async (req, res) => {
         { model: Category, as: "category", attributes: ["name"] },
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           attributes: [
             "product_variant_id",
             "price",
@@ -646,11 +647,12 @@ const getProductsByBrandId = async (req, res) => {
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           attributes: ["product_media_id", "media_type"],
           include: [
             {
-              model: ProductMediaUrl,
+              model: productMediaUrl,
+              as: "productMediaUrl",
               attributes: ["product_media_url", "media_type"],
               where: { media_type: "image" }, // Only get images
               required: false,
@@ -676,7 +678,7 @@ const getProductsByBrandId = async (req, res) => {
           },
           required: false,
         },
-        { model: ProductReview, as: "reviews", attributes: ["rating"] },
+        { model: ProductReview, as: "productReviews", attributes: ["rating"] },
         { model: OrderItem, as: "orderItems", attributes: ["order_item_id"] },
       ],
     });
@@ -686,10 +688,10 @@ const getProductsByBrandId = async (req, res) => {
       const basePrice = parseFloat(prod.base_price);
       const coupons = prod.coupons || []; // Fixed: use correct alias
       const rules = prod.discountRules || []; // Fixed: use correct alias
-      const variants = prod.variants || []; // Fixed: use correct alias
-      const reviews = prod.reviews || []; // Fixed: use correct alias
+      const variants = prod.productVariant || []; // Fixed: use correct alias
+      const reviews = prod.productReviews || []; // Fixed: use correct alias
       const orders = prod.orderItems || []; // Fixed: use correct alias
-      const media = prod.media || []; // Product media
+      const productMedia = prod.productMedia || []; // Product productMedia
 
       // console.log("basePrice:", basePrice);
       // console.log("Coupons:", coupons);
@@ -697,7 +699,7 @@ const getProductsByBrandId = async (req, res) => {
       // console.log("Variants:", variants);
       // console.log("Reviews:", reviews);
       // console.log("Orders:", orders);
-      // console.log("Media:", media);
+      // console.log("productMedia:", productMedia);
 
       // Find the LEAST discount coupon to show to user (smallest discount_value)
       let leastDiscountCoupon = null;
@@ -705,7 +707,7 @@ const getProductsByBrandId = async (req, res) => {
         if (
           !leastDiscountCoupon ||
           parseFloat(c.discount_value) <
-            parseFloat(leastDiscountCoupon.discount_value)
+          parseFloat(leastDiscountCoupon.discount_value)
         ) {
           leastDiscountCoupon = c;
         }
@@ -726,9 +728,8 @@ const getProductsByBrandId = async (req, res) => {
       }
 
       const couponDesc = leastDiscountCoupon
-        ? `${leastDiscountCoupon.discount_value}${
-            leastDiscountCoupon.type === "percentage" ? "%" : ""
-          } off with ${leastDiscountCoupon.code}`
+        ? `${leastDiscountCoupon.discount_value}${leastDiscountCoupon.type === "percentage" ? "%" : ""
+        } off with ${leastDiscountCoupon.code}`
         : null;
 
       // Retailer/bulk rule
@@ -736,9 +737,9 @@ const getProductsByBrandId = async (req, res) => {
       const bulkRule = rules.find((r) => r.rule_type === "bulk");
       const stockLevelDetailed = retailerRule
         ? {
-            minRetailerQty: retailerRule.min_retailer_quantity,
-            bulkDiscountQty: bulkRule?.bulk_discount_quantity || null,
-          }
+          minRetailerQty: retailerRule.min_retailer_quantity,
+          bulkDiscountQty: bulkRule?.bulk_discount_quantity || null,
+        }
         : null;
 
       // Stock & variant summary
@@ -778,20 +779,20 @@ const getProductsByBrandId = async (req, res) => {
         finalPrice = Math.max(finalPrice, 0);
       }
 
-      // Get product image from ProductMediaUrl
+      // Get product image from productMediaUrl
       let productImage = null;
 
-      if (media && media.length > 0) {
-        // Find the first media item that has ProductMediaURLs (note the capital U)
-        const mediaWithUrl = media.find(
-          (m) => m.ProductMediaURLs && m.ProductMediaURLs.length > 0
+      if (productMedia && productMedia.length > 0) {
+        // Find the first productMedia item that has productMediaUrl (note the capital U)
+        const mediaWithUrl = productMedia.find(
+          (m) => m.productMediaUrl && m.productMediaUrl.length > 0
         );
         if (mediaWithUrl) {
-          productImage = mediaWithUrl.ProductMediaURLs[0].product_media_url;
+          productImage = mediaWithUrl.productMediaUrl[0].product_media_url;
         }
       }
 
-      // Fallback to variant image if no product media found
+      // Fallback to variant image if no product productMedia found
       if (!productImage && variants && variants.length > 0) {
         productImage = variants[0]?.base_variant_image_url || null;
       }
@@ -816,7 +817,7 @@ const getProductsByBrandId = async (req, res) => {
         rating: +rating.toFixed(1),
         ratingCount,
         shortDescription: prod.short_description,
-        image: productImage, // From ProductMediaURL table
+        image: productImage, // From productMediaUrl table
         inStock,
         stockLevel,
         hasVariants,

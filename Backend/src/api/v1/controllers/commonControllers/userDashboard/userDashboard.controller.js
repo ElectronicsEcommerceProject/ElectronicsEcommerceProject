@@ -9,7 +9,7 @@ const {
   Product,
   ProductVariant,
   ProductMedia,
-  ProductMediaUrl,
+  productMediaUrl,
   Brand,
   ProductReview,
   Coupon,
@@ -23,7 +23,7 @@ const getUserDashboardProducts = async (req, res) => {
   try {
     // Get user role from JWT token
     const userRole = req.user?.role;
-    
+
     if (!userRole) {
       return res.status(StatusCodes.UNAUTHORIZED).json({
         success: false,
@@ -84,7 +84,7 @@ const getUserDashboardProducts = async (req, res) => {
         },
         {
           model: ProductVariant,
-          as: "variants",
+          as: "productVariant",
           attributes: ["product_variant_id", "stock_quantity"],
           include: [
             {
@@ -101,10 +101,11 @@ const getUserDashboardProducts = async (req, res) => {
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           include: [
             {
-              model: ProductMediaUrl,
+              model: productMediaUrl,
+              as: "productMediaUrl",
               attributes: ["product_media_url"],
               where: { media_type: "image" },
               required: false,
@@ -120,7 +121,7 @@ const getUserDashboardProducts = async (req, res) => {
         },
         {
           model: ProductReview,
-          as: "reviews",
+          as: "productReviews",
           attributes: ["rating"],
         },
         {
@@ -141,7 +142,7 @@ const getUserDashboardProducts = async (req, res) => {
 
     // Transform data into desired format
     const data = products.map((prod) => {
-      const variant = prod.variants[0];
+      const variant = prod.productVariant[0];
       const basePrice = parseFloat(prod.base_price);
       const sellingPrice = basePrice;
 
@@ -159,10 +160,10 @@ const getUserDashboardProducts = async (req, res) => {
         }
       }
 
-      // Determine image URL from product media
+      // Determine image URL from product productMedia
       let image = null;
-      if (prod.media && prod.media.length > 0 && prod.media[0].ProductMediaURLs && prod.media[0].ProductMediaURLs.length > 0) {
-        image = prod.media[0].ProductMediaURLs[0].product_media_url;
+      if (prod.productMedia && prod.productMedia.length > 0 && prod.productMedia[0].productMediaUrl && prod.productMedia[0].productMediaUrl.length > 0) {
+        image = prod.productMedia[0].productMediaUrl[0].product_media_url;
         image = image.replace(/\\/g, "/");
         if (!image.startsWith("http")) {
           image = `${req.protocol}://${req.get("host")}/${image}`;
@@ -172,16 +173,16 @@ const getUserDashboardProducts = async (req, res) => {
       }
 
       // Calculate average rating
-      const ratingCount = prod.reviews.length;
+      const ratingCount = prod.productReviews.length;
       const avgRating = ratingCount
-        ? prod.reviews.reduce((sum, r) => sum + r.rating, 0) / ratingCount
+        ? prod.productReviews.reduce((sum, r) => sum + r.rating, 0) / ratingCount
         : 0;
 
       // Extract features from all variants' attribute values
       const features = [];
       const attributeMap = new Map();
 
-      prod.variants.forEach((variant) => {
+      prod.productVariant.forEach((variant) => {
         if (variant.AttributeValues?.length) {
           variant.AttributeValues.forEach((attrValue) => {
             if (attrValue.Attribute) {

@@ -291,13 +291,13 @@ export const addProductManagementValidator = Joi.object({
         "any.required": MESSAGE.custom("Category name is required"),
       }),
   }).required(),
-  media: Joi.object({
+  productMedia: Joi.object({
     media_type: Joi.string()
       .valid("image", "video")
       .default("image")
       .messages({
         "any.only": MESSAGE.custom(
-          "Media type must be either 'image' or 'video'"
+          "productMedia type must be either 'image' or 'video'"
         ),
       }),
     media_file: Joi.object({
@@ -307,7 +307,7 @@ export const addProductManagementValidator = Joi.object({
     })
       .required()
       .messages({
-        "any.required": MESSAGE.custom("Media file is required"),
+        "any.required": MESSAGE.custom("productMedia file is required"),
       }),
   }).required(),
 });

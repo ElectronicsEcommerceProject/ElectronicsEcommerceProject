@@ -5,57 +5,57 @@ import {
   validator,
 } from "../../../../middleware/index.js";
 import { validators } from "../../validators/index.js";
-import { adminProductMediaURLController } from "../../controllers/index.js";
+import { adminproductMediaUrlController } from "../../controllers/index.js";
 const router = express.Router();
 
-// Add a new product media URL
+// Add a new product productMedia URL
 router.post(
   "/",
   verifyJwtToken,
   adminRoleCheck,
   validator(validators.productMediaUrl.productMediaUrlValidator, null),
-  adminProductMediaURLController.addProductMediaURL
+  adminproductMediaUrlController.addproductMediaUrl
 );
 
-// Get all product media URLs
+// Get all product productMedia URLs
 router.get(
   "/",
   verifyJwtToken,
-  adminProductMediaURLController.getAllProductMediaURLs
+  adminproductMediaUrlController.getAllproductMediaUrl
 );
 
-// Get product media URL by ID
+// Get product productMedia URL by ID
 router.get(
   "/:id",
   verifyJwtToken,
   validator(validators.productMediaUrl.id, "params"),
-  adminProductMediaURLController.getProductMediaURLById
+  adminproductMediaUrlController.getproductMediaUrlById
 );
 
-// Get product media URLs by media ID
+// Get product productMedia URLs by productMedia ID
 router.get(
-  "/media/:mediaId",
+  "/productMedia/:mediaId",
   verifyJwtToken,
-  adminProductMediaURLController.getProductMediaURLsByMediaId
+  adminproductMediaUrlController.getproductMediaUrlByMediaId
 );
 
-// Update a product media URL
+// Update a product productMedia URL
 router.put(
   "/:id",
   verifyJwtToken,
   adminRoleCheck,
   validator(validators.productMediaUrl.id, "params"),
   validator(validators.productMediaUrl.productMediaUrlUpdateValidator, null),
-  adminProductMediaURLController.updateProductMediaURL
+  adminproductMediaUrlController.updateproductMediaUrl
 );
 
-// Delete a product media URL
+// Delete a product productMedia URL
 router.delete(
   "/:id",
   verifyJwtToken,
   adminRoleCheck,
   validator(validators.productMediaUrl.id, "params"),
-  adminProductMediaURLController.deleteProductMediaURL
+  adminproductMediaUrlController.deleteproductMediaUrl
 );
 
 export default router;

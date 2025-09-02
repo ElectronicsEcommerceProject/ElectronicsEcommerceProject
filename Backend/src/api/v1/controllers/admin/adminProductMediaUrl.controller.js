@@ -3,19 +3,19 @@ import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
 import { deleteImage } from "../../../../utils/imageUtils.js";
 
-const { ProductMediaUrl, ProductMedia, User } = db;
+const { productMediaUrl, ProductMedia, User } = db;
 
-// Add a new product media URL
-const addProductMediaURL = async (req, res) => {
+// Add a new product productMedia URL
+const addproductMediaUrl = async (req, res) => {
   try {
     const { product_media_id, product_media_url, media_type } = req.body;
 
-    // Check if product media exists
+    // Check if product productMedia exists
     const productMedia = await ProductMedia.findByPk(product_media_id);
     if (!productMedia) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Product media not found" });
+        .json({ message: "Product productMedia not found" });
     }
 
     // Get the user ID of the creator
@@ -27,8 +27,8 @@ const addProductMediaURL = async (req, res) => {
     }
     const created_by = user.dataValues.user_id;
 
-    // Create the new product media URL
-    const newProductMediaURL = await ProductMediaUrl.create({
+    // Create the new product productMedia URL
+    const newproductMediaUrl = await productMediaUrl.create({
       product_media_id,
       product_media_url,
       media_type: media_type || "image",
@@ -37,19 +37,19 @@ const addProductMediaURL = async (req, res) => {
 
     res
       .status(StatusCodes.CREATED)
-      .json({ message: MESSAGE.post.succ, data: newProductMediaURL });
+      .json({ message: MESSAGE.post.succ, data: newproductMediaUrl });
   } catch (error) {
-    console.error("Error adding product media URL:", error);
+    console.error("Error adding product productMedia URL:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.post.fail, error: error.message });
   }
 };
 
-// Get all product media URLs
-const getAllProductMediaURLs = async (req, res) => {
+// Get all product productMedia URLs
+const getAllproductMediaUrl = async (req, res) => {
   try {
-    const productMediaURLs = await ProductMediaUrl.findAll({
+    const productMediaUrl = await productMediaUrl.findAll({
       include: [
         { model: ProductMedia },
         { model: User, as: "creator" },
@@ -59,20 +59,20 @@ const getAllProductMediaURLs = async (req, res) => {
 
     res
       .status(StatusCodes.OK)
-      .json({ message: MESSAGE.get.succ, data: productMediaURLs });
+      .json({ message: MESSAGE.get.succ, data: productMediaUrl });
   } catch (error) {
-    console.error("Error fetching product media URLs:", error);
+    console.error("Error fetching product productMedia URLs:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.get.fail, error: error.message });
   }
 };
 
-// Get product media URL by ID
-const getProductMediaURLById = async (req, res) => {
+// Get product productMedia URL by ID
+const getproductMediaUrlById = async (req, res) => {
   try {
     const { id } = req.params;
-    const productMediaURL = await ProductMediaUrl.findByPk(id, {
+    const productMediaUrl = await productMediaUrl.findByPk(id, {
       include: [
         { model: ProductMedia },
         { model: User, as: "creator" },
@@ -80,7 +80,7 @@ const getProductMediaURLById = async (req, res) => {
       ],
     });
 
-    if (!productMediaURL) {
+    if (!productMediaUrl) {
       return res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: MESSAGE.get.none });
@@ -88,29 +88,29 @@ const getProductMediaURLById = async (req, res) => {
 
     res
       .status(StatusCodes.OK)
-      .json({ message: MESSAGE.get.succ, data: productMediaURL });
+      .json({ message: MESSAGE.get.succ, data: productMediaUrl });
   } catch (error) {
-    console.error("Error fetching product media URL:", error);
+    console.error("Error fetching product productMedia URL:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.get.fail, error: error.message });
   }
 };
 
-// Get product media URLs by media ID
-const getProductMediaURLsByMediaId = async (req, res) => {
+// Get product productMedia URLs by productMedia ID
+const getproductMediaUrlByMediaId = async (req, res) => {
   try {
     const { mediaId } = req.params;
 
-    // Check if product media exists
+    // Check if product productMedia exists
     const productMedia = await ProductMedia.findByPk(mediaId);
     if (!productMedia) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Product media not found" });
+        .json({ message: "Product productMedia not found" });
     }
 
-    const productMediaURLs = await ProductMediaUrl.findAll({
+    const productMediaUrl = await productMediaUrl.findAll({
       where: { product_media_id: mediaId },
       include: [
         { model: User, as: "creator" },
@@ -120,35 +120,35 @@ const getProductMediaURLsByMediaId = async (req, res) => {
 
     res
       .status(StatusCodes.OK)
-      .json({ message: MESSAGE.get.succ, data: productMediaURLs });
+      .json({ message: MESSAGE.get.succ, data: productMediaUrl });
   } catch (error) {
-    console.error("Error fetching product media URLs by media ID:", error);
+    console.error("Error fetching product productMedia URLs by productMedia ID:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.get.fail, error: error.message });
   }
 };
 
-// Update a product media URL
-const updateProductMediaURL = async (req, res) => {
+// Update a product productMedia URL
+const updateproductMediaUrl = async (req, res) => {
   try {
     const { id } = req.params;
     const { product_media_id, product_media_url, media_type } = req.body;
 
-    const productMediaURL = await ProductMediaUrl.findByPk(id);
-    if (!productMediaURL) {
+    const productMediaUrl = await productMediaUrl.findByPk(id);
+    if (!productMediaUrl) {
       return res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: MESSAGE.get.none });
     }
 
-    // Check if product media exists if provided
+    // Check if product productMedia exists if provided
     if (product_media_id) {
       const productMedia = await ProductMedia.findByPk(product_media_id);
       if (!productMedia) {
         return res
           .status(StatusCodes.NOT_FOUND)
-          .json({ message: "Product media not found" });
+          .json({ message: "Product productMedia not found" });
       }
     }
 
@@ -161,56 +161,56 @@ const updateProductMediaURL = async (req, res) => {
     }
 
     // Handle image replacement - delete old image if new one is provided
-    if (product_media_url && productMediaURL.product_media_url && 
-        product_media_url !== productMediaURL.product_media_url) {
-      deleteImage(productMediaURL.product_media_url);
+    if (product_media_url && productMediaUrl.product_media_url &&
+      product_media_url !== productMediaUrl.product_media_url) {
+      deleteImage(productMediaUrl.product_media_url);
     }
 
     // Update fields
-    if (product_media_id) productMediaURL.product_media_id = product_media_id;
+    if (product_media_id) productMediaUrl.product_media_id = product_media_id;
     if (product_media_url)
-      productMediaURL.product_media_url = product_media_url;
-    if (media_type) productMediaURL.media_type = media_type;
-    productMediaURL.updated_by = user.dataValues.user_id;
+      productMediaUrl.product_media_url = product_media_url;
+    if (media_type) productMediaUrl.media_type = media_type;
+    productMediaUrl.updated_by = user.dataValues.user_id;
 
-    await productMediaURL.save();
+    await productMediaUrl.save();
 
     res
       .status(StatusCodes.OK)
-      .json({ message: MESSAGE.put.succ, data: productMediaURL });
+      .json({ message: MESSAGE.put.succ, data: productMediaUrl });
   } catch (error) {
-    console.error("Error updating product media URL:", error);
+    console.error("Error updating product productMedia URL:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.put.fail, error: error.message });
   }
 };
 
-// Delete a product media URL
-const deleteProductMediaURL = async (req, res) => {
+// Delete a product productMedia URL
+const deleteproductMediaUrl = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const productMediaURL = await ProductMediaUrl.findByPk(id);
-    if (!productMediaURL) {
+    const productMediaUrl = await productMediaUrl.findByPk(id);
+    if (!productMediaUrl) {
       return res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: MESSAGE.get.none });
     }
 
     // Store image path before deletion
-    const imagePath = productMediaURL.product_media_url;
+    const imagePath = productMediaUrl.product_media_url;
 
-    await productMediaURL.destroy();
-    
+    await productMediaUrl.destroy();
+
     // Delete associated image from filesystem
     if (imagePath) {
       deleteImage(imagePath);
     }
-    
+
     res.status(StatusCodes.OK).json({ message: MESSAGE.delete.succ });
   } catch (error) {
-    console.error("Error deleting product media URL:", error);
+    console.error("Error deleting product productMedia URL:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.delete.fail, error: error.message });
@@ -218,10 +218,10 @@ const deleteProductMediaURL = async (req, res) => {
 };
 
 export default {
-  addProductMediaURL,
-  getAllProductMediaURLs,
-  getProductMediaURLById,
-  getProductMediaURLsByMediaId,
-  updateProductMediaURL,
-  deleteProductMediaURL,
+  addproductMediaUrl,
+  getAllproductMediaUrl,
+  getproductMediaUrlById,
+  getproductMediaUrlByMediaId,
+  updateproductMediaUrl,
+  deleteproductMediaUrl,
 };

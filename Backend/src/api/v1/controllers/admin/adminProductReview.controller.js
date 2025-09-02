@@ -9,7 +9,7 @@ const {
   ProductVariant,
   User,
   ProductMedia,
-  ProductMediaUrl,
+  productMediaUrl,
 } = db;
 
 /**
@@ -61,13 +61,13 @@ export const getAllProductReviews = async (req, res) => {
       reviews.map(async (review) => {
         const plainReview = review.get({ plain: true });
 
-        // Fetch product media separately
+        // Fetch product productMedia separately
         let imageUrl = null;
         let mediaId = null;
 
         if (plainReview.Product?.product_id) {
           try {
-            // First, find the product media
+            // First, find the product productMedia
             const productMedia = await ProductMedia.findOne({
               where: { product_id: plainReview.Product.product_id },
             });
@@ -75,8 +75,8 @@ export const getAllProductReviews = async (req, res) => {
             if (productMedia) {
               mediaId = productMedia.product_media_id;
 
-              // Then, find the media URL
-              const mediaUrl = await ProductMediaUrl.findOne({
+              // Then, find the productMedia URL
+              const mediaUrl = await productMediaUrl.findOne({
                 where: { product_media_id: productMedia.product_media_id },
               });
 
@@ -95,7 +95,7 @@ export const getAllProductReviews = async (req, res) => {
               }
             }
           } catch (error) {
-            console.error("Error fetching product media:", error);
+            console.error("Error fetching product productMedia:", error);
           }
         }
 
@@ -256,13 +256,13 @@ export const getReviewById = async (req, res) => {
       });
     }
 
-    // Get product media separately
+    // Get product productMedia separately
     let imageUrl = null;
     let mediaId = null;
 
     if (review.product_id) {
       try {
-        // First, find the product media
+        // First, find the product productMedia
         const productMedia = await ProductMedia.findOne({
           where: { product_id: review.product_id },
         });
@@ -270,8 +270,8 @@ export const getReviewById = async (req, res) => {
         if (productMedia) {
           mediaId = productMedia.product_media_id;
 
-          // Then, find the media URL
-          const mediaUrl = await ProductMediaUrl.findOne({
+          // Then, find the productMedia URL
+          const mediaUrl = await productMediaUrl.findOne({
             where: { product_media_id: productMedia.product_media_id },
           });
 
@@ -280,7 +280,7 @@ export const getReviewById = async (req, res) => {
           }
         }
       } catch (error) {
-        console.error("Error fetching product media:", error);
+        console.error("Error fetching product productMedia:", error);
       }
     }
 

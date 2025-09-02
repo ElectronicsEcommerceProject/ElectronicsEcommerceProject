@@ -12,7 +12,7 @@ import {
   adminProductVariantRoutes,
   adminProductVariantAttributeValuesRoutes,
   adminProductMediaRoutes,
-  adminProductMediaUrlRoutes,
+  adminproductMediaUrlRoutes,
   adminDiscountRuleRoutes,
   adminOrderRoutes,
   adminUsersManagmentDashboardDataRoutes,
@@ -45,9 +45,9 @@ app.use(
   adminProductVariantAttributeValuesRoutes
 );
 
-app.use("/product-Media", adminProductMediaRoutes); //done upto here...
+app.use("/product-productMedia", adminProductMediaRoutes); //done upto here...
 
-app.use("/product-Media-Url", adminProductMediaUrlRoutes);
+app.use("/product-productMedia-Url", adminproductMediaUrlRoutes);
 
 app.use("/notifications", adminNotificationRoutes); // Notification Management Routes
 

@@ -26,7 +26,7 @@ export { default as adminUserController } from "./admin/adminUser.controller.js"
 export { default as adminProductController } from "./admin/adminProduct.controller.js";
 export { default as adminProductVariantController } from "./admin/adminProductVariant.controller.js";
 export { default as adminProductMediaController } from "./admin/adminProductMedia.controller.js";
-export { default as adminProductMediaURLController } from "./admin/adminProductMediaUrl.controller.js";
+export { default as adminproductMediaUrlController } from "./admin/adminProductMediaUrl.controller.js";
 export { default as adminVariantAttributeValueController } from "./admin/adminProductVariantAttributeValues.controller.js";
 export { default as adminStockAlertController } from "./admin/adminStockAlert.controller.js";
 export { default as adminCouponUserController } from "./admin/adminCouponUser.controller.js";

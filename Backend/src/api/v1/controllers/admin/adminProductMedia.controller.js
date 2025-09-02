@@ -3,9 +3,9 @@ import db from "../../../../models/index.js";
 import MESSAGE from "../../../../constants/message.js";
 import { deleteImages } from "../../../../utils/imageUtils.js";
 
-const { ProductMedia, Product, ProductVariant, User, ProductMediaUrl } = db;
+const { ProductMedia, Product, ProductVariant, User, productMediaUrl } = db;
 
-// Add a new product media
+// Add a new product productMedia
 const addProductMedia = async (req, res) => {
   try {
     const { product_id, product_variant_id, media_type } = req.body;
@@ -38,7 +38,7 @@ const addProductMedia = async (req, res) => {
 
     const created_by = user.dataValues.user_id;
 
-    // Create the new product media
+    // Create the new product productMedia
     const newProductMedia = await ProductMedia.create({
       product_id,
       product_variant_id,
@@ -50,14 +50,14 @@ const addProductMedia = async (req, res) => {
       .status(StatusCodes.CREATED)
       .json({ message: MESSAGE.post.succ, data: newProductMedia });
   } catch (error) {
-    console.error("Error adding product media:", error);
+    console.error("Error adding product productMedia:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.post.fail, error: error.message });
   }
 };
 
-// Get all product media
+// Get all product productMedia
 const getAllProductMedia = async (req, res) => {
   try {
     const productMedia = await ProductMedia.findAll({
@@ -73,14 +73,14 @@ const getAllProductMedia = async (req, res) => {
       .status(StatusCodes.OK)
       .json({ message: MESSAGE.get.succ, data: productMedia });
   } catch (error) {
-    console.error("Error fetching product media:", error);
+    console.error("Error fetching product productMedia:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.get.fail, error: error.message });
   }
 };
 
-// Get product media by ID
+// Get product productMedia by ID
 const getProductMediaById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -104,14 +104,14 @@ const getProductMediaById = async (req, res) => {
       .status(StatusCodes.OK)
       .json({ message: MESSAGE.get.succ, data: productMedia });
   } catch (error) {
-    console.error("Error fetching product media:", error);
+    console.error("Error fetching product productMedia:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.get.fail, error: error.message });
   }
 };
 
-// Get product media by product ID
+// Get product productMedia by product ID
 const getProductMediaByProduct = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -137,14 +137,14 @@ const getProductMediaByProduct = async (req, res) => {
       .status(StatusCodes.OK)
       .json({ message: MESSAGE.get.succ, data: productMedia });
   } catch (error) {
-    console.error("Error fetching product media by product:", error);
+    console.error("Error fetching product productMedia by product:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.get.fail, error: error.message });
   }
 };
 
-// Get product media by variant ID
+// Get product productMedia by variant ID
 const getProductMediaByVariant = async (req, res) => {
   try {
     const { variantId } = req.params;
@@ -170,14 +170,14 @@ const getProductMediaByVariant = async (req, res) => {
       .status(StatusCodes.OK)
       .json({ message: MESSAGE.get.succ, data: productMedia });
   } catch (error) {
-    console.error("Error fetching product media by variant:", error);
+    console.error("Error fetching product productMedia by variant:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.get.fail, error: error.message });
   }
 };
 
-// Update a product media
+// Update a product productMedia
 const updateProductMedia = async (req, res) => {
   try {
     const { id } = req.params;
@@ -231,26 +231,26 @@ const updateProductMedia = async (req, res) => {
       .status(StatusCodes.OK)
       .json({ message: MESSAGE.put.succ, data: productMedia });
   } catch (error) {
-    console.error("Error updating product media:", error);
+    console.error("Error updating product productMedia:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.put.fail, error: error.message });
   }
 };
 
-// Delete a product media
+// Delete a product productMedia
 const deleteProductMedia = async (req, res) => {
   try {
     const { id } = req.params;
 
     const productMedia = await ProductMedia.findByPk(id, {
       include: [{
-        model: ProductMediaUrl,
-        as: "ProductMediaURLs",
+        model: productMediaUrl,
+        as: "productMediaUrl",
         attributes: ["product_media_url"]
       }]
     });
-    
+
     if (!productMedia) {
       return res
         .status(StatusCodes.NOT_FOUND)
@@ -259,8 +259,8 @@ const deleteProductMedia = async (req, res) => {
 
     // Collect image URLs to delete
     const imagesToDelete = [];
-    if (productMedia.ProductMediaURLs) {
-      productMedia.ProductMediaURLs.forEach(mediaUrl => {
+    if (productMedia.productMediaUrl) {
+      productMedia.productMediaUrl.forEach(mediaUrl => {
         if (mediaUrl.product_media_url) {
           imagesToDelete.push(mediaUrl.product_media_url);
         }
@@ -268,13 +268,13 @@ const deleteProductMedia = async (req, res) => {
     }
 
     await productMedia.destroy();
-    
+
     // Delete associated images from filesystem
     deleteImages(imagesToDelete);
 
     res.status(StatusCodes.OK).json({ message: MESSAGE.delete.succ });
   } catch (error) {
-    console.error("Error deleting product media:", error);
+    console.error("Error deleting product productMedia:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.delete.fail, error: error.message });

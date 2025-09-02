@@ -20,7 +20,7 @@ export const productMediaValidator = Joi.object({
     .default("image")
     .messages({
       "any.only": MESSAGE.custom(
-        "Media type must be either 'image' or 'video'"
+        "productMedia type must be either 'image' or 'video'"
       ),
     }),
 });
@@ -44,7 +44,7 @@ export const productMediaUpdateValidator = Joi.object({
     .optional()
     .messages({
       "any.only": MESSAGE.custom(
-        "Media type must be either 'image' or 'video'"
+        "productMedia type must be either 'image' or 'video'"
       ),
     }),
 });
