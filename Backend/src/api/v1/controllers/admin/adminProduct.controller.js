@@ -225,7 +225,7 @@ const getProductsByCategoryId = async (req, res) => {
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           include: [
             {
               model: productMediaUrl,
@@ -256,7 +256,7 @@ const getProductsByCategoryId = async (req, res) => {
       const coupons = prod.coupons || [];
       const variants = prod.variants || [];
       const reviews = prod.reviews || [];
-      const media = prod.media || [];
+      const productMedia = prod.productMedia || [];
 
       // Calculate discount from coupons
       let leastDiscountCoupon = null;
@@ -287,8 +287,8 @@ const getProductsByCategoryId = async (req, res) => {
 
       // Get product image
       let productImage = null;
-      if (media && media.length > 0) {
-        const mediaWithUrl = media.find(
+      if (productMedia && productMedia.length > 0) {
+        const mediaWithUrl = productMedia.find(
           (m) => m.productMediaUrl && m.productMediaUrl.length > 0
         );
         if (mediaWithUrl) {
@@ -514,7 +514,7 @@ const deleteProduct = async (req, res) => {
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           include: [{
             model: productMediaUrl,
             as: "productMediaUrl",
@@ -542,11 +542,11 @@ const deleteProduct = async (req, res) => {
       });
     }
 
-    // Add product media images
-    if (product.media) {
-      product.media.forEach(media => {
-        if (media.productMediaUrl) {
-          media.productMediaUrl.forEach(mediaUrl => {
+    // Add product productMedia images
+    if (product.productMedia) {
+      product.productMedia.forEach(productMedia => {
+        if (productMedia.productMediaUrl) {
+          productMedia.productMediaUrl.forEach(mediaUrl => {
             if (mediaUrl.product_media_url) {
               imagesToDelete.push(mediaUrl.product_media_url);
             }
@@ -647,7 +647,7 @@ const getProductsByBrandId = async (req, res) => {
         },
         {
           model: ProductMedia,
-          as: "media",
+          as: "productMedia",
           attributes: ["product_media_id", "media_type"],
           include: [
             {
@@ -691,7 +691,7 @@ const getProductsByBrandId = async (req, res) => {
       const variants = prod.variants || []; // Fixed: use correct alias
       const reviews = prod.reviews || []; // Fixed: use correct alias
       const orders = prod.orderItems || []; // Fixed: use correct alias
-      const media = prod.media || []; // Product media
+      const productMedia = prod.productMedia || []; // Product productMedia
 
       // console.log("basePrice:", basePrice);
       // console.log("Coupons:", coupons);
@@ -699,7 +699,7 @@ const getProductsByBrandId = async (req, res) => {
       // console.log("Variants:", variants);
       // console.log("Reviews:", reviews);
       // console.log("Orders:", orders);
-      // console.log("Media:", media);
+      // console.log("productMedia:", productMedia);
 
       // Find the LEAST discount coupon to show to user (smallest discount_value)
       let leastDiscountCoupon = null;
@@ -782,9 +782,9 @@ const getProductsByBrandId = async (req, res) => {
       // Get product image from productMediaUrl
       let productImage = null;
 
-      if (media && media.length > 0) {
-        // Find the first media item that has productMediaUrl (note the capital U)
-        const mediaWithUrl = media.find(
+      if (productMedia && productMedia.length > 0) {
+        // Find the first productMedia item that has productMediaUrl (note the capital U)
+        const mediaWithUrl = productMedia.find(
           (m) => m.productMediaUrl && m.productMediaUrl.length > 0
         );
         if (mediaWithUrl) {
@@ -792,7 +792,7 @@ const getProductsByBrandId = async (req, res) => {
         }
       }
 
-      // Fallback to variant image if no product media found
+      // Fallback to variant image if no product productMedia found
       if (!productImage && variants && variants.length > 0) {
         productImage = variants[0]?.base_variant_image_url || null;
       }

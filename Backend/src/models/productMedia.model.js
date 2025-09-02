@@ -54,10 +54,10 @@ export default (sequelize) => {
   };
 
   // Add hooks for automatic image cleanup
-  ProductMedia.addHook('beforeDestroy', async (media, options) => {
+  ProductMedia.addHook('beforeDestroy', async (productMedia, options) => {
     try {
-      // Get all related media URLs before deletion
-      const mediaWithUrls = await ProductMedia.findByPk(media.product_media_id, {
+      // Get all related productMedia URLs before deletion
+      const mediaWithUrls = await ProductMedia.findByPk(productMedia.product_media_id, {
         include: [{
           model: sequelize.models.productMediaUrl,
           as: "productMediaUrl",
@@ -73,7 +73,7 @@ export default (sequelize) => {
         deleteImages(imagesToDelete);
       }
     } catch (error) {
-      console.error('Error cleaning up media images:', error);
+      console.error('Error cleaning up productMedia images:', error);
     }
   });
 

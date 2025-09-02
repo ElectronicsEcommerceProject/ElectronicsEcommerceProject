@@ -5,17 +5,17 @@ import { deleteImage } from "../../../../utils/imageUtils.js";
 
 const { productMediaUrl, ProductMedia, User } = db;
 
-// Add a new product media URL
+// Add a new product productMedia URL
 const addproductMediaUrl = async (req, res) => {
   try {
     const { product_media_id, product_media_url, media_type } = req.body;
 
-    // Check if product media exists
+    // Check if product productMedia exists
     const productMedia = await ProductMedia.findByPk(product_media_id);
     if (!productMedia) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Product media not found" });
+        .json({ message: "Product productMedia not found" });
     }
 
     // Get the user ID of the creator
@@ -27,7 +27,7 @@ const addproductMediaUrl = async (req, res) => {
     }
     const created_by = user.dataValues.user_id;
 
-    // Create the new product media URL
+    // Create the new product productMedia URL
     const newproductMediaUrl = await productMediaUrl.create({
       product_media_id,
       product_media_url,
@@ -39,14 +39,14 @@ const addproductMediaUrl = async (req, res) => {
       .status(StatusCodes.CREATED)
       .json({ message: MESSAGE.post.succ, data: newproductMediaUrl });
   } catch (error) {
-    console.error("Error adding product media URL:", error);
+    console.error("Error adding product productMedia URL:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.post.fail, error: error.message });
   }
 };
 
-// Get all product media URLs
+// Get all product productMedia URLs
 const getAllproductMediaUrl = async (req, res) => {
   try {
     const productMediaUrl = await productMediaUrl.findAll({
@@ -61,14 +61,14 @@ const getAllproductMediaUrl = async (req, res) => {
       .status(StatusCodes.OK)
       .json({ message: MESSAGE.get.succ, data: productMediaUrl });
   } catch (error) {
-    console.error("Error fetching product media URLs:", error);
+    console.error("Error fetching product productMedia URLs:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.get.fail, error: error.message });
   }
 };
 
-// Get product media URL by ID
+// Get product productMedia URL by ID
 const getproductMediaUrlById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -90,24 +90,24 @@ const getproductMediaUrlById = async (req, res) => {
       .status(StatusCodes.OK)
       .json({ message: MESSAGE.get.succ, data: productMediaUrl });
   } catch (error) {
-    console.error("Error fetching product media URL:", error);
+    console.error("Error fetching product productMedia URL:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.get.fail, error: error.message });
   }
 };
 
-// Get product media URLs by media ID
+// Get product productMedia URLs by productMedia ID
 const getproductMediaUrlByMediaId = async (req, res) => {
   try {
     const { mediaId } = req.params;
 
-    // Check if product media exists
+    // Check if product productMedia exists
     const productMedia = await ProductMedia.findByPk(mediaId);
     if (!productMedia) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Product media not found" });
+        .json({ message: "Product productMedia not found" });
     }
 
     const productMediaUrl = await productMediaUrl.findAll({
@@ -122,14 +122,14 @@ const getproductMediaUrlByMediaId = async (req, res) => {
       .status(StatusCodes.OK)
       .json({ message: MESSAGE.get.succ, data: productMediaUrl });
   } catch (error) {
-    console.error("Error fetching product media URLs by media ID:", error);
+    console.error("Error fetching product productMedia URLs by productMedia ID:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.get.fail, error: error.message });
   }
 };
 
-// Update a product media URL
+// Update a product productMedia URL
 const updateproductMediaUrl = async (req, res) => {
   try {
     const { id } = req.params;
@@ -142,13 +142,13 @@ const updateproductMediaUrl = async (req, res) => {
         .json({ message: MESSAGE.get.none });
     }
 
-    // Check if product media exists if provided
+    // Check if product productMedia exists if provided
     if (product_media_id) {
       const productMedia = await ProductMedia.findByPk(product_media_id);
       if (!productMedia) {
         return res
           .status(StatusCodes.NOT_FOUND)
-          .json({ message: "Product media not found" });
+          .json({ message: "Product productMedia not found" });
       }
     }
 
@@ -179,14 +179,14 @@ const updateproductMediaUrl = async (req, res) => {
       .status(StatusCodes.OK)
       .json({ message: MESSAGE.put.succ, data: productMediaUrl });
   } catch (error) {
-    console.error("Error updating product media URL:", error);
+    console.error("Error updating product productMedia URL:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.put.fail, error: error.message });
   }
 };
 
-// Delete a product media URL
+// Delete a product productMedia URL
 const deleteproductMediaUrl = async (req, res) => {
   try {
     const { id } = req.params;
@@ -210,7 +210,7 @@ const deleteproductMediaUrl = async (req, res) => {
 
     res.status(StatusCodes.OK).json({ message: MESSAGE.delete.succ });
   } catch (error) {
-    console.error("Error deleting product media URL:", error);
+    console.error("Error deleting product productMedia URL:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: MESSAGE.delete.fail, error: error.message });

@@ -8,7 +8,7 @@ import { validators } from "../../validators/index.js";
 import { adminProductMediaController } from "../../controllers/index.js";
 const router = express.Router();
 
-// Add a new product media
+// Add a new product productMedia
 router.post(
   "/",
   verifyJwtToken,
@@ -17,10 +17,10 @@ router.post(
   adminProductMediaController.addProductMedia
 );
 
-// Get all product media
+// Get all product productMedia
 router.get("/", verifyJwtToken, adminProductMediaController.getAllProductMedia);
 
-// Get product media by ID
+// Get product productMedia by ID
 router.get(
   "/:id",
   verifyJwtToken,
@@ -28,21 +28,21 @@ router.get(
   adminProductMediaController.getProductMediaById
 );
 
-// Get product media by product ID
+// Get product productMedia by product ID
 router.get(
   "/product/:productId",
   verifyJwtToken,
   adminProductMediaController.getProductMediaByProduct
 );
 
-// Get product media by variant ID
+// Get product productMedia by variant ID
 router.get(
   "/variant/:variantId",
   verifyJwtToken,
   adminProductMediaController.getProductMediaByVariant
 );
 
-// Update a product media
+// Update a product productMedia
 router.put(
   "/:id",
   verifyJwtToken,
@@ -52,7 +52,7 @@ router.put(
   adminProductMediaController.updateProductMedia
 );
 
-// Delete a product media
+// Delete a product productMedia
 router.delete(
   "/:id",
   verifyJwtToken,

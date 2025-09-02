@@ -52,7 +52,7 @@ export default (sequelize) => {
         deleteImage(mediaUrl.product_media_url);
       }
     } catch (error) {
-      console.error('Error cleaning up media URL image:', error);
+      console.error('Error cleaning up productMedia URL image:', error);
     }
   });
 

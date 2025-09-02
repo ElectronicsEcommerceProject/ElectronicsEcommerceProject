@@ -87,7 +87,7 @@ const getMultipleProductImages = async (productIds, req) => {
       attributes: ["product_id", "product_media_id"],
     });
 
-    const mediaIds = productMediaList.map((media) => media.product_media_id);
+    const mediaIds = productMediaList.map((productMedia) => productMedia.product_media_id);
     const mediaUrls = await productMediaUrl.findAll({
       where: { product_media_id: { [Op.in]: mediaIds } },
       attributes: ["product_media_id", "product_media_url"],
@@ -99,16 +99,16 @@ const getMultipleProductImages = async (productIds, req) => {
     }, {});
 
     const imageMap = {};
-    productMediaList.forEach((media) => {
-      let imageUrl = urlMap[media.product_media_id] || null;
+    productMediaList.forEach((productMedia) => {
+      let imageUrl = urlMap[productMedia.product_media_id] || null;
       if (imageUrl && !imageUrl.startsWith("http")) {
         imageUrl = `${req.protocol}://${req.get("host")}/${imageUrl.replace(
           /\\/g,
           "/"
         )}`;
       }
-      imageMap[media.product_id] = {
-        id: media.product_media_id,
+      imageMap[productMedia.product_id] = {
+        id: productMedia.product_media_id,
         url: imageUrl,
       };
     });
@@ -1049,10 +1049,10 @@ const getCouponsAnalyticsData = async (req, res) => {
         usageLimit: parseInt(entry.usage_limit) || 0,
         expiryDate: formatDateToString(entry.valid_to),
         details: `${entry.type === "percentage"
-            ? `${entry.discount_value}% off`
-            : entry.type === "fixed"
-              ? `$${entry.discount_value} off`
-              : "Unknown discount type"
+          ? `${entry.discount_value}% off`
+          : entry.type === "fixed"
+            ? `$${entry.discount_value} off`
+            : "Unknown discount type"
           }`,
       }));
 

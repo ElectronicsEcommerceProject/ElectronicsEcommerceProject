@@ -462,7 +462,7 @@ const getCartItemsByUserId = async (req, res) => {
                 },
                 {
                   model: ProductMedia,
-                  as: "media",
+                  as: "productMedia",
                   attributes: ["product_media_id", "media_type"],
                   include: [
                     {
@@ -623,11 +623,11 @@ const getCartItemsByUserId = async (req, res) => {
           req
         );
       } else if (
-        product?.media?.[0]?.productMediaUrl?.[0]?.product_media_url
+        product?.productMedia?.[0]?.productMediaUrl?.[0]?.product_media_url
       ) {
         // Third priority: product's ProductMedia URL
         mainImage = convertToFullUrl(
-          product.media[0].productMediaUrl[0].product_media_url,
+          product.productMedia[0].productMediaUrl[0].product_media_url,
           req
         );
       }
@@ -701,8 +701,8 @@ const getCartItemsByUserId = async (req, res) => {
           rating_count: totalReviewCount,
           // Override rating_average with combined average
           rating_average: combinedRating.toFixed(1),
-          // Transform media URLs to full URLs
-          media: product.media?.map(mediaItem => ({
+          // Transform productMedia URLs to full URLs
+          productMedia: product.productMedia?.map(mediaItem => ({
             ...mediaItem.toJSON(),
             productMediaUrl: mediaItem.productMediaUrl?.map(urlItem => ({
               ...urlItem.toJSON(),

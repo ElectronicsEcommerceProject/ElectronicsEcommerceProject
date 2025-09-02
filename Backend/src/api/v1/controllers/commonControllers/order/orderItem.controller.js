@@ -129,7 +129,7 @@ export const getOrderItemsByOrderId = async (req, res) => {
           include: [
             {
               model: ProductMedia,
-              as: "media",
+              as: "productMedia",
               attributes: ["product_media_id", "media_type"],
               include: [
                 {
@@ -183,10 +183,10 @@ export const getOrderItemsByOrderId = async (req, res) => {
           req
         );
       } else if (
-        product?.media?.[0]?.productMediaUrl?.[0]?.product_media_url
+        product?.productMedia?.[0]?.productMediaUrl?.[0]?.product_media_url
       ) {
         mainImage = convertToFullUrl(
-          product.media[0].productMediaUrl[0].product_media_url,
+          product.productMedia[0].productMediaUrl[0].product_media_url,
           req
         );
       }
@@ -234,7 +234,7 @@ export const getOrderItemById = async (req, res) => {
           include: [
             {
               model: ProductMedia,
-              as: "media",
+              as: "productMedia",
               attributes: ["product_media_id", "media_type"],
               include: [
                 {
@@ -292,9 +292,9 @@ export const getOrderItemById = async (req, res) => {
         variant.ProductMedia[0].productMediaUrl[0].product_media_url,
         req
       );
-    } else if (product?.media?.[0]?.productMediaUrl?.[0]?.product_media_url) {
+    } else if (product?.productMedia?.[0]?.productMediaUrl?.[0]?.product_media_url) {
       mainImage = convertToFullUrl(
-        product.media[0].productMediaUrl[0].product_media_url,
+        product.productMedia[0].productMediaUrl[0].product_media_url,
         req
       );
     }
