@@ -16,6 +16,22 @@ const {
   Category,
 } = db;
 
+/**
+ * Convert relative path to full URL for response
+ * @param {string} imagePath - Image path
+ * @param {Object} req - Express request object
+ * @returns {string} Full URL
+ */
+const convertToFullUrl = (imagePath, req) => {
+  if (imagePath && !imagePath.startsWith("http")) {
+    return `${req.protocol}://${req.get("host")}/${imagePath.replace(
+      /\\/g,
+      "/"
+    )}`;
+  }
+  return imagePath || "";
+};
+
 // Controller: Fetch products for user dashboard with detailed info
 const getUserDashboardProducts = async (req, res) => {
   try {
@@ -123,11 +139,7 @@ const getUserDashboardProducts = async (req, res) => {
       // Determine image URL from product productMedia
       let image = null;
       if (prod.productMedia && prod.productMedia.length > 0 && prod.productMedia[0].productMediaUrl && prod.productMedia[0].productMediaUrl.length > 0) {
-        image = prod.productMedia[0].productMediaUrl[0].product_media_url;
-        image = image.replace(/\\/g, "/");
-        if (!image.startsWith("http")) {
-          image = `${req.protocol}://${req.get("host")}/${image}`;
-        }
+        image = convertToFullUrl(prod.productMedia[0].productMediaUrl[0].product_media_url, req);
       } else {
         image = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop";
       }
