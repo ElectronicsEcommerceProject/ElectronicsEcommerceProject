@@ -9,7 +9,7 @@ const {
   Product,
   ProductVariant,
   ProductMedia,
-  ProductMediaUrl,
+  productMediaUrl,
   Brand,
   ProductReview,
   Coupon,
@@ -119,7 +119,7 @@ const getUserDashboardProducts = async (req, res) => {
           as: "productMedia",
           include: [
             {
-              model: ProductMediaUrl,
+              model: productMediaUrl,
               as: "productMediaUrl",
               attributes: ["product_media_url"],
               where: { media_type: "image" },
