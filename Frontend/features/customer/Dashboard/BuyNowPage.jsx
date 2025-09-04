@@ -68,8 +68,9 @@ const BuyNowPage = () => {
 
   // Update review form data when selected variant changes
   useEffect(() => {
-    if (selectedVariant && productData?.mainProduct?.variants) {
-      const variantData = productData.mainProduct.variants.find(
+    if (selectedVariant && (productData?.mainProduct?.productVariant || productData?.mainProduct?.variants)) {
+      const variants = productData.mainProduct.productVariant || productData.mainProduct.variants;
+      const variantData = variants.find(
         (v) => v.description === selectedVariant
       );
       if (variantData) {
@@ -141,13 +142,14 @@ const BuyNowPage = () => {
     if (productData && productData.mainProduct) {
       // Use the first variant's description as the selected variant
       const firstVariant =
+        productData.mainProduct.productVariant?.[0]?.description ||
         productData.mainProduct.variants?.[0]?.description ||
         productData.mainProduct.variantNames?.[0] ||
         "";
       setSelectedVariant(firstVariant);
 
       // Set minimum quantity from the first variant's min_retailer_quantity
-      const firstVariantData = productData.mainProduct.variants?.[0];
+      const firstVariantData = productData.mainProduct.productVariant?.[0] || productData.mainProduct.variants?.[0];
       const minRetailerQty = firstVariantData?.min_retailer_quantity || 1;
       setMinQuantity(minRetailerQty);
       setQuantity(minRetailerQty); // Start quantity from minimum required
@@ -169,8 +171,9 @@ const BuyNowPage = () => {
 
   // Update minimum quantity and image when selected variant changes
   useEffect(() => {
-    if (selectedVariant && productData?.mainProduct?.variants) {
-      const variantData = productData.mainProduct.variants.find(
+    if (selectedVariant && (productData?.mainProduct?.productVariant || productData?.mainProduct?.variants)) {
+      const variants = productData.mainProduct.productVariant || productData.mainProduct.variants;
+      const variantData = variants.find(
         (v) => v.description === selectedVariant
       );
       if (variantData) {
@@ -321,8 +324,9 @@ const BuyNowPage = () => {
     }
 
     // Add variant images if available
-    if (mainProduct.variants && Array.isArray(mainProduct.variants)) {
-      mainProduct.variants.forEach((variant) => {
+    const variants = mainProduct.productVariant || mainProduct.variants;
+    if (variants && Array.isArray(variants)) {
+      variants.forEach((variant) => {
         if (
           variant.base_variant_image_url &&
           variant.base_variant_image_url.trim() !== "" &&
@@ -416,8 +420,9 @@ const BuyNowPage = () => {
 
   // Helper function to get current variant price
   const getCurrentVariantPrice = () => {
-    if (selectedVariant && mainProduct.variants) {
-      const variantData = mainProduct.variants.find(
+    if (selectedVariant && (mainProduct.productVariant || mainProduct.variants)) {
+      const variants = mainProduct.productVariant || mainProduct.variants;
+      const variantData = variants.find(
         (v) => v.description === selectedVariant
       );
       return variantData
@@ -689,7 +694,8 @@ const BuyNowPage = () => {
           <div className="flex flex-col md:flex-row gap-3 mt-4">
             <button
               onClick={async () => {
-                const variantData = mainProduct.variants?.find(
+                const variants = mainProduct.productVariant || mainProduct.variants;
+                const variantData = variants?.find(
                   (v) => v.description === selectedVariant
                 );
 
@@ -861,7 +867,8 @@ const BuyNowPage = () => {
 
             <button
               onClick={async () => {
-                const variantData = mainProduct.variants?.find(
+                const variants = mainProduct.productVariant || mainProduct.variants;
+                const variantData = variants?.find(
                   (v) => v.description === selectedVariant
                 );
 
@@ -982,7 +989,8 @@ const BuyNowPage = () => {
               {(() => {
                 if (buyingNow) return "ORDERING...";
 
-                const variantData = mainProduct.variants?.find(
+                const variants = mainProduct.productVariant || mainProduct.variants;
+                const variantData = variants?.find(
                   (v) => v.description === selectedVariant
                 );
                 if (!variantData)
