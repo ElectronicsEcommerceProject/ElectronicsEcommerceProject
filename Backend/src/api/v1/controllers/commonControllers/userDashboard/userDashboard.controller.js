@@ -9,7 +9,7 @@ const {
   Product,
   ProductVariant,
   ProductMedia,
-  productMediaUrl,
+  ProductMediaUrl,
   Brand,
   ProductReview,
   Coupon,
@@ -49,14 +49,14 @@ const getUserDashboardProducts = async (req, res) => {
 
     // Pagination parameters
     const { page, limit, offset } = getPaginationParams(req);
-    
+
     // Search parameters
     const search = req.query.search?.trim();
     const brand = req.query.brand?.trim();
-    
+
     // Create cache key based on parameters
     const cacheKey = `userDashboardData:${userRole}:page:${page}:limit:${limit}:search:${search || 'none'}:brand:${brand || 'none'}`;
-    
+
     // Check cache first
     const cachedData = await cacheUtils.get(cacheKey);
     if (cachedData) {
@@ -70,7 +70,6 @@ const getUserDashboardProducts = async (req, res) => {
 
     // Build where conditions
     const whereConditions = { is_active: true };
-    const includeConditions = [];
 
     // Add search conditions
     if (search) {
@@ -101,7 +100,7 @@ const getUserDashboardProducts = async (req, res) => {
         {
           model: ProductVariant,
           as: "productVariant",
-          attributes: ["product_variant_id", "stock_quantity"],
+          attributes: ["product_variant_id", "stock_quantity", "base_variant_image_url"],
           include: [
             {
               model: AttributeValue,
@@ -120,7 +119,7 @@ const getUserDashboardProducts = async (req, res) => {
           as: "productMedia",
           include: [
             {
-              model: productMediaUrl,
+              model: ProductMediaUrl,
               as: "productMediaUrl",
               attributes: ["product_media_url"],
               where: { media_type: "image" },
@@ -137,12 +136,12 @@ const getUserDashboardProducts = async (req, res) => {
         },
         {
           model: ProductReview,
-          as: "productReviews",
+          as: "reviews",
           attributes: ["rating"],
         },
         {
           model: Coupon,
-          as: "coupons",
+          as: "coupon",
           where: {
             is_active: true,
             valid_from: { [Op.lte]: new Date() },
@@ -164,8 +163,8 @@ const getUserDashboardProducts = async (req, res) => {
 
       // Calculate discount from coupon
       let discountPercent = 0;
-      if (prod.coupons && prod.coupons.length > 0) {
-        const coupon = prod.coupons[0];
+      if (prod.coupon && prod.coupon.length > 0) {
+        const coupon = prod.coupon[0];
         if (coupon.type === "percentage") {
           discountPercent = parseFloat(coupon.discount_value);
         } else if (coupon.type === "fixed") {
@@ -176,18 +175,34 @@ const getUserDashboardProducts = async (req, res) => {
         }
       }
 
-      // Determine image URL from product productMedia
+      // Determine image URL with fallback logic
       let image = null;
-      if (prod.productMedia && prod.productMedia.length > 0 && prod.productMedia[0].productMediaUrl && prod.productMedia[0].productMediaUrl.length > 0) {
-        image = convertToFullUrl(prod.productMedia[0].productMediaUrl[0].product_media_url, req);
+
+      // First try: ProductMedia images
+      if (prod.productMedia && prod.productMedia.length > 0 &&
+        prod.productMedia[0].productMediaUrl && prod.productMedia[0].productMediaUrl.length > 0) {
+        image = prod.productMedia[0].productMediaUrl[0].product_media_url;
+      }
+      // Second try: Variant base image
+      else if (variant && variant.base_variant_image_url) {
+        image = variant.base_variant_image_url;
+      }
+
+      // Convert to full URL if we have an image
+      if (image) {
+        image = image.replace(/\\/g, "/");
+        if (!image.startsWith("http")) {
+          image = `${req.protocol}://${req.get("host")}/${image}`;
+        }
       } else {
+        // Fallback to placeholder
         image = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop";
       }
 
       // Calculate average rating
-      const ratingCount = prod.productReviews.length;
+      const ratingCount = prod.reviews.length;
       const avgRating = ratingCount
-        ? prod.productReviews.reduce((sum, r) => sum + r.rating, 0) / ratingCount
+        ? prod.reviews.reduce((sum, r) => sum + r.rating, 0) / ratingCount
         : 0;
 
       // Extract features from all variants' attribute values
@@ -232,10 +247,10 @@ const getUserDashboardProducts = async (req, res) => {
       data,
       pagination: createPaginationResponse(count, page, limit)
     };
-    
+
     // Cache the response
     await cacheUtils.set(cacheKey, response);
-    
+
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
