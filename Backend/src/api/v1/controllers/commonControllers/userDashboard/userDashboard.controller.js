@@ -16,19 +16,102 @@ const {
   Category,
 } = db;
 
+<<<<<<< Updated upstream
+=======
+/**
+ * Convert relative path to full URL for response
+ * @param {string} imagePath - Image path
+ * @param {Object} req - Express request object
+ * @returns {string} Full URL
+ */
+const convertToFullUrl = (imagePath, req) => {
+  if (imagePath && !imagePath.startsWith("http")) {
+    const fullUrl = `${req.protocol}://${req.get("host")}/${imagePath.replace(
+      /\\/g,
+      "/"
+    )}`;
+    console.log(`🔗 Converting URL: ${imagePath} -> ${fullUrl}`);
+    return fullUrl;
+  }
+  console.log(`🔗 URL already full or empty: ${imagePath}`);
+  return imagePath || "";
+};
+
+>>>>>>> Stashed changes
 // Controller: Fetch products for user dashboard with detailed info
 const getUserDashboardProducts = async (req, res) => {
+  console.log('🚀 getUserDashboardProducts called - START');
   try {
     // Get user role from JWT token
     const userRole = req.user?.role;
+    console.log('👤 User role:', userRole);
 
     if (!userRole) {
+      console.log('❌ No user role found');
       return res.status(StatusCodes.UNAUTHORIZED).json({
         success: false,
         message: "User role not found in token",
       });
     }
 
+<<<<<<< Updated upstream
+=======
+    // Pagination parameters
+    const { page, limit, offset } = getPaginationParams(req);
+    console.log('📄 Pagination:', { page, limit, offset });
+    
+    // Search parameters
+    const search = req.query.search?.trim();
+    const brand = req.query.brand?.trim();
+    console.log('🔍 Search params:', { search, brand });
+    
+    // Create cache key based on parameters
+    const cacheKey = `userDashboardData:${userRole}:page:${page}:limit:${limit}:search:${search || 'none'}:brand:${brand || 'none'}`;
+    console.log('🔑 Cache key:', cacheKey);
+    
+    // Clear cache to force fresh data (temporary for debugging)
+    await cacheUtils.clearPatterns(cacheKey);
+    console.log('🗑️ Cache cleared for debugging');
+    
+    // Check cache first
+    console.log('💾 Checking cache...');
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      console.log('📦 Cached data sample:', JSON.stringify(cachedData.data?.[0], null, 2));
+      // Check if cached data has placeholder images - if so, clear cache and fetch fresh
+      const hasPlaceholders = cachedData.data?.some(item => 
+        item.image && item.image.includes('unsplash.com')
+      );
+      console.log('🔍 Has placeholders:', hasPlaceholders);
+      if (hasPlaceholders) {
+        console.log('🗑️ Cache contains placeholder images, clearing cache and fetching fresh data');
+        await cacheUtils.delete(cacheKey);
+      } else {
+        console.log('✅ Cache hit, returning cached data');
+        return res.status(StatusCodes.OK).json({
+          success: true,
+          message: "Cached response",
+          fromCache: true,
+          ...cachedData
+        });
+      }
+    }
+    console.log('❌ Cache miss, proceeding with database query');
+
+    // Build where conditions
+    const whereConditions = { is_active: true };
+    const includeConditions = [];
+
+    // Add search conditions
+    if (search) {
+      whereConditions[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } },
+        { short_description: { [Op.like]: `%${search}%` } }
+      ];
+    }
+
+>>>>>>> Stashed changes
     // Fetch active products with related data filtered by user role
     const products = await Product.findAll({
       where: { is_active: true },
@@ -47,7 +130,7 @@ const getUserDashboardProducts = async (req, res) => {
         {
           model: ProductVariant,
           as: "productVariant",
-          attributes: ["product_variant_id", "stock_quantity"],
+          attributes: ["product_variant_id", "stock_quantity", "base_variant_image_url"],
           include: [
             {
               model: AttributeValue,
@@ -100,6 +183,8 @@ const getUserDashboardProducts = async (req, res) => {
       ],
     });
 
+    console.log(`📊 Query result: ${count} total products, ${products.length} products fetched`);
+
     // Transform data into desired format
     const data = products.map((prod) => {
       const variant = prod.productVariant?.[0];
@@ -122,15 +207,26 @@ const getUserDashboardProducts = async (req, res) => {
 
       // Determine image URL from product media
       let image = null;
+      console.log(`📸 Product ${prod.name} - productMedia:`, prod.productMedia?.length || 0, 'items');
       if (prod.productMedia && prod.productMedia.length > 0 && prod.productMedia[0].productMediaUrl && prod.productMedia[0].productMediaUrl.length > 0) {
+<<<<<<< Updated upstream
         image = prod.productMedia[0].productMediaUrl[0].product_media_url;
         image = image.replace(/\\/g, "/");
         if (!image.startsWith("http")) {
           image = `${req.protocol}://${req.get("host")}/${image}`;
         }
+=======
+        console.log(`📸 Product ${prod.name} - Found productMedia image:`, prod.productMedia[0].productMediaUrl[0].product_media_url);
+        image = convertToFullUrl(prod.productMedia[0].productMediaUrl[0].product_media_url, req);
+      } else if (variant && variant.base_variant_image_url) {
+        console.log(`📸 Product ${prod.name} - Using variant image:`, variant.base_variant_image_url);
+        image = convertToFullUrl(variant.base_variant_image_url, req);
+>>>>>>> Stashed changes
       } else {
+        console.log(`📸 Product ${prod.name} - No images found, using placeholder`);
         image = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop";
       }
+      console.log(`📸 Final image URL for ${prod.name}:`, image);
 
       // Calculate average rating
       const ratingCount = prod.reviews.length;
