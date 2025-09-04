@@ -49,14 +49,14 @@ const getUserDashboardProducts = async (req, res) => {
 
     // Pagination parameters
     const { page, limit, offset } = getPaginationParams(req);
-    
+
     // Search parameters
     const search = req.query.search?.trim();
     const brand = req.query.brand?.trim();
-    
+
     // Create cache key based on parameters
     const cacheKey = `userDashboardData:${userRole}:page:${page}:limit:${limit}:search:${search || 'none'}:brand:${brand || 'none'}`;
-    
+
     // Check cache first
     const cachedData = await cacheUtils.get(cacheKey);
     if (cachedData) {
@@ -70,7 +70,6 @@ const getUserDashboardProducts = async (req, res) => {
 
     // Build where conditions
     const whereConditions = { is_active: true };
-    const includeConditions = [];
 
     // Add search conditions
     if (search) {
@@ -101,7 +100,7 @@ const getUserDashboardProducts = async (req, res) => {
         {
           model: ProductVariant,
           as: "productVariant",
-          attributes: ["product_variant_id", "stock_quantity"],
+          attributes: ["product_variant_id", "stock_quantity", "base_variant_image_url"],
           include: [
             {
               model: AttributeValue,
@@ -176,11 +175,27 @@ const getUserDashboardProducts = async (req, res) => {
         }
       }
 
-      // Determine image URL from product productMedia
+      // Determine image URL with fallback logic
       let image = null;
-      if (prod.productMedia && prod.productMedia.length > 0 && prod.productMedia[0].productMediaUrl && prod.productMedia[0].productMediaUrl.length > 0) {
-        image = convertToFullUrl(prod.productMedia[0].productMediaUrl[0].product_media_url, req);
+
+      // First try: ProductMedia images
+      if (prod.productMedia && prod.productMedia.length > 0 &&
+        prod.productMedia[0].productMediaUrl && prod.productMedia[0].productMediaUrl.length > 0) {
+        image = prod.productMedia[0].productMediaUrl[0].product_media_url;
+      }
+      // Second try: Variant base image
+      else if (variant && variant.base_variant_image_url) {
+        image = variant.base_variant_image_url;
+      }
+
+      // Convert to full URL if we have an image
+      if (image) {
+        image = image.replace(/\\/g, "/");
+        if (!image.startsWith("http")) {
+          image = `${req.protocol}://${req.get("host")}/${image}`;
+        }
       } else {
+        // Fallback to placeholder
         image = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop";
       }
 
@@ -232,10 +247,10 @@ const getUserDashboardProducts = async (req, res) => {
       data,
       pagination: createPaginationResponse(count, page, limit)
     };
-    
+
     // Cache the response
     await cacheUtils.set(cacheKey, response);
-    
+
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
