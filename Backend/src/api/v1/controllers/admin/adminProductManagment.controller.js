@@ -8,6 +8,7 @@ import { dirname } from "path";
 import Sequelize from "sequelize";
 import { deleteImages } from "../../../../utils/imageUtils.js";
 import { cacheUtils } from "../../../../utils/cacheUtils.js";
+import redisClient from "../../../../config/redis.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -653,11 +654,6 @@ const addProductManagmentData = async (req, res) => {
         }
       }
 
-      // Invalidate Redis cache after successful transaction
-      await redisClient.del("products:*");
-      await redisClient.del(`categories:${result.category.category_id}`);
-      await redisClient.del("dashboard:*");
-
       // Return all created/found records
       return {
         category: categoryRecord,
@@ -671,6 +667,11 @@ const addProductManagmentData = async (req, res) => {
         productMediaUrl: productMediaUrlRecord,
       };
     });
+
+    // Invalidate Redis cache after successful transaction
+    await redisClient.del("products:*");
+    await redisClient.del(`categories:${result.category.category_id}`);
+    await redisClient.del("dashboard:*");
 
     // Convert relative paths to full URLs for response
     if (
@@ -695,7 +696,7 @@ const addProductManagmentData = async (req, res) => {
 
     // Flush all cache after successful creation
     await cacheUtils.flushAll();
-    
+
     return res.status(StatusCodes.CREATED).json({
       success: true,
       message: MESSAGE.post.succ,
@@ -778,10 +779,10 @@ const deleteProductManagementData = async (req, res) => {
         // Step 2: Delete the attribute value itself
         await attributeValue.destroy({ transaction: t });
       });
-      
+
       // Flush all cache after successful deletion
       await cacheUtils.flushAll();
-      
+
       return res.status(StatusCodes.OK).json({
         success: true,
         message: MESSAGE.delete.succ,
@@ -968,6 +969,7 @@ const deleteProductManagementData = async (req, res) => {
             as: "productMedia",
             include: [{
               model: productMediaUrl,
+              as: "productMediaUrl",
               attributes: ["product_media_url"]
             }]
           }
@@ -1179,7 +1181,7 @@ const deleteProductManagementData = async (req, res) => {
 
       // Flush all cache after successful deletion
       await cacheUtils.flushAll();
-      
+
       return res.status(StatusCodes.OK).json({
         success: true,
         message: MESSAGE.delete.succ
@@ -1211,6 +1213,7 @@ const deleteProductManagementData = async (req, res) => {
             include: [
               {
                 model: productMediaUrl,
+                as: "productMediaUrl",
                 attributes: ["product_media_url"],
               },
             ],
@@ -1599,7 +1602,7 @@ const deleteProductManagementData = async (req, res) => {
 
       // Flush all cache after successful deletion
       await cacheUtils.flushAll();
-      
+
       return res.status(StatusCodes.OK).json({
         success: true,
         message: MESSAGE.delete.succ,
@@ -1635,6 +1638,7 @@ const deleteProductManagementData = async (req, res) => {
             include: [
               {
                 model: productMediaUrl,
+                as: "productMediaUrl",
                 attributes: ["product_media_url"],
               },
             ],
@@ -2085,7 +2089,7 @@ const deleteProductManagementData = async (req, res) => {
 
       // Flush all cache after successful deletion
       await cacheUtils.flushAll();
-      
+
       return res.status(StatusCodes.OK).json({
         success: true,
         message: MESSAGE.delete.succ,
