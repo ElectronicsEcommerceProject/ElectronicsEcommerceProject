@@ -136,12 +136,12 @@ const getUserDashboardProducts = async (req, res) => {
         },
         {
           model: ProductReview,
-          as: "reviews",
+          as: "productReviews",
           attributes: ["rating"],
         },
         {
           model: Coupon,
-          as: "coupon",
+          as: "coupons",
           where: {
             is_active: true,
             valid_from: { [Op.lte]: new Date() },
@@ -163,8 +163,8 @@ const getUserDashboardProducts = async (req, res) => {
 
       // Calculate discount from coupon
       let discountPercent = 0;
-      if (prod.coupon && prod.coupon.length > 0) {
-        const coupon = prod.coupon[0];
+      if (prod.coupons && prod.coupons.length > 0) {
+        const coupon = prod.coupons[0];
         if (coupon.type === "percentage") {
           discountPercent = parseFloat(coupon.discount_value);
         } else if (coupon.type === "fixed") {
@@ -200,9 +200,9 @@ const getUserDashboardProducts = async (req, res) => {
       }
 
       // Calculate average rating
-      const ratingCount = prod.reviews.length;
+      const ratingCount = prod.productReviews.length;
       const avgRating = ratingCount
-        ? prod.reviews.reduce((sum, r) => sum + r.rating, 0) / ratingCount
+        ? prod.productReviews.reduce((sum, r) => sum + r.rating, 0) / ratingCount
         : 0;
 
       // Extract features from all variants' attribute values
