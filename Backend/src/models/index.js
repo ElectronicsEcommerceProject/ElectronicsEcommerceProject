@@ -74,7 +74,7 @@ import ProductVariant from "./productVariants.model.js";
 import Attribute from "./productAttributes.model.js";
 import AttributeValue from "./productAttributesValues.model.js";
 import ProductMedia from "./productMedia.model.js";
-import ProductMediaUrl from "./productMediaURL.model.js";
+import ProductMediaUrl from "./productMediaUrl.model.js";
 import Category from "./category.model.js";
 import Brand from "./productBrand.model.js";
 import Coupon from "./coupon.model.js";
