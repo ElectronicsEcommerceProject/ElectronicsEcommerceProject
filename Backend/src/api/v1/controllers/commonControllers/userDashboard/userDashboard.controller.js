@@ -2,6 +2,8 @@ import { StatusCodes } from "http-status-codes";
 import db from "../../../../../models/index.js";
 import MESSAGE from "../../../../../constants/message.js";
 import { Op } from "sequelize";
+import { getPaginationParams, createPaginationResponse } from "../../../../../utils/index.js";
+import { cacheUtils } from "../../../../../utils/cacheUtils.js";
 
 const {
   Product,
@@ -16,6 +18,22 @@ const {
   Category,
 } = db;
 
+/**
+ * Convert relative path to full URL for response
+ * @param {string} imagePath - Image path
+ * @param {Object} req - Express request object
+ * @returns {string} Full URL
+ */
+const convertToFullUrl = (imagePath, req) => {
+  if (imagePath && !imagePath.startsWith("http")) {
+    return `${req.protocol}://${req.get("host")}/${imagePath.replace(
+      /\\/g,
+      "/"
+    )}`;
+  }
+  return imagePath || "";
+};
+
 // Controller: Fetch products for user dashboard with detailed info
 const getUserDashboardProducts = async (req, res) => {
   try {
@@ -29,9 +47,44 @@ const getUserDashboardProducts = async (req, res) => {
       });
     }
 
+    // Pagination parameters
+    const { page, limit, offset } = getPaginationParams(req);
+    
+    // Search parameters
+    const search = req.query.search?.trim();
+    const brand = req.query.brand?.trim();
+    
+    // Create cache key based on parameters
+    const cacheKey = `userDashboardData:${userRole}:page:${page}:limit:${limit}:search:${search || 'none'}:brand:${brand || 'none'}`;
+    
+    // Check cache first
+    const cachedData = await cacheUtils.get(cacheKey);
+    if (cachedData) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Cached response",
+        fromCache: true,
+        ...cachedData
+      });
+    }
+
+    // Build where conditions
+    const whereConditions = { is_active: true };
+
+    // Add search conditions
+    if (search) {
+      whereConditions[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } },
+        { short_description: { [Op.like]: `%${search}%` } }
+      ];
+    }
+
     // Fetch active products with related data filtered by user role
-    const products = await Product.findAll({
-      where: { is_active: true },
+    const { count, rows: products } = await Product.findAndCountAll({
+      limit,
+      offset,
+      where: whereConditions,
       include: [
         {
           model: Category,
@@ -78,6 +131,8 @@ const getUserDashboardProducts = async (req, res) => {
           model: Brand,
           as: "brand",
           attributes: ["name"],
+          where: brand ? { name: { [Op.like]: `%${brand}%` } } : undefined,
+          required: brand ? true : false,
         },
         {
           model: ProductReview,
@@ -102,7 +157,7 @@ const getUserDashboardProducts = async (req, res) => {
 
     // Transform data into desired format
     const data = products.map((prod) => {
-      const variant = prod.productVariant?.[0];
+      const variant = prod.productVariant[0];
       const basePrice = parseFloat(prod.base_price);
       const sellingPrice = basePrice;
 
@@ -154,7 +209,7 @@ const getUserDashboardProducts = async (req, res) => {
       const features = [];
       const attributeMap = new Map();
 
-      prod.productVariant?.forEach((variant) => {
+      prod.productVariant.forEach((variant) => {
         if (variant.AttributeValues?.length) {
           variant.AttributeValues.forEach((attrValue) => {
             if (attrValue.Attribute) {
@@ -188,10 +243,19 @@ const getUserDashboardProducts = async (req, res) => {
       };
     });
 
+    const response = {
+      data,
+      pagination: createPaginationResponse(count, page, limit)
+    };
+    
+    // Cache the response
+    await cacheUtils.set(cacheKey, response);
+    
     return res.status(StatusCodes.OK).json({
       success: true,
       message: MESSAGE.get.succ,
-      data,
+      fromCache: false,
+      ...response
     });
   } catch (error) {
     console.error("Error in getUserDashboardProducts:", error);
